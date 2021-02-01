@@ -65,6 +65,7 @@ config :godwoken_explorer, GodwokenExplorerWeb.Endpoint,
     ]
   ]
 
+config :godwoken_explorer, godwoken_rpc_url: "http://localhost:8119"
 # Do not include metadata nor timestamps in development logs
 config :logger, :console, format: "[$level] $message\n"
 

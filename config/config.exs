@@ -8,7 +8,9 @@
 use Mix.Config
 
 config :godwoken_explorer,
-  ecto_repos: [GodwokenExplorer.Repo]
+  ecto_repos: [GodwokenExplorer.Repo],
+  realtime_events_sender: GodwokenExplorer.Chain.Events.SimpleSender
+
 
 # Configures the endpoint
 config :godwoken_explorer, GodwokenExplorerWeb.Endpoint,

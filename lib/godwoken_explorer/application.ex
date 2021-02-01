@@ -5,6 +5,8 @@ defmodule GodwokenExplorer.Application do
 
   use Application
 
+  alias GodwokenExplorerWeb.RealtimeEventHandler
+
   def start(_type, _args) do
     children = [
       # Start the Ecto repository
@@ -14,7 +16,11 @@ defmodule GodwokenExplorer.Application do
       # Start the PubSub system
       {Phoenix.PubSub, name: GodwokenExplorer.PubSub},
       # Start the Endpoint (http/https)
-      GodwokenExplorerWeb.Endpoint
+      GodwokenExplorerWeb.Endpoint,
+      {Registry, keys: :duplicate, name: Registry.ChainEvents, id: Registry.ChainEvents},
+      {RealtimeEventHandler, name: RealtimeEventHandler},
+      GodwokenExplorer.Chain.Events.Listener,
+      GodwokenIndexer.Server
       # Start a worker by calling: GodwokenExplorer.Worker.start_link(arg)
       # {GodwokenExplorer.Worker, arg}
     ]
