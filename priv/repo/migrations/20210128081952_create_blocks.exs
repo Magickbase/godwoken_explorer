@@ -7,6 +7,7 @@ defmodule GodwokenExplorer.Repo.Migrations.CreateBlocks do
       add :number, :bigint, null: false
       add :parent_hash, :bytea
       add :timestamp, :utc_datetime_usec, null: false
+      add :status, :string, null: false
       add :miner_id, :bytea, null: false
       add :finalized_tx_hash, :bytea
       add :finalized_at, :utc_datetime_usec
