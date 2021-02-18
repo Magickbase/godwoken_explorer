@@ -4,7 +4,6 @@ defmodule GodwokenExplorerWeb.Notifier do
   """
 
   alias GodwokenExplorerWeb.Endpoint
-  alias Phoenix.View
 
   def handle_event({:chain_event, :blocks, :realtime, block}) do
     broadcast_block(block)
