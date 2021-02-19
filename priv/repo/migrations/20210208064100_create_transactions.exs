@@ -5,6 +5,7 @@ defmodule GodwokenExplorer.Repo.Migrations.CreateTransactions do
     create table(:transactions, primary_key: false) do
       add :hash, :bytea, null: false, primary_key: true
       add :block_hash, :bytea, null: false
+      add :block_number, :bigint, null: false
       add :type, :string
       add :from_account_id, :integer, null: false
       add :to_account_id, :integer, null: false

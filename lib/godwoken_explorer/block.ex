@@ -3,19 +3,24 @@ defmodule GodwokenExplorer.Block do
 
   import Ecto.Changeset
 
-  @fields [:hash, :parent_hash, :number, :timestamp, :status, :miner_id, :transaction_count, :finalized_tx_hash, :finalized_at]
-  @required_fields [:hash, :parent_hash, :number, :timestamp, :status, :miner_id, :transaction_count]
+  @fields [:hash, :parent_hash, :number, :timestamp, :status, :aggregator_id, :transaction_count, :layer1_tx_hash, :layer1_block_number, :size, :tx_fees, :average_gas_price]
+  @required_fields [:hash, :parent_hash, :number, :timestamp, :status, :aggregator_id, :transaction_count]
 
   @primary_key {:hash, :binary, autogenerate: false}
   schema "blocks" do
     field :number, :integer
     field :parent_hash, :binary
     field :timestamp, :utc_datetime_usec
-    field :status, Ecto.Enum, values: [:unfinalized, :finalized]
-    field :miner_id, :binary
-    field :finalized_at, :utc_datetime_usec
-    field :finalized_tx_hash, :binary
+    field :status, Ecto.Enum, values: [:committed, :finalized]
+    field :aggregator_id, :integer
     field :transaction_count, :integer
+    field :layer1_tx_hash, :binary
+    field :layer1_block_number, :integer
+    field :size, :integer
+    field :tx_fees, :integer
+    field :average_gas_price, :decimal
+
+
     has_many :transactions, GodwokenExplorer.Transaction
 
     timestamps()

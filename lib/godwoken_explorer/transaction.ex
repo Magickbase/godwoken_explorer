@@ -10,6 +10,7 @@ defmodule GodwokenExplorer.Transaction do
     field :status, Ecto.Enum, values: [:unfinalized, :finalized]
     field :to_account_id, :integer
     field :type, :string
+    field :block_number, :integer
 
     belongs_to(:block, GodwokenExplorer.Block, foreign_key: :block_hash, references: :hash)
 
@@ -19,7 +20,7 @@ defmodule GodwokenExplorer.Transaction do
   @doc false
   def changeset(transaction, attrs) do
     transaction
-    |> cast(attrs, [:hash, :block_hash, :type, :from_account_id, :to_account_id, :nonce, :args, :status])
-    |> validate_required([:hash, :from_account_id, :to_account_id, :nonce, :args, :status])
+    |> cast(attrs, [:hash, :block_hash, :type, :from_account_id, :to_account_id, :nonce, :args, :status, :block_number])
+    |> validate_required([:hash, :from_account_id, :to_account_id, :nonce, :args, :status, :block_number])
   end
 end

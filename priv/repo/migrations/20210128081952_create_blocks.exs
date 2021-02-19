@@ -8,10 +8,13 @@ defmodule GodwokenExplorer.Repo.Migrations.CreateBlocks do
       add :parent_hash, :bytea
       add :timestamp, :utc_datetime_usec, null: false
       add :status, :string, null: false
-      add :miner_id, :bytea, null: false
-      add :finalized_tx_hash, :bytea
-      add :finalized_at, :utc_datetime_usec
+      add :aggregator_id, :int, null: false
       add :transaction_count, :integer, null: false, default: 0
+      add :layer1_tx_hash, :bytea
+      add :layer1_block_number, :bigint
+      add :size, :integer
+      add :tx_fees, :integer
+      add :average_gas_price, :decimal
 
       timestamps(null: false, type: :utc_datetime_usec)
     end
