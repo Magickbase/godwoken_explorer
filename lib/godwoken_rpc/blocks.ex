@@ -1,6 +1,6 @@
 defmodule GodwokenRPC.Blocks do
 
-  alias GodwokenRPC.Block
+  alias GodwokenRPC.{Block, Transactions}
 
   defstruct blocks_params: [],
             transactions_params: [],
@@ -26,18 +26,24 @@ defmodule GodwokenRPC.Blocks do
           %{acc | errors: [error | errors]}
       end)
 
-    # transactions_params = Transactions.parse_params(blocks)
+    elixir_transactions = elixir_to_transactions(blocks)
+    transactions_params = Transactions.elixir_to_params(elixir_transactions)
+
     blocks_params = elixir_to_params(blocks)
 
     %__MODULE__{
       errors: errors,
       blocks_params: blocks_params,
-      transactions_params: []
+      transactions_params: transactions_params
     }
   end
 
   def elixir_to_params(elixir) when is_list(elixir) do
     Enum.map(elixir, &Block.elixir_to_params/1)
+  end
+
+  def elixir_to_transactions(elixir) when is_list(elixir) do
+    Enum.flat_map(elixir, &Block.elixir_to_transactions/1)
   end
 
 end
