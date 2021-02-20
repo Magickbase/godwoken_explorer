@@ -1,4 +1,4 @@
-defmodule GodwokenRpc.TipNumber do
+defmodule GodwokenRPC.TipNumber do
   def request do
     json =
       %{ "jsonrpc" => "2.0", "id" => 2, "method" => "gw_getTipBlockNumber"}

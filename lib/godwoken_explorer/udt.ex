@@ -1,4 +1,4 @@
-defmodule GodwokenExplorer.Udt do
+defmodule GodwokenExplorer.UDT do
   use Ecto.Schema
   import Ecto.Changeset
 

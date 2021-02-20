@@ -1,11 +1,11 @@
-defmodule GodwokenExplorer.AccountUdt do
+defmodule GodwokenExplorer.AccountUDT do
   use Ecto.Schema
   import Ecto.Changeset
 
   schema "account_udts" do
     field :balance, :decimal
     belongs_to(:account, GodwokenExplorer.Account, foreign_key: :account_id, references: :id)
-    belongs_to(:udt, GodwokenExplorer.Udt, foreign_key: :udt_id, references: :id)
+    belongs_to(:udt, GodwokenExplorer.UDT, foreign_key: :udt_id, references: :id)
 
     timestamps()
   end

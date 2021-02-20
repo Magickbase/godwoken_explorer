@@ -11,8 +11,7 @@ defmodule GodwokenExplorer do
     quote do
       use Ecto.Schema
       import Ecto.{Query, Queryable, Changeset}
-      alias GodwokenExplorer.Block
-      alias GodwokenExplorer.Repo
+      alias GodwokenExplorer.{Block, Transaction, Repo, UDTTransfer}
     end
   end
 

@@ -1,9 +1,11 @@
 defmodule GodwokenIndexer.Block.Worker do
   use GenServer
 
-  alias GodwokenRPC.{TipNumber, Block}
+  alias GodwokenRPC.{TipNumber, Blocks}
   alias GodwokenExplorer.Block, as: BlockRepo
+  alias GodwokenExplorer.Transaction, as: TransactionRepo
   alias GodwokenExplorer.Chain.Events.Publisher
+  alias GodwokenExplorer.Repo
 
   def start_link(state \\ []) do
     GenServer.start_link(__MODULE__, state)
@@ -31,47 +33,48 @@ defmodule GodwokenIndexer.Block.Worker do
   defp fetch_and_import do
     with {:ok, max_number} <- fetch_max_number() do
       next_number = BlockRepo.get_next_number()
+
       if next_number < max_number do
-        Enum.each(next_number..next_number, fn number ->
-          case Block.request(number) do
-            {:ok, %{body: body, status_code: 200}} ->
-              response = Jason.decode!(body)["result"]
-              {:ok, data} = BlockRepo.create_block(%{
-                "hash" => response["hash"],
-                "parent_hash" => response["raw"]["parent_block_hash"],
-                "number" => response["raw"]["number"] |> String.slice(2..-1) |> String.to_integer(16),
-                "timestamp" => response["raw"]["timestamp"]|> String.slice(2..-1) |> String.to_integer(16) |> timestamp_to_datetime,
-                "miner_id" => response["raw"]["block_producer_id"],
-                "transaction_count" => response["transactions"] |> Enum.count
-              })
-              Publisher.broadcast([{:blocks, data.hash}], :realtime)
-            _ ->
-             {:error, "Fetch block failed"}
-          end
+        range = next_number..next_number
+
+        {:ok,
+         %Blocks{
+           blocks_params: blocks_params,
+           transactions_params: transactions_params,
+           errors: _
+         }} = GodwokenRPC.fetch_blocks_by_range(range)
+
+        Repo.transaction(fn ->
+          blocks_params
+          |> Enum.each(fn block_params ->
+            %BlockRepo{hash: hash} = BlockRepo.create_block(block_params)
+            Publisher.broadcast([{:blocks, hash}], :realtime)
+          end)
+
+          transactions_params
+          |> Enum.each(fn transaction_params ->
+            TransactionRepo.create_transaction(transaction_params)
+          end)
         end)
       end
     end
   end
 
   defp fetch_max_number do
-    case TipNumber.request do
+    case TipNumber.request() do
       {:ok, %{body: body, status_code: 200}} ->
         max_number =
           body
-          |> Jason.decode!
+          |> Jason.decode!()
           |> Map.fetch!("result")
           |> String.slice(2..-1)
           |> String.to_integer(16)
 
         {:ok, max_number}
-      _ ->
-        {:error, "Fetch max number failed"}
-    end
-  end
 
-  defp timestamp_to_datetime(timestamp) do
-      timestamp
-      |> DateTime.from_unix!()
+      _ ->
+        {:error, -1}
+    end
   end
 
   defp schedule_work do
