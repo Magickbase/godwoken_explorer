@@ -10,7 +10,7 @@ defmodule GodwokenExplorer.Transaction do
     field :nonce, :integer
     field :status, Ecto.Enum, values: [:unfinalized, :finalized], default: :unfinalized
     field :to_account_id, :integer
-    field :type, Ecto.Enum, values: [:sudt, :polyjuice, :withdrawal]
+    field :type, Ecto.Enum, values: [:sudt, :polyjuice_creator, :polyjuice, :withdrawal]
     field :block_number, :integer
     field :block_hash, :binary
 
@@ -31,6 +31,13 @@ defmodule GodwokenExplorer.Transaction do
     |> Ecto.Changeset.put_change(:block_hash, attrs[:block_hash])
     |> Repo.insert!()
     UDTTransfer.create_udt_transfer(attrs)
+  end
+
+  def create_transaction(%{type: :polyjuice_creator} = attrs) do
+    %Transaction{}
+    |> Transaction.changeset(attrs)
+    |> Ecto.Changeset.put_change(:block_hash, attrs[:block_hash])
+    |> Repo.insert!()
   end
 
 end

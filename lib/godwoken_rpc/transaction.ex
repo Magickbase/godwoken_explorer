@@ -7,6 +7,31 @@ defmodule GodwokenRPC.Transaction do
           "block_number" => block_number,
           "raw" => %{
             "from_id" => from_account_id,
+            "to_id" => to_account_id,
+            "nonce" => nonce,
+            "args" => args
+          },
+          "hash" => hash
+        }
+      ) when to_account_id == "0x0" do
+        %{
+          type: :polyjuice_creator,
+          hash: hash,
+          block_hash: block_hash,
+          block_number: block_number,
+          nonce: hex_to_number(nonce),
+          args: args,
+          from_account_id: hex_to_number(from_account_id),
+          to_account_id: hex_to_number(to_account_id),
+        }
+  end
+
+  def elixir_to_params(
+        %{
+          "block_hash" => block_hash,
+          "block_number" => block_number,
+          "raw" => %{
+            "from_id" => from_account_id,
             "to_id" => udt_id,
             "nonce" => nonce,
             "args" => args
@@ -36,6 +61,5 @@ defmodule GodwokenRPC.Transaction do
     fee = hex_string |> String.slice(50, 32) |> Base.decode16!() |> :binary.decode_unsigned(:little)
 
     [to_account_id, amount, fee]
-
   end
 end
