@@ -38,6 +38,12 @@ defmodule GodwokenExplorer.Transaction do
     |> Transaction.changeset(attrs)
     |> Ecto.Changeset.put_change(:block_hash, attrs[:block_hash])
     |> Repo.insert!()
+    PolyjuiceCreator.create_polyjuice_creator(attrs)
   end
 
+  def create_transaction(%{type: :withdrawal} = attrs) do
+    %Transaction{}
+    |> Transaction.changeset(attrs)
+    |> Repo.insert!()
+  end
 end

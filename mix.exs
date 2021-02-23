@@ -7,9 +7,10 @@ defmodule GodwokenExplorer.MixProject do
       version: "0.1.0",
       elixir: "~> 1.7",
       elixirc_paths: elixirc_paths(Mix.env()),
-      compilers: [:phoenix, :gettext] ++ Mix.compilers(),
+      compilers: [:phoenix, :gettext, :rustler] ++ Mix.compilers(),
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
+      rustler_crates: rustler_crates(),
       deps: deps()
     ]
   end
@@ -46,7 +47,8 @@ defmodule GodwokenExplorer.MixProject do
       {:jason, "~> 1.0"},
       {:plug_cowboy, "~> 2.0"},
 
-      {:httpoison, "~> 1.8"}
+      {:httpoison, "~> 1.8"},
+      {:rustler, "~> 0.21.1"}
     ]
   end
 
@@ -64,4 +66,11 @@ defmodule GodwokenExplorer.MixProject do
       test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"]
     ]
   end
+
+  defp rustler_crates do
+    [
+      molecule_parser: [path: "native/molecule_parser", mode: if(Mix.env() == :prod, do: :release, else: :debug)]
+    ]
+  end
+
 end
