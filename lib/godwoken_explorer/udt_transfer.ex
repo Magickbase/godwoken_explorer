@@ -9,7 +9,7 @@ defmodule GodwokenExplorer.UDTTransfer do
     field :tx_hash, :binary
 
     belongs_to(:transaction, GodwokenExplorer.Transaction, foreign_key: :tx_hash, references: :hash, define_field: false)
-    belongs_to(:udt, GodwokenExplorer.UDT, foreign_key: :udt_id, references: :id)
+    belongs_to(:udt, GodwokenExplorer.UDT, foreign_key: :udt_id, references: :id, define_field: false)
 
     timestamps()
   end
@@ -26,6 +26,6 @@ defmodule GodwokenExplorer.UDTTransfer do
     |> UDTTransfer.changeset(attrs)
     |> Ecto.Changeset.put_change(:tx_hash, attrs[:hash])
     |> Ecto.Changeset.put_change(:udt_id, attrs[:udt_id])
-    |> Repo.insert!()
+    |> Repo.insert()
   end
 end

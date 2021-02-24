@@ -35,7 +35,7 @@ defmodule GodwokenExplorer.Block do
   def create_block(attrs \\ %{}) do
     %Block{}
     |> Block.changeset(attrs)
-    |> Repo.insert!()
+    |> Repo.insert()
   end
 
   def get_next_number do

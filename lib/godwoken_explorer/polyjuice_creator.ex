@@ -27,7 +27,7 @@ defmodule GodwokenExplorer.PolyjuiceCreator do
     |> PolyjuiceCreator.changeset(attrs)
     |> Ecto.Changeset.put_change(:tx_hash, attrs[:hash])
     |> Ecto.Changeset.put_change(:udt_id, attrs[:udt_id])
-    |> Repo.insert!()
+    |> Repo.insert()
   end
 
 end

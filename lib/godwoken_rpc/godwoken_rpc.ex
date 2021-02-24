@@ -6,6 +6,11 @@ defmodule GodwokenRPC do
     Map.put(map, :jsonrpc, "2.0")
   end
 
+  def request(%{method: method} = map)
+      when is_binary(method) do
+    Map.put(map, :jsonrpc, "2.0")
+  end
+
   def fetch_blocks_by_range(_first.._last = range) do
     range
     |> Enum.map(fn number -> %{number: number} end)

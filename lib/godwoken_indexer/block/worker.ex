@@ -1,11 +1,11 @@
 defmodule GodwokenIndexer.Block.Worker do
   use GenServer
 
-  alias GodwokenRPC.{TipNumber, Blocks}
+  alias GodwokenRPC.{FetchedTipNumber, Blocks, HTTP}
   alias GodwokenExplorer.Block, as: BlockRepo
   alias GodwokenExplorer.Transaction, as: TransactionRepo
   alias GodwokenExplorer.Chain.Events.Publisher
-  alias GodwokenExplorer.Repo
+  import GodwokenRPC.Util, only: [hex_to_number: 1]
 
   def start_link(state \\ []) do
     GenServer.start_link(__MODULE__, state)
@@ -31,10 +31,10 @@ defmodule GodwokenIndexer.Block.Worker do
   end
 
   defp fetch_and_import do
-    with {:ok, max_number} <- fetch_max_number() do
+    with {:ok, tip_number} <- fetch_tip_number() do
       next_number = BlockRepo.get_next_number()
 
-      if next_number < max_number do
+      if next_number < tip_number do
         range = next_number..next_number
 
         {:ok,
@@ -44,36 +44,28 @@ defmodule GodwokenIndexer.Block.Worker do
            errors: _
          }} = GodwokenRPC.fetch_blocks_by_range(range)
 
-        Repo.transaction(fn ->
-          blocks_params
-          |> Enum.each(fn block_params ->
-            %BlockRepo{hash: hash} = BlockRepo.create_block(block_params)
-            Publisher.broadcast([{:blocks, hash}], :realtime)
-          end)
+        blocks_params
+        |> Enum.each(fn block_params ->
+          {:ok, %BlockRepo{hash: hash}} = BlockRepo.create_block(block_params)
+          Publisher.broadcast([{:blocks, hash}], :realtime)
+        end)
 
-          transactions_params
-          |> Enum.each(fn transaction_params ->
-            TransactionRepo.create_transaction(transaction_params)
-          end)
+        transactions_params
+        |> Enum.each(fn transaction_params ->
+          TransactionRepo.create_transaction(transaction_params)
         end)
       end
     end
   end
 
-  defp fetch_max_number do
-    case TipNumber.request() do
-      {:ok, %{body: body, status_code: 200}} ->
-        max_number =
-          body
-          |> Jason.decode!()
-          |> Map.fetch!("result")
-          |> String.slice(2..-1)
-          |> String.to_integer(16)
+  defp fetch_tip_number do
+    options = Application.get_env(:godwoken_explorer, :json_rpc_named_arguments)
 
-        {:ok, max_number}
+    with {:ok, tip_number} <-
+           FetchedTipNumber.request()
+           |> HTTP.json_rpc(options) do
 
-      _ ->
-        {:error, -1}
+      {:ok, tip_number |> hex_to_number()}
     end
   end
 

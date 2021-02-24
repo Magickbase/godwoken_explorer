@@ -5,7 +5,7 @@
 # Inside the script, you can read and write to any of your
 # repositories directly:
 #
-#     GodwokenExplorer.Repo.insert!(%GodwokenExplorer.SomeSchema{})
+#     GodwokenExplorer.Repo.insert(%GodwokenExplorer.SomeSchema{})
 #
-# We recommend using the bang functions (`insert!`, `update!`
+# We recommend using the bang functions (`insert`, `update!`
 # and so on) as they will fail if something goes wrong.

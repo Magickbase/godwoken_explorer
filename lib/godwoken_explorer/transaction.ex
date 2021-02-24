@@ -29,7 +29,7 @@ defmodule GodwokenExplorer.Transaction do
     %Transaction{}
     |> Transaction.changeset(attrs)
     |> Ecto.Changeset.put_change(:block_hash, attrs[:block_hash])
-    |> Repo.insert!()
+    |> Repo.insert()
     UDTTransfer.create_udt_transfer(attrs)
   end
 
@@ -37,13 +37,22 @@ defmodule GodwokenExplorer.Transaction do
     %Transaction{}
     |> Transaction.changeset(attrs)
     |> Ecto.Changeset.put_change(:block_hash, attrs[:block_hash])
-    |> Repo.insert!()
+    |> Repo.insert()
     PolyjuiceCreator.create_polyjuice_creator(attrs)
   end
 
   def create_transaction(%{type: :withdrawal} = attrs) do
     %Transaction{}
     |> Transaction.changeset(attrs)
-    |> Repo.insert!()
+    |> Repo.insert()
+    Withdrawal.create_withdrawal(attrs)
   end
+
+  def create_transaction(%{type: :polyjuice} = attrs) do
+    %Transaction{}
+    |> Transaction.changeset(attrs)
+    |> Repo.insert()
+    Polyjuice.create_polyjuice(attrs)
+  end
+
 end
