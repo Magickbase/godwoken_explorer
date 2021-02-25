@@ -137,14 +137,15 @@ defmodule GodwokenRPC.Transaction do
   end
 
   defp parse_sudt_args(hex_string) do
+    IO.inspect(hex_string)
     to_account_id =
-      hex_string |> String.slice(8, 8) |> Base.decode16!() |> :binary.decode_unsigned(:little)
+      hex_string |> String.slice(8, 8) |> Base.decode16!(case: :lower) |> :binary.decode_unsigned(:little)
 
     amount =
-      hex_string |> String.slice(16, 32) |> Base.decode16!() |> :binary.decode_unsigned(:little)
+      hex_string |> String.slice(16, 32) |> Base.decode16!(case: :lower) |> :binary.decode_unsigned(:little)
 
     fee =
-      hex_string |> String.slice(48, 32) |> Base.decode16!() |> :binary.decode_unsigned(:little)
+      hex_string |> String.slice(48, 32) |> Base.decode16!(case: :lower) |> :binary.decode_unsigned(:little)
 
     [to_account_id, amount, fee]
   end

@@ -7,6 +7,7 @@ defmodule GodwokenExplorer.UDTTransfer do
     field :amount, :decimal
     field :fee, :decimal
     field :tx_hash, :binary
+    field :udt_id, :integer
 
     belongs_to(:transaction, GodwokenExplorer.Transaction, foreign_key: :tx_hash, references: :hash, define_field: false)
     belongs_to(:udt, GodwokenExplorer.UDT, foreign_key: :udt_id, references: :id, define_field: false)
