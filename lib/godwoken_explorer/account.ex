@@ -30,8 +30,13 @@ defmodule GodwokenExplorer.Account do
     |> Repo.insert()
   end
 
-  def account_exist?(id) do
-    Repo.get(Account, id) != nil
+  def list_not_exist_accounts(ids) do
+    query = from account in "accounts",
+              where: account.id in ^ids,
+              select: account.id
+
+    exist_ids = Repo.all(query)
+    ids -- exist_ids
   end
 
 end

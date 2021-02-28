@@ -7,6 +7,7 @@ defmodule GodwokenIndexer.Block.Worker do
   alias GodwokenExplorer.Transaction, as: TransactionRepo
   alias GodwokenExplorer.Chain.Events.Publisher
   import GodwokenRPC.Util, only: [hex_to_number: 1]
+  alias GodwokenIndexer.Account.Worker, as: AccountWorker
 
   def start_link(state \\ []) do
     GenServer.start_link(__MODULE__, state)
@@ -55,8 +56,20 @@ defmodule GodwokenIndexer.Block.Worker do
         |> Enum.each(fn transaction_params ->
           TransactionRepo.create_transaction(transaction_params)
         end)
+
+        account_ids = extract_account_ids(transactions_params)
+        if length(account_ids) > 0 do
+          AccountWorker.trigger_account(account_ids)
+        end
       end
     end
+  end
+
+  defp extract_account_ids(transactions_params) do
+    transactions_params |> Enum.reduce([], fn transaction, acc ->
+      acc ++ transaction[:account_ids]
+    end)
+    |> Enum.uniq()
   end
 
   defp fetch_tip_number do

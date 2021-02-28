@@ -8,7 +8,7 @@ defmodule GodwokenIndexer.Server do
   def init(_) do
     children = [
       GodwokenIndexer.Block.Supervisor,
-      GodwokenIndexer.Task.Supervisor
+      GodwokenIndexer.Account.Supervisor
     ]
 
     Supervisor.init(children, strategy: :one_for_one)

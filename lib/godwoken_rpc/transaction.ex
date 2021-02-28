@@ -18,6 +18,8 @@ defmodule GodwokenRPC.Transaction do
       when to_account_id == "0x0" do
     {:ok, code_hash, hash_type, udt_id} = MoleculeParser.parse_meta_contract_args(args)
 
+    from_account_id = hex_to_number(from_account_id)
+
     %{
       type: :polyjuice_creator,
       hash: hash,
@@ -25,11 +27,12 @@ defmodule GodwokenRPC.Transaction do
       block_number: block_number,
       nonce: hex_to_number(nonce),
       args: args,
-      from_account_id: hex_to_number(from_account_id),
+      from_account_id: from_account_id,
       to_account_id: hex_to_number(to_account_id),
       code_hash: "0x" <> code_hash,
       hash_type: transform_hash_type(hash_type),
-      udt_id: parse_udt_id(udt_id)
+      udt_id: parse_udt_id(udt_id),
+      account_ids: [from_account_id]
     }
   end
 
@@ -47,7 +50,7 @@ defmodule GodwokenRPC.Transaction do
     case args |> String.length() do
       80 ->
         [to_account_id, amount, fee] = parse_sudt_args(args)
-
+        from_account_id = hex_to_number(from_account_id)
         %{
           type: :sudt,
           hash: hash,
@@ -55,16 +58,18 @@ defmodule GodwokenRPC.Transaction do
           block_number: block_number,
           nonce: hex_to_number(nonce),
           args: args,
-          from_account_id: hex_to_number(from_account_id),
+          from_account_id: from_account_id,
           to_account_id: to_account_id,
           udt_id: hex_to_number(to_id),
           amount: amount,
-          fee: fee
+          fee: fee,
+          account_ids: [from_account_id, to_account_id]
         }
 
       _ ->
         [is_create, is_static, gas_limit, gas_price, value, input_size, input] =
           parse_polyjuice_args(args)
+        from_account_id = hex_to_number(from_account_id)
 
         %{
           type: :polyjuice,
@@ -73,15 +78,16 @@ defmodule GodwokenRPC.Transaction do
           block_number: block_number,
           nonce: hex_to_number(nonce),
           args: args,
-          from_account_id: hex_to_number(from_account_id),
-          to_account_id: hex_to_number(to_id),
+          from_account_id: from_account_id,
+          to_account_id: to_id,
           is_create: is_create,
           is_static: is_static,
           gas_limit: gas_limit,
           gas_price: gas_price,
           value: value,
           input_size: input_size,
-          input: input
+          input: input,
+          account_ids: [from_account_id, to_id]
         }
     end
   end
@@ -133,7 +139,8 @@ defmodule GodwokenRPC.Transaction do
       sell_capacity: sell_capacity,
       sudt_script_hash: sudt_script_hash,
       # TODO: Can query from udt?
-      udt_id: nil
+      udt_id: nil,
+      account_ids: [from_account_id]
     }
   end
 

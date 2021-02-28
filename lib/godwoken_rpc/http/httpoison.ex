@@ -3,13 +3,10 @@ defmodule GodwokenRPC.HTTP.HTTPoison do
   Uses `HTTPoison` for `GodwokenRPC.HTTP`
   """
 
-  alias GodwokenRPC.HTTP
+  def json_rpc(url, json \\ {}, options \\ [])
 
-  @behaviour HTTP
-
-  @impl HTTP
   @spec json_rpc(nil | binary, any, any) :: {:error, any} | {:ok, %{body: any, status_code: integer}}
-  def json_rpc(url, json, options \\ []) when is_binary(url) and is_list(options) do
+  def json_rpc(url, json, options) when is_binary(url) and is_list(options) do
     case HTTPoison.post(url, json, [{"Content-Type", "application/json"}], options) do
       {:ok, %HTTPoison.Response{body: body, status_code: status_code}} ->
         {:ok, %{body: body, status_code: status_code}}
