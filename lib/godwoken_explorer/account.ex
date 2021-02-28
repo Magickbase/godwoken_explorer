@@ -1,16 +1,18 @@
 defmodule GodwokenExplorer.Account do
-  use Ecto.Schema
+  use GodwokenExplorer, :schema
+
   import Ecto.Changeset
 
   @primary_key {:id, :integer, autogenerate: false}
   schema "accounts" do
-    field :eth_address, :binary
     field :ckb_address, :binary
-    field :lock_hash, :binary
+    field :eth_address, :binary
+    field :script_hash, :binary
+    field :script, :map
     field :nonce, :integer
-    field :type, Ecto.Enum, values: [:user, :polyjuice_root, :contract]
+    field :type, Ecto.Enum, values: [:meta_contract, :udt, :user, :polyjuice_root, :polyjuice_contract]
     field :layer2_tx, :binary
-    has_many :account_udts, GodwokenExplorer.AccountUdt
+    has_many :account_udts, GodwokenExplorer.AccountUDT
 
     timestamps()
   end
@@ -18,7 +20,18 @@ defmodule GodwokenExplorer.Account do
   @doc false
   def changeset(account, attrs) do
     account
-    |> cast(attrs, [:eth_address, :ckb_address, :lock_hash, :nonce, :type, :layer2_tx])
-    |> validate_required([:eth_address, :lock_hash, :nonce, :type])
+    |> cast(attrs, [:id, :ckb_address, :eth_address, :script_hash, :script, :nonce, :type, :layer2_tx])
+    |> validate_required([:id, :script_hash, :script, :nonce, :type])
   end
+
+  def create_account(attrs) do
+    %Account{}
+    |> Account.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  def account_exist?(id) do
+    Repo.get(Account, id) != nil
+  end
+
 end

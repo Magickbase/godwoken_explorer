@@ -1,7 +1,8 @@
 defmodule GodwokenIndexer.Block.Worker do
   use GenServer
 
-  alias GodwokenRPC.{FetchedTipNumber, Blocks, HTTP}
+  alias GodwokenRPC.Block.FetchedTipNumber
+  alias GodwokenRPC.{Blocks, HTTP}
   alias GodwokenExplorer.Block, as: BlockRepo
   alias GodwokenExplorer.Transaction, as: TransactionRepo
   alias GodwokenExplorer.Chain.Events.Publisher

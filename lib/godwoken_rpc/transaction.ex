@@ -1,7 +1,8 @@
 defmodule GodwokenRPC.Transaction do
   import GodwokenRPC.Util, only: [hex_to_number: 1]
   alias Godwoken.MoleculeParser
-  alias GodwokenRPC.{FetchedAccountID, HTTP}
+  alias GodwokenRPC.HTTP
+  alias GodwokenRPC.Account.FetchedAccountID
 
   def elixir_to_params(%{
         "block_hash" => block_hash,
@@ -137,7 +138,6 @@ defmodule GodwokenRPC.Transaction do
   end
 
   defp parse_sudt_args(hex_string) do
-    IO.inspect(hex_string)
     to_account_id =
       hex_string |> String.slice(8, 8) |> Base.decode16!(case: :lower) |> :binary.decode_unsigned(:little)
 

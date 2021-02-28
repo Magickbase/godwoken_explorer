@@ -11,12 +11,21 @@ defmodule GodwokenExplorer do
     quote do
       use Ecto.Schema
       import Ecto.{Query, Queryable, Changeset}
-      alias GodwokenExplorer.{Block, Transaction, Repo, UDTTransfer, PolyjuiceCreator, Polyjuice, Withdrawal}
+
+      alias GodwokenExplorer.{
+        Block,
+        Transaction,
+        Repo,
+        UDTTransfer,
+        PolyjuiceCreator,
+        Polyjuice,
+        Withdrawal,
+        Account
+      }
     end
   end
 
   defmacro __using__(which) when is_atom(which) do
     apply(__MODULE__, which, [])
   end
-
 end
