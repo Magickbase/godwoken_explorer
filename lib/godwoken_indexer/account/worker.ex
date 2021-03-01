@@ -10,7 +10,7 @@ defmodule GodwokenIndexer.Account.Worker do
   end
 
   def init(state) do
-    GenServer.cast(AccountWorker, {:account, [0,1]})
+    GenServer.cast(AccountWorker, {:account, [0, 1]})
 
     {:ok, state}
   end
@@ -20,14 +20,15 @@ defmodule GodwokenIndexer.Account.Worker do
   end
 
   def handle_cast({:account, account_ids}, state) do
-    Account.list_not_exist_accounts(account_ids)
+    account_ids
     |> Enum.each(fn account_id ->
+      IO.inspect(account_id)
       nonce = fetch_nonce(account_id)
       script_hash = fetch_script_hash(account_id)
       script = fetch_script(script_hash)
       type = switch_account_type(script["code_hash"], script["args"])
 
-      Account.create_account(%{
+      Account.create_or_update_account(%{
         id: account_id,
         script: script,
         script_hash: script_hash,
@@ -85,5 +86,4 @@ defmodule GodwokenIndexer.Account.Worker do
       {:error, _error} -> nil
     end
   end
-
 end

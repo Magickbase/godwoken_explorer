@@ -24,19 +24,17 @@ defmodule GodwokenExplorer.Account do
     |> validate_required([:id, :script_hash, :script, :nonce, :type])
   end
 
-  def create_account(attrs) do
-    %Account{}
-    |> Account.changeset(attrs)
-    |> Repo.insert()
-  end
-
-  def list_not_exist_accounts(ids) do
-    query = from account in "accounts",
-              where: account.id in ^ids,
-              select: account.id
-
-    exist_ids = Repo.all(query)
-    ids -- exist_ids
+  def create_or_update_account(attrs) do
+    case Repo.get(__MODULE__, attrs[:id]) do
+      nil -> %__MODULE__{}
+      account -> account
+    end
+    |> changeset(attrs)
+    |> Repo.insert_or_update()
+    |> case do
+      {:ok, account} -> {:ok, account}
+      {:error, _} -> {:error, nil}
+    end
   end
 
 end
