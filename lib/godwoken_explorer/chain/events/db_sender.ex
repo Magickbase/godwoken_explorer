@@ -2,7 +2,7 @@ defmodule GodwokenExplorer.Chain.Events.DBSender do
   @moduledoc """
   Sends events to Postgres.
   """
-  alias Explorer.Repo
+  alias GodwokenExplorer.Repo
 
   def send_data(event_type) do
     payload = encode_payload({:chain_event, event_type})

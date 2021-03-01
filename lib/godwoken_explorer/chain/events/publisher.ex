@@ -3,8 +3,6 @@ defmodule GodwokenExplorer.Chain.Events.Publisher do
   Publishes events related to the Chain context.
   """
 
-  @allowed_events ~w(addresses address_coin_balances address_token_balances blocks block_rewards internal_transactions last_block_number staking_update token_transfers transactions contract_verification_result)a
-
   def broadcast(_data, false), do: :ok
 
   def broadcast(data, broadcast_type) do

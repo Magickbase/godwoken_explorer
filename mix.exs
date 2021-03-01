@@ -48,7 +48,10 @@ defmodule GodwokenExplorer.MixProject do
       {:plug_cowboy, "~> 2.0"},
 
       {:httpoison, "~> 1.8"},
-      {:rustler, "~> 0.21.1"}
+      {:rustler, "~> 0.21.1"},
+
+      # deployment
+      {:distillery, "~> 2.1"}
     ]
   end
 

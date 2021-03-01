@@ -10,8 +10,12 @@ use Mix.Config
 # which you should run after static files are built and
 # before starting your production server.
 config :godwoken_explorer, GodwokenExplorerWeb.Endpoint,
-  url: [host: "example.com", port: 80],
-  cache_static_manifest: "priv/static/cache_manifest.json"
+  http: [port:  4000],
+  url: [host: "localhost", port: 80], # This is critical for ensuring web-sockets properly authorize.
+  cache_static_manifest: "priv/static/cache_manifest.json",
+  server: true,
+  root: ".",
+  version: Application.spec(:phoenix_distillery, :vsn)
 
 # Do not print debug messages in production
 config :logger, level: :info
