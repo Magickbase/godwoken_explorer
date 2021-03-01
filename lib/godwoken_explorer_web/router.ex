@@ -13,6 +13,10 @@ defmodule GodwokenExplorerWeb.Router do
     plug :accepts, ["json"]
   end
 
+  scope "/api", GodwokenExplorerWeb.API do
+    get("/blocks", BlockController, :index)
+  end
+
   scope "/", GodwokenExplorerWeb do
     pipe_through :browser
 

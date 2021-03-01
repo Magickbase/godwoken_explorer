@@ -44,4 +44,14 @@ defmodule GodwokenExplorer.Block do
       nil -> 0
     end
   end
+
+  def latest_10_records do
+    query = from(b in "blocks",
+          select: %{block_number: b.number, timestamp: b.timestamp, transaction_count: b.transaction_count},
+          order_by: [desc: b.number],
+          limit: 10
+          )
+
+    Repo.all(query)
+  end
 end

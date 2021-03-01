@@ -3,8 +3,6 @@ defmodule GodwokenRPC.HTTP do
   JSONRPC over HTTP
   """
 
-  alias GodwokenRPC.HTTP.HTTPoison
-
   require Logger
 
   def json_rpc(request, options) when is_map(request) do
