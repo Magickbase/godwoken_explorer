@@ -22,7 +22,6 @@ defmodule GodwokenIndexer.Account.Worker do
   def handle_cast({:account, account_ids}, state) do
     account_ids
     |> Enum.each(fn account_id ->
-      IO.inspect(account_id)
       nonce = fetch_nonce(account_id)
       script_hash = fetch_script_hash(account_id)
       script = fetch_script(script_hash)
