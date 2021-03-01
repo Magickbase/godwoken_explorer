@@ -46,50 +46,63 @@ defmodule GodwokenRPC.Transaction do
           "args" => "0x" <> args
         },
         "hash" => hash
+      })
+      when byte_size(args) == 80 do
+    [to_account_id, amount, fee] = parse_sudt_args(args)
+    from_account_id = hex_to_number(from_account_id)
+
+    %{
+      type: :sudt,
+      hash: hash,
+      block_hash: block_hash,
+      block_number: block_number,
+      nonce: hex_to_number(nonce),
+      args: args,
+      from_account_id: from_account_id,
+      to_account_id: to_account_id,
+      udt_id: hex_to_number(to_id),
+      amount: amount,
+      fee: fee,
+      account_ids: [from_account_id, to_account_id]
+    }
+  end
+
+  def elixir_to_params(%{
+        "block_hash" => block_hash,
+        "block_number" => block_number,
+        "raw" => %{
+          "from_id" => from_account_id,
+          "to_id" => to_account_id,
+          "nonce" => nonce,
+          "args" => "0x" <> args
+        },
+        "hash" => hash
       }) do
-    case args |> String.length() do
-      80 ->
-        [to_account_id, amount, fee] = parse_sudt_args(args)
-        from_account_id = hex_to_number(from_account_id)
-        %{
-          type: :sudt,
-          hash: hash,
-          block_hash: block_hash,
-          block_number: block_number,
-          nonce: hex_to_number(nonce),
-          args: args,
-          from_account_id: from_account_id,
-          to_account_id: to_account_id,
-          udt_id: hex_to_number(to_id),
-          amount: amount,
-          fee: fee,
-          account_ids: [from_account_id, to_account_id]
-        }
+    [is_create, is_static, gas_limit, gas_price, value, input_size, input] =
+      parse_polyjuice_args(args)
 
-      _ ->
-        [is_create, is_static, gas_limit, gas_price, value, input_size, input] =
-          parse_polyjuice_args(args)
-        from_account_id = hex_to_number(from_account_id)
+    from_account_id = hex_to_number(from_account_id)
+    to_account_id = hex_to_number(to_account_id)
 
-        %{
-          type: :polyjuice,
-          hash: hash,
-          block_hash: block_hash,
-          block_number: block_number,
-          nonce: hex_to_number(nonce),
-          args: args,
-          from_account_id: from_account_id,
-          to_account_id: to_id,
-          is_create: is_create,
-          is_static: is_static,
-          gas_limit: gas_limit,
-          gas_price: gas_price,
-          value: value,
-          input_size: input_size,
-          input: input,
-          account_ids: [from_account_id, to_id]
-        }
-    end
+
+    %{
+      type: :polyjuice,
+      hash: hash,
+      block_hash: block_hash,
+      block_number: block_number,
+      nonce: hex_to_number(nonce),
+      args: args,
+      from_account_id: from_account_id,
+      to_account_id: to_account_id,
+      is_create: is_create,
+      is_static: is_static,
+      gas_limit: gas_limit,
+      gas_price: gas_price,
+      value: value,
+      input_size: input_size,
+      input: input,
+      account_ids: [from_account_id, to_account_id]
+    }
   end
 
   # withdrawal raw transaction
@@ -146,13 +159,22 @@ defmodule GodwokenRPC.Transaction do
 
   defp parse_sudt_args(hex_string) do
     to_account_id =
-      hex_string |> String.slice(8, 8) |> Base.decode16!(case: :lower) |> :binary.decode_unsigned(:little)
+      hex_string
+      |> String.slice(8, 8)
+      |> Base.decode16!(case: :lower)
+      |> :binary.decode_unsigned(:little)
 
     amount =
-      hex_string |> String.slice(16, 32) |> Base.decode16!(case: :lower) |> :binary.decode_unsigned(:little)
+      hex_string
+      |> String.slice(16, 32)
+      |> Base.decode16!(case: :lower)
+      |> :binary.decode_unsigned(:little)
 
     fee =
-      hex_string |> String.slice(48, 32) |> Base.decode16!(case: :lower) |> :binary.decode_unsigned(:little)
+      hex_string
+      |> String.slice(48, 32)
+      |> Base.decode16!(case: :lower)
+      |> :binary.decode_unsigned(:little)
 
     [to_account_id, amount, fee]
   end
@@ -200,7 +222,7 @@ defmodule GodwokenRPC.Transaction do
     options = Application.get_env(:godwoken_explorer, :json_rpc_named_arguments)
 
     case FetchedAccountID.request(%{script_hash: account_script_hash})
-      |> HTTP.json_rpc(options) do
+         |> HTTP.json_rpc(options) do
       {:ok, account_id} -> account_id
       {:error, _error} -> nil
     end

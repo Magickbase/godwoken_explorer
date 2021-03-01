@@ -37,6 +37,11 @@ config :godwoken_explorer,
       hackney: [pool: :ethereum_jsonrpc]
     ]
   ]
+config :godwoken_explorer,
+  polyjuice_validator_code_hash: "0x6a946971979c019fe5096108267779775a141c9647936053b58358caa87bf5a2",
+  layer2_lock_code_hash: "0x0000000000000000000000000000000000000000000000000000000000000001",
+  udt_code_hash: "0x2f2336a04c3cec17e33b5956e1fa2024234f58480bba28ded7e0a8a73e2e956d",
+  meta_contract_code_hash: "0xf6c494a0236ba9854c745e190ade9399a670c8efb4a876f978239ffcd445d0f3"
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
