@@ -51,7 +51,7 @@ defmodule GodwokenExplorer.MixProject do
       {:rustler, "~> 0.21.1"},
 
       # deployment
-      {:distillery, "~> 2.1"}
+      {:distillery, "~> 2.1", warn_missing: false}
     ]
   end
 
@@ -72,7 +72,7 @@ defmodule GodwokenExplorer.MixProject do
 
   defp rustler_crates do
     [
-      molecule_parser: [path: "native/molecule_parser", mode: if(Mix.env() == :prod, do: :release, else: :debug)]
+      molecule_parser: [path: "native/molecule_parser", mode: if(Mix.env() in [:staging, :prod], do: :release, else: :debug)]
     ]
   end
 
