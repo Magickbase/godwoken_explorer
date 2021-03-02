@@ -35,3 +35,7 @@ npm-debug.log
 
 /config/*.secret.exs
 
+# rustler compiled
+/priv/native
+# capistrano log
+/log
