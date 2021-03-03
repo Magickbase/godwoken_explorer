@@ -1,5 +1,6 @@
+use Mix.Config
+
 config :godwoken_explorer,
-  godwoken_rpc_url: "http://localhost:8119"
   polyjuice_validator_code_hash: "0x6a946971979c019fe5096108267779775a141c9647936053b58358caa87bf5a2",
   layer2_lock_code_hash: "0x0000000000000000000000000000000000000000000000000000000000000001",
   udt_code_hash: "0x2f2336a04c3cec17e33b5956e1fa2024234f58480bba28ded7e0a8a73e2e956d",
