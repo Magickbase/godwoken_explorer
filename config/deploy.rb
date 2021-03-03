@@ -5,7 +5,7 @@ load File.expand_path("../deploy/tasks/buildhost.rake", __FILE__)
 load File.expand_path("../deploy/tasks/node.rake", __FILE__)
 
 set :application, "godwoken_explorer"
-set :repo_url, "git@github.com:zmcNotafraid/godwoken_explorer.git"
+set :repo_url, "git@github.com:nervina-labs/godwoken_explorer.git"
 
 set :deploy_user, 'ckb'
 # Default deploy_to directory is /var/www/my_app_name

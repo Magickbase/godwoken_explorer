@@ -27,17 +27,6 @@ config :logger, :console,
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
 
-config :godwoken_explorer,
-  json_rpc_named_arguments: [
-    http: GodwokenRPC.HTTP.HTTPoison,
-    url: System.get_env("GODWOKEN_RPC_HTTP_URL") || "http://localhost:8119",
-    http_options: [
-      recv_timeout: :timer.minutes(10),
-      timeout: :timer.minutes(10),
-      hackney: [pool: :ethereum_jsonrpc]
-    ]
-  ]
-
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{Mix.env()}.exs"

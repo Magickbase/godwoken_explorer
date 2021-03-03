@@ -1,14 +1,5 @@
 use Mix.Config
 
-# Configure your database
-config :godwoken_explorer, GodwokenExplorer.Repo,
-  username: "user",
-  password: "password",
-  database: "godwoken_explorer_dev",
-  hostname: "localhost",
-  show_sensitive_data_on_connection_error: true,
-  pool_size: 10
-
 # For development, we disable any cache and enable
 # debugging and code reloading.
 #
@@ -16,7 +7,7 @@ config :godwoken_explorer, GodwokenExplorer.Repo,
 # watchers to your application. For example, we use it
 # with webpack to recompile .js and .css sources.
 config :godwoken_explorer, GodwokenExplorerWeb.Endpoint,
-  http: [port: 4000],
+  http: [port: System.get_env("PORT") || 4001],
   debug_errors: true,
   code_reloader: true,
   check_origin: false,
@@ -65,7 +56,6 @@ config :godwoken_explorer, GodwokenExplorerWeb.Endpoint,
     ]
   ]
 
-config :godwoken_explorer, godwoken_rpc_url: "http://localhost:8119"
 # Do not include metadata nor timestamps in development logs
 config :logger, :console, format: "[$level] $message\n"
 
@@ -76,8 +66,4 @@ config :phoenix, :stacktrace_depth, 20
 # Initialize plugs at runtime for faster development compilation
 config :phoenix, :plug_init_mode, :runtime
 
-config :godwoken_explorer,
-  polyjuice_validator_code_hash: "0x6a946971979c019fe5096108267779775a141c9647936053b58358caa87bf5a2",
-  layer2_lock_code_hash: "0x0000000000000000000000000000000000000000000000000000000000000001",
-  udt_code_hash: "0x2f2336a04c3cec17e33b5956e1fa2024234f58480bba28ded7e0a8a73e2e956d",
-  meta_contract_code_hash: "0xf6c494a0236ba9854c745e190ade9399a670c8efb4a876f978239ffcd445d0f3"
+import_config "dev.per.exs"

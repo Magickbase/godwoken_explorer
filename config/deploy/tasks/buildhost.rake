@@ -2,6 +2,7 @@ Rake::Task["buildhost:clean:keepdeps"].clear_actions
 task "buildhost:clean:keepdeps" do
   on build_host do |host|
     execute :mkdir, "-p", build_path
+    execute :mkdir, "-p", repo_path
     within build_path do
       execute :find, "-path ./_build -or -path './_build/*' -or -path ./deps -or -path './deps/*' -or -path ./assets -or -path ./assets/node_modules -or -path './assets/node_modules/*' -or -delete"
     end
