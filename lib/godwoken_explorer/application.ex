@@ -20,9 +20,10 @@ defmodule GodwokenExplorer.Application do
       {Registry, keys: :duplicate, name: Registry.ChainEvents, id: Registry.ChainEvents},
       {RealtimeEventHandler, name: RealtimeEventHandler},
       GodwokenExplorer.Chain.Events.Listener,
-      GodwokenIndexer.Server
-      # Start a worker by calling: GodwokenExplorer.Worker.start_link(arg)
-      # {GodwokenExplorer.Worker, arg}
+      GodwokenIndexer.Server,
+      GodwokenExplorer.Counters.AccountsCounter,
+      GodwokenExplorer.Chain.Cache.BlockCount,
+      GodwokenExplorer.Chain.Cache.TransactionCount
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

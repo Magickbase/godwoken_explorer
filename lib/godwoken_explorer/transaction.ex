@@ -55,4 +55,15 @@ defmodule GodwokenExplorer.Transaction do
     Polyjuice.create_polyjuice(attrs)
   end
 
+  def latest_10_records do
+    query = from(t in Transaction, join: b in Block, on: [hash: t.block_hash],
+          select: %{hash: t.hash, timestamp: b.timestamp, from: t.from_account_id, to: t.to_account_id, type: t.type},
+          order_by: [desc: t.block_number, desc: t.inserted_at],
+          limit: 10
+          )
+
+    Repo.all(query)
+  end
+
+
 end

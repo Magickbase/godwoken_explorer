@@ -37,4 +37,10 @@ defmodule GodwokenExplorer.Account do
     end
   end
 
+  def count() do
+    from(
+      a in Account,
+      select: fragment("COUNT(*)")
+    ) |> Repo.one(timeout: :infinity)
+  end
 end

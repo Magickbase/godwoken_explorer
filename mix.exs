@@ -49,6 +49,7 @@ defmodule GodwokenExplorer.MixProject do
 
       {:httpoison, "~> 1.8"},
       {:rustler, "~> 0.21.1"},
+      {:con_cache, "~> 0.13"},
 
       # deployment
       {:distillery, "~> 2.1", warn_missing: false}

@@ -47,7 +47,7 @@ defmodule GodwokenExplorer.Block do
 
   def latest_10_records do
     query = from(b in "blocks",
-          select: %{block_number: b.number, timestamp: b.timestamp, transaction_count: b.transaction_count},
+          select: %{hash: b.hash, number: b.number, timestamp: b.timestamp, tx_count: b.transaction_count},
           order_by: [desc: b.number],
           limit: 10
           )
@@ -56,7 +56,6 @@ defmodule GodwokenExplorer.Block do
   end
 
   def update_blocks_finalized(latest_finalized_block_number) do
-    IO.inspect(latest_finalized_block_number)
     from(b in Block, where: b.number <= ^latest_finalized_block_number and b.status == :committed)
     |> Repo.update_all(set: [status: "finalized", updated_at: DateTime.now!("Etc/UTC")])
     from(t in Transaction, where: t.block_number <= ^latest_finalized_block_number and t.status == :unfinalized)

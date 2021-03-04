@@ -14,7 +14,7 @@ defmodule GodwokenExplorerWeb.Router do
   end
 
   scope "/api", GodwokenExplorerWeb.API do
-    get("/blocks", BlockController, :index)
+    get("/home", HomeController, :index)
   end
 
   scope "/", GodwokenExplorerWeb do
