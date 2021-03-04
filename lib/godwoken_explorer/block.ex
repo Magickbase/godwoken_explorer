@@ -55,6 +55,19 @@ defmodule GodwokenExplorer.Block do
     Repo.all(query)
   end
 
+  def transactions_count_per_second(interval \\ 10) do
+    with timestamp_with_tx_count when length(timestamp_with_tx_count) != 0 <- from(b in Block,
+                                                                              select: %{timestamp: b.timestamp, tx_count: b.transaction_count},
+                                                                              order_by: [desc: b.number],
+                                                                              limit: ^interval
+                                                                              ) |> Repo.all(),
+         all_tx_count when all_tx_count != 0 <- timestamp_with_tx_count |> Enum.map(fn %{timestamp: _, tx_count: tx_count} -> tx_count end) |> Enum.sum() do
+         %{timestamp: last_timestamp, tx_count: _} = timestamp_with_tx_count |> List.first()
+         %{timestamp: first_timestamp, tx_count: _} = timestamp_with_tx_count |> List.last()
+         (NaiveDateTime.diff(last_timestamp, first_timestamp) / all_tx_count) |> Float.floor(1)
+     end
+  end
+
   def update_blocks_finalized(latest_finalized_block_number) do
     from(b in Block, where: b.number <= ^latest_finalized_block_number and b.status == :committed)
     |> Repo.update_all(set: [status: "finalized", updated_at: DateTime.now!("Etc/UTC")])

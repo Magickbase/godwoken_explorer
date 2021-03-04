@@ -8,6 +8,7 @@ defmodule GodwokenExplorerWeb.API.HomeController do
     account_count = Chain.account_estimated_count()
     block_count = Chain.block_estimated_count()
     tx_count = Chain.transaction_estimated_count()
+    tps = Block.transactions_count_per_second()
 
     json(
       conn,
@@ -15,7 +16,7 @@ defmodule GodwokenExplorerWeb.API.HomeController do
         statistic:  %{
           block_count: block_count,
           tx_count: tx_count,
-          tps: "10",
+          tps: tps,
           account_count: account_count
         },
         block_list: blocks,

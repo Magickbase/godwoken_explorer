@@ -4,13 +4,13 @@ defmodule GodwokenExplorer.Chain.MapCache do
 
   A macro based on `ConCache` is provided as well, at its minimum it can be used as;
   ```
-    use Explorer.Chain.MapCache,
+    use GodwokenExplorer.Chain.MapCache,
       name: :name,
       keys: [:fst, :snd]
   ```
   Note: `keys` can also be set singularly with the option `key`, e.g.:
   ```
-    use Explorer.Chain.MapCache,
+    use GodwokenExplorer.Chain.MapCache,
       name: :cache,
       key: :fst,
       key: :snd
@@ -113,7 +113,7 @@ defmodule GodwokenExplorer.Chain.MapCache do
 
     # credo:disable-for-next-line Credo.Check.Refactor.LongQuoteBlocks
     quote do
-      alias Explorer.Chain.MapCache
+      alias GodwokenExplorer.Chain.MapCache
 
       @behaviour MapCache
 

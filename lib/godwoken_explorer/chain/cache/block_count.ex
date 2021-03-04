@@ -3,7 +3,7 @@ defmodule GodwokenExplorer.Chain.Cache.BlockCount do
   Cache for block count.
   """
 
-  @default_cache_period :timer.hours(2)
+  @default_cache_period :timer.minutes(5)
 
   use GodwokenExplorer.Chain.MapCache,
     name: :block_count,
