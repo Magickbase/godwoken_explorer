@@ -1,4 +1,4 @@
-defmodule GodwokenIndexer.Block.Worker do
+defmodule GodwokenIndexer.Block.SyncWorker do
   use GenServer
 
   alias GodwokenRPC.Block.FetchedTipNumber

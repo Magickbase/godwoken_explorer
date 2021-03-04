@@ -54,4 +54,12 @@ defmodule GodwokenExplorer.Block do
 
     Repo.all(query)
   end
+
+  def update_blocks_finalized(latest_finalized_block_number) do
+    IO.inspect(latest_finalized_block_number)
+    from(b in Block, where: b.number <= ^latest_finalized_block_number and b.status == :committed)
+    |> Repo.update_all(set: [status: "finalized", updated_at: DateTime.now!("Etc/UTC")])
+    from(t in Transaction, where: t.block_number <= ^latest_finalized_block_number and t.status == :unfinalized)
+    |> Repo.update_all(set: [status: "finalized", updated_at: DateTime.now!("Etc/UTC")])
+  end
 end

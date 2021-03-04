@@ -6,7 +6,10 @@ defmodule GodwokenIndexer.Block.Supervisor do
   end
 
   def init(_) do
-    children = [GodwokenIndexer.Block.Worker]
+    children = [
+      GodwokenIndexer.Block.SyncWorker,
+      GodwokenIndexer.Block.FinalizedWorker,
+    ]
 
     Supervisor.init(children, strategy: :one_for_one)
   end
