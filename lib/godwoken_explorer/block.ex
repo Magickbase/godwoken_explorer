@@ -38,6 +38,13 @@ defmodule GodwokenExplorer.Block do
     |> Repo.insert()
   end
 
+  def find_by_number_or_hash("0x" <> _ = param)  do
+    from(b in Block, where: b.hash == ^param) |> Repo.one()
+  end
+  def find_by_number_or_hash(number_string) when is_binary(number_string) do
+    from(b in Block, where: b.number == ^number_string) |> Repo.one()
+  end
+
   def get_next_number do
     case Repo.one(from block in Block, order_by: [desc: block.number], limit: 1) do
       %Block{number: number} -> number + 1
