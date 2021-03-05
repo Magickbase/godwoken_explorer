@@ -65,5 +65,32 @@ defmodule GodwokenExplorer.Transaction do
     Repo.all(query)
   end
 
+  def find_by_hash(hash) do
+    tx = from(t in Transaction,
+              join: b in Block, on: [hash: t.block_hash],
+              where: t.hash == ^hash,
+              select: %{
+                hash: t.hash,
+                block_number: t.block_number,
+                timestamp: b.timestamp,
+                from: t.from_account_id,
+                to: t.to_account_id,
+                type: t.type,
+                status: t.status,
+                nonce: t.nonce,
+                args: t.args
+              }
+          ) |> Repo.one()
+    args = join_args(tx) || %{}
+    tx |> Map.merge(args)
+  end
 
+  def join_args(%{type: :polyjuice, hash: tx_hash}) do
+    from(p in Polyjuice,
+         where: p.tx_hash == ^tx_hash,
+         select: %{gas_price: p.gas_price}
+    ) |> Repo.one()
+  end
+
+  def join_args(_) do %{} end
 end
