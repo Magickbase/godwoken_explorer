@@ -81,4 +81,21 @@ defmodule GodwokenExplorer.Block do
     from(t in Transaction, where: t.block_number <= ^latest_finalized_block_number and t.status == :unfinalized)
     |> Repo.update_all(set: [status: "finalized", updated_at: DateTime.now!("Etc/UTC")])
   end
+
+  def bind_l1_l2_block(l2_block_number, l1_block_number, l1_tx_hash) do
+    with  %Block{} = block <- Repo.get_by(Block, number: l2_block_number) do
+      block
+      |> Ecto.Changeset.change(%{layer1_block_number: l1_block_number, layer1_tx_hash: l1_tx_hash})
+      |> Repo.update!()
+    end
+  end
+
+  def find_last_bind_l1_block() do
+    from(b in Block,
+         where: not is_nil(b.layer1_block_number),
+         order_by: [desc: :number],
+         limit: 1
+         )
+         |> Repo.one()
+  end
 end

@@ -35,4 +35,12 @@ config :godwoken_explorer,
       recv_timeout: :timer.minutes(10),
       timeout: :timer.minutes(10)
     ]
+  ],
+  ckb_rpc_named_arguments: [
+    http: GodwokenRPC.HTTP.HTTPoison,
+    url: "http://localhost:8114",
+    http_options: [
+      recv_timeout: :timer.minutes(10),
+      timeout: :timer.minutes(10)
+    ]
   ]

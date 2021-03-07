@@ -8,7 +8,8 @@ defmodule GodwokenIndexer.Block.Supervisor do
   def init(_) do
     children = [
       GodwokenIndexer.Block.SyncWorker,
-      GodwokenIndexer.Block.FinalizedWorker,
+      GodwokenIndexer.Block.GlobalStateWorker,
+      GodwokenIndexer.Block.BindL1L2Worker
     ]
 
     Supervisor.init(children, strategy: :one_for_one)

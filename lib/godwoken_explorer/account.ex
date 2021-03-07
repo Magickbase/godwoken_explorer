@@ -43,4 +43,13 @@ defmodule GodwokenExplorer.Account do
       select: fragment("COUNT(*)")
     ) |> Repo.one(timeout: :infinity)
   end
+
+  def update_meta_contract(global_state) do
+    meta_contract = Repo.get(Account, 0)
+    atom_script = for {key, val} <- meta_contract.script, into: %{}, do: {String.to_atom(key), val}
+    new_script = atom_script |> Map.merge(global_state)
+    meta_contract
+    |> Ecto.Changeset.change(script: new_script)
+    |> Repo.update()
+  end
 end

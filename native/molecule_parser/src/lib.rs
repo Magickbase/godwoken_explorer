@@ -1,9 +1,13 @@
 use rustler::{Encoder, Env, Error, Term};
 use std::str;
-mod molecule_type;
-use molecule_type::MetaContractArgs;
-use molecule_type::CreateAccount;
-use molecule_type::GlobalState;
+
+mod generated;
+pub use generated::packed;
+use packed::MetaContractArgs;
+use packed::CreateAccount;
+use packed::GlobalState;
+use packed::L2Block;
+use packed::WitnessArgs;
 use molecule::prelude::Entity;
 
 mod atoms {
@@ -19,7 +23,8 @@ rustler::rustler_export_nifs! {
     "Elixir.Godwoken.MoleculeParser",
     [
         ("parse_meta_contract_args", 1, parse_meta_contract_args),
-        ("parse_global_state", 1, parse_global_state)
+        ("parse_global_state", 1, parse_global_state),
+        ("parse_witness", 1, parse_witness)
     ],
     None
 }
@@ -41,9 +46,38 @@ fn parse_meta_contract_args<'a>(env: Env<'a>, args: &[Term<'a>]) -> Result<Term<
 fn parse_global_state<'a>(env: Env<'a>, args: &[Term<'a>]) -> Result<Term<'a>, Error> {
     let hex_string: &str = args[0].decode()?;
     let global_state = hex::decode(hex_string).unwrap();
-    let finalized_block_number = GlobalState::from_slice(&global_state).unwrap().last_finalized_block_number();
+    let molecule_global_state = GlobalState::from_slice(&global_state).unwrap();
+    let finalized_block_number = molecule_global_state.last_finalized_block_number();
+    let mut finalized_buf = [0u8; 8];
+    finalized_buf.copy_from_slice(finalized_block_number.as_slice());
+    let block_count = molecule_global_state.block().count();
+    let block_merkle_root = molecule_global_state.block().merkle_root();
+    let mut block_buf = [0u8; 8];
+    block_buf.copy_from_slice(block_count.as_slice());
+    let account_count = molecule_global_state.account().count();
+    let account_merkle_root = molecule_global_state.account().merkle_root();
+    let mut account_buf = [0u8; 4];
+    account_buf.copy_from_slice(account_count.as_slice());
+    let reverted_block_root = molecule_global_state.reverted_block_root();
+
+    Ok((
+        atoms::ok(),
+        u64::from_le_bytes(finalized_buf),
+        u64::from_le_bytes(block_buf),
+        u32::from_le_bytes(account_buf),
+        hex::encode(reverted_block_root.as_slice()),
+        hex::encode(account_merkle_root.as_slice()),
+        hex::encode(block_merkle_root.as_slice())
+    ).encode(env))
+}
+
+fn parse_witness<'a>(env: Env<'a>, args: &[Term<'a>]) -> Result<Term<'a>, Error> {
+    let hex_string: &str = args[0].decode()?;
+    let witness = hex::decode(hex_string).unwrap();
+    let l2_block_data = WitnessArgs::from_slice(&witness).unwrap().output_type().as_bytes();
+    let l2_block_number = L2Block::from_slice(&l2_block_data[4..]).unwrap().raw().number();
     let mut buf = [0u8; 8];
-    buf.copy_from_slice(finalized_block_number.as_slice());
+    buf.copy_from_slice(l2_block_number.as_slice());
 
     Ok((atoms::ok(), u64::from_le_bytes(buf)).encode(env))
 }
