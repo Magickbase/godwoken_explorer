@@ -16,7 +16,8 @@ defmodule GodwokenExplorerWeb.Router do
   scope "/api", GodwokenExplorerWeb.API do
     get("/home", HomeController, :index)
     get("/block/:id", BlockController, :show)
-    get("/tx/:hash", TransactionController, :show)
+    get("/txs/:hash", TransactionController, :show)
+    get("/txs", TransactionController, :index)
   end
 
   scope "/", GodwokenExplorerWeb do

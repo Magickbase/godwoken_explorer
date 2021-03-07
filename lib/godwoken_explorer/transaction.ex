@@ -85,12 +85,20 @@ defmodule GodwokenExplorer.Transaction do
     tx |> Map.merge(args)
   end
 
-  def join_args(%{type: :polyjuice, hash: tx_hash}) do
+  def list_by_account_id(account_id) do
+    from(t in Transaction,
+         join: b in Block, on: [hash: t.block_hash],
+         where: t.from_account_id == ^account_id or t.to_account_id == ^account_id,
+         select: %{hash: t.hash, block_number: b.number, timestamp: b.timestamp, from: t.from_account_id, to: t.to_account_id, type: t.type},
+         order_by: [desc: t.inserted_at]
+      )
+  end
+
+  defp join_args(%{type: :polyjuice, hash: tx_hash}) do
     from(p in Polyjuice,
          where: p.tx_hash == ^tx_hash,
          select: %{gas_price: p.gas_price}
     ) |> Repo.one()
   end
-
-  def join_args(_) do %{} end
+  defp join_args(_) do %{} end
 end
