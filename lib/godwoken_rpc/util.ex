@@ -23,7 +23,7 @@ defmodule GodwokenRPC.Util do
           n when n in @stringify_integer_keys -> v |> Integer.to_string()
           d when d in @stringify_decimal_keys -> v |> Decimal.to_string()
           :l1_block when is_nil(v) -> nil
-          :l1_block = l1 when not is_nil(v) -> v |> Integer.to_string()
+          :l1_block when not is_nil(v) -> v |> Integer.to_string()
           :timestamp -> utc_to_unix(v)
           _ -> v
         end

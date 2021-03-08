@@ -4,7 +4,7 @@ defmodule GodwokenIndexer.Block.BindL1L2Worker do
   import Godwoken.MoleculeParser, only: [parse_global_state: 1]
   import GodwokenRPC.Util, only: [hex_to_number: 1, number_to_hex: 1]
 
-  alias GodwokenRPC.CKBIndexer.{FetchedTransactions, FetchedTransaction}
+  alias GodwokenRPC.CKBIndexer.{FetchedTransactions, FetchedTransaction, FetchedTip}
   alias GodwokenExplorer.Block
   alias GodwokenRPC.HTTP
 
@@ -39,12 +39,19 @@ defmodule GodwokenIndexer.Block.BindL1L2Worker do
   end
 
   defp fetch_and_update(start_block_number) do
-    block_range = [number_to_hex(start_block_number), number_to_hex(start_block_number + 100)]
+    {:ok, %{"block_number" => l1_block_number}} = fetch_tip_block_nubmer()
+    block_range =
+      if hex_to_number(l1_block_number) <= start_block_number + 100 do
+        [number_to_hex(start_block_number), l1_block_number]
+      else
+        [number_to_hex(start_block_number), number_to_hex(start_block_number + 100)]
+      end
+
     indexer_options = Application.get_env(:godwoken_explorer, :ckb_indexer_named_arguments)
     rpc_options = Application.get_env(:godwoken_explorer, :ckb_rpc_named_arguments)
     state_validator_lock = Application.get_env(:godwoken_explorer, :state_validator_lock)
 
-    with {:ok, response} <- FetchedTransactions.request(state_validator_lock, "lock", "asc", "0x64", %{block_range: block_range}) |> HTTP.json_rpc(indexer_options) do
+    with {:ok, response} <- FetchedTransactions.request(state_validator_lock, "lock", "asc", "0x3e8", %{block_range: block_range}) |> HTTP.json_rpc(indexer_options) do
       response["objects"]
       |> Enum.filter(fn obj -> obj["io_type"] == "output" end)
       |> Enum.each(fn %{"block_number" => block_number, "tx_hash" => tx_hash, "io_index" => io_index } ->
@@ -65,11 +72,16 @@ defmodule GodwokenIndexer.Block.BindL1L2Worker do
         end
       end)
 
-      {:ok, start_block_number + 100}
+      {:ok, block_range |> List.last() |> hex_to_number()}
     end
   end
 
+  defp fetch_tip_block_nubmer do
+    indexer_options = Application.get_env(:godwoken_explorer, :ckb_indexer_named_arguments)
+    FetchedTip.request() |> HTTP.json_rpc(indexer_options)
+  end
+
   defp schedule_work(start_block_number) do
-    Process.send_after(self(), {:bind_work, start_block_number}, 5 * 1000)
+    Process.send_after(self(), {:bind_work, start_block_number}, 10 * 1000)
   end
 end

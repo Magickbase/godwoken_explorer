@@ -2,7 +2,6 @@ defmodule GodwokenIndexer.Block.GlobalStateWorker do
   use GenServer
 
   import Godwoken.MoleculeParser, only: [parse_global_state: 1]
-  import GodwokenRPC.Util, only: [hex_to_number: 1]
 
   alias GodwokenRPC.CKBIndexer.FetchedCells
   alias GodwokenExplorer.{Block, Account}
@@ -32,9 +31,8 @@ defmodule GodwokenIndexer.Block.GlobalStateWorker do
   end
 
   defp fetch_and_update do
-    with {:ok, latest_finalized_block_number, l2_block_number, l1_block_number, l1_tx_hash, global_state} <- fetch_global_state_info() do
+    with {:ok, latest_finalized_block_number, global_state} <- fetch_global_state_info() do
       Block.update_blocks_finalized(latest_finalized_block_number)
-      Block.bind_l1_l2_block(l2_block_number, hex_to_number(l1_block_number), l1_tx_hash)
       Account.update_meta_contract(global_state)
     end
   end
@@ -44,7 +42,7 @@ defmodule GodwokenIndexer.Block.GlobalStateWorker do
     state_validator_lock = Application.get_env(:godwoken_explorer, :state_validator_lock)
 
     with {:ok, response} <- FetchedCells.request(state_validator_lock, "lock") |> HTTP.json_rpc(options),
-         %{"block_number" => l1_block_number, "out_point" => %{"tx_hash" => l1_tx_hash}, "output_data" => "0x" <> global_state} <- response["objects"] |> List.first() do
+         %{"output_data" => "0x" <> global_state} <- response["objects"] |> List.first() do
       {
         :ok,
         latest_finalized_block_number,
@@ -57,9 +55,6 @@ defmodule GodwokenIndexer.Block.GlobalStateWorker do
       {
         :ok,
         latest_finalized_block_number,
-        l2_block_count - 1,
-        l1_block_number,
-        l1_tx_hash,
         %{
           account_merkle_state: %{account_merkle_root: "0x" <> account_merkle_root, account_count: account_count},
           block_merkle_state: %{block_merkle_root: "0x" <> block_merkle_root, block_count: l2_block_count},
@@ -71,6 +66,6 @@ defmodule GodwokenIndexer.Block.GlobalStateWorker do
   end
 
   defp schedule_work do
-    Process.send_after(self(), :finalized_work, 60 * 1000)
+    Process.send_after(self(), :finalized_work, 30 * 1000)
   end
 end
