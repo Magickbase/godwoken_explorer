@@ -6,4 +6,4 @@ Godwoken Explorer is design for display [godwoken](https://github.com/nervosnetw
 
 ## Getting Started
 
-[Setup](https://github.com/nervina-labs/godwoken_explorer/tree/main/doc/get_startted.md)
+[Setup](https://github.com/nervina-labs/godwoken_explorer/blob/main/docs/get_started.md)

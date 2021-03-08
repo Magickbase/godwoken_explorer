@@ -2,6 +2,7 @@ defmodule GodwokenExplorer.Transaction do
   use GodwokenExplorer, :schema
 
   import Ecto.Changeset
+  import GodwokenRPC.Util, only: [utc_to_unix: 1]
 
   @primary_key {:hash, :binary, autogenerate: false}
   schema "transactions" do
@@ -21,8 +22,26 @@ defmodule GodwokenExplorer.Transaction do
 
   def changeset(transaction, attrs) do
     transaction
-    |> cast(attrs, [:hash, :block_hash, :type, :from_account_id, :to_account_id, :nonce, :args, :status, :block_number])
-    |> validate_required([:hash, :from_account_id, :to_account_id, :nonce, :args, :status, :block_number])
+    |> cast(attrs, [
+      :hash,
+      :block_hash,
+      :type,
+      :from_account_id,
+      :to_account_id,
+      :nonce,
+      :args,
+      :status,
+      :block_number
+    ])
+    |> validate_required([
+      :hash,
+      :from_account_id,
+      :to_account_id,
+      :nonce,
+      :args,
+      :status,
+      :block_number
+    ])
   end
 
   def create_transaction(%{type: :sudt} = attrs) do
@@ -30,6 +49,7 @@ defmodule GodwokenExplorer.Transaction do
     |> Transaction.changeset(attrs)
     |> Ecto.Changeset.put_change(:block_hash, attrs[:block_hash])
     |> Repo.insert()
+
     UDTTransfer.create_udt_transfer(attrs)
   end
 
@@ -38,6 +58,7 @@ defmodule GodwokenExplorer.Transaction do
     |> Transaction.changeset(attrs)
     |> Ecto.Changeset.put_change(:block_hash, attrs[:block_hash])
     |> Repo.insert()
+
     PolyjuiceCreator.create_polyjuice_creator(attrs)
   end
 
@@ -45,6 +66,7 @@ defmodule GodwokenExplorer.Transaction do
     %Transaction{}
     |> Transaction.changeset(attrs)
     |> Repo.insert()
+
     Withdrawal.create_withdrawal(attrs)
   end
 
@@ -52,53 +74,80 @@ defmodule GodwokenExplorer.Transaction do
     %Transaction{}
     |> Transaction.changeset(attrs)
     |> Repo.insert()
+
     Polyjuice.create_polyjuice(attrs)
   end
 
   def latest_10_records do
-    query = from(t in Transaction, join: b in Block, on: [hash: t.block_hash],
-          select: %{hash: t.hash, timestamp: b.timestamp, from: t.from_account_id, to: t.to_account_id, type: t.type},
-          order_by: [desc: t.block_number, desc: t.inserted_at],
-          limit: 10
-          )
-
-    Repo.all(query)
+    from(t in Transaction,
+      join: b in Block,
+      on: [hash: t.block_hash],
+      select: %{
+        hash: t.hash,
+        timestamp: b.timestamp,
+        from: t.from_account_id,
+        to: t.to_account_id,
+        type: t.type
+      },
+      order_by: [desc: t.block_number, desc: t.inserted_at],
+      limit: 10
+    )
+    |> Repo.all()
+    |> Enum.map(fn record ->
+      Map.replace(record, :timestamp, utc_to_unix(record[:timestamp]))
+    end)
   end
 
   def find_by_hash(hash) do
-    tx = from(t in Transaction,
-              join: b in Block, on: [hash: t.block_hash],
-              where: t.hash == ^hash,
-              select: %{
-                hash: t.hash,
-                block_number: t.block_number,
-                timestamp: b.timestamp,
-                from: t.from_account_id,
-                to: t.to_account_id,
-                type: t.type,
-                status: t.status,
-                nonce: t.nonce,
-                args: t.args
-              }
-          ) |> Repo.one()
+    tx =
+      from(t in Transaction,
+        join: b in Block,
+        on: [hash: t.block_hash],
+        where: t.hash == ^hash,
+        select: %{
+          hash: t.hash,
+          block_number: t.block_number,
+          timestamp: b.timestamp,
+          from: t.from_account_id,
+          to: t.to_account_id,
+          type: t.type,
+          status: t.status,
+          nonce: t.nonce,
+          args: t.args
+        }
+      )
+      |> Repo.one()
+
     args = join_args(tx) || %{}
     tx |> Map.merge(args)
   end
 
   def list_by_account_id(account_id) do
     from(t in Transaction,
-         join: b in Block, on: [hash: t.block_hash],
-         where: t.from_account_id == ^account_id or t.to_account_id == ^account_id,
-         select: %{hash: t.hash, block_number: b.number, timestamp: b.timestamp, from: t.from_account_id, to: t.to_account_id, type: t.type},
-         order_by: [desc: t.inserted_at]
-      )
+      join: b in Block,
+      on: [hash: t.block_hash],
+      where: t.from_account_id == ^account_id or t.to_account_id == ^account_id,
+      select: %{
+        hash: t.hash,
+        block_number: b.number,
+        timestamp: b.timestamp,
+        from: t.from_account_id,
+        to: t.to_account_id,
+        type: t.type
+      },
+      order_by: [desc: t.inserted_at]
+    )
   end
 
   defp join_args(%{type: :polyjuice, hash: tx_hash}) do
     from(p in Polyjuice,
-         where: p.tx_hash == ^tx_hash,
-         select: %{gas_price: p.gas_price}
-    ) |> Repo.one()
+      where: p.tx_hash == ^tx_hash,
+      select: %{gas_price: p.gas_price}
+    )
+    |> Repo.one()
   end
-  defp join_args(_) do %{} end
+
+  defp join_args(_) do
+    %{}
+  end
 end

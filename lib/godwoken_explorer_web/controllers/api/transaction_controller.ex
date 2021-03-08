@@ -19,6 +19,7 @@ defmodule GodwokenExplorerWeb.API.TransactionController do
     tx = Transaction.find_by_hash(params["hash"])
     result = if is_nil(tx) do
       %{
+        error_code: 404,
         message: "not found"
       }
     else

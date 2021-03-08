@@ -6,6 +6,7 @@ defmodule GodwokenExplorerWeb.API.BlockController do
     block = Block.find_by_number_or_hash(params["id"])
     result = if is_nil(block) do
       %{
+        error_code: 404,
         message: "not found"
       }
     else

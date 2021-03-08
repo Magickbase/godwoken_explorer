@@ -36,7 +36,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
     with {:ok, tip_number} <- fetch_tip_number() do
       next_number = BlockRepo.get_next_number()
 
-      if next_number < tip_number do
+      if next_number <= tip_number do
         range = next_number..next_number
 
         {:ok,
