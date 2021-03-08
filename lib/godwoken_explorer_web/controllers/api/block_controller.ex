@@ -1,5 +1,8 @@
 defmodule GodwokenExplorerWeb.API.BlockController do
   use GodwokenExplorerWeb, :controller
+
+  import GodwokenRPC.Util, only: [stringify_and_unix_maps: 1]
+
   alias GodwokenExplorer.Block
 
   def show(conn, params) do
@@ -18,8 +21,8 @@ defmodule GodwokenExplorerWeb.API.BlockController do
           finalize_state: block.status,
           tx_count: block.transaction_count,
           aggregator: block.aggregator_id,
-          timestamp: block.timestamp
-      }
+          timestamp: block.timestame
+      } |> stringify_and_unix_maps()
     end
 
     json(

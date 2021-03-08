@@ -1,16 +1,22 @@
 defmodule GodwokenExplorerWeb.API.TransactionController do
   use GodwokenExplorerWeb, :controller
+  import GodwokenRPC.Util, only: [stringify_and_unix_maps: 1]
   alias GodwokenExplorer.{Transaction, Repo}
 
   def index(conn, params) do
     result = Transaction.list_by_account_id(params["account_id"])
     |> Repo.paginate(page: params["page"])
+    parsed_result = result.entries
+    |> Enum.map(fn record ->
+      stringify_and_unix_maps(record)
+    end)
+
     json(
       conn,
       %{
         page: result.page_number,
         total_count: result.total_entries,
-        txs: result.entries
+        txs: parsed_result
       }
     )
   end
@@ -36,7 +42,7 @@ defmodule GodwokenExplorerWeb.API.TransactionController do
           type: tx.type,
           gas_price: tx |> Map.get(:gas_price, 0),
           fee: tx |> Map.get(:fee, 0)
-      }
+      } |> stringify_and_unix_maps()
     end
 
     json(

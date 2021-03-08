@@ -2,7 +2,7 @@ defmodule GodwokenExplorer.Transaction do
   use GodwokenExplorer, :schema
 
   import Ecto.Changeset
-  import GodwokenRPC.Util, only: [utc_to_unix: 1]
+  import GodwokenRPC.Util, only: [stringify_and_unix_maps: 1]
 
   @primary_key {:hash, :binary, autogenerate: false}
   schema "transactions" do
@@ -94,7 +94,7 @@ defmodule GodwokenExplorer.Transaction do
     )
     |> Repo.all()
     |> Enum.map(fn record ->
-      Map.replace(record, :timestamp, utc_to_unix(record[:timestamp]))
+      stringify_and_unix_maps(record)
     end)
   end
 

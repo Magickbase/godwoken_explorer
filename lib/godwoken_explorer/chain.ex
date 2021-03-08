@@ -42,11 +42,12 @@ defmodule GodwokenExplorer.Chain do
   @spec block_estimated_count() :: non_neg_integer()
   def block_estimated_count do
     cached_value = BlockCount.get_count()
+    IO.inspect(cached_value)
 
     if is_nil(cached_value) do
       %Postgrex.Result{rows: [[count]]} = Repo.query!("SELECT reltuples FROM pg_class WHERE relname = 'blocks';")
 
-      count
+      trunc(count)
     else
       cached_value
     end
@@ -61,7 +62,7 @@ defmodule GodwokenExplorer.Chain do
       %Postgrex.Result{rows: [[rows]]} =
         Repo.query!("SELECT reltuples::BIGINT AS estimate FROM pg_class WHERE relname='transactions'")
 
-      rows
+        trunc(rows)
     else
       cached_value
     end

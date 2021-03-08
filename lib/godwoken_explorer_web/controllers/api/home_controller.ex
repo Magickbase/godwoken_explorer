@@ -14,10 +14,10 @@ defmodule GodwokenExplorerWeb.API.HomeController do
       conn,
       %{
         statistic:  %{
-          block_count: block_count,
-          tx_count: tx_count,
-          tps: tps,
-          account_count: account_count
+          block_count: block_count |> Integer.to_string(),
+          tx_count: tx_count|> Integer.to_string(),
+          tps: tps |> Float.to_string(),
+          account_count: account_count |> Integer.to_string()
         },
         block_list: blocks,
         tx_list: transactions

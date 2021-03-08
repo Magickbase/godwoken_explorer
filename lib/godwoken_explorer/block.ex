@@ -2,7 +2,7 @@ defmodule GodwokenExplorer.Block do
   use GodwokenExplorer, :schema
 
   import Ecto.Changeset
-  import GodwokenRPC.Util, only: [utc_to_unix: 1]
+  import GodwokenRPC.Util, only: [stringify_and_unix_maps: 1]
 
   @fields [
     :hash,
@@ -88,7 +88,7 @@ defmodule GodwokenExplorer.Block do
     )
     |> Repo.all()
     |> Enum.map(fn record ->
-      Map.replace(record, :timestamp, utc_to_unix(record[:timestamp]))
+      stringify_and_unix_maps(record)
     end)
   end
 
@@ -107,6 +107,8 @@ defmodule GodwokenExplorer.Block do
       %{timestamp: last_timestamp, tx_count: _} = timestamp_with_tx_count |> List.first()
       %{timestamp: first_timestamp, tx_count: _} = timestamp_with_tx_count |> List.last()
       (NaiveDateTime.diff(last_timestamp, first_timestamp) / all_tx_count) |> Float.floor(1)
+    else
+      _ -> 0.0
     end
   end
 
