@@ -58,8 +58,14 @@ defmodule GodwokenIndexer.Block.SyncWorker do
         end)
 
         account_ids = extract_account_ids(transactions_params)
+        sudt_account_ids = extract_sudt_account_ids(transactions_params)
+
         if length(account_ids) > 0 do
           AccountWorker.trigger_account(account_ids)
+        end
+
+        if length(sudt_account_ids) > 0 do
+          AccountWorker.trigger_sudt_account(sudt_account_ids)
         end
       end
     end
@@ -68,6 +74,12 @@ defmodule GodwokenIndexer.Block.SyncWorker do
   defp extract_account_ids(transactions_params) do
     transactions_params |> Enum.reduce([], fn transaction, acc ->
       acc ++ transaction[:account_ids]
+    end)
+    |> Enum.uniq()
+  end
+  defp extract_sudt_account_ids(transactions_params) do
+    transactions_params |> Enum.reduce([], fn transaction, acc ->
+      acc ++ [{transaction[:udt_id], transaction[:account_ids]}]
     end)
     |> Enum.uniq()
   end

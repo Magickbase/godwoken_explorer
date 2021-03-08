@@ -1,5 +1,6 @@
 defmodule GodwokenExplorer.AccountUDT do
-  use Ecto.Schema
+  use GodwokenExplorer, :schema
+
   import Ecto.Changeset
 
   schema "account_udts" do
@@ -15,5 +16,18 @@ defmodule GodwokenExplorer.AccountUDT do
     account_udt
     |> cast(attrs, [:account_id, :udt_id, :balance])
     |> validate_required([:account_id, :udt_id, :balance])
+  end
+
+  def create_or_update_account_udt(attrs) do
+    case Repo.get_by(__MODULE__, %{account_id: attrs[:account_id], udt_id: attrs[:udt_id]}) do
+      nil -> %__MODULE__{}
+      account_udt -> account_udt
+    end
+    |> changeset(attrs)
+    |> Repo.insert_or_update()
+    |> case do
+      {:ok, account_udt} -> {:ok, account_udt}
+      {:error, _} -> {:error, nil}
+    end
   end
 end

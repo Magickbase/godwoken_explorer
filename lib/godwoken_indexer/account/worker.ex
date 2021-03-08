@@ -1,9 +1,11 @@
 defmodule GodwokenIndexer.Account.Worker do
   use GenServer
 
-  alias GodwokenExplorer.Account
+  import GodwokenRPC.Util, only: [hex_to_number: 1]
+
+  alias GodwokenExplorer.{Account, AccountUDT}
   alias GodwokenRPC.HTTP
-  alias GodwokenRPC.Account.{FetchedScript, FetchedScriptHash, FetchedNonce}
+  alias GodwokenRPC.Account.{FetchedScript, FetchedScriptHash, FetchedNonce, FetchedBalance}
 
   def start_link(_) do
     GenServer.start_link(__MODULE__, %{}, name: AccountWorker)
@@ -17,6 +19,9 @@ defmodule GodwokenIndexer.Account.Worker do
 
   def trigger_account(account_ids) do
     GenServer.cast(AccountWorker, {:account, account_ids})
+  end
+  def trigger_sudt_account(udt_and_account_ids) do
+    GenServer.cast(AccountWorker, {:sudt_account, udt_and_account_ids})
   end
 
   def handle_cast({:account, account_ids}, state) do
@@ -36,6 +41,18 @@ defmodule GodwokenIndexer.Account.Worker do
         nonce: nonce,
         eth_address: "0x" <> eth_address
       })
+    end)
+
+    {:noreply, [state]}
+  end
+
+  def handle_cast({:sudt_account, udt_and_account_ids}, state) do
+    udt_and_account_ids
+    |> Enum.each(fn {udt_id, account_ids} ->
+      account_ids |> Enum.each(fn account_id ->
+        {:ok, balance} = fetch_balance(account_id, udt_id)
+        AccountUDT.create_or_update_account_udt(%{account_id: account_id, udt_id: udt_id, balance: balance})
+      end)
     end)
 
     {:noreply, [state]}
@@ -84,6 +101,16 @@ defmodule GodwokenIndexer.Account.Worker do
          |> HTTP.json_rpc(options) do
       {:ok, nonce} -> nonce
       {:error, _error} -> nil
+    end
+  end
+
+  defp fetch_balance(account_id, udt_id) do
+    options = Application.get_env(:godwoken_explorer, :json_rpc_named_arguments)
+
+    case FetchedBalance.request(%{account_id: account_id, udt_id: udt_id})
+         |> HTTP.json_rpc(options) do
+      {:ok, balance} -> {:ok, balance |> hex_to_number()}
+      {:error, _error} -> {:error, 0}
     end
   end
 
