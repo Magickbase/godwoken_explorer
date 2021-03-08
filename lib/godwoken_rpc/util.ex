@@ -1,5 +1,7 @@
 defmodule GodwokenRPC.Util do
-  @stringify_keys ~w(from to block_number number tx_count l1_block l2_block nonce gas_price fee aggregator)a
+  @stringify_integer_keys ~w(from to block_number number tx_count l1_block l2_block nonce aggregator)a
+  @stringify_decimal_keys ~w(gas_price fee)a
+
 
   def hex_to_number(hex_number) do
     hex_number |> String.slice(2..-1) |> String.to_integer(16)
@@ -18,7 +20,8 @@ defmodule GodwokenRPC.Util do
     |> Enum.into(%{}, fn {k, v} ->
       new_v =
         case k do
-          n when n in @stringify_keys -> v |> Integer.to_string()
+          n when n in @stringify_integer_keys -> v |> Integer.to_string()
+          d when d in @stringify_decimal_keys -> v |> Decimal.to_string()
           :timestamp -> utc_to_unix(v)
           _ -> v
         end

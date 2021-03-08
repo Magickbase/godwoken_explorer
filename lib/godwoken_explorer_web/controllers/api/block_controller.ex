@@ -21,7 +21,7 @@ defmodule GodwokenExplorerWeb.API.BlockController do
           finalize_state: block.status,
           tx_count: block.transaction_count,
           aggregator: block.aggregator_id,
-          timestamp: block.timestame
+          timestamp: block.timestamp
       } |> stringify_and_unix_maps()
     end
 

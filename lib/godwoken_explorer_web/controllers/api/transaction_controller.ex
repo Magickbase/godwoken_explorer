@@ -40,8 +40,8 @@ defmodule GodwokenExplorerWeb.API.TransactionController do
           nonce: tx.nonce,
           args: tx.args,
           type: tx.type,
-          gas_price: tx |> Map.get(:gas_price, 0),
-          fee: tx |> Map.get(:fee, 0)
+          gas_price: tx |> Map.get(:gas_price, Decimal.new(0)),
+          fee: tx |> Map.get(:fee, Decimal.new(0))
       } |> stringify_and_unix_maps()
     end
 
