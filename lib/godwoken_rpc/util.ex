@@ -1,5 +1,5 @@
 defmodule GodwokenRPC.Util do
-  @stringify_integer_keys ~w(from to block_number number tx_count l1_block l2_block nonce aggregator)a
+  @stringify_integer_keys ~w(from to block_number number tx_count l2_block nonce aggregator)a
   @stringify_decimal_keys ~w(gas_price fee)a
 
 
@@ -22,6 +22,8 @@ defmodule GodwokenRPC.Util do
         case k do
           n when n in @stringify_integer_keys -> v |> Integer.to_string()
           d when d in @stringify_decimal_keys -> v |> Decimal.to_string()
+          :l1_block when is_nil(v) -> nil
+          :l1_block = l1 when not is_nil(v) -> v |> Integer.to_string()
           :timestamp -> utc_to_unix(v)
           _ -> v
         end
