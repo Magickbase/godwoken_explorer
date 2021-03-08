@@ -19,13 +19,11 @@ config :godwoken_explorer, GodwokenExplorerWeb.Endpoint,
   pubsub_server: GodwokenExplorer.PubSub,
   live_view: [signing_salt: "Bd1hG/MH"]
 
-# Configures Elixir's Logger
-config :logger, :console,
-  format: "$time $metadata[$level] $message\n",
-  metadata: [:request_id]
-
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
+
+config :logger, backends:
+  [{LoggerFileBackend, :debug}, {LoggerFileBackend, :info}, {LoggerFileBackend, :warn}, {LoggerFileBackend, :error}]
 
 config :godwoken_explorer, GodwokenExplorer.Counters.AccountsCounter,
   enabled: true,

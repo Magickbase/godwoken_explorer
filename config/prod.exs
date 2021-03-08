@@ -18,7 +18,10 @@ config :godwoken_explorer, GodwokenExplorerWeb.Endpoint,
   version: Application.spec(:phoenix_distillery, :vsn)
 
 # Do not print debug messages in production
-config :logger, level: :info
+config :logger,
+  info: [path: "log/info.log", level: :info, format: "$date $time $metadata[$level] $message\n"],
+  warn: [path: "log/warn.log", level: :warn, format: "$date $time $metadata[$level] $message\n"],
+  error: [path: "log/error.log", level: :error, format: "$date $time $metadata[$level] $message\n"]
 
 # ## SSL Support
 #

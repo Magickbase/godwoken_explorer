@@ -52,6 +52,7 @@ defmodule GodwokenExplorer.MixProject do
       {:con_cache, "~> 0.13"},
       {:scrivener_ecto, "~> 2.0"},
       {:decimal, "~> 2.0"},
+      {:logger_file_backend, "~> 0.0.10"},
 
       # deployment
       {:distillery, "~> 2.1", warn_missing: false}
