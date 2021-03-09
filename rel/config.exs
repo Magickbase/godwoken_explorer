@@ -32,7 +32,6 @@ end
 # If you have not set a default release, or selected one
 # when running `mix distillery.release`, the first release in the file
 # will be used by default
-
 release :godwoken_explorer do
   set version: current_version(:godwoken_explorer)
   set applications: [
@@ -42,4 +41,9 @@ release :godwoken_explorer do
   set include_src: false
   set cookie: :"bX>k6r&Zic1h6H2:c2S0$P=Mn}.FOaU_.>EMmFNG]`4WEy>h*j8jY`Qf0~&m0}~e"
   set vm_args: "rel/vm.args"
+
+  set commands: [
+    seed: "rel/commands/seed.sh"
+  ]
+
 end
