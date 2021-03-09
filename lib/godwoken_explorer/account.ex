@@ -6,6 +6,7 @@ defmodule GodwokenExplorer.Account do
   @primary_key {:id, :integer, autogenerate: false}
   schema "accounts" do
     field :ckb_address, :binary
+    field :ckb_script, :map
     field :eth_address, :binary
     field :script_hash, :binary
     field :script, :map
@@ -129,5 +130,11 @@ defmodule GodwokenExplorer.Account do
 
   def search(keyword) do
     from(a in Account, where: a.ckb_address == ^keyword or a.eth_address == ^keyword or a.script_hash == ^keyword) |> Repo.one()
+  end
+
+  def bind_ckb_script(lock_script, script_hash) do
+    Repo.get_by(Account, script_hash: script_hash)
+    |> Ecto.Changeset.change(%{ckb_script: lock_script})
+    |> Repo.update!()
   end
 end
