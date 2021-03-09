@@ -9,7 +9,15 @@ config :godwoken_explorer,
     code_hash: "0x624e029197ba4c7731cd0f57f8fa50855194838c8a77234e66850c98aeb36f55",
     hash_type: "type",
     args: "0x"
+  },
+  deposition_lock: %{
+    code_hash: "0x8c5d41b03077151a75c691343067062bd76588aef507c495b77f8c5ec31d4cf5",
+    hash_type: "type",
+    args: "0x"
   }
+
+config :godwoken_explorer,
+  init_godwoken_l1_block_number: 1798
 
 config :godwoken_explorer, GodwokenExplorer.Repo,
   username: "user",

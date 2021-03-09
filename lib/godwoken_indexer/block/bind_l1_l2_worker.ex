@@ -4,11 +4,8 @@ defmodule GodwokenIndexer.Block.BindL1L2Worker do
   import Godwoken.MoleculeParser, only: [parse_global_state: 1]
   import GodwokenRPC.Util, only: [hex_to_number: 1, number_to_hex: 1]
 
-  alias GodwokenRPC.CKBIndexer.{FetchedTransactions, FetchedTransaction, FetchedTip}
+  alias GodwkenRPC
   alias GodwokenExplorer.Block
-  alias GodwokenRPC.HTTP
-
-  @init_godwoken_l1_block_number 1798
 
   def start_link(state \\ []) do
     GenServer.start_link(__MODULE__, state)
@@ -16,12 +13,11 @@ defmodule GodwokenIndexer.Block.BindL1L2Worker do
 
   @impl true
   def init(state) do
-    # Schedule work to be performed on start
-
+    init_godwoken_l1_block_number = Application.get_env(:godwoken_explorer, :init_godwoken_l1_block_number)
     start_block_number =
       case Block.find_last_bind_l1_block() do
         %Block{layer1_block_number: l1_block_number} -> l1_block_number + 1
-        nil -> @init_godwoken_l1_block_number
+        nil -> init_godwoken_l1_block_number
       end
 
     schedule_work(start_block_number)
@@ -31,77 +27,84 @@ defmodule GodwokenIndexer.Block.BindL1L2Worker do
 
   @impl true
   def handle_info({:bind_work, block_number}, state) do
-    # Do the desired work here
-    {:ok, next_start_block_number} = fetch_and_update(block_number)
+    {:ok, l1_tip_number} = GodwokenRPC.fetch_l1_tip_block_nubmer()
+    {:ok, next_start_block_number} = fetch_and_update(block_number, l1_tip_number)
 
-    # Reschedule once more
     schedule_work(next_start_block_number)
 
     {:noreply, state}
   end
 
-  defp fetch_and_update(start_block_number) do
-    {:ok, %{"block_number" => l1_tip_block_number}} = fetch_tip_block_nubmer()
-
-    block_range =
-      if hex_to_number(l1_tip_block_number) <= start_block_number + 100 do
-        [number_to_hex(start_block_number), l1_tip_block_number]
-      else
-        [number_to_hex(start_block_number), number_to_hex(start_block_number + 100)]
-      end
-
-    indexer_options = Application.get_env(:godwoken_explorer, :ckb_indexer_named_arguments)
-    rpc_options = Application.get_env(:godwoken_explorer, :ckb_rpc_named_arguments)
+  defp fetch_and_update(start_block_number, l1_tip_number) when start_block_number > l1_tip_number do
+    {:ok, start_block_number}
+  end
+  defp fetch_and_update(start_block_number, l1_tip_number) do
+    block_range = cal_block_range(start_block_number, l1_tip_number)
     state_validator_lock = Application.get_env(:godwoken_explorer, :state_validator_lock)
 
-    with {:ok, response} <-
-           FetchedTransactions.request(state_validator_lock, "lock", "asc", "0x64", %{
-             block_range: block_range
-           })
-           |> HTTP.json_rpc(indexer_options),
-         transactions when length(transactions) != 0 <-
-           response["objects"] |> Enum.filter(fn obj -> obj["io_type"] == "output" end) do
-      updated_l1_numbers =
-        transactions
-        |> Enum.map(fn %{
-                         "block_number" => block_number,
-                         "tx_hash" => tx_hash,
-                         "io_index" => io_index
-                       } ->
-          with {:ok, %{"transaction" => %{"outputs_data" => outputs_data}}} <-
-                 FetchedTransaction.request(tx_hash) |> HTTP.json_rpc(rpc_options) do
-            {
-              :ok,
-              _latest_finalized_block_number,
-              l2_block_count,
-              _account_count,
-              _reverted_block_root,
-              _block_merkle_root,
-              _account_merkle_root
-            } =
-              outputs_data
-              |> Enum.at(hex_to_number(io_index))
-              |> String.slice(2..-1)
-              |> parse_global_state()
-
-            Block.bind_l1_l2_block(l2_block_count - 1, hex_to_number(block_number), tx_hash)
-          end
-        end)
-
-      if length(updated_l1_numbers) == 0 do
-        {:ok, block_range |> List.first() |> hex_to_number()}
-      else
-        {:ok, (updated_l1_numbers |> Enum.reject(&is_nil/1) |> List.last()) + 1}
-      end
-    else
-      _ ->
-        {:ok, block_range |> List.last() |> hex_to_number()}
+    case GodwokenRPC.fetch_l1_txs_by_range(%{
+                                                    script: state_validator_lock,
+                                                    script_type: "lock",
+                                                    order: "asc",
+                                                    limit: "0x64",
+                                                    filter: %{block_range: block_range}
+                                                  }) do
+      {:ok, response} ->
+         case response["objects"] |> Enum.filter(fn obj -> obj["io_type"] == "output" end) do
+           txs when txs == [] -> {:ok, block_range |> List.last() |> hex_to_number()}
+           txs ->
+            updated_l1_numbers = parse_data_and_bind(txs)
+            if length(updated_l1_numbers) == 0 do
+              {:ok, block_range |> List.first() |> hex_to_number()}
+            else
+              {:ok, (updated_l1_numbers|> List.first()) + 1}
+            end
+         end
+      {:error, _} -> {:ok, block_range |> List.first() |> hex_to_number() }
     end
   end
 
-  defp fetch_tip_block_nubmer do
-    indexer_options = Application.get_env(:godwoken_explorer, :ckb_indexer_named_arguments)
-    FetchedTip.request() |> HTTP.json_rpc(indexer_options)
+  defp parse_data_and_bind(txs) do
+    txs
+    |> Enum.map(fn %{"block_number" => block_number, "tx_hash" => tx_hash, "io_index" => io_index} ->
+      with {:ok, %{"transaction" => %{"outputs_data" => outputs_data}}} <- GodwokenRPC.fetch_l1_tx(tx_hash) do
+        l2_block_number = parse_outputs_data(outputs_data, io_index)
+
+        Block.bind_l1_l2_block(l2_block_number, hex_to_number(block_number), tx_hash)
+      end
+    end)
+    |> Enum.reject(&is_nil/1)
+    |> Enum.sort(&(&1 >= &2))
+  end
+
+  defp parse_outputs_data(outputs, io_index) do
+    {
+      :ok,
+      _latest_finalized_block_number,
+      l2_block_count,
+      _account_count,
+      _reverted_block_root,
+      _block_merkle_root,
+      _account_merkle_root
+    } =
+      outputs
+      |> Enum.at(hex_to_number(io_index))
+      |> String.slice(2..-1)
+      |> parse_global_state()
+
+    l2_block_count - 1
+  end
+
+  defp cal_block_range(start_block_number, l1_tip_number) do
+    cond do
+      start_block_number == l1_tip_number ->
+        [l1_tip_number, l1_tip_number]
+      start_block_number + 100 < l1_tip_number ->
+        [start_block_number, start_block_number + 100]
+      start_block_number + 100 >= l1_tip_number ->
+        [start_block_number, l1_tip_number]
+    end
+    |> Enum.map(& number_to_hex(&1))
   end
 
   defp schedule_work(start_block_number) do
