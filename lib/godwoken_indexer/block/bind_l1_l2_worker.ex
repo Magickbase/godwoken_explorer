@@ -18,10 +18,12 @@ defmodule GodwokenIndexer.Block.BindL1L2Worker do
   def init(state) do
     # Schedule work to be performed on start
 
-    start_block_number = case Block.find_last_bind_l1_block() do
-      %Block{layer1_block_number: l1_block_number} -> l1_block_number + 1
-      nil -> @init_godwoken_l1_block_number
-    end
+    start_block_number =
+      case Block.find_last_bind_l1_block() do
+        %Block{layer1_block_number: l1_block_number} -> l1_block_number + 1
+        nil -> @init_godwoken_l1_block_number
+      end
+
     schedule_work(start_block_number)
 
     {:ok, state}
@@ -40,6 +42,7 @@ defmodule GodwokenIndexer.Block.BindL1L2Worker do
 
   defp fetch_and_update(start_block_number) do
     {:ok, %{"block_number" => l1_tip_block_number}} = fetch_tip_block_nubmer()
+
     block_range =
       if hex_to_number(l1_tip_block_number) <= start_block_number + 100 do
         [number_to_hex(start_block_number), l1_tip_block_number]
@@ -51,28 +54,48 @@ defmodule GodwokenIndexer.Block.BindL1L2Worker do
     rpc_options = Application.get_env(:godwoken_explorer, :ckb_rpc_named_arguments)
     state_validator_lock = Application.get_env(:godwoken_explorer, :state_validator_lock)
 
-    with {:ok, response} <- FetchedTransactions.request(state_validator_lock, "lock", "asc", "0x64", %{block_range: block_range}) |> HTTP.json_rpc(indexer_options) do
-      updated_l1_numbers = response["objects"]
-      |> Enum.filter(fn obj -> obj["io_type"] == "output" end)
-      |> Enum.map(fn %{"block_number" => block_number, "tx_hash" => tx_hash, "io_index" => io_index } ->
-        with {:ok, %{"transaction" => %{"outputs_data" => outputs_data}} } <- FetchedTransaction.request(tx_hash) |> HTTP.json_rpc(rpc_options) do
-          {
-            :ok,
-            _latest_finalized_block_number,
-            l2_block_count,
-            _account_count,
-            _reverted_block_root,
-            _block_merkle_root,
-            _account_merkle_root
-          } = outputs_data
+    with {:ok, response} <-
+           FetchedTransactions.request(state_validator_lock, "lock", "asc", "0x64", %{
+             block_range: block_range
+           })
+           |> HTTP.json_rpc(indexer_options),
+         transactions when length(transactions) != 0 <-
+           response["objects"] |> Enum.filter(fn obj -> obj["io_type"] == "output" end) do
+      updated_l1_numbers =
+        transactions
+        |> Enum.map(fn %{
+                         "block_number" => block_number,
+                         "tx_hash" => tx_hash,
+                         "io_index" => io_index
+                       } ->
+          with {:ok, %{"transaction" => %{"outputs_data" => outputs_data}}} <-
+                 FetchedTransaction.request(tx_hash) |> HTTP.json_rpc(rpc_options) do
+            {
+              :ok,
+              _latest_finalized_block_number,
+              l2_block_count,
+              _account_count,
+              _reverted_block_root,
+              _block_merkle_root,
+              _account_merkle_root
+            } =
+              outputs_data
               |> Enum.at(hex_to_number(io_index))
               |> String.slice(2..-1)
               |> parse_global_state()
-          Block.bind_l1_l2_block(l2_block_count - 1, hex_to_number(block_number), tx_hash)
-        end
-      end)
 
-      {:ok, (updated_l1_numbers |> Enum.reject(&is_nil/1) |> List.last()) + 1}
+            Block.bind_l1_l2_block(l2_block_count - 1, hex_to_number(block_number), tx_hash)
+          end
+        end)
+
+      if length(updated_l1_numbers) == 0 do
+        {:ok, block_range |> List.first() |> hex_to_number()}
+      else
+        {:ok, (updated_l1_numbers |> Enum.reject(&is_nil/1) |> List.last()) + 1}
+      end
+    else
+      _ ->
+        {:ok, block_range |> List.last() |> hex_to_number()}
     end
   end
 

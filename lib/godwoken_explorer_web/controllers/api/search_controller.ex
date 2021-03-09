@@ -25,7 +25,7 @@ defmodule GodwokenExplorerWeb.API.SearchController do
           error_code: 404,
           message: "not found"
         }
-      integer ->
+      _ ->
         case Repo.get_by(Account, id: params["keyword"]) do
           %Account{id: id} -> %{type: "account", id: id}
           nil -> %{
