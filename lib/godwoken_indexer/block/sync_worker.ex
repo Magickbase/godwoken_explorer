@@ -79,7 +79,9 @@ defmodule GodwokenIndexer.Block.SyncWorker do
   end
   defp extract_sudt_account_ids(transactions_params) do
     transactions_params |> Enum.reduce([], fn transaction, acc ->
-      acc ++ [{transaction[:udt_id], transaction[:account_ids]}]
+      if transaction |> Map.has_key?(:udt_id) do
+        acc ++ [{transaction[:udt_id], transaction[:account_ids]}]
+      end
     end)
     |> Enum.uniq()
   end
