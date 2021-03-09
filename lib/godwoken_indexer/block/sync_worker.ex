@@ -81,6 +81,8 @@ defmodule GodwokenIndexer.Block.SyncWorker do
     transactions_params |> Enum.reduce([], fn transaction, acc ->
       if transaction |> Map.has_key?(:udt_id) do
         acc ++ [{transaction[:udt_id], transaction[:account_ids]}]
+      else
+        acc
       end
     end)
     |> Enum.uniq()
