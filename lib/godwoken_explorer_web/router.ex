@@ -19,6 +19,7 @@ defmodule GodwokenExplorerWeb.Router do
     get("/txs/:hash", TransactionController, :show)
     get("/txs", TransactionController, :index)
     get("/accounts/:id", AccountController, :show)
+    get("/search", SearchController, :index)
   end
 
   scope "/", GodwokenExplorerWeb do

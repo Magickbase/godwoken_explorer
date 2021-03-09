@@ -127,4 +127,7 @@ defmodule GodwokenExplorer.Account do
     end |> Map.merge(base_map)
   end
 
+  def search(keyword) do
+    from(a in Account, where: a.ckb_address == ^keyword or a.eth_address == ^keyword or a.script_hash == ^keyword) |> Repo.one()
+  end
 end
