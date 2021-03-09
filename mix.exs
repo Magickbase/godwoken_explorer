@@ -53,6 +53,7 @@ defmodule GodwokenExplorer.MixProject do
       {:scrivener_ecto, "~> 2.0"},
       {:decimal, "~> 2.0"},
       {:logger_file_backend, "~> 0.0.10"},
+      {:cors_plug, "~> 2.0"},
 
       # deployment
       {:distillery, "~> 2.1", warn_missing: false}
