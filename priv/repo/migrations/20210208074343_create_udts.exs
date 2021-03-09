@@ -6,7 +6,10 @@ defmodule GodwokenExplorer.Repo.Migrations.CreateUdts do
       add :name, :string
       add :symbol, :string
       add :decimal, :integer
-      add :typescript_hash, :bytea
+      add :icon, :string
+      add :supply, :decimal
+      add :type_script, :jsonb
+      add :script_hash, :bytea
 
       timestamps()
     end

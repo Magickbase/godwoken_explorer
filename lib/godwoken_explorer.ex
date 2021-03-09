@@ -20,7 +20,9 @@ defmodule GodwokenExplorer do
         PolyjuiceCreator,
         Polyjuice,
         Withdrawal,
-        Account
+        Account,
+        UDT,
+        AccountUDT
       }
     end
   end

@@ -30,4 +30,13 @@ defmodule GodwokenExplorer.AccountUDT do
       {:error, _} -> {:error, nil}
     end
   end
+
+  def list_udt_by_account_id(account_id) do
+    from(au in AccountUDT,
+         join: u in UDT,
+         on: [id: au.udt_id],
+         where: u.id != 1 and au.account_id == ^account_id,
+         select: %{name: u.name, icon: u.icon, balance: au.balance}
+    ) |> Repo.all()
+  end
 end

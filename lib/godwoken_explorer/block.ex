@@ -127,6 +127,8 @@ defmodule GodwokenExplorer.Block do
       block
       |> Ecto.Changeset.change(%{layer1_block_number: l1_block_number, layer1_tx_hash: l1_tx_hash})
       |> Repo.update!()
+
+      l1_block_number
     end
   end
 

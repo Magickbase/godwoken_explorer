@@ -45,13 +45,86 @@ defmodule GodwokenExplorer.Account do
   end
 
   def update_meta_contract(global_state) do
-    meta_contract = Repo.get(Account, 0)
-    atom_script = for {key, val} <- meta_contract.script, into: %{}, do: {String.to_atom(key), val}
-    if atom_script[:block_merkle_state][:block_count] != global_state[:block_merkle_state][:block_count] do
-      new_script = atom_script |> Map.merge(global_state)
-      meta_contract
-      |> Ecto.Changeset.change(script: new_script)
-      |> Repo.update()
+    with meta_contract when not is_nil(meta_contract) <- Repo.get(Account, 0) do
+      atom_script = for {key, val} <- meta_contract.script, into: %{}, do: {String.to_atom(key), val}
+      if atom_script[:block_merkle_state][:block_count] != global_state[:block_merkle_state][:block_count] do
+        new_script = atom_script |> Map.merge(global_state)
+        meta_contract
+        |> Ecto.Changeset.change(script: new_script)
+        |> Repo.update()
+      end
     end
   end
+
+  def find_by_id(id) do
+    account = Repo.get(Account, id)
+    ckb_balance =
+      case Repo.get_by(AccountUDT, %{account_id: id, udt_id: 1}) do
+        %AccountUDT{balance: balance} -> balance
+        nil -> Decimal.new(0)
+      end
+    tx_count = Transaction.list_by_account_id(id) |> Repo.aggregate(:count)
+    base_map = %{
+      id: id,
+      type: account.type,
+      ckb: ckb_balance |> Decimal.to_string(),
+      tx_count: tx_count |> Integer.to_string()
+    }
+
+    case account do
+      %Account{type: :meta_contract}  ->
+      %{ meta_contract:
+        %{
+          account_merkle_state: account.script["account_merkle_state"],
+          block_merkle_state: account.script["block_merkle_state"],
+          reverted_block_root: account.script["reverted_block_root"],
+          last_finalized_block_number: account.script["last_finalized_block_number"]
+        }
+      }
+      %Account{type: :user}  ->
+        udt_list = AccountUDT.list_udt_by_account_id(id)
+        %{ user: %{
+            eth_addr: account.eth_address,
+            nonce: account.nonce |> Integer.to_string(),
+            ckb_addr: account.ckb_address,
+            ckb_lock_script: %{
+                name: "layer2_lock",
+                code_hash: account.script["code_hash"],
+                hash_type: account.script["hash_type"],
+                args: account.script["args"]
+              },
+            udt_list: udt_list
+        }
+      }
+      %Account{type: :polyjuice_root}  ->
+        %{
+          polyjuice: %{
+            script: %{
+              name: "validator",
+              code_hash: account.script["code_hash"],
+              hash_type: account.script["hash_type"],
+              args: account.script["args"]
+            }
+          }
+        }
+      %Account{type: :polyjuice_contract} ->
+        %{
+          smart_contract: %{tx_hash: "0x3bd26903a0c8c418d1fba9be7eb13d088b8e68dc1f1d34941c8916246532cccf"}
+        }
+      %Account{type: :udt} ->
+        udt = Repo.get(UDT, id)
+        holders = UDT.count_holder(id)
+        %{
+          sudt: %{
+            name: udt.name,
+            symbol: udt.symbol,
+            decimal: udt.decimal |> Integer.to_string(),
+            supply: (udt.supply || Decimal.new(0)) |> Decimal.to_string(),
+            holders: holders |> Integer.to_string(),
+            type_script: udt.type_script
+          }
+        }
+    end |> Map.merge(base_map)
+  end
+
 end
