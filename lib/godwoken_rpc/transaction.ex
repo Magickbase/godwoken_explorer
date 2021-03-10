@@ -1,8 +1,7 @@
 defmodule GodwokenRPC.Transaction do
   import GodwokenRPC.Util, only: [hex_to_number: 1]
+
   alias Godwoken.MoleculeParser
-  alias GodwokenRPC.HTTP
-  alias GodwokenRPC.Account.FetchedAccountID
 
   def elixir_to_params(%{
         "block_hash" => block_hash,
@@ -131,7 +130,7 @@ defmodule GodwokenRPC.Transaction do
         },
         "hash" => hash
       }) do
-    from_account_id = fetch_account_id(account_script_hash)
+    from_account_id = GodwokenRPC.fetch_account_id(account_script_hash)
 
     %{
       type: :withdrawal,
@@ -215,16 +214,6 @@ defmodule GodwokenRPC.Transaction do
     case hash_type do
       "00" -> "data"
       _ -> "type"
-    end
-  end
-
-  defp fetch_account_id(account_script_hash) do
-    options = Application.get_env(:godwoken_explorer, :json_rpc_named_arguments)
-
-    case FetchedAccountID.request(%{script_hash: account_script_hash})
-         |> HTTP.json_rpc(options) do
-      {:ok, account_id} -> account_id
-      {:error, _error} -> nil
     end
   end
 end

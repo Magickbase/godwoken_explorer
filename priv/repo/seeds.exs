@@ -11,7 +11,7 @@
 # and so on) as they will fail if something goes wrong.
 
 alias GodwokenExplorer.Repo
-alias GodwokenExplorer.{UDT, Account, AccountUDT}
+alias GodwokenExplorer.{UDT, AccountUDT}
 
 %UDT{
   id: 1,

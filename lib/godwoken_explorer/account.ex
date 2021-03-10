@@ -3,6 +3,8 @@ defmodule GodwokenExplorer.Account do
 
   import Ecto.Changeset
 
+  alias GodwokenRPC
+
   @primary_key {:id, :integer, autogenerate: false}
   schema "accounts" do
     field :ckb_address, :binary
@@ -22,7 +24,7 @@ defmodule GodwokenExplorer.Account do
   def changeset(account, attrs) do
     account
     |> cast(attrs, [:id, :ckb_address, :ckb_lock_script, :eth_address, :script_hash, :script, :nonce, :type, :layer2_tx])
-    |> validate_required([:id, :script_hash, :script, :nonce, :type])
+    |> validate_required([:id, :script_hash])
   end
 
   def create_or_update_account(attrs) do
@@ -121,8 +123,17 @@ defmodule GodwokenExplorer.Account do
   end
 
   def bind_ckb_lock_script(lock_script, script_hash) do
-    Repo.get_by(Account, script_hash: script_hash)
-    |> Ecto.Changeset.change(%{ckb_lock_script: lock_script})
-    |> Repo.update()
+    account = Repo.get_by(Account, script_hash: script_hash)
+    case account do
+      nil ->
+        {:ok, account_id} = GodwokenRPC.fetch_account_id(script_hash)
+        create_or_update_account(%{id: account_id, ckb_lock_script: lock_script, script_hash: script_hash})
+      %Account{ckb_lock_script: nil} ->
+        account
+        |> Ecto.Changeset.change(%{ckb_lock_script: lock_script})
+        |> Repo.update()
+      _ ->
+        account
+    end
   end
 end

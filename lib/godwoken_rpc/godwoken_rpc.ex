@@ -5,6 +5,7 @@ defmodule GodwokenRPC do
 
   alias GodwokenRPC.{Blocks, Block, HTTP}
   alias GodwokenRPC.CKBIndexer.{FetchedTransactions, FetchedTransaction, FetchedTip}
+  alias GodwokenRPC.Account.FetchedAccountID
 
   def request(%{method: method, params: params} = map)
       when is_binary(method) and is_list(params) do
@@ -63,6 +64,16 @@ defmodule GodwokenRPC do
       {:error, msg} ->
         Logger.error(fn -> ["Failed to request L1 transaction: ", msg] end, tx_hash: tx_hash)
         {:error, msg}
+    end
+  end
+
+  def fetch_account_id(account_script_hash) do
+    options = Application.get_env(:godwoken_explorer, :json_rpc_named_arguments)
+
+    case FetchedAccountID.request(%{script_hash: account_script_hash})
+         |> HTTP.json_rpc(options) do
+      {:ok, account_id} -> account_id
+      {:error, _error} -> nil
     end
   end
 
