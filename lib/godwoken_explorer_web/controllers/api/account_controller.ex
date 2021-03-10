@@ -26,19 +26,19 @@ defmodule GodwokenExplorerWeb.API.AccountController do
   defp account_to_view(account) do
     account = %{account | ckb: balance_to_view(account.ckb, 8)}
 
-    account =
-      with udt_list when not is_nil(udt_list) <- Kernel.get_in(account, [:user, :udt_list]) do
-        Kernel.put_in(
-          account,
-          [:user, :udt_list],
-          udt_list
-          |> Enum.map(fn udt ->
-            %{udt | balance: balance_to_view(udt.balance, udt.decimal)}
-          end)
-        )
-      end
-
-    account
+    with udt_list when not is_nil(udt_list) <- Kernel.get_in(account, [:user, :udt_list]) do
+      Kernel.put_in(
+        account,
+        [:user, :udt_list],
+        udt_list
+        |> Enum.map(fn udt ->
+          %{udt | balance: balance_to_view(udt.balance, udt.decimal)}
+        end)
+      )
+    else
+      _ ->
+        account
+    end
   end
 
   defp balance_to_view(balance, decimal) do
