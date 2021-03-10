@@ -5,8 +5,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
 
   alias GodwokenRPC.Block.FetchedTipNumber
   alias GodwokenRPC.{Blocks, HTTP}
-  alias GodwokenExplorer.Block, as: BlockRepo
-  alias GodwokenExplorer.Transaction, as: TransactionRepo
+  alias GodwokenExplorer.{Block, Transaction, Chain}
   alias GodwokenExplorer.Chain.Events.Publisher
   alias GodwokenIndexer.Account.Worker, as: AccountWorker
   alias GodwokenExplorer.Chain.Cache.Blocks, as: BlocksCache
@@ -37,7 +36,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
 
   defp fetch_and_import do
     with {:ok, tip_number} <- fetch_tip_number() do
-      next_number = BlockRepo.get_next_number()
+      next_number = Block.get_next_number()
 
       if next_number <= tip_number do
         range = next_number..next_number
@@ -52,17 +51,19 @@ defmodule GodwokenIndexer.Block.SyncWorker do
 
         inserted_blocks =
           blocks_params |> Enum.map(fn block_params ->
-            {:ok, %BlockRepo{} = block_struct} = BlockRepo.create_block(block_params)
+            {:ok, %Block{} = block_struct} = Block.create_block(block_params)
             block_struct
           end)
         update_block_cache(inserted_blocks)
 
         inserted_transactions =
           transactions_params |> Enum.map(fn transaction_params ->
-            {:ok, %TransactionRepo{} = transaction_struct} = TransactionRepo.create_transaction(transaction_params)
+            {:ok, %Transaction{} = transaction_struct} = Transaction.create_transaction(transaction_params)
             transaction_struct
           end)
-        # Publisher.broadcast([{:blocks, hash}], :realtime)
+
+        data = Chain.home_channel_data(inserted_blocks, inserted_transactions)
+        Publisher.broadcast([{:home, data}], :realtime)
 
         update_transactions_cache(inserted_transactions)
 
@@ -85,8 +86,6 @@ defmodule GodwokenIndexer.Block.SyncWorker do
   defp update_block_cache(blocks) when is_list(blocks) do
     BlocksCache.update(blocks)
   end
-
-  defp update_block_cache(_), do: :ok
 
   defp update_transactions_cache(transactions) do
     Transactions.update(transactions)

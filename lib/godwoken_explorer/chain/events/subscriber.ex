@@ -3,11 +3,9 @@ defmodule GodwokenExplorer.Chain.Events.Subscriber do
   Subscribes to events related to the Chain context.
   """
 
-  @allowed_broadcast_events ~w(addresses address_coin_balances address_token_balances blocks block_rewards internal_transactions last_block_number staking_update token_transfers transactions contract_verification_result)a
+  @allowed_broadcast_events ~w(home)a
 
-  @allowed_broadcast_types ~w(catchup realtime on_demand contract_verification_result)a
-
-  @allowed_events ~w(exchange_rate stake_snapshotting_finished transaction_stats)a
+  @allowed_broadcast_types ~w(realtime)a
 
   @type broadcast_type :: :realtime | :catchup | :on_demand
 
@@ -37,12 +35,6 @@ defmodule GodwokenExplorer.Chain.Events.Subscriber do
   def to(event_type, broadcast_type)
       when event_type in @allowed_broadcast_events and broadcast_type in @allowed_broadcast_types do
     Registry.register(Registry.ChainEvents, {event_type, broadcast_type}, [])
-    :ok
-  end
-
-  @spec to(atom()) :: :ok
-  def to(event_type) when event_type in @allowed_events do
-    Registry.register(Registry.ChainEvents, event_type, [])
     :ok
   end
 end

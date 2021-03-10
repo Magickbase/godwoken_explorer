@@ -1,12 +1,11 @@
 import socket from './socket'
 
-let blocksChannel = socket.channel("blocks:new_block", {})
+let blocksChannel = socket.channel("home:refresh", {})
 blocksChannel.join()
-blocksChannel.on('new_block', test_msg)
+blocksChannel.on('refresh', test_msg)
 
 function test_msg(msg) {
-  console.log(msg),
-  document.getElementById("recent-blocks").appendChild(createMenuItem(msg.block))
+  console.log(msg.block_list)
 }
 
 function createMenuItem(name) {

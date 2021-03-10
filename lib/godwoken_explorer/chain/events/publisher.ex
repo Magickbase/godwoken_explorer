@@ -3,10 +3,12 @@ defmodule GodwokenExplorer.Chain.Events.Publisher do
   Publishes events related to the Chain context.
   """
 
+  @allowed_events ~w(home)a
+
   def broadcast(_data, false), do: :ok
 
   def broadcast(data, broadcast_type) do
-    for {event_type, event_data} <- data do
+    for {event_type, event_data} <- data, event_type in @allowed_events do
       send_data(event_type, broadcast_type, event_data)
     end
   end

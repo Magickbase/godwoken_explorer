@@ -14,7 +14,7 @@ defmodule GodwokenExplorerWeb.RealtimeEventHandler do
 
   @impl true
   def init([]) do
-    Subscriber.to(:blocks, :realtime)
+    Subscriber.to(:home, :realtime)
     {:ok, []}
   end
 

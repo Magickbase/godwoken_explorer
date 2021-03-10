@@ -5,16 +5,13 @@ defmodule GodwokenExplorerWeb.Notifier do
 
   alias GodwokenExplorerWeb.Endpoint
 
-  def handle_event({:chain_event, :blocks, :realtime, block}) do
-    broadcast_block(block)
+  def handle_event({:chain_event, :home, :realtime, data}) do
+    broadcast_block(data)
   end
 
   def handle_event(_), do: nil
 
-  defp broadcast_block(block) do
-    Endpoint.broadcast("blocks:new_block", "new_block", %{
-      block: block
-    })
+  defp broadcast_block(data) do
+    Endpoint.broadcast("home:refresh", "refresh", data)
   end
-
 end
