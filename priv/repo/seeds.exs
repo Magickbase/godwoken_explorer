@@ -11,9 +11,24 @@
 # and so on) as they will fail if something goes wrong.
 
 alias GodwokenExplorer.Repo
-alias GodwokenExplorer.{UDT, AccountUDT}
-%UDT{id: 1, decimal: 8, name: "nervos", symbol: "CKB", supply: 24201160775, script_hash: "0x0000000000000000000000000000000000000000000000000000000000000000"} |> Repo.insert!()
-%UDT{id: 3, decimal: 6, name: "TestName", symbol: "TN", supply: 1000000000,
+alias GodwokenExplorer.{UDT, Account, AccountUDT}
+
+%UDT{
+  id: 1,
+  decimal: 8,
+  name: "nervos",
+  symbol: "CKB",
+  supply: 24_201_160_775,
+  script_hash: "0x0000000000000000000000000000000000000000000000000000000000000000"
+}
+|> Repo.insert!()
+
+%UDT{
+  id: 3,
+  decimal: 6,
+  name: "TestName",
+  symbol: "TN",
+  supply: 1_000_000_000,
   type_script: %{
     name: "sudt",
     code_hash: "0x71fa23eb5154750ff2c7de053674935b4844e1e0744f35e005b0658e569eeb66",
@@ -21,5 +36,27 @@ alias GodwokenExplorer.{UDT, AccountUDT}
     args: "0x979d485c2adc3432c679230dc2a46ab3f900e85be0dd5eecf17adfcc5d78df5a"
   },
   script_hash: "0x44cfdc675dff47358c915d4b226df72784ba6b3529041279f2374cd8f2a7008e"
-} |> Repo.insert!()
-%AccountUDT{account_id: 2, udt_id: 3, balance: 10001} |> Repo.insert!()
+}
+|> Repo.insert!()
+
+%AccountUDT{account_id: 2, udt_id: 3, balance: 1_234_567_890_123_456_789}
+|> Repo.insert!()
+
+%AccountUDT{account_id: 2, udt_id: 1, balance: 2_345_678_919_293_456}
+|> Repo.insert!()
+
+%Account{
+  id: 2,
+  ckb_address: "",
+  ckb_script: %{
+    code_hash: "code_hash",
+    hash_type: "type",
+    args: "args"
+  },
+  eth_address: "0xE0Ad8587e394250258ceCeA13EC6fC6De46fa3C8",
+  script_hash: "",
+  nonce: 0,
+  type: :user,
+  layer2_tx: ""
+}
+|> Repo.insert!()

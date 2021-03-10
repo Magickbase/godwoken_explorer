@@ -33,10 +33,12 @@ defmodule GodwokenExplorer.AccountUDT do
 
   def list_udt_by_account_id(account_id) do
     from(au in AccountUDT,
-         join: u in UDT,
-         on: [id: au.udt_id],
-         where: u.id != 1 and au.account_id == ^account_id,
-         select: %{name: u.name, icon: u.icon, balance: au.balance}
-    ) |> Repo.all()
+      join: u in UDT,
+      on: [id: au.udt_id],
+      where: u.id != 1 and au.account_id == ^account_id,
+      select: %{name: u.name, icon: u.icon, balance: au.balance, decimal: u.decimal}
+    )
+    |> Repo.all()
+    |> Enum.map(fn u -> %{u | balance: Decimal.to_string(u.balance)} end)
   end
 end
