@@ -81,11 +81,10 @@ defmodule GodwokenIndexer.Block.BindL1L2Worker do
     {
       :ok,
       _latest_finalized_block_number,
-      l2_block_count,
-      _account_count,
       _reverted_block_root,
-      _block_merkle_root,
-      _account_merkle_root
+      {l2_block_count, _block_merkle_root},
+      {_account_count, _account_merkle_root},
+      _status
     } =
       outputs
       |> Enum.at(hex_to_number(io_index))

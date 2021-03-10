@@ -48,12 +48,10 @@ defmodule GodwokenExplorer.Account do
   def update_meta_contract(global_state) do
     with meta_contract when not is_nil(meta_contract) <- Repo.get(Account, 0) do
       atom_script = for {key, val} <- meta_contract.script, into: %{}, do: {String.to_atom(key), val}
-      if atom_script[:block_merkle_state][:block_count] != global_state[:block_merkle_state][:block_count] do
-        new_script = atom_script |> Map.merge(global_state)
-        meta_contract
-        |> Ecto.Changeset.change(script: new_script)
-        |> Repo.update()
-      end
+      new_script = atom_script |> Map.merge(global_state)
+      meta_contract
+      |> Ecto.Changeset.change(script: new_script)
+      |> Repo.update()
     end
   end
 

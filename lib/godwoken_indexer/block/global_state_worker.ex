@@ -46,12 +46,13 @@ defmodule GodwokenIndexer.Block.GlobalStateWorker do
       {
         :ok,
         latest_finalized_block_number,
-        l2_block_count,
-        account_count,
         reverted_block_root,
-        block_merkle_root,
-        account_merkle_root
+        {l2_block_count, block_merkle_root},
+        {account_count, account_merkle_root},
+        status
       } = global_state |> parse_global_state()
+      parsed_status =
+        if status == "00" do "running" else "halting" end
       {
         :ok,
         latest_finalized_block_number,
@@ -59,7 +60,8 @@ defmodule GodwokenIndexer.Block.GlobalStateWorker do
           account_merkle_state: %{account_merkle_root: "0x" <> account_merkle_root, account_count: account_count},
           block_merkle_state: %{block_merkle_root: "0x" <> block_merkle_root, block_count: l2_block_count},
           reverted_block_root: reverted_block_root,
-          last_finalized_block_number: latest_finalized_block_number
+          last_finalized_block_number: latest_finalized_block_number,
+          status: parsed_status
         }
       }
     end

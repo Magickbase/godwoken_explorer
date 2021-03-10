@@ -59,15 +59,18 @@ fn parse_global_state<'a>(env: Env<'a>, args: &[Term<'a>]) -> Result<Term<'a>, E
     let mut account_buf = [0u8; 4];
     account_buf.copy_from_slice(account_count.as_slice());
     let reverted_block_root = molecule_global_state.reverted_block_root();
+    let status = molecule_global_state.status();
 
+    // encode max params length is 7
     Ok((
         atoms::ok(),
         u64::from_le_bytes(finalized_buf),
-        u64::from_le_bytes(block_buf),
-        u32::from_le_bytes(account_buf),
         hex::encode(reverted_block_root.as_slice()),
-        hex::encode(account_merkle_root.as_slice()),
-        hex::encode(block_merkle_root.as_slice())
+        (u64::from_le_bytes(block_buf),
+        hex::encode(account_merkle_root.as_slice())),
+        (u32::from_le_bytes(account_buf),
+        hex::encode(block_merkle_root.as_slice())),
+        hex::encode(status.as_slice())
     ).encode(env))
 }
 
