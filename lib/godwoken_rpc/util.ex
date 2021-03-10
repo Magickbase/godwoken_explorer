@@ -18,8 +18,13 @@ defmodule GodwokenRPC.Util do
   def stringify_and_unix_maps(original_map) do
     original_map
     |> Enum.into(%{}, fn {k, v} ->
-      new_v =
+      new_k =
         case k do
+          :transaction_count -> :tx_count
+          _ -> k
+        end
+      new_v =
+        case new_k do
           n when n in @stringify_integer_keys -> v |> Integer.to_string()
           d when d in @stringify_decimal_keys -> v |> Decimal.to_string()
           :l1_block when is_nil(v) -> nil
@@ -28,7 +33,7 @@ defmodule GodwokenRPC.Util do
           _ -> v
         end
 
-      {k, new_v}
+      {new_k, new_v}
     end)
   end
 end

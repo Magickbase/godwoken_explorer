@@ -88,7 +88,7 @@ defmodule GodwokenExplorer.Transaction do
     case Transactions.all do
       txs when is_list(txs) and length(txs) == 10 ->
         txs |> Enum.map(fn t ->
-          t |> Map.take([:hash, :from, :to, :type]) |> Map.merge(%{timestamp: t.block.timestamp})
+          t |> Map.take([:hash, :from, :to, :type]) |> Map.merge(%{timestamp: t.block.timestamp, success: true})
         end) |> Enum.map(fn record ->
           stringify_and_unix_maps(record)
         end)
@@ -101,7 +101,8 @@ defmodule GodwokenExplorer.Transaction do
             timestamp: b.timestamp,
             from: t.from_account_id,
             to: t.to_account_id,
-            type: t.type
+            type: t.type,
+            success: true
           },
           order_by: [desc: t.block_number, desc: t.inserted_at],
           limit: 10
