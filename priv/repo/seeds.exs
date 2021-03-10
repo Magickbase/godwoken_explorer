@@ -44,19 +44,3 @@ alias GodwokenExplorer.{UDT, Account, AccountUDT}
 
 %AccountUDT{account_id: 2, udt_id: 1, balance: 2_345_678_919_293_456}
 |> Repo.insert!()
-
-%Account{
-  id: 2,
-  ckb_address: "",
-  ckb_script: %{
-    code_hash: "code_hash",
-    hash_type: "type",
-    args: "args"
-  },
-  eth_address: "0xE0Ad8587e394250258ceCeA13EC6fC6De46fa3C8",
-  script_hash: "",
-  nonce: 0,
-  type: :user,
-  layer2_tx: ""
-}
-|> Repo.insert!()
