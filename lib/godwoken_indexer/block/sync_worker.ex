@@ -71,11 +71,13 @@ defmodule GodwokenIndexer.Block.SyncWorker do
     end
   end
 
+  # 0: meta_contract 1: ckb
   defp extract_account_ids(transactions_params) do
     transactions_params |> Enum.reduce([], fn transaction, acc ->
       acc ++ transaction[:account_ids]
     end)
     |> Enum.uniq()
+    |> Enum.reject(& (&1 in [0, 1]))
   end
   defp extract_sudt_account_ids(transactions_params) do
     transactions_params |> Enum.reduce([], fn transaction, acc ->

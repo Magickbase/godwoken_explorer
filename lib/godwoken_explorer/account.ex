@@ -77,7 +77,8 @@ defmodule GodwokenExplorer.Account do
           account_merkle_state: account.script["account_merkle_state"],
           block_merkle_state: account.script["block_merkle_state"],
           reverted_block_root: account.script["reverted_block_root"],
-          last_finalized_block_number: account.script["last_finalized_block_number"]
+          last_finalized_block_number: account.script["last_finalized_block_number"],
+          status: account.script["status"]
         }
       }
       %Account{type: :user}  ->
