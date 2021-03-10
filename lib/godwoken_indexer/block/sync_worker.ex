@@ -1,13 +1,16 @@
 defmodule GodwokenIndexer.Block.SyncWorker do
   use GenServer
 
+  import GodwokenRPC.Util, only: [hex_to_number: 1]
+
   alias GodwokenRPC.Block.FetchedTipNumber
   alias GodwokenRPC.{Blocks, HTTP}
   alias GodwokenExplorer.Block, as: BlockRepo
   alias GodwokenExplorer.Transaction, as: TransactionRepo
   alias GodwokenExplorer.Chain.Events.Publisher
-  import GodwokenRPC.Util, only: [hex_to_number: 1]
   alias GodwokenIndexer.Account.Worker, as: AccountWorker
+  alias GodwokenExplorer.Chain.Cache.Blocks, as: BlocksCache
+  alias GodwokenExplorer.Chain.Cache.Transactions
 
   def start_link(state \\ []) do
     GenServer.start_link(__MODULE__, state)
@@ -40,22 +43,28 @@ defmodule GodwokenIndexer.Block.SyncWorker do
         range = next_number..next_number
 
         {:ok,
-         %Blocks{
-           blocks_params: blocks_params,
-           transactions_params: transactions_params,
-           errors: _
-         }} = GodwokenRPC.fetch_blocks_by_range(range)
+          %Blocks{
+            blocks_params: blocks_params,
+            transactions_params: transactions_params,
+            errors: _
+          }
+        } = GodwokenRPC.fetch_blocks_by_range(range)
 
-        blocks_params
-        |> Enum.each(fn block_params ->
-          {:ok, %BlockRepo{hash: hash}} = BlockRepo.create_block(block_params)
-          Publisher.broadcast([{:blocks, hash}], :realtime)
-        end)
+        inserted_blocks =
+          blocks_params |> Enum.map(fn block_params ->
+            {:ok, %BlockRepo{} = block_struct} = BlockRepo.create_block(block_params)
+            block_struct
+          end)
+        update_block_cache(inserted_blocks)
 
-        transactions_params
-        |> Enum.each(fn transaction_params ->
-          TransactionRepo.create_transaction(transaction_params)
-        end)
+        inserted_transactions =
+          transactions_params |> Enum.map(fn transaction_params ->
+            {:ok, %TransactionRepo{} = transaction_struct} = TransactionRepo.create_transaction(transaction_params)
+            transaction_struct
+          end)
+        # Publisher.broadcast([{:blocks, hash}], :realtime)
+
+        update_transactions_cache(inserted_transactions)
 
         account_ids = extract_account_ids(transactions_params)
         sudt_account_ids = extract_sudt_account_ids(transactions_params)
@@ -71,6 +80,17 @@ defmodule GodwokenIndexer.Block.SyncWorker do
     end
   end
 
+  defp update_block_cache([]), do: :ok
+
+  defp update_block_cache(blocks) when is_list(blocks) do
+    BlocksCache.update(blocks)
+  end
+
+  defp update_block_cache(_), do: :ok
+
+  defp update_transactions_cache(transactions) do
+    Transactions.update(transactions)
+  end
   # 0: meta_contract 1: ckb
   defp extract_account_ids(transactions_params) do
     transactions_params |> Enum.reduce([], fn transaction, acc ->

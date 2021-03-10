@@ -4,6 +4,8 @@ defmodule GodwokenExplorer.Transaction do
   import Ecto.Changeset
   import GodwokenRPC.Util, only: [stringify_and_unix_maps: 1]
 
+  alias GodwokenExplorer.Chain.Cache.Transactions
+
   @primary_key {:hash, :binary, autogenerate: false}
   schema "transactions" do
     field :args, :binary
@@ -45,57 +47,70 @@ defmodule GodwokenExplorer.Transaction do
   end
 
   def create_transaction(%{type: :sudt} = attrs) do
-    %Transaction{}
+    transaction = %Transaction{}
     |> Transaction.changeset(attrs)
     |> Ecto.Changeset.put_change(:block_hash, attrs[:block_hash])
     |> Repo.insert()
 
     UDTTransfer.create_udt_transfer(attrs)
+    transaction
   end
 
   def create_transaction(%{type: :polyjuice_creator} = attrs) do
-    %Transaction{}
+    transaction = %Transaction{}
     |> Transaction.changeset(attrs)
     |> Ecto.Changeset.put_change(:block_hash, attrs[:block_hash])
     |> Repo.insert()
 
     PolyjuiceCreator.create_polyjuice_creator(attrs)
+    transaction
   end
 
   def create_transaction(%{type: :withdrawal} = attrs) do
-    %Transaction{}
+    transaction = %Transaction{}
     |> Transaction.changeset(attrs)
     |> Repo.insert()
 
     Withdrawal.create_withdrawal(attrs)
+    transaction
   end
 
   def create_transaction(%{type: :polyjuice} = attrs) do
-    %Transaction{}
+    transaction = %Transaction{}
     |> Transaction.changeset(attrs)
     |> Repo.insert()
 
     Polyjuice.create_polyjuice(attrs)
+    transaction
   end
 
   def latest_10_records do
-    from(t in Transaction,
-      join: b in Block,
-      on: [hash: t.block_hash],
-      select: %{
-        hash: t.hash,
-        timestamp: b.timestamp,
-        from: t.from_account_id,
-        to: t.to_account_id,
-        type: t.type
-      },
-      order_by: [desc: t.block_number, desc: t.inserted_at],
-      limit: 10
-    )
-    |> Repo.all()
-    |> Enum.map(fn record ->
-      stringify_and_unix_maps(record)
-    end)
+    case Transactions.all do
+      txs when is_list(txs) and length(txs) == 10 ->
+        txs |> Enum.map(fn t ->
+          t |> Map.take([:hash, :from, :to, :type]) |> Map.merge(%{timestamp: t.block.timestamp})
+        end) |> Enum.map(fn record ->
+          stringify_and_unix_maps(record)
+        end)
+      _ ->
+        from(t in Transaction,
+          join: b in Block,
+          on: [hash: t.block_hash],
+          select: %{
+            hash: t.hash,
+            timestamp: b.timestamp,
+            from: t.from_account_id,
+            to: t.to_account_id,
+            type: t.type
+          },
+          order_by: [desc: t.block_number, desc: t.inserted_at],
+          limit: 10
+        )
+        |> Repo.all()
+        |> Enum.map(fn record ->
+          stringify_and_unix_maps(record)
+        end)
+    end
   end
 
   def find_by_hash(hash) do

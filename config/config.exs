@@ -30,6 +30,12 @@ config :godwoken_explorer, GodwokenExplorer.Counters.AccountsCounter,
   enable_consolidation: true,
   update_interval_in_seconds:  30 * 6
 
+config :godwoken_explorer, GodwokenExplorer.Chain.Cache.Blocks,
+  ttl_check_interval: false
+
+config :godwoken_explorer, GodwokenExplorer.Chain.Cache.Transactions,
+  ttl_check_interval: false
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{Mix.env()}.exs"

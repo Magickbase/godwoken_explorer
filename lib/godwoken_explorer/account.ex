@@ -123,6 +123,6 @@ defmodule GodwokenExplorer.Account do
   def bind_ckb_lock_script(lock_script, script_hash) do
     Repo.get_by(Account, script_hash: script_hash)
     |> Ecto.Changeset.change(%{ckb_lock_script: lock_script})
-    |> Repo.update!()
+    |> Repo.update()
   end
 end

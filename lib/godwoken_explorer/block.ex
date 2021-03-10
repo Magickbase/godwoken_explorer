@@ -4,6 +4,8 @@ defmodule GodwokenExplorer.Block do
   import Ecto.Changeset
   import GodwokenRPC.Util, only: [stringify_and_unix_maps: 1]
 
+  alias GodwokenExplorer.Chain.Cache.Blocks
+
   @fields [
     :hash,
     :parent_hash,
@@ -76,20 +78,29 @@ defmodule GodwokenExplorer.Block do
   end
 
   def latest_10_records do
-    from(b in "blocks",
-      select: %{
-        hash: b.hash,
-        number: b.number,
-        timestamp: b.timestamp,
-        tx_count: b.transaction_count
-      },
-      order_by: [desc: b.number],
-      limit: 10
-    )
-    |> Repo.all()
-    |> Enum.map(fn record ->
-      stringify_and_unix_maps(record)
-    end)
+    case Blocks.all do
+      blocks when is_list(blocks) and length(blocks) == 10 ->
+        blocks |> Enum.map(fn b ->
+          b |> Map.take([:hash, :number, :timestamp, :transaction_count])
+        end) |> Enum.map(fn record ->
+          stringify_and_unix_maps(record)
+        end)
+      _ ->
+        from(b in "blocks",
+          select: %{
+            hash: b.hash,
+            number: b.number,
+            timestamp: b.timestamp,
+            tx_count: b.transaction_count
+          },
+          order_by: [desc: b.number],
+          limit: 10
+        )
+        |> Repo.all()
+        |> Enum.map(fn record ->
+          stringify_and_unix_maps(record)
+        end)
+    end
   end
 
   def transactions_count_per_second(interval \\ 10) do
