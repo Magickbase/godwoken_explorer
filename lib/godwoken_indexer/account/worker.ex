@@ -32,10 +32,11 @@ defmodule GodwokenIndexer.Account.Worker do
       script = fetch_script(script_hash)
       type = switch_account_type(script["code_hash"], script["args"])
       eth_address = account_id_to_eth_adress(account_id, false)
+      parsed_script = add_name_to_polyjuice_script(type, script)
 
       Account.create_or_update_account(%{
         id: account_id,
-        script: script,
+        script: parsed_script,
         script_hash: script_hash,
         type: type,
         nonce: nonce,
@@ -122,6 +123,14 @@ defmodule GodwokenIndexer.Account.Worker do
       (head_binary_part <> <<account_id::32-little>> <> tail_binary_part) |> Base.encode16(case: :lower)
     else
       <<account_id::32-little>> <> tail_binary_part |> Base.encode16(case: :lower)
+    end
+  end
+
+  defp add_name_to_polyjuice_script(type, script) do
+    if type in [:polyjuice_contract, :polyjuice_root] do
+      script |> Map.merge(%{"name" => "validator"})
+    else
+      script
     end
   end
 end

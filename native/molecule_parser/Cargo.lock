@@ -36,6 +36,27 @@ dependencies = [
 ]
 
 [[package]]
+name = "blake2b-ref"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "95916998c798756098a4eb1b3f2cd510659705a9817bf203d61abd30fbec3e7b"
+
+[[package]]
+name = "blake2b-rs"
+version = "0.1.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6e35e362830ef90ecea16f09b21b75d22d33a8562a679c74ab4f4fa49b4fcb87"
+dependencies = [
+ "cc",
+]
+
+[[package]]
+name = "cc"
+version = "1.0.67"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e3c69b077ad434294d3ce9f1f6143a2a4b89a8a2d54ef813d85003a4fd1137fd"
+
+[[package]]
 name = "cfg-if"
 version = "0.1.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -46,6 +67,15 @@ name = "cfg-if"
 version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
+
+[[package]]
+name = "ckb-hash"
+version = "0.40.0"
+source = "git+https://github.com/nervosnetwork/ckb?tag=v0.40.0#1b3b97b599671f1c7d85bcb90b03b89a2e0d9c67"
+dependencies = [
+ "blake2b-ref",
+ "blake2b-rs",
+]
 
 [[package]]
 name = "failure"
@@ -112,8 +142,8 @@ dependencies = [
 name = "molecule_parser"
 version = "0.1.0"
 dependencies = [
+ "ckb-hash",
  "hex",
- "lazy_static",
  "molecule",
  "rustler",
 ]

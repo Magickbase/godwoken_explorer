@@ -6,7 +6,7 @@ defmodule GodwokenExplorer.Account do
   @primary_key {:id, :integer, autogenerate: false}
   schema "accounts" do
     field :ckb_address, :binary
-    field :ckb_script, :map
+    field :ckb_lock_script, :map
     field :eth_address, :binary
     field :script_hash, :binary
     field :script, :map
@@ -21,7 +21,7 @@ defmodule GodwokenExplorer.Account do
   @doc false
   def changeset(account, attrs) do
     account
-    |> cast(attrs, [:id, :ckb_address, :eth_address, :script_hash, :script, :nonce, :type, :layer2_tx])
+    |> cast(attrs, [:id, :ckb_address, :ckb_lock_script, :eth_address, :script_hash, :script, :nonce, :type, :layer2_tx])
     |> validate_required([:id, :script_hash, :script, :nonce, :type])
   end
 
@@ -72,7 +72,7 @@ defmodule GodwokenExplorer.Account do
 
     case account do
       %Account{type: :meta_contract}  ->
-      %{ meta_contract:
+      %{meta_contract:
         %{
           account_merkle_state: account.script["account_merkle_state"],
           block_merkle_state: account.script["block_merkle_state"],
@@ -86,25 +86,14 @@ defmodule GodwokenExplorer.Account do
         %{ user: %{
             eth_addr: account.eth_address,
             nonce: account.nonce |> Integer.to_string(),
-            ckb_addr: account.ckb_address,
-            ckb_lock_script: %{
-                name: "layer2_lock",
-                code_hash: account.script["code_hash"],
-                hash_type: account.script["hash_type"],
-                args: account.script["args"]
-              },
+            ckb_lock_script: account.ckb_lock_script,
             udt_list: udt_list
         }
       }
       %Account{type: :polyjuice_root}  ->
         %{
           polyjuice: %{
-            script: %{
-              name: "validator",
-              code_hash: account.script["code_hash"],
-              hash_type: account.script["hash_type"],
-              args: account.script["args"]
-            }
+            script: account.script
           }
         }
       %Account{type: :polyjuice_contract} ->
@@ -128,12 +117,12 @@ defmodule GodwokenExplorer.Account do
   end
 
   def search(keyword) do
-    from(a in Account, where: a.ckb_address == ^keyword or a.eth_address == ^keyword or a.script_hash == ^keyword) |> Repo.one()
+    from(a in Account, where: a.eth_address == ^keyword) |> Repo.one()
   end
 
-  def bind_ckb_script(lock_script, script_hash) do
+  def bind_ckb_lock_script(lock_script, script_hash) do
     Repo.get_by(Account, script_hash: script_hash)
-    |> Ecto.Changeset.change(%{ckb_script: lock_script})
+    |> Ecto.Changeset.change(%{ckb_lock_script: lock_script})
     |> Repo.update!()
   end
 end

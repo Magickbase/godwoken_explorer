@@ -8,7 +8,9 @@ use packed::CreateAccount;
 use packed::GlobalState;
 use packed::L2Block;
 use packed::WitnessArgs;
+use packed::DepositionLockArgs;
 use molecule::prelude::Entity;
+use ckb_hash::blake2b_256;
 
 mod atoms {
     rustler::rustler_atoms! {
@@ -24,7 +26,8 @@ rustler::rustler_export_nifs! {
     [
         ("parse_meta_contract_args", 1, parse_meta_contract_args),
         ("parse_global_state", 1, parse_global_state),
-        ("parse_witness", 1, parse_witness)
+        ("parse_witness", 1, parse_witness),
+        ("parse_deposition_lock_args", 1, parse_deposition_lock_args)
     ],
     None
 }
@@ -83,4 +86,13 @@ fn parse_witness<'a>(env: Env<'a>, args: &[Term<'a>]) -> Result<Term<'a>, Error>
     buf.copy_from_slice(l2_block_number.as_slice());
 
     Ok((atoms::ok(), u64::from_le_bytes(buf)).encode(env))
+}
+
+fn parse_deposition_lock_args<'a>(env: Env<'a>, args: &[Term<'a>]) -> Result<Term<'a>, Error> {
+    let hex_string: &str = args[0].decode()?;
+    let args = hex::decode(hex_string).unwrap();
+    let l2_lock = DepositionLockArgs::from_slice(&args[32..]).unwrap().layer2_lock();
+    let result = blake2b_256(l2_lock.as_slice());
+
+    Ok((atoms::ok(), hex::encode(result)).encode(env))
 }

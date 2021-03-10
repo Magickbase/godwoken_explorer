@@ -5,7 +5,7 @@ defmodule GodwokenExplorer.Repo.Migrations.CreateAccounts do
     create table(:accounts, primary_key: false) do
       add :id, :integer, null: false, primary_key: true
       add :ckb_address, :bytea
-      add :ckb_script, :jsonb
+      add :ckb_lock_script, :jsonb
       add :eth_address, :bytea
       add :script_hash, :bytea
       add :script, :jsonb
