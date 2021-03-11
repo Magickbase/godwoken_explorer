@@ -84,7 +84,7 @@ defmodule GodwokenExplorer.Chain do
         txs
         |> Enum.map(fn tx ->
           tx
-          |> Map.take([:hash, :from, :to, :type])
+          |> Map.take([:hash, :from_account_id, :to_account_id, :type])
           |> Map.merge(%{timestamp: blocks |> List.first() |> Map.get(:timestamp), success: true})
         end)
         |> Enum.map(fn record ->
