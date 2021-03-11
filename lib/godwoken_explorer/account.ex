@@ -126,7 +126,7 @@ defmodule GodwokenExplorer.Account do
     account = Repo.get_by(Account, script_hash: script_hash)
     case account do
       nil ->
-        {:ok, account_id} = GodwokenRPC.fetch_account_id(script_hash)
+        account_id = GodwokenRPC.fetch_account_id(script_hash)
         create_or_update_account(%{id: account_id, ckb_lock_script: lock_script, script_hash: script_hash})
       %Account{ckb_lock_script: nil} ->
         account
