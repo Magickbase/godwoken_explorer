@@ -11,7 +11,7 @@ use Mix.Config
 # before starting your production server.
 config :godwoken_explorer, GodwokenExplorerWeb.Endpoint,
   http: [port:  4001],
-  url: [host: "localhost", port: 80], # This is critical for ensuring web-sockets properly authorize.
+  url: [host: "agera.vercel.app", port: 443], # This is critical for ensuring web-sockets properly authorize.
   cache_static_manifest: "priv/static/cache_manifest.json",
   server: true,
   root: ".",
