@@ -88,7 +88,7 @@ defmodule GodwokenExplorer.Transaction do
     case Transactions.all do
       txs when is_list(txs) and length(txs) == 10 ->
         txs |> Enum.map(fn t ->
-          t |> Map.take([:hash, :from, :to, :type]) |> Map.merge(%{timestamp: t.block.timestamp, success: true})
+          t |> Map.take([:hash, :from_account_id, :to_account_id, :type]) |> Map.merge(%{timestamp: t.block.timestamp, success: true})
         end) |> Enum.map(fn record ->
           stringify_and_unix_maps(record)
         end)

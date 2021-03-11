@@ -11,6 +11,7 @@ defmodule GodwokenRPC.Util do
     "0x" <> (number |> Integer.to_string(16) |> String.downcase())
   end
 
+  @spec utc_to_unix(NaiveDateTime.t()) :: integer
   def utc_to_unix(iso_datetime) do
     iso_datetime |> DateTime.from_naive!("Etc/UTC") |> DateTime.to_unix()
   end
@@ -21,6 +22,8 @@ defmodule GodwokenRPC.Util do
       new_k =
         case k do
           :transaction_count -> :tx_count
+          :from_account_id -> :from
+          :to_account_id -> :to
           _ -> k
         end
       new_v =
