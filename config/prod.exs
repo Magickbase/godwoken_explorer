@@ -12,6 +12,7 @@ use Mix.Config
 config :godwoken_explorer, GodwokenExplorerWeb.Endpoint,
   http: [port:  4001],
   url: [host: "agera.vercel.app", port: 443], # This is critical for ensuring web-sockets properly authorize.
+  check_origin: ["https://godwoken-explorer-ui.vercel.app", "https://godwoken-explorer-ui-git-master-nervina.vercel.app", "https://agera.vercel.app"],
   cache_static_manifest: "priv/static/cache_manifest.json",
   server: true,
   root: ".",
