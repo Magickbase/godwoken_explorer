@@ -92,7 +92,7 @@ defmodule GodwokenExplorer.Chain do
         end),
       statistic: %{
         account_count: account_estimated_count(),
-        block_count: block_estimated_count(),
+        block_count: (blocks |> List.first() |> Map.get(:number)) + 1,
         tx_count: transaction_estimated_count(),
         tps: Block.transactions_count_per_second()
       }

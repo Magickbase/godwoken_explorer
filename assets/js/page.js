@@ -6,6 +6,8 @@ blocksChannel.on('refresh', test_msg)
 
 function test_msg(msg) {
   console.log(msg.block_list)
+  console.log(msg.tx_list)
+  console.log(msg.statistic)
 }
 
 function createMenuItem(name) {
