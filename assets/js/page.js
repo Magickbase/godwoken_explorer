@@ -2,6 +2,7 @@ import socket from './socket'
 
 let blocksChannel = socket.channel("home:refresh", {})
 blocksChannel.join()
+  .receive("ok", (messages) => console.log("catching up", messages) )
 blocksChannel.on('refresh', test_msg)
 
 function test_msg(msg) {
