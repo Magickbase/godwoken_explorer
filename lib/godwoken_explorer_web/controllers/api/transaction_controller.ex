@@ -23,7 +23,7 @@ defmodule GodwokenExplorerWeb.API.TransactionController do
 
   def show(conn, %{"hash" => "0x" <> _} = params) do
     tx = Transaction.find_by_hash(params["hash"])
-    result = if is_nil(tx) do
+    result = if map_size(tx) == 0 do
       %{
         error_code: 404,
         message: "not found"
@@ -33,8 +33,8 @@ defmodule GodwokenExplorerWeb.API.TransactionController do
           hash: tx.hash,
           timestamp: tx.timestamp,
           finalize_state: tx.status,
-          l2_block: tx.block_number, # block number
-          l1_block: tx.block_number, # block number
+          l2_block: tx.l2_block_number,
+          l1_block: tx.l1_block_number,
           from: tx.from,
           to: tx.to,
           nonce: tx.nonce,

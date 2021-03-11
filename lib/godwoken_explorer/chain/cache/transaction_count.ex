@@ -3,20 +3,19 @@ defmodule GodwokenExplorer.Chain.Cache.TransactionCount do
   Cache for estimated transaction count.
   """
 
-  @default_cache_period :timer.minutes(5)
+  @default_cache_period :timer.seconds(1)
 
   use GodwokenExplorer.Chain.MapCache,
     name: :transaction_count,
     key: :count,
     key: :async_task,
     global_ttl: cache_period(),
-    ttl_check_interval: :timer.minutes(15),
+    ttl_check_interval: :timer.seconds(5),
     callback: &async_task_on_deletion(&1)
 
   require Logger
 
-  alias GodwokenExplorer.Chain.Transaction
-  alias GodwokenExplorer.Repo
+  alias GodwokenExplorer.{Transaction, Repo}
 
   defp handle_fallback(:count) do
     # This will get the task PID if one exists and launch a new task if not

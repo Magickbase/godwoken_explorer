@@ -122,8 +122,9 @@ defmodule GodwokenExplorer.Transaction do
         where: t.hash == ^hash,
         select: %{
           hash: t.hash,
-          block_number: t.block_number,
+          l2_block_number: t.block_number,
           timestamp: b.timestamp,
+          l1_block_number: b.layer1_block_number,
           from: t.from_account_id,
           to: t.to_account_id,
           type: t.type,
@@ -133,9 +134,12 @@ defmodule GodwokenExplorer.Transaction do
         }
       )
       |> Repo.one()
-
-    args = join_args(tx) || %{}
-    tx |> Map.merge(args)
+    case tx do
+      nil -> %{}
+      _ ->
+        args = join_args(tx) || %{}
+        tx |> Map.merge(args)
+    end
   end
 
   def list_by_account_id(account_id) do
