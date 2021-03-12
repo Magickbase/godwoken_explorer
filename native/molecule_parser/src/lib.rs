@@ -91,8 +91,9 @@ fn parse_witness<'a>(env: Env<'a>, args: &[Term<'a>]) -> Result<Term<'a>, Error>
 fn parse_deposition_lock_args<'a>(env: Env<'a>, args: &[Term<'a>]) -> Result<Term<'a>, Error> {
     let hex_string: &str = args[0].decode()?;
     let args = hex::decode(hex_string).unwrap();
-    let l2_lock = DepositionLockArgs::from_slice(&args[32..]).unwrap().layer2_lock();
-    let result = blake2b_256(l2_lock.as_slice());
+    let deposition_args = DepositionLockArgs::from_slice(&args[32..]).unwrap();
+    let l2_lock_script = blake2b_256(deposition_args.layer2_lock().as_slice());
+    let l1_lock_hash = deposition_args.owner_lock_hash();
 
-    Ok((atoms::ok(), hex::encode(result)).encode(env))
+    Ok((atoms::ok(), hex::encode(l2_lock_script), hex::encode(l1_lock_hash.as_slice())).encode(env))
 }

@@ -9,6 +9,7 @@ defmodule GodwokenExplorer.Account do
   schema "accounts" do
     field :ckb_address, :binary
     field :ckb_lock_script, :map
+    field :ckb_lock_hash, :binary
     field :eth_address, :binary
     field :script_hash, :binary
     field :script, :map
@@ -23,7 +24,7 @@ defmodule GodwokenExplorer.Account do
   @doc false
   def changeset(account, attrs) do
     account
-    |> cast(attrs, [:id, :ckb_address, :ckb_lock_script, :eth_address, :script_hash, :script, :nonce, :type, :layer2_tx])
+    |> cast(attrs, [:id, :ckb_address, :ckb_lock_script, :ckb_lock_hash, :eth_address, :script_hash, :script, :nonce, :type, :layer2_tx])
     |> validate_required([:id, :script_hash])
   end
 
@@ -119,15 +120,15 @@ defmodule GodwokenExplorer.Account do
   end
 
   def search(keyword) do
-    from(a in Account, where: a.eth_address == ^keyword) |> Repo.one()
+    from(a in Account, where: a.eth_address == ^keyword or a.ckb_lock_hash == ^keyword) |> Repo.one()
   end
 
-  def bind_ckb_lock_script(lock_script, script_hash) do
+  def bind_ckb_lock_script(lock_script, script_hash, l1_lock_hash) do
     account = Repo.get_by(Account, script_hash: script_hash)
     case account do
       nil ->
         account_id = GodwokenRPC.fetch_account_id(script_hash)
-        create_or_update_account(%{id: account_id, ckb_lock_script: lock_script, script_hash: script_hash})
+        create_or_update_account(%{id: account_id, ckb_lock_script: lock_script, ckb_lock_hash: l1_lock_hash, script_hash: script_hash})
       %Account{ckb_lock_script: nil} ->
         account
         |> Ecto.Changeset.change(%{ckb_lock_script: lock_script})

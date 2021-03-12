@@ -85,10 +85,10 @@ defmodule GodwokenIndexer.Block.BindL1L2Worker do
     txs
     |> Enum.map(fn %{"tx_hash" => tx_hash, "io_index" => io_index} ->
       with {:ok, %{"transaction" => %{"inputs" => inputs, "outputs" => outputs}}} <- GodwokenRPC.fetch_l1_tx(tx_hash) do
-        {:ok, l2_script_hash} = parse_lock_args(outputs, io_index)
+        {:ok, l2_script_hash, l1_lock_hash} = parse_lock_args(outputs, io_index)
         ckb_lock_script = get_ckb_lock_script(inputs, outputs, io_index)
 
-        Account.bind_ckb_lock_script(ckb_lock_script, "0x" <> l2_script_hash)
+        Account.bind_ckb_lock_script(ckb_lock_script, "0x" <> l2_script_hash, "0x" <> l1_lock_hash)
       end
     end)
     |> Enum.reject(&is_nil/1)
