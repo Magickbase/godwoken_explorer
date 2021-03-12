@@ -123,15 +123,15 @@ defmodule GodwokenExplorer.Account do
     from(a in Account, where: a.eth_address == ^keyword or a.ckb_lock_hash == ^keyword) |> Repo.one()
   end
 
-  def bind_ckb_lock_script(lock_script, script_hash, l1_lock_hash) do
+  def bind_ckb_lock_script(l1_lock_script, script_hash, l1_lock_hash) do
     account = Repo.get_by(Account, script_hash: script_hash)
     case account do
       nil ->
         account_id = GodwokenRPC.fetch_account_id(script_hash)
-        create_or_update_account(%{id: account_id, ckb_lock_script: lock_script, ckb_lock_hash: l1_lock_hash, script_hash: script_hash})
-      %Account{ckb_lock_script: nil} ->
+        create_or_update_account(%{id: account_id, ckb_lock_script: l1_lock_script, ckb_lock_hash: l1_lock_hash, script_hash: script_hash})
+      %Account{ckb_lock_script: ckb_lock_script, ckb_lock_hash: ckb_lock_hash} when is_nil(ckb_lock_script) or is_nil(ckb_lock_hash) ->
         account
-        |> Ecto.Changeset.change(%{ckb_lock_script: lock_script})
+        |> Ecto.Changeset.change(%{ckb_lock_script: l1_lock_script, ckb_lock_hash: l1_lock_hash})
         |> Repo.update()
       _ ->
         account
