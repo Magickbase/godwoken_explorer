@@ -46,20 +46,20 @@ defmodule GodwokenExplorerWeb.API.SearchController do
       result
     )
   end
-  def index(conn, params) do
-    result = case Integer.parse(params["keyword"]) do
-      :error -> %{
-          error_code: 404,
-          message: "not found"
-        }
-      _ ->
-        case Repo.get_by(Account, id: params["keyword"]) do
+  def index(conn, %{"keyword" => keyword}) do
+    result = case keyword |> String.replace(",", "") |> Integer.parse() do
+      {num, ""} ->
+        case Repo.get_by(Account, id: num) do
           %Account{id: id} -> %{type: "account", id: id}
           nil -> %{
               error_code: 404,
               message: "not found"
             }
         end
+      _ -> %{
+          error_code: 404,
+          message: "not found"
+        }
     end
     json(
       conn,
