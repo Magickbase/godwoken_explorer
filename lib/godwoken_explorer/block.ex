@@ -4,7 +4,10 @@ defmodule GodwokenExplorer.Block do
   import Ecto.Changeset
   import GodwokenRPC.Util, only: [stringify_and_unix_maps: 1]
 
+  require Logger
+
   alias GodwokenExplorer.Chain.Cache.Blocks
+  alias GodwokenExplorer.Chain.Events.Publisher
 
   @fields [
     :hash,
@@ -124,13 +127,33 @@ defmodule GodwokenExplorer.Block do
   end
 
   def update_blocks_finalized(latest_finalized_block_number) do
-    from(b in Block, where: b.number <= ^latest_finalized_block_number and b.status == :committed)
-    |> Repo.update_all(set: [status: "finalized", updated_at: DateTime.now!("Etc/UTC")])
-
-    from(t in Transaction,
+    block_query = from(b in Block, where: b.number <= ^latest_finalized_block_number and b.status == :committed)
+    updated_blocks = block_query |> Repo.all()
+    transaction_query = from(t in Transaction,
       where: t.block_number <= ^latest_finalized_block_number and t.status == :unfinalized
     )
-    |> Repo.update_all(set: [status: "finalized", updated_at: DateTime.now!("Etc/UTC")])
+    # updated_txs = transaction_query |> Repo.all()
+
+    case Multi.new()
+    |> Multi.update_all(:blocks, block_query, set: [status: "finalized", updated_at: DateTime.now!("Etc/UTC")])
+    |> Multi.update_all(:transactions, transaction_query, set: [status: "finalized", updated_at: DateTime.now!("Etc/UTC")])
+    |> Repo.transaction() do
+      {:ok, %{blocks: {updated_blocks_number, nil}, transactions: _}} when updated_blocks_number > 0 ->
+        updated_blocks |> Enum.each(fn b ->
+          Publisher.broadcast([{:blocks, %{number: b.number, status: "finalized"}}], :realtime)
+        end)
+
+      {:ok, %{blocks: _, transactions: {updated_txs_number, nil}}} when updated_txs_number > 0 ->
+        :ok
+        #Publisher.broadcast([{:transactionss, %{tx: tx, status: "finalized"}}], :realtime)
+      {:error, _} ->
+        Logger.error(fn -> ["Failed to update blocks finalized status before block_number: ", latest_finalized_block_number] end)
+
+      _ ->
+        :ok
+    end
+
+    # Publisher.broadcast([{:blocks, %{number: l2_block_number, status: "finalized"}}], :realtime)
   end
 
   def bind_l1_l2_block(l2_block_number, l1_block_number, l1_tx_hash) do
@@ -138,6 +161,8 @@ defmodule GodwokenExplorer.Block do
       block
       |> Ecto.Changeset.change(%{layer1_block_number: l1_block_number, layer1_tx_hash: l1_tx_hash})
       |> Repo.update!()
+
+      Publisher.broadcast([{:blocks, %{number: l2_block_number, l1_block_number: l1_block_number, l1_tx_hash: l1_tx_hash}}], :realtime)
 
       l1_block_number
     end

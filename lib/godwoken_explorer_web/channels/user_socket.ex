@@ -5,6 +5,8 @@ defmodule GodwokenExplorerWeb.UserSocket do
   # channel "room:*", GodwokenExplorerWeb.RoomChannel
 
   channel("home:*", GodwokenExplorerWeb.HomeChannel)
+  channel("blocks:*", GodwokenExplorerWeb.BlockChannel)
+
   # Socket params are passed from the client and can
   # be used to verify and authenticate a user. After
   # verification, you can put default assigns into

@@ -12,6 +12,8 @@ defmodule GodwokenExplorer do
       use Ecto.Schema
       import Ecto.{Query, Queryable, Changeset}
 
+      alias Ecto.Multi
+
       alias GodwokenExplorer.{
         Block,
         Transaction,
