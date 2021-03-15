@@ -3,7 +3,7 @@ defmodule GodwokenExplorer.Chain.Events.Publisher do
   Publishes events related to the Chain context.
   """
 
-  @allowed_events ~w(home blocks transactions)a
+  @allowed_events ~w(home blocks transactions account_transactions)a
 
   def broadcast(_data, false), do: :ok
 

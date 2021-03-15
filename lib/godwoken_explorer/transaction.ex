@@ -157,6 +157,21 @@ defmodule GodwokenExplorer.Transaction do
     )
   end
 
+  def account_transactions_data(account_id, page) do
+    txs = list_by_account_id(account_id)
+    original_struct = Repo.paginate(txs, page: page)
+    parsed_result =
+      Enum.map(original_struct.entries, fn record ->
+        stringify_and_unix_maps(record)
+      end)
+
+    %{
+      page: original_struct.page_number,
+      total_count: original_struct.total_entries,
+      txs: parsed_result
+    }
+  end
+
   defp join_args(%{type: :polyjuice, hash: tx_hash}) do
     from(p in Polyjuice,
       where: p.tx_hash == ^tx_hash,

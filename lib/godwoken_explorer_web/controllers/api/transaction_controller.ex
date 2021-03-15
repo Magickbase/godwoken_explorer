@@ -1,24 +1,14 @@
 defmodule GodwokenExplorerWeb.API.TransactionController do
   use GodwokenExplorerWeb, :controller
+
   import GodwokenRPC.Util, only: [stringify_and_unix_maps: 1]
-  alias GodwokenExplorer.{Transaction, Repo}
+
+  alias GodwokenExplorer.{Transaction}
 
   def index(conn, params) do
-    result = Transaction.list_by_account_id(params["account_id"])
-    |> Repo.paginate(page: params["page"])
-    parsed_result = result.entries
-    |> Enum.map(fn record ->
-      stringify_and_unix_maps(record)
-    end)
+    results = Transaction.account_transactions_data(params["account_id"], params["page"])
 
-    json(
-      conn,
-      %{
-        page: result.page_number,
-        total_count: result.total_entries,
-        txs: parsed_result
-      }
-    )
+    json(conn, results)
   end
 
   def show(conn, %{"hash" => "0x" <> _} = params) do

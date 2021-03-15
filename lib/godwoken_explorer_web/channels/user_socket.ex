@@ -5,6 +5,7 @@ defmodule GodwokenExplorerWeb.UserSocket do
   channel("home:*", GodwokenExplorerWeb.HomeChannel)
   channel("blocks:*", GodwokenExplorerWeb.BlockChannel)
   channel("transactions:*", GodwokenExplorerWeb.TransactionChannel)
+  channel("account_transactions:*", GodwokenExplorerWeb.AccountTransactionChannel)
 
   # Socket params are passed from the client and can
   # be used to verify and authenticate a user. After

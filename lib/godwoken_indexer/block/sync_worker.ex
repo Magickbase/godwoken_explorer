@@ -54,7 +54,6 @@ defmodule GodwokenIndexer.Block.SyncWorker do
             {:ok, %Block{} = block_struct} = Block.create_block(block_params)
             block_struct
           end)
-
         update_block_cache(inserted_blocks)
 
         inserted_transactions =
@@ -62,31 +61,47 @@ defmodule GodwokenIndexer.Block.SyncWorker do
             {:ok, %Transaction{} = transaction_struct} = Transaction.create_transaction(transaction_params)
             transaction_struct
           end)
-
         update_transactions_cache(inserted_transactions)
 
-        home_blocks = Enum.map(inserted_blocks, fn block -> Map.take(block, [:hash, :number, :timestamp, :transaction_count]) end)
-        home_transactions =
-          Enum.map(inserted_transactions, fn tx ->
-            tx
-            |> Map.take([:hash, :from_account_id, :to_account_id, :type])
-            |> Map.merge(%{timestamp: home_blocks |> List.first() |> Map.get(:timestamp), success: true})
-          end)
-        data = Chain.home_api_data(home_blocks, home_transactions)
+        broadcast_block_and_tx(inserted_blocks, inserted_transactions)
 
-        Publisher.broadcast([{:home, data}], :realtime)
-
-        account_ids = extract_account_ids(transactions_params)
-        sudt_account_ids = extract_sudt_account_ids(transactions_params)
-
-        if length(account_ids) > 0 do
-          AccountWorker.trigger_account(account_ids)
-        end
-
-        if length(sudt_account_ids) > 0 do
-          AccountWorker.trigger_sudt_account(sudt_account_ids)
-        end
+        trigger_account_worker(transactions_params)
       end
+    end
+  end
+
+  defp broadcast_block_and_tx(inserted_blocks, inserted_transactions) do
+    home_blocks = Enum.map(inserted_blocks, fn block -> Map.take(block, [:hash, :number, :timestamp, :transaction_count]) end)
+    home_transactions =
+      Enum.map(inserted_transactions, fn tx ->
+        tx
+        |> Map.take([:hash, :from_account_id, :to_account_id, :type])
+        |> Map.merge(%{timestamp: home_blocks |> List.first() |> Map.get(:timestamp), success: true})
+      end)
+    data = Chain.home_api_data(home_blocks, home_transactions)
+    Publisher.broadcast([{:home, data}], :realtime)
+
+    Enum.each(data[:tx_list], fn tx ->
+      result =
+        %{
+          page: 1,
+          total_count: 1,
+          txs: [Map.merge(tx, %{block_number: home_blocks |> List.first() |> Map.get(:number)})]
+        }
+      Publisher.broadcast([{:account_transactions, result}], :realtime)
+    end)
+  end
+
+  defp trigger_account_worker(transactions_params) do
+    account_ids = extract_account_ids(transactions_params)
+    sudt_account_ids = extract_sudt_account_ids(transactions_params)
+
+    if length(account_ids) > 0 do
+      AccountWorker.trigger_account(account_ids)
+    end
+
+    if length(sudt_account_ids) > 0 do
+      AccountWorker.trigger_sudt_account(sudt_account_ids)
     end
   end
 

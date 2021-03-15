@@ -17,6 +17,7 @@ defmodule GodwokenExplorerWeb.RealtimeEventHandler do
     Subscriber.to(:home, :realtime)
     Subscriber.to(:blocks, :realtime)
     Subscriber.to(:transactions, :realtime)
+    Subscriber.to(:account_transactions, :realtime)
 
     {:ok, []}
   end

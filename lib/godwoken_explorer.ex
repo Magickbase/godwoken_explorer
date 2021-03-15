@@ -10,10 +10,11 @@ defmodule GodwokenExplorer do
   def schema do
     quote do
       use Ecto.Schema
+
       import Ecto.{Query, Queryable, Changeset}
+      import GodwokenRPC.Util, only: [stringify_and_unix_maps: 1]
 
       alias Ecto.Multi
-
       alias GodwokenExplorer.{
         Block,
         Transaction,

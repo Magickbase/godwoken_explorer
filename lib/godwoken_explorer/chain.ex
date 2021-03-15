@@ -1,7 +1,8 @@
 defmodule GodwokenExplorer.Chain do
+  use GodwokenExplorer, :schema
+
   import GodwokenRPC.Util, only: [stringify_and_unix_maps: 1]
 
-  alias GodwokenExplorer.{Repo, Block}
   alias GodwokenExplorer.Counters.AccountsCounter
   alias GodwokenExplorer.Chain.Cache.{BlockCount, TransactionCount}
 
