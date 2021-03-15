@@ -2,10 +2,9 @@ defmodule GodwokenExplorerWeb.UserSocket do
   use Phoenix.Socket
 
   ## Channels
-  # channel "room:*", GodwokenExplorerWeb.RoomChannel
-
   channel("home:*", GodwokenExplorerWeb.HomeChannel)
   channel("blocks:*", GodwokenExplorerWeb.BlockChannel)
+  channel("transactions:*", GodwokenExplorerWeb.TransactionChannel)
 
   # Socket params are passed from the client and can
   # be used to verify and authenticate a user. After

@@ -11,9 +11,14 @@ import socket from './socket'
 //   console.log(msg.statistic)
 // }
 
-let blocksChannel = socket.channel("blocks:2320", {})
+let blocksChannel = socket.channel("blocks:20", {})
 blocksChannel.join()
   .receive("ok", (messages) => console.log("catching up", messages) )
   .receive("error", ({ reason }) => console.log("failed join", reason))
-blocksChannel.on('update_l1_block', msg => console.log(msg))
-blocksChannel.on('update_status', msg => console.log(msg))
+blocksChannel.on('refresh', msg => console.log(msg))
+
+let txChannel = socket.channel("transactions:0x3bd26903a0c8c418d1fba9be7eb13d088b8e68dc1f1d34941c8916246532cccf", {})
+txChannel.join()
+  .receive("ok", (messages) => console.log("catching up", messages) )
+  .receive("error", ({ reason }) => console.log("failed join", reason))
+txChannel.on('refresh', msg => console.log(msg))

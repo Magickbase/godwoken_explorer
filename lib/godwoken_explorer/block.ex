@@ -68,8 +68,8 @@ defmodule GodwokenExplorer.Block do
     from(b in Block, where: b.hash == ^param) |> Repo.one()
   end
 
-  def find_by_number_or_hash(number_string) when is_binary(number_string) do
-    from(b in Block, where: b.number == ^number_string) |> Repo.one()
+  def find_by_number_or_hash(number) when is_binary(number) or is_integer(number) do
+    from(b in Block, where: b.number == ^number) |> Repo.one()
   end
 
   def get_next_number do
@@ -134,7 +134,8 @@ defmodule GodwokenExplorer.Block do
     |> Repo.transaction() do
       {:ok, %{blocks: {updated_blocks_number, nil}, transactions: _}} when updated_blocks_number > 0 ->
         updated_blocks |> Enum.each(fn b ->
-          Publisher.broadcast([{:blocks, %{number: b.number, status: "finalized"}}], :realtime)
+          Publisher.broadcast([{:blocks, %{number: b.number, l1_block_number: b.layer1_block_number, l1_tx_hash: b.layer1_tx_hash, status: "finalized"}}], :realtime)
+          broadcast_tx_of_block(b.number, b.layer1_block_number)
         end)
 
       {:ok, %{blocks: _, transactions: {updated_txs_number, nil}}} when updated_txs_number > 0 ->
@@ -146,8 +147,6 @@ defmodule GodwokenExplorer.Block do
       _ ->
         :ok
     end
-
-    # Publisher.broadcast([{:blocks, %{number: l2_block_number, status: "finalized"}}], :realtime)
   end
 
   def bind_l1_l2_block(l2_block_number, l1_block_number, l1_tx_hash) do
@@ -156,10 +155,21 @@ defmodule GodwokenExplorer.Block do
       |> Ecto.Changeset.change(%{layer1_block_number: l1_block_number, layer1_tx_hash: l1_tx_hash})
       |> Repo.update!()
 
-      Publisher.broadcast([{:blocks, %{number: l2_block_number, l1_block_number: l1_block_number, l1_tx_hash: l1_tx_hash}}], :realtime)
+      Publisher.broadcast([{:blocks, %{number: l2_block_number, l1_block_number: l1_block_number, l1_tx_hash: l1_tx_hash, status: block.status}}], :realtime)
+      broadcast_tx_of_block(l2_block_number, l1_block_number)
 
       l1_block_number
     end
+  end
+
+  defp broadcast_tx_of_block(l2_block_number, l1_block_number) do
+    query = from(t in Transaction,
+        where: t.block_number == ^l2_block_number,
+        select: %{hash: t.hash, status: t.status}
+    )
+    Repo.all(query) |> Enum.each(fn tx ->
+      Publisher.broadcast([{:transactions, %{tx_hash: tx.hash, l1_block_number: l1_block_number, status: tx.status}}], :realtime)
+    end)
   end
 
   def find_last_bind_l1_block() do

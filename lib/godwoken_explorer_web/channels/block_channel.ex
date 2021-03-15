@@ -8,10 +8,7 @@ defmodule GodwokenExplorerWeb.BlockChannel do
 
   alias GodwokenExplorer.Block
 
-  intercept([
-    "bind_l1_block",
-    "update_status"
-  ])
+  intercept(["refresh"])
 
   def join("blocks:" <> block_number, _params, socket) do
     block = Block.find_by_number_or_hash(block_number)
@@ -32,21 +29,14 @@ defmodule GodwokenExplorerWeb.BlockChannel do
   end
 
   def handle_out(
-        "bind_l1_block",
-        %{l1_block_number: l1_block_number, l1_tx_hash: l1_tx_hash},
+        "refresh",
+        %{l1_block_number: l1_block_number, l1_tx_hash: l1_tx_hash, status: status},
         socket
       ) do
-    push(socket, "bind_l1_block", %{
-      l1_block_number: l1_block_number,
-      l1_tx_hash: l1_tx_hash
-    })
-
-    {:noreply, socket}
-  end
-
-  def handle_out("update_status", %{status: status}, socket) do
-    push(socket, "update_status", %{
-      status: status
+    push(socket, "refresh", %{
+      l1_number: l1_block_number,
+      tx_hash: l1_tx_hash,
+      finalize_state: status
     })
 
     {:noreply, socket}
