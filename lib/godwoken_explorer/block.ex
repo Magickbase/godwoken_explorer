@@ -124,7 +124,7 @@ defmodule GodwokenExplorer.Block do
     block_query = from(b in Block, where: b.number <= ^latest_finalized_block_number and b.status == :committed)
     updated_blocks = block_query |> Repo.all()
     transaction_query = from(t in Transaction,
-      where: t.block_number <= ^latest_finalized_block_number and t.status == :unfinalized
+      where: t.block_number <= ^latest_finalized_block_number and t.status == :committed
     )
     # updated_txs = transaction_query |> Repo.all()
 

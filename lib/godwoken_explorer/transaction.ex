@@ -10,7 +10,7 @@ defmodule GodwokenExplorer.Transaction do
     field :args, :binary
     field :from_account_id, :integer
     field :nonce, :integer
-    field :status, Ecto.Enum, values: [:unfinalized, :finalized], default: :unfinalized
+    field :status, Ecto.Enum, values: [:committed, :finalized], default: :committed
     field :to_account_id, :integer
     field :type, Ecto.Enum, values: [:sudt, :polyjuice_creator, :polyjuice, :withdrawal]
     field :block_number, :integer

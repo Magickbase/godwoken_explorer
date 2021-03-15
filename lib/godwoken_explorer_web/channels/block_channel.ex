@@ -34,7 +34,7 @@ defmodule GodwokenExplorerWeb.BlockChannel do
         socket
       ) do
     push(socket, "refresh", %{
-      l1_number: l1_block_number,
+      l1_block: l1_block_number,
       tx_hash: l1_tx_hash,
       finalize_state: status
     })
