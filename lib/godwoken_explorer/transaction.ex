@@ -2,7 +2,6 @@ defmodule GodwokenExplorer.Transaction do
   use GodwokenExplorer, :schema
 
   import Ecto.Changeset
-  import GodwokenRPC.Util, only: [stringify_and_unix_maps: 1]
 
   alias GodwokenExplorer.Chain.Cache.Transactions
 
@@ -47,38 +46,42 @@ defmodule GodwokenExplorer.Transaction do
   end
 
   def create_transaction(%{type: :sudt} = attrs) do
-    transaction = %Transaction{}
-    |> Transaction.changeset(attrs)
-    |> Ecto.Changeset.put_change(:block_hash, attrs[:block_hash])
-    |> Repo.insert()
+    transaction =
+      %Transaction{}
+      |> Transaction.changeset(attrs)
+      |> Ecto.Changeset.put_change(:block_hash, attrs[:block_hash])
+      |> Repo.insert()
 
     UDTTransfer.create_udt_transfer(attrs)
     transaction
   end
 
   def create_transaction(%{type: :polyjuice_creator} = attrs) do
-    transaction = %Transaction{}
-    |> Transaction.changeset(attrs)
-    |> Ecto.Changeset.put_change(:block_hash, attrs[:block_hash])
-    |> Repo.insert()
+    transaction =
+      %Transaction{}
+      |> Transaction.changeset(attrs)
+      |> Ecto.Changeset.put_change(:block_hash, attrs[:block_hash])
+      |> Repo.insert()
 
     PolyjuiceCreator.create_polyjuice_creator(attrs)
     transaction
   end
 
   def create_transaction(%{type: :withdrawal} = attrs) do
-    transaction = %Transaction{}
-    |> Transaction.changeset(attrs)
-    |> Repo.insert()
+    transaction =
+      %Transaction{}
+      |> Transaction.changeset(attrs)
+      |> Repo.insert()
 
     Withdrawal.create_withdrawal(attrs)
     transaction
   end
 
   def create_transaction(%{type: :polyjuice} = attrs) do
-    transaction = %Transaction{}
-    |> Transaction.changeset(attrs)
-    |> Repo.insert()
+    transaction =
+      %Transaction{}
+      |> Transaction.changeset(attrs)
+      |> Repo.insert()
 
     Polyjuice.create_polyjuice(attrs)
     transaction
@@ -89,8 +92,6 @@ defmodule GodwokenExplorer.Transaction do
       txs when is_list(txs) and length(txs) == 10 ->
         txs |> Enum.map(fn t ->
           t |> Map.take([:hash, :from_account_id, :to_account_id, :type]) |> Map.merge(%{timestamp: t.block.timestamp, success: true})
-        end) |> Enum.map(fn record ->
-          stringify_and_unix_maps(record)
         end)
       _ ->
         from(t in Transaction,
@@ -99,8 +100,8 @@ defmodule GodwokenExplorer.Transaction do
           select: %{
             hash: t.hash,
             timestamp: b.timestamp,
-            from: t.from_account_id,
-            to: t.to_account_id,
+            from_account_id: t.from_account_id,
+            to_account_id: t.to_account_id,
             type: t.type,
             success: true
           },
@@ -108,9 +109,6 @@ defmodule GodwokenExplorer.Transaction do
           limit: 10
         )
         |> Repo.all()
-        |> Enum.map(fn record ->
-          stringify_and_unix_maps(record)
-        end)
     end
   end
 

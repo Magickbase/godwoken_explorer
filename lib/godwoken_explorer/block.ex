@@ -85,8 +85,6 @@ defmodule GodwokenExplorer.Block do
       blocks when is_list(blocks) and length(blocks) == 10 ->
         blocks |> Enum.map(fn b ->
           b |> Map.take([:hash, :number, :timestamp, :transaction_count])
-        end) |> Enum.map(fn record ->
-          stringify_and_unix_maps(record)
         end)
       _ ->
         from(b in "blocks",
@@ -94,15 +92,12 @@ defmodule GodwokenExplorer.Block do
             hash: b.hash,
             number: b.number,
             timestamp: b.timestamp,
-            tx_count: b.transaction_count
+            transaction_count: b.transaction_count
           },
           order_by: [desc: b.number],
           limit: 10
         )
         |> Repo.all()
-        |> Enum.map(fn record ->
-          stringify_and_unix_maps(record)
-        end)
     end
   end
 

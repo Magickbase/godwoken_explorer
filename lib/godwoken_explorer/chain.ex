@@ -72,29 +72,23 @@ defmodule GodwokenExplorer.Chain do
     end
   end
 
-  def home_channel_data(blocks, txs) do
+  def home_api_data(blocks, txs) do
     %{
       block_list:
         blocks
-        |> Enum.map(&(&1 |> Map.take([:hash, :number, :timestamp, :transaction_count])))
         |> Enum.map(fn record ->
           stringify_and_unix_maps(record)
         end),
       tx_list:
         txs
-        |> Enum.map(fn tx ->
-          tx
-          |> Map.take([:hash, :from_account_id, :to_account_id, :type])
-          |> Map.merge(%{timestamp: blocks |> List.first() |> Map.get(:timestamp), success: true})
-        end)
         |> Enum.map(fn record ->
           stringify_and_unix_maps(record)
         end),
       statistic: %{
-        account_count: account_estimated_count(),
-        block_count: (blocks |> List.first() |> Map.get(:number)) + 1,
-        tx_count: transaction_estimated_count(),
-        tps: Block.transactions_count_per_second()
+        account_count: Integer.to_string(account_estimated_count()),
+        block_count: ((blocks |> List.first() |> Map.get(:number)) + 1) |> Integer.to_string(),
+        tx_count: Integer.to_string(transaction_estimated_count()),
+        tps: Float.to_string(Block.transactions_count_per_second())
       }
     }
   end
