@@ -120,7 +120,7 @@ defmodule GodwokenExplorer.Account do
   end
 
   def search(keyword) do
-    from(a in Account, where: a.eth_address == ^keyword or a.ckb_lock_hash == ^keyword) |> Repo.one()
+    from(a in Account, where: a.eth_address == ^keyword or a.ckb_lock_hash == ^keyword or a.script_hash == ^keyword) |> Repo.one()
   end
 
   def bind_ckb_lock_script(l1_lock_script, script_hash, l1_lock_hash) do
