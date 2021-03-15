@@ -2,7 +2,6 @@ defmodule GodwokenExplorer.Block do
   use GodwokenExplorer, :schema
 
   import Ecto.Changeset
-  import GodwokenRPC.Util, only: [stringify_and_unix_maps: 1]
 
   require Logger
 
