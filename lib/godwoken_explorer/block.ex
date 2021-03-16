@@ -137,13 +137,10 @@ defmodule GodwokenExplorer.Block do
           Publisher.broadcast([{:blocks, %{number: b.number, l1_block_number: b.layer1_block_number, l1_tx_hash: b.layer1_tx_hash, status: "finalized"}}], :realtime)
           broadcast_tx_of_block(b.number, b.layer1_block_number)
         end)
-
       {:ok, %{blocks: _, transactions: {updated_txs_number, nil}}} when updated_txs_number > 0 ->
         :ok
-        #Publisher.broadcast([{:transactionss, %{tx: tx, status: "finalized"}}], :realtime)
       {:error, _} ->
         Logger.error(fn -> ["Failed to update blocks finalized status before block_number: ", latest_finalized_block_number] end)
-
       _ ->
         :ok
     end

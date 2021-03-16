@@ -84,8 +84,8 @@ defmodule GodwokenIndexer.Block.SyncWorker do
     Enum.each(data[:tx_list], fn tx ->
       result =
         %{
-          page: 1,
-          total_count: 1,
+          page: "1",
+          total_count: "1",
           txs: [Map.merge(tx, %{block_number: home_blocks |> List.first() |> Map.get(:number)})]
         }
       Publisher.broadcast([{:account_transactions, result}], :realtime)
