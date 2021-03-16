@@ -29,8 +29,8 @@ import socket from './socket'
 //   .receive("error", ({ reason }) => console.log("failed join", reason))
 // accountTransactionsChannel.on('refresh', msg => console.log(msg))
 
-let accountsChannel = socket.channel("accounts:2", {})
-accountsChannel.join()
-  .receive("ok", (messages) => console.log("catching up", messages) )
-  .receive("error", ({ reason }) => console.log("failed join", reason))
-accountsChannel.on('refresh', msg => console.log(msg))
+// let accountsChannel = socket.channel("accounts:2", {})
+// accountsChannel.join()
+//   .receive("ok", (messages) => console.log("catching up", messages) )
+//   .receive("error", ({ reason }) => console.log("failed join", reason))
+// accountsChannel.on('refresh', msg => console.log(msg))

@@ -114,7 +114,7 @@ defmodule GodwokenExplorer.Block do
            |> Enum.sum() do
       %{timestamp: last_timestamp, tx_count: _} = timestamp_with_tx_count |> List.first()
       %{timestamp: first_timestamp, tx_count: _} = timestamp_with_tx_count |> List.last()
-      (NaiveDateTime.diff(last_timestamp, first_timestamp) / all_tx_count) |> Float.floor(1)
+      (all_tx_count / NaiveDateTime.diff(last_timestamp, first_timestamp)) |> Float.floor(1)
     else
       _ -> 0.0
     end
