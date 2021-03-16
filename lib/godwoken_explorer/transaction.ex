@@ -166,8 +166,8 @@ defmodule GodwokenExplorer.Transaction do
       end)
 
     %{
-      page: original_struct.page_number,
-      total_count: original_struct.total_entries,
+      page: Integer.to_string(original_struct.page_number),
+      total_count: Integer.to_string(original_struct.total_entries),
       txs: parsed_result
     }
   end
