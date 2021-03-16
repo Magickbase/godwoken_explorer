@@ -3,7 +3,7 @@ defmodule GodwokenExplorer.Chain.Events.Subscriber do
   Subscribes to events related to the Chain context.
   """
 
-  @allowed_broadcast_events ~w(home blocks transactions account_transactions)a
+  @allowed_broadcast_events ~w(home blocks transactions account_transactions accounts)a
 
   @allowed_broadcast_types ~w(realtime)a
 

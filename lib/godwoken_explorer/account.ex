@@ -4,6 +4,7 @@ defmodule GodwokenExplorer.Account do
   import Ecto.Changeset
 
   alias GodwokenRPC
+  alias GodwokenExplorer.Chain.Events.Publisher
 
   @primary_key {:id, :integer, autogenerate: false}
   schema "accounts" do
@@ -36,7 +37,10 @@ defmodule GodwokenExplorer.Account do
     |> changeset(attrs)
     |> Repo.insert_or_update()
     |> case do
-      {:ok, account} -> {:ok, account}
+      {:ok, account} ->
+        account_api_data = account.id |> find_by_id() |> account_to_view()
+        Publisher.broadcast([{:accounts, account_api_data}], :realtime)
+        {:ok, account}
       {:error, _} -> {:error, nil}
     end
   end
@@ -52,9 +56,16 @@ defmodule GodwokenExplorer.Account do
     with meta_contract when not is_nil(meta_contract) <- Repo.get(Account, 0) do
       atom_script = for {key, val} <- meta_contract.script, into: %{}, do: {String.to_atom(key), val}
       new_script = atom_script |> Map.merge(global_state)
-      meta_contract
-      |> Ecto.Changeset.change(script: new_script)
-      |> Repo.update()
+      case meta_contract
+           |> Ecto.Changeset.change(script: new_script)
+           |> Repo.update() do
+        {:ok, account} ->
+          account_api_data = 0 |> find_by_id() |> account_to_view()
+          Publisher.broadcast([{:accounts, account_api_data}], :realtime)
+          {:ok, account}
+        {:error, schema} ->
+          {:error, schema}
+      end
     end
   end
 
@@ -119,6 +130,32 @@ defmodule GodwokenExplorer.Account do
     end |> Map.merge(base_map)
   end
 
+  def account_to_view(account) do
+    account = %{account | ckb: balance_to_view(account.ckb, 8)}
+
+    with udt_list when not is_nil(udt_list) <- Kernel.get_in(account, [:user, :udt_list]) do
+      Kernel.put_in(
+        account,
+        [:user, :udt_list],
+        udt_list
+        |> Enum.map(fn udt ->
+          %{udt | balance: balance_to_view(udt.balance, udt.decimal)}
+        end)
+      )
+    else
+      _ ->
+        account
+    end
+  end
+
+  defp balance_to_view(balance, decimal) do
+    {val, _} = Integer.parse(balance)
+    (val / :math.pow(10, decimal)) |> :erlang.float_to_binary(decimals: decimal)
+  rescue
+    _ ->
+      balance
+  end
+
   def search(keyword) do
     from(a in Account, where: a.eth_address == ^keyword or a.ckb_lock_hash == ^keyword or a.script_hash == ^keyword) |> Repo.one()
   end
@@ -128,7 +165,7 @@ defmodule GodwokenExplorer.Account do
     case account do
       nil ->
         account_id = GodwokenRPC.fetch_account_id(script_hash)
-        create_or_update_account(%{id: account_id, ckb_lock_script: l1_lock_script, ckb_lock_hash: l1_lock_hash, script_hash: script_hash})
+        create_or_update_account(%{id: account_id, ckb_lock_script: l1_lock_script, ckb_lock_hash: l1_lock_hash, script_hash: script_hash, type: "user"})
       %Account{ckb_lock_script: ckb_lock_script, ckb_lock_hash: ckb_lock_hash} when is_nil(ckb_lock_script) or is_nil(ckb_lock_hash) ->
         account
         |> Ecto.Changeset.change(%{ckb_lock_script: l1_lock_script, ckb_lock_hash: l1_lock_hash})

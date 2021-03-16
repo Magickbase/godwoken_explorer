@@ -28,6 +28,10 @@ defmodule GodwokenExplorerWeb.Notifier do
     end)
   end
 
+  def handle_event({:chain_event, :accounts, :realtime, account}) do
+    broadcast_account(account)
+  end
+
   def handle_event(_), do: nil
 
   defp broadcast_home(data) do
@@ -65,5 +69,9 @@ defmodule GodwokenExplorerWeb.Notifier do
       total_count: total_count,
       txs: txs
     })
+  end
+
+  defp broadcast_account(%{id: account_id} = account) do
+    Endpoint.broadcast("accounts:#{account_id}", "refresh", account)
   end
 end

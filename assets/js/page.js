@@ -23,8 +23,14 @@ import socket from './socket'
 //   .receive("error", ({ reason }) => console.log("failed join", reason))
 // txChannel.on('refresh', msg => console.log(msg))
 
-let accountTransactionsChannel = socket.channel("account_transactions:2", {})
-accountTransactionsChannel.join()
+// let accountTransactionsChannel = socket.channel("account_transactions:2", {})
+// accountTransactionsChannel.join()
+//   .receive("ok", (messages) => console.log("catching up", messages) )
+//   .receive("error", ({ reason }) => console.log("failed join", reason))
+// accountTransactionsChannel.on('refresh', msg => console.log(msg))
+
+let accountsChannel = socket.channel("accounts:2", {})
+accountsChannel.join()
   .receive("ok", (messages) => console.log("catching up", messages) )
   .receive("error", ({ reason }) => console.log("failed join", reason))
-accountTransactionsChannel.on('refresh', msg => console.log(msg))
+accountsChannel.on('refresh', msg => console.log(msg))

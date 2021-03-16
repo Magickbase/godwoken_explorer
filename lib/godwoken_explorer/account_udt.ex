@@ -3,6 +3,8 @@ defmodule GodwokenExplorer.AccountUDT do
 
   import Ecto.Changeset
 
+  alias GodwokenExplorer.Chain.Events.Publisher
+
   schema "account_udts" do
     field :balance, :decimal
     belongs_to(:account, GodwokenExplorer.Account, foreign_key: :account_id, references: :id)
@@ -26,7 +28,10 @@ defmodule GodwokenExplorer.AccountUDT do
     |> changeset(attrs)
     |> Repo.insert_or_update()
     |> case do
-      {:ok, account_udt} -> {:ok, account_udt}
+      {:ok, account_udt} ->
+        account_api_data = account_udt.account_id |> Account.find_by_id() |> Account.account_to_view()
+        Publisher.broadcast([{:accounts, account_api_data}], :realtime)
+        {:ok, account_udt}
       {:error, _} -> {:error, nil}
     end
   end
