@@ -55,7 +55,7 @@ defmodule GodwokenIndexer.Block.BindL1L2Worker do
            txs when txs == [] -> {:ok, block_range |> List.last() |> hex_to_number()}
            txs ->
             updated_l1_numbers = parse_data_and_bind(txs)
-            if length(updated_l1_numbers) == 0 do
+            if updated_l1_numbers == [] do
               {:ok, block_range |> List.first() |> hex_to_number()}
             else
               {:ok, (updated_l1_numbers|> List.first()) + 1}

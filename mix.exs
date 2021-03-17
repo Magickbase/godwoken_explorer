@@ -11,7 +11,14 @@ defmodule GodwokenExplorer.MixProject do
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
       rustler_crates: rustler_crates(),
-      deps: deps()
+      deps: deps(),
+      test_coverage: [tool: ExCoveralls],
+      preferred_cli_env: [
+        coveralls: :test,
+        "coveralls.detail": :test,
+        "coveralls.post": :test,
+        "coveralls.html": :test
+      ]
     ]
   end
 
@@ -53,7 +60,18 @@ defmodule GodwokenExplorer.MixProject do
       {:scrivener_ecto, "~> 2.0"},
       {:decimal, "~> 2.0"},
       {:logger_file_backend, "~> 0.0.10"},
+
+      # CORS
       {:cors_plug, "~> 2.0"},
+
+      #static code analysis tool
+      {:credo, "~> 1.5", only: [:dev, :test], runtime: false},
+      {:dialyxir, "~> 1.0", only: [:dev], runtime: false},
+      {:sobelow, "~> 0.8", only: :dev},
+
+      # test
+      {:ex_machina, "~> 2.7.0", only: :test},
+      {:excoveralls, "~> 0.10", only: :test},
 
       # deployment
       {:distillery, "~> 2.1", warn_missing: false}

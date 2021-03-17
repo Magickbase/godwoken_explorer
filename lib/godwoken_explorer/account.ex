@@ -15,7 +15,10 @@ defmodule GodwokenExplorer.Account do
     field :script_hash, :binary
     field :script, :map
     field :nonce, :integer
-    field :type, Ecto.Enum, values: [:meta_contract, :udt, :user, :polyjuice_root, :polyjuice_contract]
+
+    field :type, Ecto.Enum,
+      values: [:meta_contract, :udt, :user, :polyjuice_root, :polyjuice_contract]
+
     field :layer2_tx, :binary
     has_many :account_udts, GodwokenExplorer.AccountUDT
 
@@ -25,7 +28,18 @@ defmodule GodwokenExplorer.Account do
   @doc false
   def changeset(account, attrs) do
     account
-    |> cast(attrs, [:id, :ckb_address, :ckb_lock_script, :ckb_lock_hash, :eth_address, :script_hash, :script, :nonce, :type, :layer2_tx])
+    |> cast(attrs, [
+      :id,
+      :ckb_address,
+      :ckb_lock_script,
+      :ckb_lock_hash,
+      :eth_address,
+      :script_hash,
+      :script,
+      :nonce,
+      :type,
+      :layer2_tx
+    ])
     |> validate_required([:id, :script_hash])
   end
 
@@ -41,7 +55,9 @@ defmodule GodwokenExplorer.Account do
         account_api_data = account.id |> find_by_id() |> account_to_view()
         Publisher.broadcast([{:accounts, account_api_data}], :realtime)
         {:ok, account}
-      {:error, _} -> {:error, nil}
+
+      {:error, _} ->
+        {:error, nil}
     end
   end
 
@@ -49,13 +65,17 @@ defmodule GodwokenExplorer.Account do
     from(
       a in Account,
       select: fragment("COUNT(*)")
-    ) |> Repo.one(timeout: :infinity)
+    )
+    |> Repo.one(timeout: :infinity)
   end
 
   def update_meta_contract(global_state) do
     with meta_contract when not is_nil(meta_contract) <- Repo.get(Account, 0) do
-      atom_script = for {key, val} <- meta_contract.script, into: %{}, do: {String.to_atom(key), val}
+      atom_script =
+        for {key, val} <- meta_contract.script, into: %{}, do: {String.to_atom(key), val}
+
       new_script = atom_script |> Map.merge(global_state)
+
       case meta_contract
            |> Ecto.Changeset.change(script: new_script)
            |> Repo.update() do
@@ -63,6 +83,7 @@ defmodule GodwokenExplorer.Account do
           account_api_data = 0 |> find_by_id() |> account_to_view()
           Publisher.broadcast([{:accounts, account_api_data}], :realtime)
           {:ok, account}
+
         {:error, schema} ->
           {:error, schema}
       end
@@ -71,12 +92,15 @@ defmodule GodwokenExplorer.Account do
 
   def find_by_id(id) do
     account = Repo.get(Account, id)
+
     ckb_balance =
       case Repo.get_by(AccountUDT, %{account_id: id, udt_id: 1}) do
         %AccountUDT{balance: balance} -> balance
         nil -> Decimal.new(0)
       end
+
     tx_count = Transaction.list_by_account_id(id) |> Repo.aggregate(:count)
+
     base_map = %{
       id: id,
       type: account.type,
@@ -85,38 +109,47 @@ defmodule GodwokenExplorer.Account do
     }
 
     case account do
-      %Account{type: :meta_contract}  ->
-      %{meta_contract:
+      %Account{type: :meta_contract} ->
         %{
-          account_merkle_state: account.script["account_merkle_state"],
-          block_merkle_state: account.script["block_merkle_state"],
-          reverted_block_root: account.script["reverted_block_root"],
-          last_finalized_block_number: account.script["last_finalized_block_number"],
-          status: account.script["status"]
+          meta_contract: %{
+            account_merkle_state: account.script["account_merkle_state"],
+            block_merkle_state: account.script["block_merkle_state"],
+            reverted_block_root: account.script["reverted_block_root"],
+            last_finalized_block_number: account.script["last_finalized_block_number"],
+            status: account.script["status"]
+          }
         }
-      }
-      %Account{type: :user}  ->
+
+      %Account{type: :user} ->
         udt_list = AccountUDT.list_udt_by_account_id(id)
-        %{ user: %{
+
+        %{
+          user: %{
             eth_addr: account.eth_address,
             nonce: account.nonce |> Integer.to_string(),
             ckb_lock_script: account.ckb_lock_script,
             udt_list: udt_list
+          }
         }
-      }
-      %Account{type: :polyjuice_root}  ->
+
+      %Account{type: :polyjuice_root} ->
         %{
           polyjuice: %{
             script: account.script
           }
         }
+
       %Account{type: :polyjuice_contract} ->
         %{
-          smart_contract: %{tx_hash: "0x3bd26903a0c8c418d1fba9be7eb13d088b8e68dc1f1d34941c8916246532cccf"}
+          smart_contract: %{
+            tx_hash: "0x3bd26903a0c8c418d1fba9be7eb13d088b8e68dc1f1d34941c8916246532cccf"
+          }
         }
+
       %Account{type: :udt} ->
         udt = Repo.get(UDT, id)
         holders = UDT.count_holder(id)
+
         %{
           sudt: %{
             name: udt.name,
@@ -127,22 +160,23 @@ defmodule GodwokenExplorer.Account do
             type_script: udt.type_script
           }
         }
-    end |> Map.merge(base_map)
+    end
+    |> Map.merge(base_map)
   end
 
   def account_to_view(account) do
     account = %{account | ckb: balance_to_view(account.ckb, 8)}
 
-    with udt_list when not is_nil(udt_list) <- Kernel.get_in(account, [:user, :udt_list]) do
-      Kernel.put_in(
-        account,
-        [:user, :udt_list],
-        udt_list
-        |> Enum.map(fn udt ->
-          %{udt | balance: balance_to_view(udt.balance, udt.decimal)}
-        end)
-      )
-    else
+    case  Kernel.get_in(account, [:user, :udt_list]) do
+      udt_list when not is_nil(udt_list) ->
+        Kernel.put_in(
+          account,
+          [:user, :udt_list],
+          udt_list
+          |> Enum.map(fn udt ->
+            %{udt | balance: balance_to_view(udt.balance, udt.decimal)}
+          end)
+        )
       _ ->
         account
     end
@@ -157,19 +191,33 @@ defmodule GodwokenExplorer.Account do
   end
 
   def search(keyword) do
-    from(a in Account, where: a.eth_address == ^keyword or a.ckb_lock_hash == ^keyword or a.script_hash == ^keyword) |> Repo.one()
+    from(a in Account,
+      where: a.eth_address == ^keyword or a.ckb_lock_hash == ^keyword or a.script_hash == ^keyword
+    )
+    |> Repo.one()
   end
 
   def bind_ckb_lock_script(l1_lock_script, script_hash, l1_lock_hash) do
     account = Repo.get_by(Account, script_hash: script_hash)
+
     case account do
       nil ->
         account_id = GodwokenRPC.fetch_account_id(script_hash)
-        create_or_update_account(%{id: account_id, ckb_lock_script: l1_lock_script, ckb_lock_hash: l1_lock_hash, script_hash: script_hash, type: "user"})
-      %Account{ckb_lock_script: ckb_lock_script, ckb_lock_hash: ckb_lock_hash} when is_nil(ckb_lock_script) or is_nil(ckb_lock_hash) ->
+
+        create_or_update_account(%{
+          id: account_id,
+          ckb_lock_script: l1_lock_script,
+          ckb_lock_hash: l1_lock_hash,
+          script_hash: script_hash,
+          type: "user"
+        })
+
+      %Account{ckb_lock_script: ckb_lock_script, ckb_lock_hash: ckb_lock_hash}
+      when is_nil(ckb_lock_script) or is_nil(ckb_lock_hash) ->
         account
         |> Ecto.Changeset.change(%{ckb_lock_script: l1_lock_script, ckb_lock_hash: l1_lock_hash})
         |> Repo.update()
+
       _ ->
         account
     end

@@ -11,8 +11,6 @@ defmodule GodwokenExplorer.Chain.Cache.Blocks do
     ids_list_key: "block_numbers",
     ttl_check_interval: Application.get_env(:godwoken_explorer, __MODULE__)[:ttl_check_interval]
 
-  @type element :: Block.t()
-
   @type id :: non_neg_integer()
 
   def element_to_id(%Block{number: number}), do: number

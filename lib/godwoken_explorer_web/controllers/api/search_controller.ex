@@ -9,13 +9,13 @@ defmodule GodwokenExplorerWeb.API.SearchController do
       case params["keyword"] |> String.split("_") do
         [code_hash, hash_type, args] ->
           account = Repo.get_by(Account, ckb_lock_script: %{name: "secp256k1/blake160", code_hash: code_hash, hash_type: hash_type, args: args})
-            if not is_nil(account) do
-              %{type: "account", id: account.id}
-            else
+            if is_nil(account) do
               %{
                 error_code: 404,
                 message: "not found"
               }
+            else
+              %{type: "account", id: account.id}
             end
         _ ->
           %{

@@ -11,8 +11,6 @@ defmodule GodwokenExplorer.Chain.Cache.Transactions do
     preload: :block,
     ttl_check_interval: Application.get_env(:godwoken_explorer, __MODULE__)[:ttl_check_interval]
 
-  @type element :: Transaction.t()
-
   @type id :: {non_neg_integer(), non_neg_integer()}
 
   def element_to_id(%Transaction{block_number: block_number, inserted_at: inserted_at}) do
