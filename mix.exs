@@ -72,6 +72,8 @@ defmodule GodwokenExplorer.MixProject do
       # test
       {:ex_machina, "~> 2.7.0", only: :test},
       {:excoveralls, "~> 0.10", only: :test},
+      {:mock, "~> 0.3.0", only: [:test], runtime: false},
+      {:mox, "~> 0.4", only: [:test]},
 
       # deployment
       {:distillery, "~> 2.1", warn_missing: false}
