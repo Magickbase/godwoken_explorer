@@ -6,8 +6,8 @@ use Mix.Config
 # to provide built-in test partitioning in CI environment.
 # Run `mix help test` for more information.
 config :godwoken_explorer, GodwokenExplorer.Repo,
-  username: "postgres",
-  password: "postgres",
+  username: "user",
+  password: "password",
   database: "godwoken_explorer_test#{System.get_env("MIX_TEST_PARTITION")}",
   hostname: "localhost",
   pool: Ecto.Adapters.SQL.Sandbox
