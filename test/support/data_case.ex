@@ -24,6 +24,7 @@ defmodule GodwokenExplorer.DataCase do
       import Ecto.Changeset
       import Ecto.Query
       import GodwokenExplorer.DataCase
+      import GodwokenExplorer.Factory
     end
   end
 
