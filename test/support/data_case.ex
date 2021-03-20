@@ -18,13 +18,13 @@ defmodule GodwokenExplorer.DataCase do
 
   using do
     quote do
-      alias GodwokenExplorer.Repo
-
       import Ecto
       import Ecto.Changeset
       import Ecto.Query
       import GodwokenExplorer.DataCase
       import GodwokenExplorer.Factory
+
+      alias GodwokenExplorer.Repo
     end
   end
 
