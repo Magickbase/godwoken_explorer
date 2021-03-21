@@ -8,14 +8,15 @@ set :application, "godwoken_explorer"
 set :repo_url, "git@github.com:nervina-labs/godwoken_explorer.git"
 
 set :deploy_user, 'ckb'
-# Default deploy_to directory is /var/www/my_app_name
-set :deploy_to, "/home/#{fetch(:deploy_user)}/godwoken-projects/app"
+set :deploy_to, "/home/#{fetch(:deploy_user)}/godwoken_explorer/app"
 set :ssh_options, user: 'ckb', verify_host_key: :always
 set :default_env, {path: "/home/ckb/.cargo/bin:$PATH"}
 
-set :build_path, "/home/#{fetch(:deploy_user)}/godwoken-projects/build"
-set :repo_path, "/home/#{fetch(:deploy_user)}/godwoken-projects/repo"
-set :app_path, "/home/#{fetch(:deploy_user)}/godwoken-projects/app"
+set :build_path, "/home/#{fetch(:deploy_user)}/godwoken_explorer/build"
+set :repo_path, "/home/#{fetch(:deploy_user)}/godwoken_explorer/repo"
+set :app_path, "/home/#{fetch(:deploy_user)}/godwoken_explorer/app"
+
+set :linked_dirs, ["config"]
 
 task "build:hot" => [
   "buildhost:prepare_build_path",
