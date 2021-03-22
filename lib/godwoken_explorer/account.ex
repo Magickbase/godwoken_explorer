@@ -3,6 +3,8 @@ defmodule GodwokenExplorer.Account do
 
   import Ecto.Changeset
 
+  require Logger
+
   alias GodwokenRPC
   alias GodwokenExplorer.Chain.Events.Publisher
 
@@ -56,7 +58,8 @@ defmodule GodwokenExplorer.Account do
         Publisher.broadcast([{:accounts, account_api_data}], :realtime)
         {:ok, account}
 
-      {:error, _} ->
+      {:error, error_msg} ->
+        Logger.error(fn -> ["Failed to create or update account: ", error_msg] end)
         {:error, nil}
     end
   end
