@@ -5,7 +5,7 @@ defmodule GodwokenExplorer.Repo.Migrations.CreateAccountUdts do
     create table(:account_udts) do
       add :account_id, :integer
       add :udt_id, :integer
-      add :balance, :decimal
+      add :balance, :decimal, default: 0
 
       timestamps()
     end

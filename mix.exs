@@ -60,6 +60,7 @@ defmodule GodwokenExplorer.MixProject do
       {:scrivener_ecto, "~> 2.0"},
       {:decimal, "~> 2.0"},
       {:logger_file_backend, "~> 0.0.10"},
+      {:blake2_elixir, "~> 0.8.1"},
 
       # CORS
       {:cors_plug, "~> 2.0"},

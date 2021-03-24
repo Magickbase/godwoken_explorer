@@ -2,7 +2,8 @@ defmodule GodwokenExplorer.Repo.Migrations.CreateUdts do
   use Ecto.Migration
 
   def change do
-    create table(:udts) do
+    create table(:udts, primary_key: false) do
+      add :id, :integer, null: false, primary_key: true
       add :name, :string
       add :symbol, :string
       add :decimal, :integer

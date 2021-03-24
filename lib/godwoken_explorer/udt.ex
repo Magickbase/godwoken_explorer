@@ -19,8 +19,18 @@ defmodule GodwokenExplorer.UDT do
   @doc false
   def changeset(udt, attrs) do
     udt
-    |> cast(attrs, [:name, :symbol, :decimal, :icon, :supply, :type_script, :script_hash])
-    |> validate_required([:name, :symbol, :decimal, :supply])
+    |> cast(attrs, [:id, :name, :symbol, :decimal, :icon, :supply, :type_script, :script_hash])
+    |> validate_required([:id, :script_hash])
+  end
+
+  def find_or_create_by(attrs) do
+    case Repo.get_by(__MODULE__, %{script_hash: attrs[:script_hash], id: attrs[:id]}) do
+      nil ->
+        %__MODULE__{}
+        |> changeset(attrs)
+        |> Repo.insert()
+      udt -> {:ok, udt}
+    end
   end
 
   def count_holder(udt_id) do

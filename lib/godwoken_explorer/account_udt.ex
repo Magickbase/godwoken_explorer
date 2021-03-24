@@ -17,7 +17,7 @@ defmodule GodwokenExplorer.AccountUDT do
   def changeset(account_udt, attrs) do
     account_udt
     |> cast(attrs, [:account_id, :udt_id, :balance])
-    |> validate_required([:account_id, :udt_id, :balance])
+    |> validate_required([:account_id, :udt_id])
   end
 
   def create_or_update_account_udt(attrs) do

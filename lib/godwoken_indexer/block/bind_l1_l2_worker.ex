@@ -2,7 +2,7 @@ defmodule GodwokenIndexer.Block.BindL1L2Worker do
   use GenServer
 
   import Godwoken.MoleculeParser, only: [parse_global_state: 1, parse_deposition_lock_args: 1]
-  import GodwokenRPC.Util, only: [hex_to_number: 1, number_to_hex: 1]
+  import GodwokenRPC.Util, only: [hex_to_number: 1, number_to_hex: 1, script_to_hash: 1]
 
   alias GodwkenRPC
   alias GodwokenExplorer.{Block, Account}
@@ -29,7 +29,7 @@ defmodule GodwokenIndexer.Block.BindL1L2Worker do
   def handle_info({:bind_work, block_number}, state) do
     {:ok, l1_tip_number} = GodwokenRPC.fetch_l1_tip_block_nubmer()
     {:ok, next_start_block_number} = fetch_l1_number_and_update(block_number, l1_tip_number)
-    fetch_ckb_lock_script_and_update(block_number, l1_tip_number)
+    fetch_deposition_script_and_update(block_number, l1_tip_number)
 
     schedule_work(next_start_block_number)
 
@@ -65,7 +65,7 @@ defmodule GodwokenIndexer.Block.BindL1L2Worker do
     end
   end
 
-  defp fetch_ckb_lock_script_and_update(start_block_number, l1_tip_number) do
+  defp fetch_deposition_script_and_update(start_block_number, l1_tip_number) do
     block_range = cal_block_range(start_block_number, l1_tip_number)
     deposition_lock = Application.get_env(:godwoken_explorer, :deposition_lock)
 
@@ -87,13 +87,26 @@ defmodule GodwokenIndexer.Block.BindL1L2Worker do
       with {:ok, %{"transaction" => %{"inputs" => inputs, "outputs" => outputs}}} <- GodwokenRPC.fetch_l1_tx(tx_hash) do
         {:ok, l2_script_hash, l1_lock_hash} = parse_lock_args(outputs, io_index)
         ckb_lock_script = get_ckb_lock_script(inputs, outputs, io_index)
+        {:ok, user_account} = Account.bind_ckb_lock_script(ckb_lock_script, "0x" <> l2_script_hash, "0x" <> l1_lock_hash)
 
-        Account.bind_ckb_lock_script(ckb_lock_script, "0x" <> l2_script_hash, "0x" <> l1_lock_hash)
+        {udt_script, udt_script_hash} = parse_udt_script(outputs, io_index)
+        Account.create_udt_account(udt_script, udt_script_hash, user_account.id)
       end
     end)
     |> Enum.reject(&is_nil/1)
     |> Enum.sort(&(&1 >= &2))
   end
+
+  defp parse_udt_script(outputs, io_index) do
+    case outputs
+         |> Enum.at(hex_to_number(io_index))
+         |> Map.get("type") do
+      nil -> {nil, "0x0000000000000000000000000000000000000000000000000000000000000000"}
+      %{} = udt_script ->
+        {udt_script, script_to_hash(udt_script)}
+    end
+  end
+
   defp parse_lock_args(outputs, io_index) do
     outputs
     |> Enum.at(hex_to_number(io_index))
@@ -162,6 +175,6 @@ defmodule GodwokenIndexer.Block.BindL1L2Worker do
   end
 
   defp schedule_work(start_block_number) do
-    Process.send_after(self(), {:bind_work, start_block_number}, 10 * 1000)
+    Process.send_after(self(), {:bind_work, start_block_number}, 5 * 1000)
   end
 end

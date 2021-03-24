@@ -13,7 +13,7 @@ config :godwoken_explorer,
   deposition_lock: %{
     code_hash: "0x8c5d41b03077151a75c691343067062bd76588aef507c495b77f8c5ec31d4cf5",
     hash_type: "type",
-    args: "0x"
+    args: "0x1fd2f78b7f7f07a43fbabd12da7e23f2c24a77ee5b0e446ff9d5bf3ba1dd7993"
   }
 
 config :godwoken_explorer,
@@ -30,7 +30,7 @@ config :godwoken_explorer, GodwokenExplorer.Repo,
 config :godwoken_explorer,
   json_rpc_named_arguments: [
     http: GodwokenRPC.HTTP.HTTPoison,
-    url: System.get_env("GODWOKEN_RPC_HTTP_URL") || "http://localhost:8119",
+    url: "http://localhost:8119",
     http_options: [
       recv_timeout: :timer.minutes(10),
       timeout: :timer.minutes(10)

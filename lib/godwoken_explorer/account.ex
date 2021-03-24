@@ -2,11 +2,13 @@ defmodule GodwokenExplorer.Account do
   use GodwokenExplorer, :schema
 
   import Ecto.Changeset
+  import GodwokenRPC.Util, only: [script_to_hash: 1]
 
   require Logger
 
   alias GodwokenRPC
   alias GodwokenExplorer.Chain.Events.Publisher
+  alias GodwokenIndexer.Account.Worker
 
   @primary_key {:id, :integer, autogenerate: false}
   schema "accounts" do
@@ -149,17 +151,17 @@ defmodule GodwokenExplorer.Account do
           }
         }
 
-      %Account{type: :udt} ->
+      %Account{type: :udt, id: id} ->
         udt = Repo.get(UDT, id)
         holders = UDT.count_holder(id)
 
         %{
           sudt: %{
-            name: udt.name,
+            name: udt.name || "Unkown##{id}",
             symbol: udt.symbol,
-            decimal: udt.decimal |> Integer.to_string(),
+            decimal: (udt.decimal || 8) |> Integer.to_string(),
             supply: (udt.supply || Decimal.new(0)) |> Decimal.to_string(),
-            holders: holders |> Integer.to_string(),
+            holders: (holders || 0) |> Integer.to_string(),
             type_script: udt.type_script
           }
         }
@@ -222,7 +224,43 @@ defmodule GodwokenExplorer.Account do
         |> Repo.update()
 
       _ ->
-        account
+        {:ok, account}
+    end
+  end
+
+  def create_udt_account(udt_script, udt_script_hash, user_account_id) do
+    udt_code_hash = Application.get_env(:godwoken_explorer, :udt_code_hash)
+    account_script = %{
+      "code_hash" => udt_code_hash,
+      "hash_type" => "data",
+      "args" => udt_script_hash
+    }
+    l2_udt_script_hash = script_to_hash(account_script)
+
+    result =
+      case Repo.get_by(Account, script_hash: l2_udt_script_hash) do
+        nil ->
+          udt_account_id = GodwokenRPC.fetch_account_id(l2_udt_script_hash)
+          if is_nil(udt_account_id) do
+            Logger.error(fn -> ["UDT Account ID no exist of script_hash : ", l2_udt_script_hash] end)
+            {:error, nil}
+          else
+            {:ok, _udt} = UDT.find_or_create_by(%{id: udt_account_id, script_hash: udt_script_hash, type_script: udt_script})
+            __MODULE__.create_or_update_account(%{
+              id: udt_account_id,
+              script: account_script,
+              script_hash: l2_udt_script_hash,
+              type: "udt"
+            })
+            {:ok, udt_account_id}
+          end
+
+        %__MODULE__{id: udt_account_id} ->
+          {:ok, udt_account_id}
+      end
+    with {:ok, udt_account_id} <- result do
+      Worker.trigger_account([user_account_id])
+      Worker.trigger_sudt_account([{udt_account_id, [user_account_id]}])
     end
   end
 end

@@ -12,7 +12,7 @@ defmodule GodwokenIndexer.Account.Worker do
   end
 
   def init(state) do
-    GenServer.cast(AccountWorker, {:account, [0, 1]})
+    GenServer.cast(AccountWorker, {:account, [0]})
 
     {:ok, state}
   end
