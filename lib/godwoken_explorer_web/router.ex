@@ -2,6 +2,7 @@ defmodule GodwokenExplorerWeb.Router do
   use GodwokenExplorerWeb, :router
 
   import Plug.BasicAuth
+  import Phoenix.LiveDashboard.Router
 
   pipeline :browser do
     plug :accepts, ["html"]
@@ -48,12 +49,9 @@ defmodule GodwokenExplorerWeb.Router do
   # If your application does not have an admins-only section yet,
   # you can use Plug.BasicAuth to set up some basic authentication
   # as long as you are also using SSL (which you should anyway).
-  if Mix.env() in [:dev, :prod] do
-    import Phoenix.LiveDashboard.Router
 
-    scope "/" do
-      pipe_through :browser
-      live_dashboard "/dashboard", metrics: GodwokenExplorerWeb.Telemetry
-    end
+  scope "/" do
+    pipe_through :browser
+    live_dashboard "/dashboard", metrics: GodwokenExplorerWeb.Telemetry
   end
 end

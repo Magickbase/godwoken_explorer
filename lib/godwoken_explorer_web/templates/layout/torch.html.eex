@@ -25,7 +25,7 @@
           </div>
           <nav class="torch-nav">
             <%= link "LiveDashboard", to: Routes.live_dashboard_path(@conn, :home) %>
-            <a href="/udts">UDT</a>
+            <a href="/admin/udts">UDT</a>
           </nav>
         </div>
       </section>
