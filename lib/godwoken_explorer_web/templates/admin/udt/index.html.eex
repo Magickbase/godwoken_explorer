@@ -1,0 +1,80 @@
+<section id="torch-toolbar">
+  <div class="torch-container">
+    <%= link "New Udt", to: Routes.admin_udt_path(@conn, :new) %>
+  </div>
+</section>
+<section id="torch-index-content">
+  <div class="torch-container">
+    <section id="torch-filters">
+      <h3>Find Udts</h3>
+      <%= form_tag @conn.request_path, method: :get, id: "torch-filters-form" do %>
+
+          <div class="field">
+            <label>Name</label>
+            <%= filter_select(:udt, :name, @conn.params) %>
+            <%= filter_string_input(:udt, :name, @conn.params) %>
+          </div>
+
+        <button type="submit" class="torch-button">Search</button>
+        <%= link "Clear Filters", to: Routes.admin_udt_path(@conn, :index) %>
+      <% end %>
+
+    </section>
+
+    <section id="torch-table">
+    <%= if length(@udts) > 0 do %>
+      <table>
+        <thead>
+          <tr>
+
+              <th><%= table_link(@conn, "ID", :id) %></th>
+
+              <th><%= table_link(@conn, "Decimal", :decimal) %></th>
+
+              <th><%= table_link(@conn, "Name", :name) %></th>
+
+              <th><%= table_link(@conn, "Symbol", :symbol) %></th>
+
+              <th><%= table_link(@conn, "Icon", :icon) %></th>
+
+              <th><%= table_link(@conn, "Supply", :supply) %></th>
+
+              <th><%= table_link(@conn, "Script hash", :script_hash) %></th>
+
+            <th><span>Actions</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <%= for udt <- @udts do %>
+            <tr>
+
+                <td><%= udt.id %></td>
+
+                <td><%= udt.decimal %></td>
+
+                <td><%= udt.name %></td>
+
+                <td><%= udt.symbol %></td>
+
+                <td><%= udt.icon %></td>
+
+                <td><%= udt.supply %></td>
+
+                <td><%= udt.script_hash %></td>
+
+              <td class="torch-actions">
+                <span><%= link "Show", to: Routes.admin_udt_path(@conn, :show, udt) %></span>
+                <span><%= link "Edit", to: Routes.admin_udt_path(@conn, :edit, udt) %></span>
+                <span><%= link "Delete", to: Routes.admin_udt_path(@conn, :delete, udt), method: :delete, data: [confirm: "Are you sure?"] %></span>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+      <%= render Torch.PaginationView, "_pagination.html", assigns %>
+    <% else %>
+      <p class="torch-no-data">No Udts match your search.</p>
+    <% end %>
+    </section>
+  </div>
+</section>

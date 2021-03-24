@@ -62,6 +62,9 @@ defmodule GodwokenExplorer.MixProject do
       {:logger_file_backend, "~> 0.0.10"},
       {:blake2_elixir, "~> 0.8.1"},
 
+      # admin dashboard
+      {:torch, "~> 3.6"},
+
       # CORS
       {:cors_plug, "~> 2.0"},
 

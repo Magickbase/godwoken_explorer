@@ -1,0 +1,76 @@
+<%= form_for @changeset, @action, [multipart: true, id: "torch-form"], fn f -> %>
+  <fieldset class="torch-panel">
+    <legend>
+      <span>Details</span>
+    </legend>
+    <%= if @changeset.action do %>
+      <p class="torch-form-error">Oops, something went wrong! Please check the errors below.</p>
+    <% end %>
+
+    <%= if @conn.request_path == "/admin/udts/new" do %>
+      <div class="torch-form-group">
+          <%= label f, :id, "id *" %>
+          <%= number_input f, :id, required: true %>
+          <%= error_tag f, :id %>
+        </div>
+    <% end %>
+
+    <div class="torch-form-group">
+      <%= label f, :decimal %>
+      <%= number_input f, :decimal %>
+      <%= error_tag f, :decimal %>
+    </div>
+
+    <div class="torch-form-group">
+      <%= label f, :name %>
+      <%= text_input f, :name %>
+      <%= error_tag f, :name %>
+    </div>
+
+    <div class="torch-form-group">
+      <%= label f, :symbol %>
+      <%= text_input f, :symbol %>
+      <%= error_tag f, :symbol %>
+    </div>
+
+    <div class="torch-form-group">
+      <%= label f, :icon %>
+      <%= text_input f, :icon %>
+      <%= error_tag f, :icon %>
+    </div>
+
+    <div class="torch-form-group">
+      <%= label f, :supply %>
+      <%= number_input f, :supply, step: "any" %>
+      <%= error_tag f, :supply %>
+    </div>
+
+    <div class="torch-form-group">
+      <%= label f, :type_script_code_hash %>
+      <input id="torch-form_udt_type_script_code_hash" name="udt[type_script][code_hash]" type="text" value="<%= type_script_value(@conn, "code_hash") %>" >
+      <%= error_tag f, :type_script_code_hash %>
+    </div>
+
+    <div class="torch-form-group">
+      <%= label f, :type_script_hash_type %>
+      <input id="torch-form_udt_type_script_hash_type" name="udt[type_script][hash_type]" type="text" value="<%= type_script_value(@conn, "hash_type") %>" >
+      <%= error_tag f, :type_script_hash_type %>
+    </div>
+
+    <div class="torch-form-group">
+      <%= label f, :type_script_args %>
+      <input id="torch-form_udt_type_script_args" name="udt[type_script][args]" type="text" value="<%= type_script_value(@conn, "args") %>" >
+      <%= error_tag f, :type_script_args %>
+    </div>
+
+    <div class="torch-form-group">
+      <%= label f, :script_hash, "script_hash *" %>
+      <%= text_input f, :script_hash, required: true %>
+      <%= error_tag f, :script_hash %>
+    </div>
+
+    <div class="torch-submit-form">
+      <%= submit "Submit", class: "torch-submit-button" %>
+    </div>
+  </fieldset>
+<% end %>

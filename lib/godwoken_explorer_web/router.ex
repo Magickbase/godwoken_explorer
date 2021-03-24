@@ -28,6 +28,12 @@ defmodule GodwokenExplorerWeb.Router do
     get "/", PageController, :index
   end
 
+  scope "/admin", GodwokenExplorerWeb.Admin, as: :admin do
+      pipe_through :browser
+
+      resources "/udts", UDTController
+    end
+
   # Other scopes may use custom stacks.
   # scope "/api", GodwokenExplorerWeb do
   #   pipe_through :api
