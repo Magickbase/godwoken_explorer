@@ -5,8 +5,9 @@ defmodule GodwokenExplorerWeb.Admin.UDTView do
   import Torch.FilterView
 
   def type_script_value(conn, key) do
-    if conn.assigns[:udt] do
-      Map.get(conn.assigns[:udt].type_script, key, "")
+    udt = conn.assigns[:udt]
+    if udt && udt.type_script  do
+      Map.get(udt.type_script, key, "")
     else
       ""
     end
