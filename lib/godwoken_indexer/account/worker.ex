@@ -47,6 +47,9 @@ defmodule GodwokenIndexer.Account.Worker do
     {:noreply, [state]}
   end
 
+  @type word() :: String.t()
+
+  @spec handle_cast({:sudt_account, {Integer.t(), [Integer.t()]}}, any()) :: {:noreply, any()}
   def handle_cast({:sudt_account, udt_and_account_ids}, state) do
     udt_and_account_ids
     |> Enum.each(fn {udt_id, account_ids} ->
