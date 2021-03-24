@@ -19,6 +19,8 @@ config :godwoken_explorer,
 config :godwoken_explorer,
   init_godwoken_l1_block_number: 1798
 
+config :godwoken_explorer, :basic_auth, username: "hello", password: "secret"
+
 config :godwoken_explorer, GodwokenExplorer.Repo,
   username: "user",
   password: "password",

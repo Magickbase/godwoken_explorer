@@ -1,8 +1,11 @@
 defmodule GodwokenExplorerWeb.Router do
   use GodwokenExplorerWeb, :router
 
+  import Plug.BasicAuth
+
   pipeline :browser do
     plug :accepts, ["html"]
+    plug :basic_auth, Application.compile_env(:godwoken_explorer, :basic_auth)
     plug :fetch_session
     plug :fetch_flash
     plug :protect_from_forgery
@@ -23,14 +26,13 @@ defmodule GodwokenExplorerWeb.Router do
   end
 
   scope "/", GodwokenExplorerWeb do
-    pipe_through :browser
-
-    get "/", PageController, :index
+    get "/", RootController, :index
   end
 
   scope "/admin", GodwokenExplorerWeb.Admin, as: :admin do
       pipe_through :browser
 
+      get "/", UDTController, :index
       resources "/udts", UDTController
     end
 
@@ -46,7 +48,7 @@ defmodule GodwokenExplorerWeb.Router do
   # If your application does not have an admins-only section yet,
   # you can use Plug.BasicAuth to set up some basic authentication
   # as long as you are also using SSL (which you should anyway).
-  if Mix.env() in [:dev, :test] do
+  if Mix.env() in [:dev, :prod] do
     import Phoenix.LiveDashboard.Router
 
     scope "/" do

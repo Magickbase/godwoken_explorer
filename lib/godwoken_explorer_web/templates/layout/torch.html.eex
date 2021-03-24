@@ -10,6 +10,7 @@
     <header>
       <section id="torch-account-info">
         <div class="torch-container">
+
           <a href="/">user@example.com</a>
           <a href="/">Logout</a>
         </div>
@@ -23,7 +24,8 @@
             </a>
           </div>
           <nav class="torch-nav">
-            <!-- nav links here -->
+            <%= link "LiveDashboard", to: Routes.live_dashboard_path(@conn, :home) %>
+            <a href="/udts">UDT</a>
           </nav>
         </div>
       </section>
@@ -34,4 +36,3 @@
     <script src="<%= Routes.static_path(@conn, "/torch/torch.js") %>"></script>
   </body>
 </html>
-
