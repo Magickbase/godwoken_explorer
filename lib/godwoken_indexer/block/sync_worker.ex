@@ -3,7 +3,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
 
   import GodwokenRPC.Util, only: [hex_to_number: 1]
 
-  alias GodwokenRPC.Block.FetchedTipNumber
+  alias GodwokenRPC.Block.{FetchedTipBlockHash, ByHash}
   alias GodwokenRPC.{Blocks, HTTP}
   alias GodwokenExplorer.{Block, Transaction, Chain}
   alias GodwokenExplorer.Chain.Events.Publisher
@@ -133,12 +133,11 @@ defmodule GodwokenIndexer.Block.SyncWorker do
     |> Enum.uniq()
   end
 
-  defp fetch_tip_number do
+  def fetch_tip_number do
     options = Application.get_env(:godwoken_explorer, :json_rpc_named_arguments)
 
-    with {:ok, tip_number} <-
-           FetchedTipNumber.request()
-           |> HTTP.json_rpc(options) do
+    with {:ok, tip_block_hash} <- FetchedTipBlockHash.request() |> HTTP.json_rpc(options),
+         {:ok, %{"raw" => %{"number" => tip_number}}} <- ByHash.request(%{id: 1, hash: tip_block_hash}) |> HTTP.json_rpc(options) do
 
       {:ok, tip_number |> hex_to_number()}
     end
