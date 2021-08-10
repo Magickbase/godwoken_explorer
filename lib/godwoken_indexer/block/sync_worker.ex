@@ -3,6 +3,8 @@ defmodule GodwokenIndexer.Block.SyncWorker do
 
   import GodwokenRPC.Util, only: [hex_to_number: 1]
 
+  require Logger
+
   alias GodwokenRPC.Block.{FetchedTipBlockHash, ByHash}
   alias GodwokenRPC.{Blocks, HTTP}
   alias GodwokenExplorer.{Block, Transaction, Chain}
@@ -37,30 +39,39 @@ defmodule GodwokenIndexer.Block.SyncWorker do
   defp fetch_and_import do
     with {:ok, tip_number} <- fetch_tip_number() do
       next_number = Block.get_next_number()
+      Logger.info("FETCHED BLOCK NUMBER!!!! #{next_number}")
 
       if next_number <= tip_number do
         range = next_number..next_number
 
         {:ok,
-          %Blocks{
-            blocks_params: blocks_params,
-            transactions_params: transactions_params,
-            errors: _
-          }
-        } = GodwokenRPC.fetch_blocks_by_range(range)
+         %Blocks{
+           blocks_params: blocks_params,
+           transactions_params: transactions_params,
+           errors: _
+         }} = GodwokenRPC.fetch_blocks_by_range(range)
+
+        Logger.info(inspect(blocks_params))
+        Logger.info(inspect(transactions_params))
 
         inserted_blocks =
-          blocks_params |> Enum.map(fn block_params ->
+          blocks_params
+          |> Enum.map(fn block_params ->
             {:ok, %Block{} = block_struct} = Block.create_block(block_params)
             block_struct
           end)
+
         update_block_cache(inserted_blocks)
 
         inserted_transactions =
-          transactions_params |> Enum.map(fn transaction_params ->
-            {:ok, %Transaction{} = transaction_struct} = Transaction.create_transaction(transaction_params)
+          transactions_params
+          |> Enum.map(fn transaction_params ->
+            {:ok, %Transaction{} = transaction_struct} =
+              Transaction.create_transaction(transaction_params)
+
             transaction_struct
           end)
+
         update_transactions_cache(inserted_transactions)
 
         broadcast_block_and_tx(inserted_blocks, inserted_transactions)
@@ -71,23 +82,31 @@ defmodule GodwokenIndexer.Block.SyncWorker do
   end
 
   defp broadcast_block_and_tx(inserted_blocks, inserted_transactions) do
-    home_blocks = Enum.map(inserted_blocks, fn block -> Map.take(block, [:hash, :number, :timestamp, :transaction_count]) end)
+    home_blocks =
+      Enum.map(inserted_blocks, fn block ->
+        Map.take(block, [:hash, :number, :timestamp, :transaction_count])
+      end)
+
     home_transactions =
       Enum.map(inserted_transactions, fn tx ->
         tx
         |> Map.take([:hash, :from_account_id, :to_account_id, :type])
-        |> Map.merge(%{timestamp: home_blocks |> List.first() |> Map.get(:timestamp), success: true})
+        |> Map.merge(%{
+          timestamp: home_blocks |> List.first() |> Map.get(:timestamp),
+          success: true
+        })
       end)
+
     data = Chain.home_api_data(home_blocks, home_transactions)
     Publisher.broadcast([{:home, data}], :realtime)
 
     Enum.each(data[:tx_list], fn tx ->
-      result =
-        %{
-          page: "1",
-          total_count: "1",
-          txs: [Map.merge(tx, %{block_number: home_blocks |> List.first() |> Map.get(:number)})]
-        }
+      result = %{
+        page: "1",
+        total_count: "1",
+        txs: [Map.merge(tx, %{block_number: home_blocks |> List.first() |> Map.get(:number)})]
+      }
+
       Publisher.broadcast([{:account_transactions, result}], :realtime)
     end)
   end
@@ -114,16 +133,20 @@ defmodule GodwokenIndexer.Block.SyncWorker do
   defp update_transactions_cache(transactions) do
     Transactions.update(transactions)
   end
+
   # 0: meta_contract 1: ckb
   defp extract_account_ids(transactions_params) do
-    transactions_params |> Enum.reduce([], fn transaction, acc ->
+    transactions_params
+    |> Enum.reduce([], fn transaction, acc ->
       acc ++ transaction[:account_ids]
     end)
     |> Enum.uniq()
-    |> Enum.reject(& (&1 in [0, 1]))
+    |> Enum.reject(&(&1 in [0, 1]))
   end
+
   defp extract_sudt_account_ids(transactions_params) do
-    transactions_params |> Enum.reduce([], fn transaction, acc ->
+    transactions_params
+    |> Enum.reduce([], fn transaction, acc ->
       if transaction |> Map.has_key?(:udt_id) do
         acc ++ [{transaction[:udt_id], transaction[:account_ids]}]
       else
@@ -133,12 +156,12 @@ defmodule GodwokenIndexer.Block.SyncWorker do
     |> Enum.uniq()
   end
 
-  def fetch_tip_number do
+  defp fetch_tip_number do
     options = Application.get_env(:godwoken_explorer, :json_rpc_named_arguments)
 
     with {:ok, tip_block_hash} <- FetchedTipBlockHash.request() |> HTTP.json_rpc(options),
-         {:ok, %{"raw" => %{"number" => tip_number}}} <- ByHash.request(%{id: 1, hash: tip_block_hash}) |> HTTP.json_rpc(options) do
-
+         {:ok, %{"block" => %{"raw" => %{"number" => tip_number}}}} <-
+           ByHash.request(%{id: 1, hash: tip_block_hash}) |> HTTP.json_rpc(options) do
       {:ok, tip_number |> hex_to_number()}
     end
   end

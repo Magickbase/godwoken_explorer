@@ -2,7 +2,7 @@ defmodule GodwokenExplorer.Account do
   use GodwokenExplorer, :schema
 
   import Ecto.Changeset
-  import GodwokenRPC.Util, only: [script_to_hash: 1]
+  import GodwokenRPC.Util, only: [script_to_hash: 1, hex_to_number: 1]
 
   require Logger
 
@@ -172,7 +172,7 @@ defmodule GodwokenExplorer.Account do
   def account_to_view(account) do
     account = %{account | ckb: balance_to_view(account.ckb, 8)}
 
-    case  Kernel.get_in(account, [:user, :udt_list]) do
+    case Kernel.get_in(account, [:user, :udt_list]) do
       udt_list when not is_nil(udt_list) ->
         Kernel.put_in(
           account,
@@ -182,6 +182,7 @@ defmodule GodwokenExplorer.Account do
             %{udt | balance: balance_to_view(udt.balance, udt.decimal)}
           end)
         )
+
       _ ->
         account
     end
@@ -207,7 +208,7 @@ defmodule GodwokenExplorer.Account do
 
     case account do
       nil ->
-        account_id = GodwokenRPC.fetch_account_id(script_hash)
+        account_id = GodwokenRPC.fetch_account_id(script_hash) |> hex_to_number()
 
         create_or_update_account(%{
           id: account_id,
@@ -230,34 +231,53 @@ defmodule GodwokenExplorer.Account do
 
   def create_udt_account(udt_script, udt_script_hash, user_account_id) do
     udt_code_hash = Application.get_env(:godwoken_explorer, :udt_code_hash)
+    rollup_script_hash = Application.get_env(:godwoken_explorer, :rollup_script_hash)
+
     account_script = %{
       "code_hash" => udt_code_hash,
-      "hash_type" => "data",
-      "args" => udt_script_hash
+      "hash_type" => "type",
+      "args" => rollup_script_hash <> String.slice(udt_script_hash, 2..-1)
     }
+
     l2_udt_script_hash = script_to_hash(account_script)
 
     result =
       case Repo.get_by(Account, script_hash: l2_udt_script_hash) do
         nil ->
-          udt_account_id = GodwokenRPC.fetch_account_id(l2_udt_script_hash)
+          udt_account_id =
+            case GodwokenRPC.fetch_account_id(l2_udt_script_hash) do
+              nil -> nil
+              udt_account_id when is_binary(udt_account_id) -> hex_to_number(udt_account_id)
+            end
+
           if is_nil(udt_account_id) do
-            Logger.error(fn -> ["UDT Account ID no exist of script_hash : ", l2_udt_script_hash] end)
+            Logger.error(fn ->
+              ["UDT Account ID no exist of script_hash : ", l2_udt_script_hash]
+            end)
+
             {:error, nil}
           else
-            {:ok, _udt} = UDT.find_or_create_by(%{id: udt_account_id, script_hash: udt_script_hash, type_script: udt_script})
+            {:ok, _udt} =
+              UDT.find_or_create_by(%{
+                id: udt_account_id,
+                script_hash: udt_script_hash,
+                type_script: udt_script
+              })
+
             __MODULE__.create_or_update_account(%{
               id: udt_account_id,
               script: account_script,
               script_hash: l2_udt_script_hash,
               type: "udt"
             })
+
             {:ok, udt_account_id}
           end
 
         %__MODULE__{id: udt_account_id} ->
           {:ok, udt_account_id}
       end
+
     with {:ok, udt_account_id} <- result do
       Worker.trigger_account([user_account_id])
       Worker.trigger_sudt_account([{udt_account_id, [user_account_id]}])

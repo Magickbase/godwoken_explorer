@@ -13,7 +13,9 @@ defmodule GodwokenIndexer.Block.BindL1L2Worker do
 
   @impl true
   def init(state) do
-    init_godwoken_l1_block_number = Application.get_env(:godwoken_explorer, :init_godwoken_l1_block_number)
+    init_godwoken_l1_block_number =
+      Application.get_env(:godwoken_explorer, :init_godwoken_l1_block_number)
+
     start_block_number =
       case Block.find_last_bind_l1_block() do
         %Block{layer1_block_number: l1_block_number} -> l1_block_number + 1
@@ -36,32 +38,39 @@ defmodule GodwokenIndexer.Block.BindL1L2Worker do
     {:noreply, state}
   end
 
-  defp fetch_l1_number_and_update(start_block_number, l1_tip_number) when start_block_number > l1_tip_number do
+  defp fetch_l1_number_and_update(start_block_number, l1_tip_number)
+       when start_block_number > l1_tip_number do
     {:ok, start_block_number}
   end
+
   defp fetch_l1_number_and_update(start_block_number, l1_tip_number) do
     block_range = cal_block_range(start_block_number, l1_tip_number)
     state_validator_lock = Application.get_env(:godwoken_explorer, :state_validator_lock)
 
     case GodwokenRPC.fetch_l1_txs_by_range(%{
-                                                    script: state_validator_lock,
-                                                    script_type: "lock",
-                                                    order: "asc",
-                                                    limit: "0x64",
-                                                    filter: %{block_range: block_range}
-                                                  }) do
+           script: state_validator_lock,
+           script_type: "lock",
+           order: "asc",
+           limit: "0x64",
+           filter: %{block_range: block_range}
+         }) do
       {:ok, response} ->
-         case response["objects"] |> Enum.filter(fn obj -> obj["io_type"] == "output" end) do
-           txs when txs == [] -> {:ok, block_range |> List.last() |> hex_to_number()}
-           txs ->
+        case response["objects"] |> Enum.filter(fn obj -> obj["io_type"] == "output" end) do
+          txs when txs == [] ->
+            {:ok, block_range |> List.last() |> hex_to_number()}
+
+          txs ->
             updated_l1_numbers = parse_data_and_bind(txs)
+
             if updated_l1_numbers == [] do
               {:ok, block_range |> List.first() |> hex_to_number()}
             else
-              {:ok, (updated_l1_numbers|> List.first()) + 1}
+              {:ok, (updated_l1_numbers |> List.first()) + 1}
             end
-         end
-      {:error, _} -> {:ok, block_range |> List.first() |> hex_to_number() }
+        end
+
+      {:error, _} ->
+        {:ok, block_range |> List.first() |> hex_to_number()}
     end
   end
 
@@ -69,25 +78,34 @@ defmodule GodwokenIndexer.Block.BindL1L2Worker do
     block_range = cal_block_range(start_block_number, l1_tip_number)
     deposition_lock = Application.get_env(:godwoken_explorer, :deposition_lock)
 
-    with {:ok, response} <- GodwokenRPC.fetch_l1_txs_by_range(%{
-                                                    script: deposition_lock,
-                                                    script_type: "lock",
-                                                    order: "asc",
-                                                    limit: "0x64",
-                                                    filter: %{block_range: block_range}
-                                                  }) ,
-         txs when txs != [] <- response["objects"] |> Enum.filter(fn obj -> obj["io_type"] == "output" end) do
-         parse_lock_script_and_bind(txs)
+    with {:ok, response} <-
+           GodwokenRPC.fetch_l1_txs_by_range(%{
+             script: deposition_lock,
+             script_type: "lock",
+             order: "asc",
+             limit: "0x64",
+             filter: %{block_range: block_range}
+           }),
+         txs when txs != [] <-
+           response["objects"] |> Enum.filter(fn obj -> obj["io_type"] == "output" end) do
+      parse_lock_script_and_bind(txs)
     end
   end
 
   defp parse_lock_script_and_bind(txs) do
     txs
     |> Enum.map(fn %{"tx_hash" => tx_hash, "io_index" => io_index} ->
-      with {:ok, %{"transaction" => %{"inputs" => inputs, "outputs" => outputs}}} <- GodwokenRPC.fetch_l1_tx(tx_hash) do
+      with {:ok, %{"transaction" => %{"inputs" => inputs, "outputs" => outputs}}} <-
+             GodwokenRPC.fetch_l1_tx(tx_hash) do
         {:ok, l2_script_hash, l1_lock_hash} = parse_lock_args(outputs, io_index)
         ckb_lock_script = get_ckb_lock_script(inputs, outputs, io_index)
-        {:ok, user_account} = Account.bind_ckb_lock_script(ckb_lock_script, "0x" <> l2_script_hash, "0x" <> l1_lock_hash)
+
+        {:ok, user_account} =
+          Account.bind_ckb_lock_script(
+            ckb_lock_script,
+            "0x" <> l2_script_hash,
+            "0x" <> l1_lock_hash
+          )
 
         {udt_script, udt_script_hash} = parse_udt_script(outputs, io_index)
         Account.create_udt_account(udt_script, udt_script_hash, user_account.id)
@@ -101,7 +119,9 @@ defmodule GodwokenIndexer.Block.BindL1L2Worker do
     case outputs
          |> Enum.at(hex_to_number(io_index))
          |> Map.get("type") do
-      nil -> {nil, "0x0000000000000000000000000000000000000000000000000000000000000000"}
+      nil ->
+        {nil, "0x0000000000000000000000000000000000000000000000000000000000000000"}
+
       %{} = udt_script ->
         {udt_script, script_to_hash(udt_script)}
     end
@@ -115,6 +135,7 @@ defmodule GodwokenIndexer.Block.BindL1L2Worker do
     |> String.slice(2..-1)
     |> parse_deposition_lock_args()
   end
+
   defp get_ckb_lock_script(inputs, outputs, io_index) do
     if length(outputs) > 1 do
       outputs
@@ -123,6 +144,7 @@ defmodule GodwokenIndexer.Block.BindL1L2Worker do
       |> Map.get("lock")
     else
       %{"previous_output" => %{"index" => index, "tx_hash" => tx_hash}} = inputs |> List.first()
+
       with {:ok, %{"transaction" => %{"outputs" => outputs}}} <- GodwokenRPC.fetch_l1_tx(tx_hash) do
         outputs
         |> Enum.at(hex_to_number(index))
@@ -135,7 +157,8 @@ defmodule GodwokenIndexer.Block.BindL1L2Worker do
   defp parse_data_and_bind(txs) do
     txs
     |> Enum.map(fn %{"block_number" => block_number, "tx_hash" => tx_hash, "io_index" => io_index} ->
-      with {:ok, %{"transaction" => %{"outputs_data" => outputs_data}}} <- GodwokenRPC.fetch_l1_tx(tx_hash) do
+      with {:ok, %{"transaction" => %{"outputs_data" => outputs_data}}} <-
+             GodwokenRPC.fetch_l1_tx(tx_hash) do
         l2_block_number = parse_outputs_data(outputs_data, io_index)
 
         Block.bind_l1_l2_block(l2_block_number, hex_to_number(block_number), tx_hash)
@@ -166,12 +189,14 @@ defmodule GodwokenIndexer.Block.BindL1L2Worker do
     cond do
       start_block_number == l1_tip_number ->
         [l1_tip_number, l1_tip_number]
+
       start_block_number + 100 < l1_tip_number ->
         [start_block_number, start_block_number + 100]
+
       start_block_number + 100 >= l1_tip_number ->
         [start_block_number, l1_tip_number]
     end
-    |> Enum.map(& number_to_hex(&1))
+    |> Enum.map(&number_to_hex(&1))
   end
 
   defp schedule_work(start_block_number) do

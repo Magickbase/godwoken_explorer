@@ -41,7 +41,8 @@ defmodule GodwokenIndexer.Block.GlobalStateWorker do
     options = Application.get_env(:godwoken_explorer, :ckb_indexer_named_arguments)
     state_validator_lock = Application.get_env(:godwoken_explorer, :state_validator_lock)
 
-    with {:ok, response} <- FetchedCells.request(state_validator_lock, "lock") |> HTTP.json_rpc(options),
+    with {:ok, response} <-
+           FetchedCells.request(state_validator_lock, "lock") |> HTTP.json_rpc(options),
          %{"output_data" => "0x" <> global_state} <- response["objects"] |> List.first() do
       {
         :ok,
@@ -51,14 +52,26 @@ defmodule GodwokenIndexer.Block.GlobalStateWorker do
         {account_count, account_merkle_root},
         status
       } = global_state |> parse_global_state()
+
       parsed_status =
-        if status == "00" do "running" else "halting" end
+        if status == "00" do
+          "running"
+        else
+          "halting"
+        end
+
       {
         :ok,
         latest_finalized_block_number,
         %{
-          account_merkle_state: %{account_merkle_root: "0x" <> account_merkle_root, account_count: account_count},
-          block_merkle_state: %{block_merkle_root: "0x" <> block_merkle_root, block_count: l2_block_count},
+          account_merkle_state: %{
+            account_merkle_root: "0x" <> account_merkle_root,
+            account_count: account_count
+          },
+          block_merkle_state: %{
+            block_merkle_root: "0x" <> block_merkle_root,
+            block_count: l2_block_count
+          },
           reverted_block_root: reverted_block_root,
           last_finalized_block_number: latest_finalized_block_number,
           status: parsed_status
