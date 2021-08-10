@@ -57,6 +57,6 @@ defmodule GodwokenRPC.Block do
 
   defp timestamp_to_datetime(timestamp) do
       timestamp
-      |> DateTime.from_unix!()
+      |> DateTime.from_unix!(:millisecond)
   end
 end
