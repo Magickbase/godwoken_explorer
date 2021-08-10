@@ -53,7 +53,6 @@ defmodule GodwokenExplorer.MixProject do
       {:gettext, "~> 0.11"},
       {:jason, "~> 1.0"},
       {:plug_cowboy, "~> 2.0"},
-
       {:httpoison, "~> 1.8"},
       {:rustler, "~> 0.21.1"},
       {:con_cache, "~> 0.13"},
@@ -61,6 +60,7 @@ defmodule GodwokenExplorer.MixProject do
       {:decimal, "~> 2.0"},
       {:logger_file_backend, "~> 0.0.10"},
       {:blake2_elixir, "~> 0.8.1"},
+      {:sentry, "~> 8.0"},
 
       # admin dashboard
       {:torch, "~> 3.6"},
@@ -68,7 +68,7 @@ defmodule GodwokenExplorer.MixProject do
       # CORS
       {:cors_plug, "~> 2.0"},
 
-      #static code analysis tool
+      # static code analysis tool
       {:credo, "~> 1.5", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.0", only: [:dev], runtime: false},
       {:sobelow, "~> 0.8", only: :dev},
@@ -101,8 +101,10 @@ defmodule GodwokenExplorer.MixProject do
 
   defp rustler_crates do
     [
-      molecule_parser: [path: "native/molecule_parser", mode: if(Mix.env() in [:staging, :prod], do: :release, else: :debug)]
+      molecule_parser: [
+        path: "native/molecule_parser",
+        mode: if(Mix.env() in [:staging, :prod], do: :release, else: :debug)
+      ]
     ]
   end
-
 end
