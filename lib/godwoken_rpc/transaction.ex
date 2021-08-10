@@ -15,7 +15,8 @@ defmodule GodwokenRPC.Transaction do
         "hash" => hash
       })
       when to_account_id == "0x0" do
-    {:ok, code_hash, hash_type, udt_id} = MoleculeParser.parse_meta_contract_args(args)
+    {:ok, code_hash, hash_type, args} = MoleculeParser.parse_meta_contract_args(args)
+    udt_id = String.slice(args, 64..-1)
 
     from_account_id = hex_to_number(from_account_id)
 
@@ -83,7 +84,6 @@ defmodule GodwokenRPC.Transaction do
     from_account_id = hex_to_number(from_account_id)
     to_account_id = hex_to_number(to_account_id)
 
-
     %{
       type: :polyjuice,
       hash: hash,
@@ -126,7 +126,8 @@ defmodule GodwokenRPC.Transaction do
           "payment_lock_hash" => payment_lock_hash,
           "sell_amount" => sell_amount,
           "sell_capacity" => sell_capacity,
-          "sudt_script_hash" => sudt_script_hash
+          "sudt_script_hash" => sudt_script_hash,
+          "fee" => fee
         },
         "hash" => hash
       }) do
