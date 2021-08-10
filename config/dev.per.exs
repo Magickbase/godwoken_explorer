@@ -1,23 +1,23 @@
 use Mix.Config
 
 config :godwoken_explorer,
-  polyjuice_validator_code_hash: "0x6a946971979c019fe5096108267779775a141c9647936053b58358caa87bf5a2",
-  layer2_lock_code_hash: "0x0000000000000000000000000000000000000000000000000000000000000001",
-  udt_code_hash: "0x2f2336a04c3cec17e33b5956e1fa2024234f58480bba28ded7e0a8a73e2e956d",
-  meta_contract_code_hash: "0xf6c494a0236ba9854c745e190ade9399a670c8efb4a876f978239ffcd445d0f3",
+  meta_contract_code_hash: "0xd6d4b52ed2882cb0b2e1f802817c0ab05bd27da89a41ceddb25e0e347689ce69",
+  udt_code_hash: "0xb6d6a2882d3d08cea565047bfe901cb2afe0cb790ea5e1b61e0532ef237c4a02",
+  polyjuice_validator_code_hash:
+    "0xbeb77e49c6506182ec0c02546aee9908aafc1561ec13beb488d14184c6cd1b79",
+  layer2_lock_code_hash: "0xdeec13a7b8e100579541384ccaf4b5223733e4a5483c3aec95ddc4c1d5ea5b22",
+  rollup_script_hash: "0x4cc2e6526204ae6a2e8fcf12f7ad472f41a1606d5b9624beebd215d780809f6a",
   state_validator_lock: %{
-    code_hash: "0x624e029197ba4c7731cd0f57f8fa50855194838c8a77234e66850c98aeb36f55",
+    code_hash: "0x5447ad1c351fe85d14d70fc885a9beb8a99281c216386b2985ff87a51756739f",
     hash_type: "type",
     args: "0x"
   },
   deposition_lock: %{
-    code_hash: "0x8c5d41b03077151a75c691343067062bd76588aef507c495b77f8c5ec31d4cf5",
+    code_hash: "0x5a2506bb68d81a11dcadad4cb7eae62a17c43c619fe47ac8037bc8ce2dd90360",
     hash_type: "type",
-    args: "0x1fd2f78b7f7f07a43fbabd12da7e23f2c24a77ee5b0e446ff9d5bf3ba1dd7993"
-  }
-
-config :godwoken_explorer,
-  init_godwoken_l1_block_number: 1798
+    args: "0x4cc2e6526204ae6a2e8fcf12f7ad472f41a1606d5b9624beebd215d780809f6a"
+  },
+  init_godwoken_l1_block_number: 2_286_200
 
 config :godwoken_explorer, :basic_auth, username: "hello", password: "secret"
 
@@ -27,12 +27,14 @@ config :godwoken_explorer, GodwokenExplorer.Repo,
   database: "godwoken_explorer_dev",
   hostname: "localhost",
   show_sensitive_data_on_connection_error: true,
-  pool_size: 10
+  pool_size: 10,
+  ownership_timeout: 60_000,
+  timeout: 60_000
 
 config :godwoken_explorer,
   json_rpc_named_arguments: [
     http: GodwokenRPC.HTTP.HTTPoison,
-    url: "http://localhost:8119",
+    url: "http://godwoken-testnet-web3-rpc.ckbapp.dev",
     http_options: [
       recv_timeout: :timer.minutes(10),
       timeout: :timer.minutes(10)
@@ -40,7 +42,7 @@ config :godwoken_explorer,
   ],
   ckb_indexer_named_arguments: [
     http: GodwokenRPC.HTTP.HTTPoison,
-    url: "http://localhost:8114/indexer",
+    url: "http://116.62.22.144:8116",
     http_options: [
       recv_timeout: :timer.minutes(10),
       timeout: :timer.minutes(10)
@@ -48,7 +50,7 @@ config :godwoken_explorer,
   ],
   ckb_rpc_named_arguments: [
     http: GodwokenRPC.HTTP.HTTPoison,
-    url: "http://localhost:8114",
+    url: "http://116.62.22.144:8114",
     http_options: [
       recv_timeout: :timer.minutes(10),
       timeout: :timer.minutes(10)
