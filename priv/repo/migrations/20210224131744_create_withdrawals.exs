@@ -13,6 +13,8 @@ defmodule GodwokenExplorer.Repo.Migrations.CreateWithdrawals do
       add :sell_capacity, :decimal
       add :sudt_script_hash, :binary
       add :udt_id, :integer
+      add :fee_amount, :decimal
+      add :fee_udt_id, :integer
 
       timestamps()
     end

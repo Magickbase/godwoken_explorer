@@ -78,8 +78,7 @@ defmodule GodwokenRPC.Transaction do
         },
         "hash" => hash
       }) do
-    [is_create, is_static, gas_limit, gas_price, value, input_size, input] =
-      parse_polyjuice_args(args)
+    [is_create, gas_limit, gas_price, value, input_size, input] = parse_polyjuice_args(args)
 
     from_account_id = hex_to_number(from_account_id)
     to_account_id = hex_to_number(to_account_id)
@@ -94,7 +93,6 @@ defmodule GodwokenRPC.Transaction do
       from_account_id: from_account_id,
       to_account_id: to_account_id,
       is_create: is_create,
-      is_static: is_static,
       gas_limit: gas_limit,
       gas_price: gas_price,
       value: value,
@@ -127,7 +125,7 @@ defmodule GodwokenRPC.Transaction do
           "sell_amount" => sell_amount,
           "sell_capacity" => sell_capacity,
           "sudt_script_hash" => sudt_script_hash,
-          "fee" => fee
+          "fee" => _fee
         },
         "hash" => hash
       }) do
@@ -180,31 +178,30 @@ defmodule GodwokenRPC.Transaction do
   end
 
   defp parse_polyjuice_args(hex_string) do
-    is_create = hex_string |> String.slice(0, 2) == "03"
-    is_static = hex_string |> String.slice(2, 2) == "01"
+    is_create = hex_string |> String.slice(14, 2) == "03"
 
     gas_limit =
       hex_string
-      |> String.slice(4, 16)
+      |> String.slice(16, 16)
       |> Base.decode16!(case: :lower)
       |> :binary.decode_unsigned(:little)
 
     gas_price =
       hex_string
-      |> String.slice(20, 32)
+      |> String.slice(32, 32)
       |> Base.decode16!(case: :lower)
       |> :binary.decode_unsigned(:little)
 
-    value = hex_string |> String.slice(84, 32)
+    value = hex_string |> String.slice(64, 32)
 
     input_size =
       hex_string
-      |> String.slice(116, 8)
+      |> String.slice(96, 8)
       |> Base.decode16!(case: :lower)
       |> :binary.decode_unsigned(:little)
 
-    input = hex_string |> String.slice(124..-1)
-    [is_create, is_static, gas_limit, gas_price, value, input_size, "0x" <> input]
+    input = hex_string |> String.slice(104..-1)
+    [is_create, gas_limit, gas_price, value, input_size, "0x" <> input]
   end
 
   defp parse_udt_id(hex_string) do
