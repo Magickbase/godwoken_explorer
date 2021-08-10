@@ -7,6 +7,8 @@ defmodule GodwokenIndexer.Block.BindL1L2Worker do
   alias GodwkenRPC
   alias GodwokenExplorer.{Block, Account}
 
+  @buffer_block_number 100
+
   def start_link(state \\ []) do
     GenServer.start_link(__MODULE__, state)
   end
@@ -30,8 +32,11 @@ defmodule GodwokenIndexer.Block.BindL1L2Worker do
   @impl true
   def handle_info({:bind_work, block_number}, state) do
     {:ok, l1_tip_number} = GodwokenRPC.fetch_l1_tip_block_nubmer()
-    {:ok, next_start_block_number} = fetch_l1_number_and_update(block_number, l1_tip_number)
-    fetch_deposition_script_and_update(block_number, l1_tip_number)
+
+    {:ok, next_start_block_number} =
+      fetch_l1_number_and_update(block_number, l1_tip_number - @buffer_block_number)
+
+    fetch_deposition_script_and_update(block_number, l1_tip_number - @buffer_block_number)
 
     schedule_work(next_start_block_number)
 

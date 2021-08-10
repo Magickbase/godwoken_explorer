@@ -39,7 +39,6 @@ defmodule GodwokenIndexer.Block.SyncWorker do
   defp fetch_and_import do
     with {:ok, tip_number} <- fetch_tip_number() do
       next_number = Block.get_next_number()
-      Logger.info("FETCHED BLOCK NUMBER!!!! #{next_number}")
 
       if next_number <= tip_number do
         range = next_number..next_number
@@ -50,9 +49,6 @@ defmodule GodwokenIndexer.Block.SyncWorker do
            transactions_params: transactions_params,
            errors: _
          }} = GodwokenRPC.fetch_blocks_by_range(range)
-
-        Logger.info(inspect(blocks_params))
-        Logger.info(inspect(transactions_params))
 
         inserted_blocks =
           blocks_params
