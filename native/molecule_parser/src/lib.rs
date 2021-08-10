@@ -8,7 +8,7 @@ use packed::CreateAccount;
 use packed::GlobalState;
 use packed::L2Block;
 use packed::WitnessArgs;
-use packed::DepositionLockArgs;
+use packed::DepositLockArgs;
 use molecule::prelude::Entity;
 use ckb_hash::blake2b_256;
 
@@ -32,12 +32,14 @@ rustler::rustler_export_nifs! {
     None
 }
 
+// table CreateAccount {
+//     script: Script,
+//     fee: Fee,
+// }
 fn parse_meta_contract_args<'a>(env: Env<'a>, args: &[Term<'a>]) -> Result<Term<'a>, Error> {
     let hex_string: &str = args[0].decode()?;
     let sudt_transfer_args = hex::decode(hex_string).unwrap();
     let meta_contract_args = MetaContractArgs::from_slice(&sudt_transfer_args).unwrap().to_enum();
-    // let create_account_args: Vec<u8> = vec![];
-    // create_account_args.copy_from_slice(&meta_contract_args);
     let script = CreateAccount::from_slice(meta_contract_args.as_slice()).unwrap().script();
     let code_hash = hex::encode(script.as_reader().code_hash().raw_data());
     let hash_type = hex::encode(script.as_reader().hash_type().as_slice());
@@ -91,7 +93,7 @@ fn parse_witness<'a>(env: Env<'a>, args: &[Term<'a>]) -> Result<Term<'a>, Error>
 fn parse_deposition_lock_args<'a>(env: Env<'a>, args: &[Term<'a>]) -> Result<Term<'a>, Error> {
     let hex_string: &str = args[0].decode()?;
     let args = hex::decode(hex_string).unwrap();
-    let deposition_args = DepositionLockArgs::from_slice(&args[32..]).unwrap();
+    let deposition_args = DepositLockArgs::from_slice(&args[32..]).unwrap();
     let l2_lock_script = blake2b_256(deposition_args.layer2_lock().as_slice());
     let l1_lock_hash = deposition_args.owner_lock_hash();
 
