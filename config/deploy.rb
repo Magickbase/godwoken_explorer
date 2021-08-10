@@ -9,8 +9,8 @@ set :repo_url, "git@github.com:nervina-labs/godwoken_explorer.git"
 
 set :deploy_user, 'ckb'
 set :deploy_to, "/home/#{fetch(:deploy_user)}/godwoken_explorer/app"
-set :ssh_options, user: 'ckb', verify_host_key: :always
-set :default_env, {path: "/home/ckb/.cargo/bin:$PATH"}
+set :ssh_options, user: "#{fetch(:deploy_user)}", verify_host_key: :always
+set :default_env, {path: "/home/#{fetch(:deploy_user)}/.cargo/bin:$PATH"}
 
 set :build_path, "/home/#{fetch(:deploy_user)}/godwoken_explorer/build"
 set :repo_path, "/home/#{fetch(:deploy_user)}/godwoken_explorer/repo"

@@ -1,4 +1,5 @@
 defmodule GodwokenExplorerWeb.Endpoint do
+  use Sentry.PlugCapture
   use Phoenix.Endpoint, otp_app: :godwoken_explorer
 
   # The session will be stored in the cookie and signed,
@@ -60,7 +61,7 @@ defmodule GodwokenExplorerWeb.Endpoint do
   plug Plug.Head
   plug Plug.Session, @session_options
 
-  if Mix.env in [:staging] do
+  if Mix.env() in [:staging] do
     plug CORSPlug
   end
 
