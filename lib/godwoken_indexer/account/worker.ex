@@ -3,10 +3,11 @@ defmodule GodwokenIndexer.Account.Worker do
 
   import GodwokenRPC.Util, only: [hex_to_number: 1]
 
-  alias GodwokenExplorer.{Account, AccountUDT}
+  alias GodwokenExplorer.{Account, AccountUDT, Repo}
   alias GodwokenRPC.HTTP
   alias GodwokenRPC.Account.{FetchedScript, FetchedScriptHash, FetchedNonce, FetchedBalance}
 
+  @spec start_link(any) :: :ignore | {:error, any} | {:ok, pid}
   def start_link(_) do
     GenServer.start_link(__MODULE__, %{}, name: AccountWorker)
   end
@@ -20,6 +21,7 @@ defmodule GodwokenIndexer.Account.Worker do
   def trigger_account(account_ids) do
     GenServer.cast(AccountWorker, {:account, account_ids})
   end
+
   def trigger_sudt_account(udt_and_account_ids) do
     GenServer.cast(AccountWorker, {:sudt_account, udt_and_account_ids})
   end
@@ -53,9 +55,15 @@ defmodule GodwokenIndexer.Account.Worker do
   def handle_cast({:sudt_account, udt_and_account_ids}, state) do
     udt_and_account_ids
     |> Enum.each(fn {udt_id, account_ids} ->
-      account_ids |> Enum.each(fn account_id ->
+      account_ids
+      |> Enum.each(fn account_id ->
         {:ok, balance} = fetch_balance(account_id, udt_id)
-        AccountUDT.create_or_update_account_udt(%{account_id: account_id, udt_id: udt_id, balance: balance})
+
+        AccountUDT.create_or_update_account_udt(%{
+          account_id: account_id,
+          udt_id: udt_id,
+          balance: balance
+        })
       end)
     end)
 
@@ -71,7 +79,7 @@ defmodule GodwokenIndexer.Account.Worker do
     case code_hash do
       ^meta_contract_code_hash -> :meta_contract
       ^udt_code_hash -> :udt
-      ^polyjuice_code_hash when byte_size(args) == 10 -> :polyjuice_root
+      ^polyjuice_code_hash when byte_size(args) == 74 -> :polyjuice_root
       ^polyjuice_code_hash -> :polyjuice_contract
       ^layer2_lock_code_hash -> :user
       _ -> :unkonw
@@ -103,7 +111,7 @@ defmodule GodwokenIndexer.Account.Worker do
 
     case FetchedNonce.request(%{account_id: account_id})
          |> HTTP.json_rpc(options) do
-      {:ok, nonce} -> nonce
+      {:ok, nonce} -> nonce |> hex_to_number()
       {:error, _error} -> nil
     end
   end
@@ -111,7 +119,17 @@ defmodule GodwokenIndexer.Account.Worker do
   defp fetch_balance(account_id, udt_id) do
     options = Application.get_env(:godwoken_explorer, :json_rpc_named_arguments)
 
-    case FetchedBalance.request(%{account_id: account_id, udt_id: udt_id})
+    short_address =
+      case Repo.get(Account, account_id) do
+        %Account{script_hash: script_hash} ->
+          script_hash
+
+        nil ->
+          fetch_script_hash(account_id)
+      end
+      |> String.slice(0, 42)
+
+    case FetchedBalance.request(%{short_address: short_address, udt_id: udt_id})
          |> HTTP.json_rpc(options) do
       {:ok, balance} -> {:ok, balance |> hex_to_number()}
       {:error, _error} -> {:error, 0}
@@ -120,12 +138,14 @@ defmodule GodwokenIndexer.Account.Worker do
 
   # ethabi default is false.When use in evm set to true
   defp account_id_to_eth_adress(account_id, ethabi) do
-    tail_binary_part = List.duplicate(0, 16) |> :binary.list_to_bin
-    head_binary_part = List.duplicate(0, 12) |> :binary.list_to_bin
+    tail_binary_part = List.duplicate(0, 16) |> :binary.list_to_bin()
+    head_binary_part = List.duplicate(0, 12) |> :binary.list_to_bin()
+
     if ethabi do
-      (head_binary_part <> <<account_id::32-little>> <> tail_binary_part) |> Base.encode16(case: :lower)
+      (head_binary_part <> <<account_id::32-little>> <> tail_binary_part)
+      |> Base.encode16(case: :lower)
     else
-      <<account_id::32-little>> <> tail_binary_part |> Base.encode16(case: :lower)
+      (<<account_id::32-little>> <> tail_binary_part) |> Base.encode16(case: :lower)
     end
   end
 
