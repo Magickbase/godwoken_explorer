@@ -12,7 +12,7 @@ use Mix.Config
 config :godwoken_explorer, GodwokenExplorerWeb.Endpoint,
   http: [port: 4001],
   # This is critical for ensuring web-sockets properly authorize.
-  url: [host: "agera.vercel.app", port: 443],
+  url: [host: "vercel.app", port: 443, scheme: "https"],
   check_origin: false,
   cache_static_manifest: "priv/static/cache_manifest.json",
   server: true,
@@ -27,8 +27,7 @@ config :logger,
     path: "log/error.log",
     level: :error,
     format: "$date $time $metadata[$level] $message\n"
-  ],
-  backends: [:console, Sentry.LoggerBackend]
+  ]
 
 # ## SSL Support
 #
