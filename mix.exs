@@ -7,10 +7,9 @@ defmodule GodwokenExplorer.MixProject do
       version: "0.1.0",
       elixir: "~> 1.7",
       elixirc_paths: elixirc_paths(Mix.env()),
-      compilers: [:phoenix, :gettext, :rustler] ++ Mix.compilers(),
+      compilers: [:phoenix, :gettext] ++ Mix.compilers(),
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
-      rustler_crates: rustler_crates(),
       deps: deps(),
       test_coverage: [tool: ExCoveralls],
       preferred_cli_env: [
@@ -54,7 +53,7 @@ defmodule GodwokenExplorer.MixProject do
       {:jason, "~> 1.0"},
       {:plug_cowboy, "~> 2.0"},
       {:httpoison, "~> 1.8"},
-      {:rustler, "~> 0.21.1"},
+      {:rustler, "~> 0.22.0"},
       {:con_cache, "~> 0.13"},
       {:scrivener_ecto, "~> 2.0"},
       {:decimal, "~> 2.0"},
@@ -96,15 +95,6 @@ defmodule GodwokenExplorer.MixProject do
       "ecto.setup": ["ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
       "ecto.reset": ["ecto.drop", "ecto.setup"],
       test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"]
-    ]
-  end
-
-  defp rustler_crates do
-    [
-      molecule_parser: [
-        path: "native/molecule_parser",
-        mode: if(Mix.env() in [:staging, :prod], do: :release, else: :debug)
-      ]
     ]
   end
 end

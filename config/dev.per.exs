@@ -34,7 +34,7 @@ config :godwoken_explorer, GodwokenExplorer.Repo,
 config :godwoken_explorer,
   json_rpc_named_arguments: [
     http: GodwokenRPC.HTTP.HTTPoison,
-    url: "http://godwoken-testnet-web3-rpc.ckbapp.dev",
+    url: "http://localhost:8119",
     http_options: [
       recv_timeout: :timer.minutes(10),
       timeout: :timer.minutes(10)
@@ -42,7 +42,7 @@ config :godwoken_explorer,
   ],
   ckb_indexer_named_arguments: [
     http: GodwokenRPC.HTTP.HTTPoison,
-    url: "http://116.62.22.144:8116",
+    url: "http://localhost:8116",
     http_options: [
       recv_timeout: :timer.minutes(10),
       timeout: :timer.minutes(10)
@@ -50,7 +50,7 @@ config :godwoken_explorer,
   ],
   ckb_rpc_named_arguments: [
     http: GodwokenRPC.HTTP.HTTPoison,
-    url: "http://116.62.22.144:8114",
+    url: "http://localhost:8114",
     http_options: [
       recv_timeout: :timer.minutes(10),
       timeout: :timer.minutes(10)

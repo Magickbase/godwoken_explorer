@@ -4,13 +4,25 @@ defmodule GodwokenExplorer.PolyjuiceCreator do
   import Ecto.Changeset
 
   schema "polyjuice_creators" do
-    field :code_hash, :binary
-    field :hash_type, :string
-    field :tx_hash, :binary
-    field :udt_id, :integer
+    field(:code_hash, :binary)
+    field(:hash_type, :string)
+    field(:script_args, :binary)
+    field(:tx_hash, :binary)
+    field(:udt_id, :integer)
+    field(:fee_amount, :decimal)
+    field(:fee_udt_id, :integer)
 
-    belongs_to(:transaction, GodwokenExplorer.Transaction, foreign_key: :tx_hash, references: :hash, define_field: false)
-    belongs_to(:udt, GodwokenExplorer.UDT, foreign_key: :udt_id, references: :id, define_field: false)
+    belongs_to(:transaction, GodwokenExplorer.Transaction,
+      foreign_key: :tx_hash,
+      references: :hash,
+      define_field: false
+    )
+
+    belongs_to(:udt, GodwokenExplorer.UDT,
+      foreign_key: :udt_id,
+      references: :id,
+      define_field: false
+    )
 
     timestamps()
   end
@@ -18,8 +30,8 @@ defmodule GodwokenExplorer.PolyjuiceCreator do
   @doc false
   def changeset(polyjuice_creator, attrs) do
     polyjuice_creator
-    |> cast(attrs, [:code_hash, :hash_type, :udt_id])
-    |> validate_required([:code_hash, :hash_type, :udt_id])
+    |> cast(attrs, [:code_hash, :hash_type, :udt_id, :script_args, :fee_amount, :fee_udt_id])
+    |> validate_required([:code_hash, :hash_type, :udt_id, :script_args, :fee_amount, :fee_udt_id])
   end
 
   def create_polyjuice_creator(attrs) do
@@ -29,5 +41,4 @@ defmodule GodwokenExplorer.PolyjuiceCreator do
     |> Ecto.Changeset.put_change(:udt_id, attrs[:udt_id])
     |> Repo.insert()
   end
-
 end

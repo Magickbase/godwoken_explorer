@@ -1,7 +1,6 @@
 defmodule GodwokenRPC.Transaction do
-  import GodwokenRPC.Util, only: [hex_to_number: 1]
-
-  alias Godwoken.MoleculeParser
+  import GodwokenRPC.Util, only: [hex_to_number: 1, parse_le_number: 1]
+  import Godwoken.MoleculeParser, only: [parse_meta_contract_args: 1]
 
   def elixir_to_params(%{
         "block_hash" => block_hash,
@@ -15,9 +14,11 @@ defmodule GodwokenRPC.Transaction do
         "hash" => hash
       })
       when to_account_id == "0x0" do
-    {:ok, code_hash, hash_type, args} = MoleculeParser.parse_meta_contract_args(args)
-    udt_id = String.slice(args, 64..-1)
+    {{code_hash, hash_type, script_args}, {fee_sudt_id, fee_amount_hex_string}} =
+      parse_meta_contract_args(args)
 
+    udt_id = script_args |> String.slice(64..-1) |> parse_le_number()
+    fee_amount = fee_amount_hex_string |> parse_le_number()
     from_account_id = hex_to_number(from_account_id)
 
     %{
@@ -31,7 +32,10 @@ defmodule GodwokenRPC.Transaction do
       to_account_id: hex_to_number(to_account_id),
       code_hash: "0x" <> code_hash,
       hash_type: transform_hash_type(hash_type),
-      udt_id: parse_udt_id(udt_id),
+      udt_id: udt_id,
+      fee_udt_id: fee_sudt_id,
+      fee_amount: fee_amount,
+      script_args: script_args,
       account_ids: [from_account_id]
     }
   end
@@ -159,20 +163,17 @@ defmodule GodwokenRPC.Transaction do
     to_account_id =
       hex_string
       |> String.slice(8, 8)
-      |> Base.decode16!(case: :lower)
-      |> :binary.decode_unsigned(:little)
+      |> parse_le_number()
 
     amount =
       hex_string
       |> String.slice(16, 32)
-      |> Base.decode16!(case: :lower)
-      |> :binary.decode_unsigned(:little)
+      |> parse_le_number()
 
     fee =
       hex_string
       |> String.slice(48, 32)
-      |> Base.decode16!(case: :lower)
-      |> :binary.decode_unsigned(:little)
+      |> parse_le_number()
 
     [to_account_id, amount, fee]
   end
@@ -183,29 +184,22 @@ defmodule GodwokenRPC.Transaction do
     gas_limit =
       hex_string
       |> String.slice(16, 16)
-      |> Base.decode16!(case: :lower)
-      |> :binary.decode_unsigned(:little)
+      |> parse_le_number()
 
     gas_price =
       hex_string
       |> String.slice(32, 32)
-      |> Base.decode16!(case: :lower)
-      |> :binary.decode_unsigned(:little)
+      |> parse_le_number()
 
     value = hex_string |> String.slice(64, 32)
 
     input_size =
       hex_string
       |> String.slice(96, 8)
-      |> Base.decode16!(case: :lower)
-      |> :binary.decode_unsigned(:little)
+      |> parse_le_number()
 
     input = hex_string |> String.slice(104..-1)
     [is_create, gas_limit, gas_price, value, input_size, "0x" <> input]
-  end
-
-  defp parse_udt_id(hex_string) do
-    hex_string |> Base.decode16!() |> :binary.decode_unsigned(:little)
   end
 
   defp transform_hash_type(hash_type) do

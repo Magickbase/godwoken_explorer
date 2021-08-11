@@ -6,6 +6,12 @@ defmodule GodwokenRPC.Util do
   @full_length_size 4
   @offset_size 4
 
+  def parse_le_number(hex_string) do
+    hex_string
+    |> Base.decode16!(case: :lower)
+    |> :binary.decode_unsigned(:little)
+  end
+
   def hex_to_number(hex_number) do
     hex_number |> String.slice(2..-1) |> String.to_integer(16)
   end

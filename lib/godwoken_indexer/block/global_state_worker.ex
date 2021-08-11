@@ -45,7 +45,6 @@ defmodule GodwokenIndexer.Block.GlobalStateWorker do
            FetchedCells.request(state_validator_lock, "lock") |> HTTP.json_rpc(options),
          %{"output_data" => "0x" <> global_state} <- response["objects"] |> List.first() do
       {
-        :ok,
         latest_finalized_block_number,
         reverted_block_root,
         {l2_block_count, block_merkle_root},
