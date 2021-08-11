@@ -20,7 +20,13 @@ config :godwoken_explorer, GodwokenExplorerWeb.Endpoint,
   version: Application.spec(:phoenix_distillery, :vsn)
 
 config :logger,
-  backends: [:console, Sentry.LoggerBackend]
+  backends: [
+    :console,
+    {LoggerFileBackend, :info},
+    {LoggerFileBackend, :warn},
+    {LoggerFileBackend, :error},
+    Sentry.LoggerBackend
+  ]
 
 # Do not print debug messages in production
 config :logger,
