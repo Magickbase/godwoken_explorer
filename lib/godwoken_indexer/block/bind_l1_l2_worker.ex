@@ -8,7 +8,7 @@ defmodule GodwokenIndexer.Block.BindL1L2Worker do
   alias GodwokenExplorer.{Block, Account}
 
   @buffer_block_number 100
-  @worker_internal_second 15
+  @worker_internal_second 5
 
   def start_link(state \\ []) do
     GenServer.start_link(__MODULE__, state)
@@ -105,6 +105,12 @@ defmodule GodwokenIndexer.Block.BindL1L2Worker do
              GodwokenRPC.fetch_l1_tx(tx_hash) do
         {l2_script_hash, l1_lock_hash} = parse_lock_args(outputs, io_index)
         ckb_lock_script = get_ckb_lock_script(inputs, outputs, io_index)
+
+        Sentry.Context.set_extra_context(%{
+          l2_script_hash: l2_script_hash,
+          tx_hash: tx_hash,
+          io_index: io_index
+        })
 
         {:ok, user_account} =
           Account.bind_ckb_lock_script(

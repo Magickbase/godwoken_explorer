@@ -19,6 +19,9 @@ config :godwoken_explorer, GodwokenExplorerWeb.Endpoint,
   root: ".",
   version: Application.spec(:phoenix_distillery, :vsn)
 
+config :logger,
+  backends: [:console, Sentry.LoggerBackend]
+
 # Do not print debug messages in production
 config :logger,
   info: [path: "log/info.log", level: :info, format: "$date $time $metadata[$level] $message\n"],

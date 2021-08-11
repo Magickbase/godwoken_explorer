@@ -10,19 +10,27 @@ use Mix.Config
 # which you should run after static files are built and
 # before starting your production server.
 config :godwoken_explorer, GodwokenExplorerWeb.Endpoint,
-  http: [port:  4001],
-  url: [host: "agera.vercel.app", port: 443], # This is critical for ensuring web-sockets properly authorize.
+  http: [port: 4001],
+  # This is critical for ensuring web-sockets properly authorize.
+  url: [host: "agera.vercel.app", port: 443],
   check_origin: false,
   cache_static_manifest: "priv/static/cache_manifest.json",
   server: true,
   root: ".",
   version: Application.spec(:phoenix_distillery, :vsn)
 
+config :logger,
+  backends: [:console, Sentry.LoggerBackend]
+
 # Do not print debug messages in production
 config :logger,
   info: [path: "log/info.log", level: :info, format: "$date $time $metadata[$level] $message\n"],
   warn: [path: "log/warn.log", level: :warn, format: "$date $time $metadata[$level] $message\n"],
-  error: [path: "log/error.log", level: :error, format: "$date $time $metadata[$level] $message\n"]
+  error: [
+    path: "log/error.log",
+    level: :error,
+    format: "$date $time $metadata[$level] $message\n"
+  ]
 
 # ## SSL Support
 #
