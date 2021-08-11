@@ -10,6 +10,7 @@ defmodule GodwokenExplorerWeb.Admin.UDTController do
     case UDT.paginate_udts(params) do
       {:ok, assigns} ->
         render(conn, "index.html", assigns)
+
       error ->
         conn
         |> put_flash(:error, "There was an error rendering Udts. #{inspect(error)}")
@@ -23,12 +24,12 @@ defmodule GodwokenExplorerWeb.Admin.UDTController do
   end
 
   def create(conn, %{"udt" => udt_params}) do
-    IO.inspect(udt_params)
     case UDT.create_udt(udt_params) do
       {:ok, udt} ->
         conn
         |> put_flash(:info, "Udt created successfully.")
         |> redirect(to: Routes.admin_udt_path(conn, :show, udt))
+
       {:error, %Ecto.Changeset{} = changeset} ->
         render(conn, "new.html", changeset: changeset)
     end
@@ -53,6 +54,7 @@ defmodule GodwokenExplorerWeb.Admin.UDTController do
         conn
         |> put_flash(:info, "Udt updated successfully.")
         |> redirect(to: Routes.admin_udt_path(conn, :show, udt))
+
       {:error, %Ecto.Changeset{} = changeset} ->
         render(conn, "edit.html", udt: udt, changeset: changeset)
     end

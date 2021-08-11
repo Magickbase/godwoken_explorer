@@ -14,7 +14,6 @@ config :godwoken_explorer, GodwokenExplorerWeb.Endpoint,
   # This is critical for ensuring web-sockets properly authorize.
   url: [host: "vercel.app", port: 443, scheme: "https"],
   check_origin: false,
-  cache_static_manifest: "priv/static/cache_manifest.json",
   server: true,
   root: ".",
   version: Application.spec(:phoenix_distillery, :vsn)
