@@ -8,6 +8,7 @@ defmodule GodwokenIndexer.Block.BindL1L2Worker do
   alias GodwokenExplorer.{Block, Account}
 
   @buffer_block_number 100
+  @worker_internal_second 15
 
   def start_link(state \\ []) do
     GenServer.start_link(__MODULE__, state)
@@ -205,6 +206,6 @@ defmodule GodwokenIndexer.Block.BindL1L2Worker do
   end
 
   defp schedule_work(start_block_number) do
-    Process.send_after(self(), {:bind_work, start_block_number}, 5 * 1000)
+    Process.send_after(self(), {:bind_work, start_block_number}, @worker_internal_second * 1000)
   end
 end
