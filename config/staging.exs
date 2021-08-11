@@ -11,7 +11,8 @@ use Mix.Config
 # before starting your production server.
 config :godwoken_explorer, GodwokenExplorerWeb.Endpoint,
   http: [port: 4001],
-  url: [host: "agera.vercel.app", port: 443], # This is critical for ensuring web-sockets properly authorize.
+  # This is critical for ensuring web-sockets properly authorize.
+  url: [host: "agera.vercel.app", port: 443],
   check_origin: false,
   cache_static_manifest: "priv/static/cache_manifest.json",
   server: true,
@@ -22,7 +23,12 @@ config :godwoken_explorer, GodwokenExplorerWeb.Endpoint,
 config :logger,
   info: [path: "log/info.log", level: :info, format: "$date $time $metadata[$level] $message\n"],
   warn: [path: "log/warn.log", level: :warn, format: "$date $time $metadata[$level] $message\n"],
-  error: [path: "log/error.log", level: :error, format: "$date $time $metadata[$level] $message\n"]
+  error: [
+    path: "log/error.log",
+    level: :error,
+    format: "$date $time $metadata[$level] $message\n"
+  ],
+  backends: [:console, Sentry.LoggerBackend]
 
 # ## SSL Support
 #
