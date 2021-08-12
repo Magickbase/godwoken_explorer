@@ -20,7 +20,7 @@ defmodule GodwokenExplorer.Account do
     field :nonce, :integer
 
     field :type, Ecto.Enum,
-      values: [:meta_contract, :udt, :user, :polyjuice_root, :polyjuice_contract]
+      values: [:meta_contract, :udt, :user, :polyjuice_root, :polyjuice_contract, :eoa]
 
     field :layer2_tx, :binary
     has_many :account_udts, GodwokenExplorer.AccountUDT

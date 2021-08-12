@@ -9,6 +9,19 @@ task "buildhost:clean:keepdeps" do
   end
 end
 
+Rake::Task["buildhost:mix:deps.get"].clear_actions
+task "buildhost:mix:deps.get" do
+  on build_host do |host|
+    within build_path do
+      with mix_env: mix_env do
+        execute :mix, "local.hex", "--force"
+        execute :mix, "local.rebar", "rebar3", "/home/#{fetch(:deploy_user)}/.mix/rebar3", "--force"
+        execute :mix, "deps.get"
+      end
+    end
+  end
+end
+
 # replace with ls-remote to gather rev
 Rake::Task["local:gather-rev"].clear_actions
 task "local:gather-rev" do

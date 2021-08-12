@@ -74,6 +74,7 @@ defmodule GodwokenIndexer.Account.Worker do
     layer2_lock_code_hash = Application.get_env(:godwoken_explorer, :layer2_lock_code_hash)
     udt_code_hash = Application.get_env(:godwoken_explorer, :udt_code_hash)
     meta_contract_code_hash = Application.get_env(:godwoken_explorer, :meta_contract_code_hash)
+    eoa_code_hash = Application.get_env(:godwoken_explorer, :eoa_code_hash)
 
     case code_hash do
       ^meta_contract_code_hash -> :meta_contract
@@ -81,6 +82,7 @@ defmodule GodwokenIndexer.Account.Worker do
       ^polyjuice_code_hash when byte_size(args) == 74 -> :polyjuice_root
       ^polyjuice_code_hash -> :polyjuice_contract
       ^layer2_lock_code_hash -> :user
+      ^eoa_code_hash -> :eoa
       _ -> :unkonw
     end
   end

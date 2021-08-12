@@ -6,6 +6,7 @@ config :godwoken_explorer,
   polyjuice_validator_code_hash:
     "0xbeb77e49c6506182ec0c02546aee9908aafc1561ec13beb488d14184c6cd1b79",
   layer2_lock_code_hash: "0xdeec13a7b8e100579541384ccaf4b5223733e4a5483c3aec95ddc4c1d5ea5b22",
+  eoa_code_hash: "0x28380fadb43a6f139d61a2509b69ecd2fbb2f61847ef6d39371b4f906c151ab5",
   rollup_script_hash: "0x4cc2e6526204ae6a2e8fcf12f7ad472f41a1606d5b9624beebd215d780809f6a",
   state_validator_lock: %{
     code_hash: "0x5447ad1c351fe85d14d70fc885a9beb8a99281c216386b2985ff87a51756739f",
