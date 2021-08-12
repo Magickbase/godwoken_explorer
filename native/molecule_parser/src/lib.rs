@@ -6,6 +6,8 @@ use packed::GlobalState;
 use packed::L2Block;
 use packed::WitnessArgs;
 use packed::DepositLockArgs;
+use packed::SUDTArgs;
+use packed::SUDTArgsUnion;
 use molecule::prelude::Entity;
 use ckb_hash::blake2b_256;
 
@@ -86,12 +88,31 @@ fn parse_deposition_lock_args(arg: String) -> (String, String) {
     (hex::encode(l2_lock_script), hex::encode(l1_lock_hash.as_slice()))
 }
 
+#[rustler::nif]
+fn parse_sudt_transfer_args(arg: String) -> (String, String, String) {
+    let sudt_transfer_args = hex::decode(arg).unwrap();
+    let short_address = SUDTArgs::from_slice(&sudt_transfer_args).unwrap();
+    match short_address.to_enum() {
+        SUDTArgsUnion::SUDTTransfer(sudt_transfer) => {
+            let mut to_address = [0u8; 20];
+            to_address.copy_from_slice(&sudt_transfer.to().as_slice()[4..]);
+            (
+                hex::encode(to_address),
+                hex::encode(sudt_transfer.amount().as_slice()),
+                hex::encode(sudt_transfer.fee().as_slice()),
+            )
+        }
+        SUDTArgsUnion::SUDTQuery(_sudt_query) => { (String::from("Godwoken"), String::from("Godwoken"), String::from("Godwoken"))  }
+    }
+}
+
 rustler::init!(
     "Elixir.Godwoken.MoleculeParser",
     [
         parse_meta_contract_args,
         parse_global_state,
         parse_witness,
-        parse_deposition_lock_args
+        parse_deposition_lock_args,
+        parse_sudt_transfer_args
     ]
 );

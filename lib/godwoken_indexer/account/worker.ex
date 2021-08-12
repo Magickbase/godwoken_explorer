@@ -5,7 +5,8 @@ defmodule GodwokenIndexer.Account.Worker do
 
   alias GodwokenExplorer.{Account, AccountUDT, Repo}
   alias GodwokenRPC.HTTP
-  alias GodwokenRPC.Account.{FetchedScript, FetchedScriptHash, FetchedNonce, FetchedBalance}
+  alias GodwokenRPC
+  alias GodwokenRPC.Account.{FetchedScript, FetchedNonce, FetchedBalance}
 
   @spec start_link(any) :: :ignore | {:error, any} | {:ok, pid}
   def start_link(_) do
@@ -30,7 +31,8 @@ defmodule GodwokenIndexer.Account.Worker do
     account_ids
     |> Enum.each(fn account_id ->
       nonce = fetch_nonce(account_id)
-      script_hash = fetch_script_hash(account_id)
+      script_hash = GodwokenRPC.fetch_script_hash(%{account_id: account_id})
+      short_address = String.slice(script_hash, 0, 42)
       script = fetch_script(script_hash)
       type = switch_account_type(script["code_hash"], script["args"])
       eth_address = account_id_to_eth_adress(account_id, false)
@@ -40,6 +42,7 @@ defmodule GodwokenIndexer.Account.Worker do
         id: account_id,
         script: parsed_script,
         script_hash: script_hash,
+        short_address: short_address,
         type: type,
         nonce: nonce,
         eth_address: "0x" <> eth_address
@@ -82,18 +85,8 @@ defmodule GodwokenIndexer.Account.Worker do
       ^polyjuice_code_hash when byte_size(args) == 74 -> :polyjuice_root
       ^polyjuice_code_hash -> :polyjuice_contract
       ^layer2_lock_code_hash -> :user
-      ^eoa_code_hash -> :eoa
+      ^eoa_code_hash -> :user
       _ -> :unkonw
-    end
-  end
-
-  defp fetch_script_hash(account_id) do
-    options = Application.get_env(:godwoken_explorer, :json_rpc_named_arguments)
-
-    case FetchedScriptHash.request(%{account_id: account_id})
-         |> HTTP.json_rpc(options) do
-      {:ok, script_hash} -> script_hash
-      {:error, _error} -> nil
     end
   end
 
@@ -122,13 +115,12 @@ defmodule GodwokenIndexer.Account.Worker do
 
     short_address =
       case Repo.get(Account, account_id) do
-        %Account{script_hash: script_hash} ->
-          script_hash
+        %Account{short_address: short_address} ->
+          short_address
 
         nil ->
-          fetch_script_hash(account_id)
+          %{account_id: account_id} |> GodwokenRPC.fetch_script_hash() |> String.slice(0, 42)
       end
-      |> String.slice(0, 42)
 
     case FetchedBalance.request(%{short_address: short_address, udt_id: udt_id})
          |> HTTP.json_rpc(options) do

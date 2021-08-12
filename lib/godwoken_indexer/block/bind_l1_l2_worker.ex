@@ -8,7 +8,7 @@ defmodule GodwokenIndexer.Block.BindL1L2Worker do
   alias GodwokenExplorer.{Block, Account}
   alias GodwokenIndexer.Account.Worker
 
-  @buffer_block_number 100
+  @buffer_block_number 50
   @worker_interval_second 5
 
   def start_link(state \\ []) do

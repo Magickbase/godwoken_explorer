@@ -5,7 +5,7 @@ defmodule GodwokenRPC do
 
   alias GodwokenRPC.{Blocks, Block, HTTP}
   alias GodwokenRPC.CKBIndexer.{FetchedTransactions, FetchedTransaction, FetchedTip}
-  alias GodwokenRPC.Account.FetchedAccountID
+  alias GodwokenRPC.Account.{FetchedAccountID, FetchedScriptHash}
 
   def request(%{method: method, params: params} = map)
       when is_binary(method) and is_list(params) do
@@ -94,6 +94,26 @@ defmodule GodwokenRPC do
         )
 
         nil
+    end
+  end
+
+  def fetch_script_hash(%{account_id: account_id}) do
+    options = Application.get_env(:godwoken_explorer, :json_rpc_named_arguments)
+
+    case FetchedScriptHash.request(%{account_id: account_id})
+         |> HTTP.json_rpc(options) do
+      {:ok, script_hash} -> script_hash
+      {:error, _error} -> nil
+    end
+  end
+
+  def fetch_script_hash(%{short_address: short_address}) do
+    options = Application.get_env(:godwoken_explorer, :json_rpc_named_arguments)
+
+    case FetchedScriptHash.request(%{short_address: short_address})
+         |> HTTP.json_rpc(options) do
+      {:ok, script_hash} -> script_hash
+      {:error, _error} -> nil
     end
   end
 

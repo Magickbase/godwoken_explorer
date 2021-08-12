@@ -16,11 +16,12 @@ defmodule GodwokenExplorer.Account do
     field :ckb_lock_hash, :binary
     field :eth_address, :binary
     field :script_hash, :binary
+    field :short_address, :binary
     field :script, :map
     field :nonce, :integer
 
     field :type, Ecto.Enum,
-      values: [:meta_contract, :udt, :user, :polyjuice_root, :polyjuice_contract, :eoa]
+      values: [:meta_contract, :udt, :user, :polyjuice_root, :polyjuice_contract]
 
     field :layer2_tx, :binary
     has_many :account_udts, GodwokenExplorer.AccountUDT
@@ -41,7 +42,8 @@ defmodule GodwokenExplorer.Account do
       :script,
       :nonce,
       :type,
-      :layer2_tx
+      :layer2_tx,
+      :short_address
     ])
     |> validate_required([:id, :script_hash])
   end
@@ -204,6 +206,7 @@ defmodule GodwokenExplorer.Account do
 
   def bind_ckb_lock_script(l1_lock_script, script_hash, l1_lock_hash) do
     account = Repo.get_by(Account, script_hash: script_hash)
+    short_address = String.slice(script_hash, 0, 42)
 
     case account do
       nil ->
@@ -219,6 +222,7 @@ defmodule GodwokenExplorer.Account do
               ckb_lock_script: l1_lock_script,
               ckb_lock_hash: l1_lock_hash,
               script_hash: script_hash,
+              short_address: short_address,
               type: "user"
             })
         end
@@ -245,6 +249,7 @@ defmodule GodwokenExplorer.Account do
     }
 
     l2_udt_script_hash = script_to_hash(account_script)
+    short_address = String.slice(l2_udt_script_hash, 0, 42)
 
     case Repo.get_by(Account, script_hash: l2_udt_script_hash) do
       nil ->
@@ -266,6 +271,7 @@ defmodule GodwokenExplorer.Account do
               id: udt_account_id,
               script: account_script,
               script_hash: l2_udt_script_hash,
+              short_address: short_address,
               type: "udt"
             })
 
@@ -274,6 +280,18 @@ defmodule GodwokenExplorer.Account do
 
       %__MODULE__{id: udt_account_id} ->
         {:ok, udt_account_id}
+    end
+  end
+
+  def find_by_short_address(short_address) do
+    case Repo.get_by(__MODULE__, %{short_address: short_address}) do
+      %__MODULE__{id: id} ->
+        {:ok, id}
+
+      nil ->
+        script_hash = GodwokenRPC.fetch_script_hash(%{short_address: short_address})
+        account_id = script_hash |> GodwokenRPC.fetch_account_id() |> hex_to_number()
+        {:ok, account_id}
     end
   end
 end

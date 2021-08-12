@@ -9,6 +9,7 @@ defmodule GodwokenExplorer.Repo.Migrations.CreateAccounts do
       add :ckb_lock_hash, :bytea
       add :eth_address, :bytea
       add :script_hash, :bytea
+      add :short_address, :bytea
       add :script, :jsonb
       add :nonce, :integer, default: 0
       add :type, :string

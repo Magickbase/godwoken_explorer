@@ -11,7 +11,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
   alias GodwokenExplorer.Chain.Cache.Blocks, as: BlocksCache
   alias GodwokenExplorer.Chain.Cache.Transactions
 
-  @worker_interval_second 20
+  @worker_interval_second 1
 
   def start_link(state \\ []) do
     GenServer.start_link(__MODULE__, state)

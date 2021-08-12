@@ -8,4 +8,12 @@ defmodule GodwokenRPC.Account.FetchedScriptHash do
       params: [number_to_hex(account_id)]
     })
   end
+
+  def request(%{short_address: short_address}) do
+    GodwokenRPC.request(%{
+      id: "1",
+      method: "gw_get_script_hash_by_short_address",
+      params: [short_address]
+    })
+  end
 end
