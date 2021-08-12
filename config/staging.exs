@@ -22,7 +22,6 @@ config :logger,
   backends: [
     :console,
     {LoggerFileBackend, :info},
-    {LoggerFileBackend, :warn},
     {LoggerFileBackend, :error},
     Sentry.LoggerBackend
   ]
@@ -30,7 +29,6 @@ config :logger,
 # Do not print debug messages in production
 config :logger,
   info: [path: "log/info.log", level: :info, format: "$date $time $metadata[$level] $message\n"],
-  warn: [path: "log/warn.log", level: :warn, format: "$date $time $metadata[$level] $message\n"],
   error: [
     path: "log/error.log",
     level: :error,
