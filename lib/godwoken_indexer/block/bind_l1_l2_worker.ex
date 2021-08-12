@@ -6,6 +6,7 @@ defmodule GodwokenIndexer.Block.BindL1L2Worker do
 
   alias GodwkenRPC
   alias GodwokenExplorer.{Block, Account}
+  alias GodwokenIndexer.Account.Worker
 
   @buffer_block_number 100
   @worker_internal_second 5
@@ -99,20 +100,13 @@ defmodule GodwokenIndexer.Block.BindL1L2Worker do
   end
 
   defp parse_lock_script_and_bind(txs) do
-    txs
-    |> Enum.map(fn %{"tx_hash" => tx_hash, "io_index" => io_index} ->
+    Enum.each(txs, fn %{"tx_hash" => tx_hash, "io_index" => io_index} ->
       with {:ok, %{"transaction" => %{"inputs" => inputs, "outputs" => outputs}}} <-
              GodwokenRPC.fetch_l1_tx(tx_hash) do
         {l2_script_hash, l1_lock_hash} = parse_lock_args(outputs, io_index)
         ckb_lock_script = get_ckb_lock_script(inputs, outputs, io_index)
 
-        Sentry.Context.set_extra_context(%{
-          l2_script_hash: l2_script_hash,
-          tx_hash: tx_hash,
-          io_index: io_index
-        })
-
-        {:ok, user_account} =
+        user_account =
           Account.bind_ckb_lock_script(
             ckb_lock_script,
             "0x" <> l2_script_hash,
@@ -120,11 +114,19 @@ defmodule GodwokenIndexer.Block.BindL1L2Worker do
           )
 
         {udt_script, udt_script_hash} = parse_udt_script(outputs, io_index)
-        Account.create_udt_account(udt_script, udt_script_hash, user_account.id)
+
+        with {:ok, udt_account_id} <- Account.create_udt_account(udt_script, udt_script_hash) do
+          case user_account do
+            {:ok, user} ->
+              Worker.trigger_account([user.id])
+              Worker.trigger_sudt_account([{udt_account_id, [user.id]}])
+
+            {:error, nil} ->
+              Worker.trigger_account([udt_account_id])
+          end
+        end
       end
     end)
-    |> Enum.reject(&is_nil/1)
-    |> Enum.sort(&(&1 >= &2))
   end
 
   defp parse_udt_script(outputs, io_index) do

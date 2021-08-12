@@ -8,7 +8,6 @@ defmodule GodwokenExplorer.Account do
 
   alias GodwokenRPC
   alias GodwokenExplorer.Chain.Events.Publisher
-  alias GodwokenIndexer.Account.Worker
 
   @primary_key {:id, :integer, autogenerate: false}
   schema "accounts" do
@@ -208,15 +207,21 @@ defmodule GodwokenExplorer.Account do
 
     case account do
       nil ->
-        account_id = GodwokenRPC.fetch_account_id(script_hash) |> hex_to_number()
+        case GodwokenRPC.fetch_account_id(script_hash) do
+          nil ->
+            {:error, nil}
 
-        create_or_update_account(%{
-          id: account_id,
-          ckb_lock_script: l1_lock_script,
-          ckb_lock_hash: l1_lock_hash,
-          script_hash: script_hash,
-          type: "user"
-        })
+          hex_account_id ->
+            account_id = hex_to_number(hex_account_id)
+
+            create_or_update_account(%{
+              id: account_id,
+              ckb_lock_script: l1_lock_script,
+              ckb_lock_hash: l1_lock_hash,
+              script_hash: script_hash,
+              type: "user"
+            })
+        end
 
       %Account{ckb_lock_script: ckb_lock_script, ckb_lock_hash: ckb_lock_hash}
       when is_nil(ckb_lock_script) or is_nil(ckb_lock_hash) ->
@@ -229,7 +234,7 @@ defmodule GodwokenExplorer.Account do
     end
   end
 
-  def create_udt_account(udt_script, udt_script_hash, user_account_id) do
+  def create_udt_account(udt_script, udt_script_hash) do
     udt_code_hash = Application.get_env(:godwoken_explorer, :udt_code_hash)
     rollup_script_hash = Application.get_env(:godwoken_explorer, :rollup_script_hash)
 
@@ -241,22 +246,15 @@ defmodule GodwokenExplorer.Account do
 
     l2_udt_script_hash = script_to_hash(account_script)
 
-    result =
-      case Repo.get_by(Account, script_hash: l2_udt_script_hash) do
-        nil ->
-          udt_account_id =
-            case GodwokenRPC.fetch_account_id(l2_udt_script_hash) do
-              nil -> nil
-              udt_account_id when is_binary(udt_account_id) -> hex_to_number(udt_account_id)
-            end
-
-          if is_nil(udt_account_id) do
-            Logger.error(fn ->
-              ["UDT Account ID no exist of script_hash : ", l2_udt_script_hash]
-            end)
-
+    case Repo.get_by(Account, script_hash: l2_udt_script_hash) do
+      nil ->
+        case GodwokenRPC.fetch_account_id(l2_udt_script_hash) do
+          nil ->
             {:error, nil}
-          else
+
+          hex_account_id when is_binary(hex_account_id) ->
+            udt_account_id = hex_to_number(hex_account_id)
+
             {:ok, _udt} =
               UDT.find_or_create_by(%{
                 id: udt_account_id,
@@ -272,15 +270,10 @@ defmodule GodwokenExplorer.Account do
             })
 
             {:ok, udt_account_id}
-          end
+        end
 
-        %__MODULE__{id: udt_account_id} ->
-          {:ok, udt_account_id}
-      end
-
-    with {:ok, udt_account_id} <- result do
-      Worker.trigger_account([user_account_id])
-      Worker.trigger_sudt_account([{udt_account_id, [user_account_id]}])
+      %__MODULE__{id: udt_account_id} ->
+        {:ok, udt_account_id}
     end
   end
 end

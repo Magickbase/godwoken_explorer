@@ -3,8 +3,6 @@ defmodule GodwokenIndexer.Block.SyncWorker do
 
   import GodwokenRPC.Util, only: [hex_to_number: 1]
 
-  require Logger
-
   alias GodwokenRPC.Block.{FetchedTipBlockHash, ByHash}
   alias GodwokenRPC.{Blocks, HTTP}
   alias GodwokenExplorer.{Block, Transaction, Chain}
