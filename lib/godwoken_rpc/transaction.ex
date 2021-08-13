@@ -1,5 +1,5 @@
 defmodule GodwokenRPC.Transaction do
-  import GodwokenRPC.Util, only: [hex_to_number: 1, parse_le_number: 1]
+  import GodwokenRPC.Util, only: [hex_to_number: 1, parse_le_number: 1, parse_be_number: 1]
   import Godwoken.MoleculeParser, only: [parse_meta_contract_args: 1, parse_sudt_transfer_args: 1]
 
   alias GodwokenExplorer.Account
@@ -111,7 +111,10 @@ defmodule GodwokenRPC.Transaction do
       |> String.slice(32, 32)
       |> parse_le_number()
 
-    value = hex_string |> String.slice(64, 32)
+    value =
+      hex_string
+      |> String.slice(64, 32)
+      |> parse_be_number()
 
     input_size =
       hex_string
