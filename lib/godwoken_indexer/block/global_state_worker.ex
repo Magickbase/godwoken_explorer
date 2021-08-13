@@ -7,6 +7,8 @@ defmodule GodwokenIndexer.Block.GlobalStateWorker do
   alias GodwokenExplorer.{Block, Account}
   alias GodwokenRPC.HTTP
 
+  @default_worker_interval 40
+
   def start_link(state \\ []) do
     GenServer.start_link(__MODULE__, state)
   end
@@ -80,6 +82,10 @@ defmodule GodwokenIndexer.Block.GlobalStateWorker do
   end
 
   defp schedule_work do
-    Process.send_after(self(), :finalized_work, 30 * 1000)
+    second =
+      Application.get_env(:godwoken_explorer, :global_state_worker_interval) ||
+        @default_worker_interval
+
+    Process.send_after(self(), :finalized_work, second * 1000)
   end
 end

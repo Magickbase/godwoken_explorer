@@ -11,7 +11,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
   alias GodwokenExplorer.Chain.Cache.Blocks, as: BlocksCache
   alias GodwokenExplorer.Chain.Cache.Transactions
 
-  @worker_interval_second 1
+  @default_worker_interval 20
 
   def start_link(state \\ []) do
     GenServer.start_link(__MODULE__, state)
@@ -163,6 +163,10 @@ defmodule GodwokenIndexer.Block.SyncWorker do
   end
 
   defp schedule_work do
-    Process.send_after(self(), :work, @worker_interval_second * 1000)
+    second =
+      Application.get_env(:godwoken_explorer, :sync_worker_interval) ||
+        @default_worker_interval
+
+    Process.send_after(self(), :work, second * 1000)
   end
 end

@@ -9,7 +9,7 @@ defmodule GodwokenIndexer.Block.BindL1L2Worker do
   alias GodwokenIndexer.Account.Worker
 
   @buffer_block_number 50
-  @worker_interval_second 5
+  @default_worker_interval 5
 
   def start_link(state \\ []) do
     GenServer.start_link(__MODULE__, state)
@@ -213,6 +213,10 @@ defmodule GodwokenIndexer.Block.BindL1L2Worker do
   end
 
   defp schedule_work(start_block_number) do
-    Process.send_after(self(), {:bind_work, start_block_number}, @worker_interval_second * 1000)
+    second =
+      Application.get_env(:godwoken_explorer, :bind_l1_worker_interval) ||
+        @default_worker_interval
+
+    Process.send_after(self(), {:bind_work, start_block_number}, second * 1000)
   end
 end

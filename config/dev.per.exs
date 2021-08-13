@@ -57,3 +57,8 @@ config :godwoken_explorer,
       timeout: :timer.minutes(10)
     ]
   ]
+
+config :godwoken_explorer,
+  sync_worker_interval: 1,
+  global_state_worker_interval: 30,
+  bind_l1_worker_interval: 5
