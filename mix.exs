@@ -59,13 +59,16 @@ defmodule GodwokenExplorer.MixProject do
       {:decimal, "~> 2.0"},
       {:logger_file_backend, "~> 0.0.10"},
       {:blake2_elixir, "~> 0.8.1"},
-      {:sentry, "~> 8.0"},
 
       # admin dashboard
       {:torch, "~> 3.6"},
 
       # CORS
       {:cors_plug, "~> 2.0"},
+
+      # monitor
+      {:observer_cli, "~> 1.6"},
+      {:sentry, "~> 8.0"},
 
       # static code analysis tool
       {:credo, "~> 1.5", only: [:dev, :test], runtime: false},
