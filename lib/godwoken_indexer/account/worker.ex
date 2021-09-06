@@ -35,7 +35,7 @@ defmodule GodwokenIndexer.Account.Worker do
       short_address = String.slice(script_hash, 0, 42)
       script = fetch_script(script_hash)
       type = switch_account_type(script["code_hash"], script["args"])
-      eth_address = account_id_to_eth_adress(account_id, false)
+      eth_address = account_to_eth_adress(type, script["args"])
       parsed_script = add_name_to_polyjuice_script(type, script)
 
       Account.create_or_update_account(%{
@@ -45,7 +45,7 @@ defmodule GodwokenIndexer.Account.Worker do
         short_address: short_address,
         type: type,
         nonce: nonce,
-        eth_address: "0x" <> eth_address
+        eth_address: eth_address
       })
     end)
 
@@ -129,16 +129,14 @@ defmodule GodwokenIndexer.Account.Worker do
     end
   end
 
-  # ethabi default is false.When use in evm set to true
-  defp account_id_to_eth_adress(account_id, ethabi) do
-    tail_binary_part = List.duplicate(0, 16) |> :binary.list_to_bin()
-    head_binary_part = List.duplicate(0, 12) |> :binary.list_to_bin()
+  defp account_to_eth_adress(type, args) do
+    rollup_script_hash = Application.get_env(:godwoken_explorer, :rollup_script_hash)
 
-    if ethabi do
-      (head_binary_part <> <<account_id::32-little>> <> tail_binary_part)
-      |> Base.encode16(case: :lower)
+    if type == :user &&
+         args |> String.slice(0, 66) == rollup_script_hash do
+      "0x" <> String.slice(args, -40, 40)
     else
-      (<<account_id::32-little>> <> tail_binary_part) |> Base.encode16(case: :lower)
+      nil
     end
   end
 
