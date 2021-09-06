@@ -31,11 +31,11 @@ defmodule GodwokenExplorerWeb.Router do
   end
 
   scope "/admin", GodwokenExplorerWeb.Admin, as: :admin do
-      pipe_through :browser
+    pipe_through :browser
 
-      get "/", UDTController, :index
-      resources "/udts", UDTController
-    end
+    get "/", UDTController, :index
+    resources "/udts", UDTController
+  end
 
   # Other scopes may use custom stacks.
   # scope "/api", GodwokenExplorerWeb do
@@ -52,6 +52,9 @@ defmodule GodwokenExplorerWeb.Router do
 
   scope "/" do
     pipe_through :browser
-    live_dashboard "/dashboard", metrics: GodwokenExplorerWeb.Telemetry
+
+    live_dashboard "/dashboard",
+      metrics: GodwokenExplorerWeb.Telemetry,
+      ecto_repos: [GodwokenExplorer.Repo]
   end
 end

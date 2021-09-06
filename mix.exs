@@ -27,7 +27,7 @@ defmodule GodwokenExplorer.MixProject do
   def application do
     [
       mod: {GodwokenExplorer.Application, []},
-      extra_applications: [:logger, :runtime_tools]
+      extra_applications: [:logger, :runtime_tools, :os_mon]
     ]
   end
 
@@ -59,6 +59,9 @@ defmodule GodwokenExplorer.MixProject do
       {:decimal, "~> 2.0"},
       {:logger_file_backend, "~> 0.0.10"},
       {:blake2_elixir, "~> 0.8.1"},
+
+      # live dashboard ecto stats
+      {:ecto_psql_extras, "~> 0.6"},
 
       # admin dashboard
       {:torch, "~> 3.6"},
