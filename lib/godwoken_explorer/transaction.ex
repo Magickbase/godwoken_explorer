@@ -88,20 +88,34 @@ defmodule GodwokenExplorer.Transaction do
   end
 
   def latest_10_records do
-    case Transactions.all do
+    case Transactions.all() do
       txs when is_list(txs) and length(txs) == 10 ->
-        txs |> Enum.map(fn t ->
-          t |> Map.take([:hash, :from_account_id, :to_account_id, :type]) |> Map.merge(%{timestamp: t.block.timestamp, success: true})
+        txs
+        |> Enum.map(fn t ->
+          t
+          |> Map.take([:hash, :from_account_id, :to_account_id, :type])
+          |> Map.merge(%{timestamp: t.block.timestamp, success: true})
         end)
+
       _ ->
         from(t in Transaction,
           join: b in Block,
-          on: [hash: t.block_hash],
+          on: b.hash == t.block_hash,
+          join: a2 in Account,
+          on: a2.id == t.from_account_id,
+          join: a3 in Account,
+          on: a3.id == t.to_account_id,
           select: %{
             hash: t.hash,
             timestamp: b.timestamp,
-            from_account_id: t.from_account_id,
-            to_account_id: t.to_account_id,
+            from:
+              fragment(
+                "CASE WHEN a2.type = 'user' THEN encode(a2.eth_address, 'escape') ELSE a2.id::text END"
+              ),
+            to:
+              fragment(
+                "CASE WHEN a3.type = 'user' THEN encode(a3.eth_address, 'escape') ELSE a3.id::text END"
+              ),
             type: t.type,
             success: true
           },
@@ -116,15 +130,19 @@ defmodule GodwokenExplorer.Transaction do
     tx =
       from(t in Transaction,
         join: b in Block,
-        on: [hash: t.block_hash],
+        on: b.hash == t.block_hash,
+        join: a1 in Account,
+        on: a1.id == t.from_account_id,
+        join: a2 in Account,
+        on: a2.id == t.to_account_id,
         where: t.hash == ^hash,
         select: %{
           hash: t.hash,
           l2_block_number: t.block_number,
           timestamp: b.timestamp,
           l1_block_number: b.layer1_block_number,
-          from: t.from_account_id,
-          to: t.to_account_id,
+          from: fragment("CASE WHEN a1.type = 'user' THEN a1.eth_address ELSE a1.id END"),
+          to: a2.id,
           type: t.type,
           status: t.status,
           nonce: t.nonce,
@@ -132,8 +150,11 @@ defmodule GodwokenExplorer.Transaction do
         }
       )
       |> Repo.one()
+
     case tx do
-      nil -> %{}
+      nil ->
+        %{}
+
       _ ->
         args = join_args(tx) || %{}
         tx |> Map.merge(args)
@@ -160,6 +181,7 @@ defmodule GodwokenExplorer.Transaction do
   def account_transactions_data(account_id, page) do
     txs = list_by_account_id(account_id)
     original_struct = Repo.paginate(txs, page: page)
+
     parsed_result =
       Enum.map(original_struct.entries, fn record ->
         stringify_and_unix_maps(record)
