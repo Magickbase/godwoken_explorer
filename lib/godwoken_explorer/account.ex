@@ -294,4 +294,14 @@ defmodule GodwokenExplorer.Account do
         {:ok, account_id}
     end
   end
+
+  def get_eth_address_or_id(id) do
+    case Repo.get(Account, id) do
+      %__MODULE__{type: :user, eth_address: eth_address} ->
+        eth_address
+
+      _ ->
+        id
+    end
+  end
 end

@@ -5,7 +5,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
 
   alias GodwokenRPC.Block.{FetchedTipBlockHash, ByHash}
   alias GodwokenRPC.{Blocks, HTTP}
-  alias GodwokenExplorer.{Block, Transaction, Chain}
+  alias GodwokenExplorer.{Block, Transaction, Chain, Account}
   alias GodwokenExplorer.Chain.Events.Publisher
   alias GodwokenIndexer.Account.Worker, as: AccountWorker
   alias GodwokenExplorer.Chain.Cache.Blocks, as: BlocksCache
@@ -85,9 +85,14 @@ defmodule GodwokenIndexer.Block.SyncWorker do
 
     home_transactions =
       Enum.map(inserted_transactions, fn tx ->
+        from_account = Account.get_eth_address_or_id(tx.from_account_id)
+        to_account = Account.get_eth_address_or_id(tx.to_account_id)
+
         tx
-        |> Map.take([:hash, :from_account_id, :to_account_id, :type])
+        |> Map.take([:hash, :type])
         |> Map.merge(%{
+          from: from_account,
+          to: to_account,
           timestamp: home_blocks |> List.first() |> Map.get(:timestamp),
           success: true
         })
