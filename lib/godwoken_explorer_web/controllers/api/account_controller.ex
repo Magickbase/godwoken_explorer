@@ -3,10 +3,10 @@ defmodule GodwokenExplorerWeb.API.AccountController do
 
   alias GodwokenExplorer.{Repo, Account}
 
-  def show(conn, %{"id" => id}) when is_integer(id) do
+  def show(conn, %{"id" => "0x" <> _} = params) do
     result =
-      case Repo.get(Account, id) do
-        %Account{} ->
+      case Account.search(params["id"]) do
+        %Account{id: id} ->
           id
           |> Account.find_by_id()
           |> Account.account_to_view()
@@ -24,10 +24,10 @@ defmodule GodwokenExplorerWeb.API.AccountController do
     )
   end
 
-  def show(conn, %{"id" => eth_address}) do
+  def show(conn, %{"id" => id}) do
     result =
-      case Account.search(eth_address) do
-        %Account{id: id} ->
+      case Repo.get(Account, id) do
+        %Account{} ->
           id
           |> Account.find_by_id()
           |> Account.account_to_view()
