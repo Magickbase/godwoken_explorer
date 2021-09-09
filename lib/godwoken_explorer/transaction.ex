@@ -131,18 +131,24 @@ defmodule GodwokenExplorer.Transaction do
       from(t in Transaction,
         join: b in Block,
         on: b.hash == t.block_hash,
-        join: a1 in Account,
-        on: a1.id == t.from_account_id,
         join: a2 in Account,
-        on: a2.id == t.to_account_id,
+        on: a2.id == t.from_account_id,
+        join: a3 in Account,
+        on: a3.id == t.to_account_id,
         where: t.hash == ^hash,
         select: %{
           hash: t.hash,
           l2_block_number: t.block_number,
           timestamp: b.timestamp,
           l1_block_number: b.layer1_block_number,
-          from: fragment("CASE WHEN a1.type = 'user' THEN a1.eth_address ELSE a1.id END"),
-          to: a2.id,
+          from:
+            fragment(
+              "CASE WHEN a2.type = 'user' THEN encode(a2.eth_address, 'escape') ELSE a2.id::text END"
+            ),
+          to:
+            fragment(
+              "CASE WHEN a3.type = 'user' THEN encode(a3.eth_address, 'escape') ELSE a3.id::text END"
+            ),
           type: t.type,
           status: t.status,
           nonce: t.nonce,
