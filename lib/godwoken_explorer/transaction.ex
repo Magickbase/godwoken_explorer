@@ -171,13 +171,23 @@ defmodule GodwokenExplorer.Transaction do
     from(t in Transaction,
       join: b in Block,
       on: [hash: t.block_hash],
+      join: a2 in Account,
+      on: a2.id == t.from_account_id,
+      join: a3 in Account,
+      on: a3.id == t.to_account_id,
       where: t.from_account_id == ^account_id or t.to_account_id == ^account_id,
       select: %{
         hash: t.hash,
         block_number: b.number,
         timestamp: b.timestamp,
-        from: t.from_account_id,
-        to: t.to_account_id,
+        from:
+          fragment(
+            "CASE WHEN a2.type = 'user' THEN encode(a2.eth_address, 'escape') ELSE a2.id::text END"
+          ),
+        to:
+          fragment(
+            "CASE WHEN a3.type = 'user' THEN encode(a3.eth_address, 'escape') ELSE a3.id::text END"
+          ),
         type: t.type
       },
       order_by: [desc: t.inserted_at]
