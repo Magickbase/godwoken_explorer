@@ -297,7 +297,7 @@ defmodule GodwokenExplorer.Account do
 
   def get_eth_address_or_id(id) do
     case Repo.get(Account, id) do
-      %__MODULE__{type: :user, eth_address: eth_address} ->
+      %__MODULE__{eth_address: eth_address} when is_binary(eth_address) ->
         eth_address
 
       _ ->

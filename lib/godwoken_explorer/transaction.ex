@@ -110,11 +110,11 @@ defmodule GodwokenExplorer.Transaction do
             timestamp: b.timestamp,
             from:
               fragment(
-                "CASE WHEN a2.type = 'user' THEN encode(a2.eth_address, 'escape') ELSE a2.id::text END"
+                "CASE WHEN a2.eth_address IS NOT NULL THEN encode(a2.eth_address, 'escape') ELSE a2.id::text END"
               ),
             to:
               fragment(
-                "CASE WHEN a3.type = 'user' THEN encode(a3.eth_address, 'escape') ELSE a3.id::text END"
+                "CASE WHEN a3.eth_address IS NOT NULL THEN encode(a3.eth_address, 'escape') ELSE a3.id::text END"
               ),
             type: t.type,
             success: true
@@ -143,11 +143,11 @@ defmodule GodwokenExplorer.Transaction do
           l1_block_number: b.layer1_block_number,
           from:
             fragment(
-              "CASE WHEN a2.type = 'user' THEN encode(a2.eth_address, 'escape') ELSE a2.id::text END"
+              "CASE WHEN a2.eth_address IS NOT NULL THEN encode(a2.eth_address, 'escape') ELSE a2.id::text END"
             ),
           to:
             fragment(
-              "CASE WHEN a3.type = 'user' THEN encode(a3.eth_address, 'escape') ELSE a3.id::text END"
+              "CASE WHEN a3.eth_address IS NOT NULL THEN encode(a3.eth_address, 'escape') ELSE a3.id::text END"
             ),
           type: t.type,
           status: t.status,
@@ -182,11 +182,11 @@ defmodule GodwokenExplorer.Transaction do
         timestamp: b.timestamp,
         from:
           fragment(
-            "CASE WHEN a2.type = 'user' THEN encode(a2.eth_address, 'escape') ELSE a2.id::text END"
+            "CASE WHEN a2.eth_address IS NOT NULL THEN encode(a2.eth_address, 'escape') ELSE a2.id::text END"
           ),
         to:
           fragment(
-            "CASE WHEN a3.type = 'user' THEN encode(a3.eth_address, 'escape') ELSE a3.id::text END"
+            "CASE WHEN a3.eth_address IS NOT NULL THEN encode(a3.eth_address, 'escape') ELSE a3.id::text END"
           ),
         type: t.type
       },
