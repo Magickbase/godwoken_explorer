@@ -132,7 +132,7 @@ defmodule GodwokenIndexer.Account.Worker do
   defp account_to_eth_adress(type, args) do
     rollup_script_hash = Application.get_env(:godwoken_explorer, :rollup_script_hash)
 
-    if type == :user &&
+    if type in [:user, :polyjuice_contract] &&
          args |> String.slice(0, 66) == rollup_script_hash do
       "0x" <> String.slice(args, -40, 40)
     else
