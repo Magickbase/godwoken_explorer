@@ -3,9 +3,17 @@ defmodule GodwokenRPC do
 
   require Logger
 
+  alias GodwokenExplorer.{Account, Repo}
   alias GodwokenRPC.{Blocks, Block, HTTP}
   alias GodwokenRPC.CKBIndexer.{FetchedTransactions, FetchedTransaction, FetchedTip}
-  alias GodwokenRPC.Account.{FetchedAccountID, FetchedScriptHash}
+
+  alias GodwokenRPC.Account.{
+    FetchedAccountID,
+    FetchedScriptHash,
+    FetchedScript,
+    FetchedNonce,
+    FetchedBalance
+  }
 
   def request(%{method: method, params: params} = map)
       when is_binary(method) and is_list(params) do
@@ -114,6 +122,45 @@ defmodule GodwokenRPC do
          |> HTTP.json_rpc(options) do
       {:ok, script_hash} -> script_hash
       {:error, _error} -> nil
+    end
+  end
+
+  def fetch_script(script_hash) do
+    options = Application.get_env(:godwoken_explorer, :json_rpc_named_arguments)
+
+    case FetchedScript.request(%{script_hash: script_hash})
+         |> HTTP.json_rpc(options) do
+      {:ok, script} -> script
+      {:error, _error} -> nil
+    end
+  end
+
+  def fetch_nonce(account_id) do
+    options = Application.get_env(:godwoken_explorer, :json_rpc_named_arguments)
+
+    case FetchedNonce.request(%{account_id: account_id})
+         |> HTTP.json_rpc(options) do
+      {:ok, nonce} -> nonce |> hex_to_number()
+      {:error, _error} -> nil
+    end
+  end
+
+  def fetch_balance(account_id, udt_id) do
+    options = Application.get_env(:godwoken_explorer, :json_rpc_named_arguments)
+
+    short_address =
+      case Repo.get(Account, account_id) do
+        %Account{short_address: short_address} ->
+          short_address
+
+        nil ->
+          %{account_id: account_id} |> GodwokenRPC.fetch_script_hash() |> String.slice(0, 42)
+      end
+
+    case FetchedBalance.request(%{short_address: short_address, udt_id: udt_id})
+         |> HTTP.json_rpc(options) do
+      {:ok, balance} -> {:ok, balance |> hex_to_number()}
+      {:error, _error} -> {:error, 0}
     end
   end
 

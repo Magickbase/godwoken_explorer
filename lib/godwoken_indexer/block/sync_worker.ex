@@ -5,7 +5,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
 
   alias GodwokenRPC.Block.{FetchedTipBlockHash, ByHash}
   alias GodwokenRPC.{Blocks, HTTP}
-  alias GodwokenExplorer.{Block, Transaction, Chain, Account}
+  alias GodwokenExplorer.{Block, Transaction, Chain}
   alias GodwokenExplorer.Chain.Events.Publisher
   alias GodwokenIndexer.Account.Worker, as: AccountWorker
   alias GodwokenExplorer.Chain.Cache.Blocks, as: BlocksCache
@@ -72,7 +72,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
 
         broadcast_block_and_tx(inserted_blocks, inserted_transactions)
 
-        trigger_account_worker(transactions_params)
+        trigger_sudt_account_worker(transactions_params)
       end
     end
   end
@@ -85,8 +85,8 @@ defmodule GodwokenIndexer.Block.SyncWorker do
 
     home_transactions =
       Enum.map(inserted_transactions, fn tx ->
-        from_account = Account.get_eth_address_or_id(tx.from_account_id)
-        to_account = Account.get_eth_address_or_id(tx.to_account_id)
+        from_account = AccountWorker.get_eth_address_or_id(tx.from_account_id)
+        to_account = AccountWorker.get_eth_address_or_id(tx.to_account_id)
 
         tx
         |> Map.take([:hash, :type])
@@ -112,13 +112,8 @@ defmodule GodwokenIndexer.Block.SyncWorker do
     end)
   end
 
-  defp trigger_account_worker(transactions_params) do
-    account_ids = extract_account_ids(transactions_params)
+  defp trigger_sudt_account_worker(transactions_params) do
     sudt_account_ids = extract_sudt_account_ids(transactions_params)
-
-    if length(account_ids) > 0 do
-      AccountWorker.trigger_account(account_ids)
-    end
 
     if length(sudt_account_ids) > 0 do
       AccountWorker.trigger_sudt_account(sudt_account_ids)
@@ -136,15 +131,6 @@ defmodule GodwokenIndexer.Block.SyncWorker do
   end
 
   # 0: meta_contract 1: ckb
-  defp extract_account_ids(transactions_params) do
-    transactions_params
-    |> Enum.reduce([], fn transaction, acc ->
-      acc ++ transaction[:account_ids]
-    end)
-    |> Enum.uniq()
-    |> Enum.reject(&(&1 in [0, 1]))
-  end
-
   defp extract_sudt_account_ids(transactions_params) do
     transactions_params
     |> Enum.reduce([], fn transaction, acc ->
