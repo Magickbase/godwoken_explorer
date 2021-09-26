@@ -62,10 +62,12 @@ defmodule GodwokenIndexer.Block.SyncWorker do
         inserted_transactions =
           transactions_params
           |> Enum.map(fn transaction_params ->
-            {:ok, %Transaction{} = transaction_struct} =
-              Transaction.create_transaction(transaction_params)
+            {:ok, %Transaction{} = tx} = Transaction.create_transaction(transaction_params)
 
-            transaction_struct
+            from_account = AccountWorker.get_eth_address_or_id(tx.from_account_id)
+            to_account = AccountWorker.get_eth_address_or_id(tx.to_account_id)
+
+            tx |> struct(%{from_account_id: from_account, to_account_id: to_account})
           end)
 
         update_transactions_cache(inserted_transactions)
@@ -85,14 +87,9 @@ defmodule GodwokenIndexer.Block.SyncWorker do
 
     home_transactions =
       Enum.map(inserted_transactions, fn tx ->
-        from_account = AccountWorker.get_eth_address_or_id(tx.from_account_id)
-        to_account = AccountWorker.get_eth_address_or_id(tx.to_account_id)
-
         tx
-        |> Map.take([:hash, :type])
+        |> Map.take([:hash, :type, :from_account_id, :to_account_id])
         |> Map.merge(%{
-          from: from_account,
-          to: to_account,
           timestamp: home_blocks |> List.first() |> Map.get(:timestamp),
           success: true
         })

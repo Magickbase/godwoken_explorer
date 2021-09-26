@@ -16,5 +16,4 @@ defmodule GodwokenExplorer.Chain.Cache.Transactions do
   def element_to_id(%Transaction{block_number: block_number, inserted_at: inserted_at, hash: hash}) do
     {block_number, inserted_at, hash}
   end
-
 end

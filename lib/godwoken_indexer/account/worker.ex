@@ -1,8 +1,6 @@
 defmodule GodwokenIndexer.Account.Worker do
   use GenServer
 
-  require Logger
-
   alias GodwokenRPC
   alias GodwokenExplorer.{Repo, Account, AccountUDT}
 
