@@ -16,7 +16,7 @@ defmodule GodwokenIndexer.Account.SyncWorker do
   end
 
   def get_eth_address_or_id(pid) do
-    GenServer.call(pid, :account)
+    GenServer.call(pid, :account, :infinity)
   end
 
   def handle_call(:account, _from, state) do
