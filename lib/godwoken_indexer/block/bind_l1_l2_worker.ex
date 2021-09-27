@@ -52,11 +52,11 @@ defmodule GodwokenIndexer.Block.BindL1L2Worker do
 
   defp fetch_l1_number_and_update(start_block_number, l1_tip_number) do
     block_range = cal_block_range(start_block_number, l1_tip_number)
-    state_validator_lock = Application.get_env(:godwoken_explorer, :state_validator_lock)
+    rollup_cell_type = Application.get_env(:godwoken_explorer, :rollup_cell_type)
 
     case GodwokenRPC.fetch_l1_txs_by_range(%{
-           script: state_validator_lock,
-           script_type: "lock",
+           script: rollup_cell_type,
+           script_type: "type",
            order: "asc",
            limit: "0x64",
            filter: %{block_range: block_range}

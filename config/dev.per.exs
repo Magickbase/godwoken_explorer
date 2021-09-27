@@ -8,10 +8,10 @@ config :godwoken_explorer,
   layer2_lock_code_hash: "0xdeec13a7b8e100579541384ccaf4b5223733e4a5483c3aec95ddc4c1d5ea5b22",
   eoa_code_hash: "0x28380fadb43a6f139d61a2509b69ecd2fbb2f61847ef6d39371b4f906c151ab5",
   rollup_script_hash: "0x4cc2e6526204ae6a2e8fcf12f7ad472f41a1606d5b9624beebd215d780809f6a",
-  state_validator_lock: %{
-    code_hash: "0x5447ad1c351fe85d14d70fc885a9beb8a99281c216386b2985ff87a51756739f",
+  rollup_cell_type: %{
+    code_hash: "0x5c365147bb6c40e817a2a53e0dec3661f7390cc77f0c02db138303177b12e9fb",
     hash_type: "type",
-    args: "0x"
+    args: "0x213743d13048e9f36728c547ab736023a7426e15a3d7d1c82f43ec3b5f266df2"
   },
   deposition_lock: %{
     code_hash: "0x5a2506bb68d81a11dcadad4cb7eae62a17c43c619fe47ac8037bc8ce2dd90360",

@@ -41,10 +41,10 @@ defmodule GodwokenIndexer.Block.GlobalStateWorker do
 
   defp fetch_global_state_info do
     options = Application.get_env(:godwoken_explorer, :ckb_indexer_named_arguments)
-    state_validator_lock = Application.get_env(:godwoken_explorer, :state_validator_lock)
+    rollup_cell_type = Application.get_env(:godwoken_explorer, :rollup_cell_type)
 
     with {:ok, response} <-
-           FetchedCells.request(state_validator_lock, "lock") |> HTTP.json_rpc(options),
+           FetchedCells.request(rollup_cell_type, "type") |> HTTP.json_rpc(options),
          %{"output_data" => "0x" <> global_state} <- response["objects"] |> List.first() do
       {
         latest_finalized_block_number,
