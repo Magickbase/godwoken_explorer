@@ -16,7 +16,7 @@ defmodule GodwokenIndexer.Account.Worker do
   end
 
   def get_eth_address_or_id(account_id) do
-    GenServer.call(AccountWorker, {:account, account_id})
+    GenServer.call(AccountWorker, {:account, account_id}, 10000)
   end
 
   @spec trigger_account(any) :: :ok
