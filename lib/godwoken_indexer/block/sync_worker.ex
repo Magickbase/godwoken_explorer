@@ -59,13 +59,34 @@ defmodule GodwokenIndexer.Block.SyncWorker do
 
         update_block_cache(inserted_blocks)
 
-        inserted_transactions =
+        old_inserted_transactions =
           transactions_params
           |> Enum.map(fn transaction_params ->
             {:ok, %Transaction{} = tx} = Transaction.create_transaction(transaction_params)
 
-            from_account = AccountWorker.get_eth_address_or_id(tx.from_account_id)
-            to_account = AccountWorker.get_eth_address_or_id(tx.to_account_id)
+            tx
+          end)
+
+        inserted_transactions =
+          old_inserted_transactions
+          |> Enum.map(fn tx ->
+            from_account =
+              case GodwokenIndexer.Account.SyncSupervisor.start_child(tx.from_account_id) do
+                {:ok, from_pid} ->
+                  GodwokenIndexer.Account.SyncWorker.get_eth_address_or_id(from_pid)
+
+                {:error, {:already_started, from_pid}} ->
+                  GodwokenIndexer.Account.SyncWorker.get_eth_address_or_id(from_pid)
+              end
+
+            to_account =
+              case GodwokenIndexer.Account.SyncSupervisor.start_child(tx.to_account_id) do
+                {:ok, to_pid} ->
+                  GodwokenIndexer.Account.SyncWorker.get_eth_address_or_id(to_pid)
+
+                {:error, {:already_started, to_pid}} ->
+                  GodwokenIndexer.Account.SyncWorker.get_eth_address_or_id(to_pid)
+              end
 
             tx |> struct(%{from_account_id: from_account, to_account_id: to_account})
           end)
