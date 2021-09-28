@@ -2,7 +2,7 @@ defmodule GodwokenIndexer.Account.Worker do
   use GenServer
 
   alias GodwokenRPC
-  alias GodwokenExplorer.{Repo, Account, AccountUDT}
+  alias GodwokenExplorer.{Account, AccountUDT}
 
   @spec start_link(any) :: :ignore | {:error, any} | {:ok, pid}
   def start_link(_) do
@@ -15,10 +15,6 @@ defmodule GodwokenIndexer.Account.Worker do
     {:ok, state}
   end
 
-  def get_eth_address_or_id(account_id) do
-    GenServer.call(AccountWorker, {:account, account_id}, 40_000)
-  end
-
   @spec trigger_account(any) :: :ok
   def trigger_account(account_ids) do
     GenServer.cast(AccountWorker, {:account, account_ids})
@@ -27,37 +23,6 @@ defmodule GodwokenIndexer.Account.Worker do
   @spec trigger_sudt_account(any) :: :ok
   def trigger_sudt_account(udt_and_account_ids) do
     GenServer.cast(AccountWorker, {:sudt_account, udt_and_account_ids})
-  end
-
-  def handle_call({:account, account_id}, _from, state) do
-    case Repo.get(Account, account_id) do
-      nil ->
-        nonce = GodwokenRPC.fetch_nonce(account_id)
-        script_hash = GodwokenRPC.fetch_script_hash(%{account_id: account_id})
-        short_address = String.slice(script_hash, 0, 42)
-        script = GodwokenRPC.fetch_script(script_hash)
-        type = switch_account_type(script["code_hash"], script["args"])
-        eth_address = account_to_eth_adress(type, script["args"])
-        parsed_script = add_name_to_polyjuice_script(type, script)
-
-        Account.create_or_update_account(%{
-          id: account_id,
-          script: parsed_script,
-          script_hash: script_hash,
-          short_address: short_address,
-          type: type,
-          nonce: nonce,
-          eth_address: eth_address
-        })
-
-        {:reply, eth_address || account_id, state}
-
-      %Account{eth_address: eth_address} when is_binary(eth_address) ->
-        {:reply, eth_address, state}
-
-      _ ->
-        {:reply, account_id, state}
-    end
   end
 
   def handle_cast({:account, account_ids}, state) do
