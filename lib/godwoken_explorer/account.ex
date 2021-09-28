@@ -148,7 +148,8 @@ defmodule GodwokenExplorer.Account do
       %Account{type: :polyjuice_contract} ->
         %{
           smart_contract: %{
-            tx_hash: "0x3bd26903a0c8c418d1fba9be7eb13d088b8e68dc1f1d34941c8916246532cccf"
+            tx_hash: "0x3bd26903a0c8c418d1fba9be7eb13d088b8e68dc1f1d34941c8916246532cccf",
+            eth_addr: account.eth_address
           }
         }
 
