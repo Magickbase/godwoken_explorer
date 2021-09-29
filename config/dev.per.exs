@@ -18,7 +18,9 @@ config :godwoken_explorer,
     hash_type: "type",
     args: "0x4cc2e6526204ae6a2e8fcf12f7ad472f41a1606d5b9624beebd215d780809f6a"
   },
-  init_godwoken_l1_block_number: 2_286_200
+  init_godwoken_l1_block_number: 2_286_200,
+  ckb_token_script_hash: "0x0000000000000000000000000000000000000000000000000000000000000000",
+  eth_token_script_hash: "0xa9eb9df467715766b009ad57cf4c7a2977bc8377d51ace37a3653f3bbb540b7c"
 
 config :godwoken_explorer, :basic_auth, username: "hello", password: "secret"
 

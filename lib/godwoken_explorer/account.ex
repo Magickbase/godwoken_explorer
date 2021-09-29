@@ -100,8 +100,22 @@ defmodule GodwokenExplorer.Account do
     account = Repo.get(Account, id)
 
     ckb_balance =
-      case Repo.get_by(AccountUDT, %{account_id: id, udt_id: 1}) do
-        %AccountUDT{balance: balance} -> balance
+      with udt_id when is_integer(udt_id) <- UDT.ckb_account_id() do
+        case Repo.get_by(AccountUDT, %{account_id: id, udt_id: udt_id}) do
+          %AccountUDT{balance: balance} -> balance
+          nil -> Decimal.new(0)
+        end
+      else
+        nil -> Decimal.new(0)
+      end
+
+    eth_balance =
+      with udt_id when is_integer(udt_id) <- UDT.eth_account_id() do
+        case Repo.get_by(AccountUDT, %{account_id: id, udt_id: udt_id}) do
+          %AccountUDT{balance: balance} -> balance
+          nil -> Decimal.new(0)
+        end
+      else
         nil -> Decimal.new(0)
       end
 
@@ -111,6 +125,7 @@ defmodule GodwokenExplorer.Account do
       id: id,
       type: account.type,
       ckb: ckb_balance |> Decimal.to_string(),
+      eth: eth_balance |> Decimal.to_string(),
       tx_count: tx_count |> Integer.to_string()
     }
 
@@ -174,7 +189,11 @@ defmodule GodwokenExplorer.Account do
   end
 
   def account_to_view(account) do
-    account = %{account | ckb: balance_to_view(account.ckb, 8)}
+    account =
+      Map.merge(account, %{
+        ckb: balance_to_view(account.ckb, 8),
+        eth: balance_to_view(account.eth, 8)
+      })
 
     case Kernel.get_in(account, [:user, :udt_list]) do
       udt_list when not is_nil(udt_list) ->

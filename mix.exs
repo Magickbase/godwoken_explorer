@@ -59,6 +59,7 @@ defmodule GodwokenExplorer.MixProject do
       {:decimal, "~> 2.0"},
       {:logger_file_backend, "~> 0.0.10"},
       {:blake2_elixir, "~> 0.8.1"},
+      {:fastglobal, "~> 1.0"},
 
       # live dashboard ecto stats
       {:ecto_psql_extras, "~> 0.6"},

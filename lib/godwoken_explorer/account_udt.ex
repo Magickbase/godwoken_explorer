@@ -29,18 +29,33 @@ defmodule GodwokenExplorer.AccountUDT do
     |> Repo.insert_or_update()
     |> case do
       {:ok, account_udt} ->
-        account_api_data = account_udt.account_id |> Account.find_by_id() |> Account.account_to_view()
+        account_api_data =
+          account_udt.account_id |> Account.find_by_id() |> Account.account_to_view()
+
         Publisher.broadcast([{:accounts, account_api_data}], :realtime)
         {:ok, account_udt}
-      {:error, _} -> {:error, nil}
+
+      {:error, _} ->
+        {:error, nil}
     end
   end
 
   def list_udt_by_account_id(account_id) do
+    reserve_account_ids = Enum.reject([UDT.ckb_account_id()] ++ [UDT.eth_account_id()], &is_nil/1)
+
+    conditions = dynamic([au, u], au.account_id == ^account_id)
+
+    conditions =
+      if length(reserve_account_ids) == 0 do
+        conditions
+      else
+        dynamic([au, u], u.id not in ^reserve_account_ids and ^conditions)
+      end
+
     from(au in AccountUDT,
       join: u in UDT,
       on: [id: au.udt_id],
-      where: u.id != 1 and au.account_id == ^account_id,
+      where: ^conditions,
       select: %{name: u.name, icon: u.icon, balance: au.balance, decimal: u.decimal}
     )
     |> Repo.all()

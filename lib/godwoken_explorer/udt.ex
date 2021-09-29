@@ -173,6 +173,36 @@ defmodule GodwokenExplorer.UDT do
     UDT.changeset(udt, attrs)
   end
 
+  def ckb_account_id do
+    if FastGlobal.get(:ckb_account_id) do
+      FastGlobal.get(:ckb_account_id)
+    else
+      with ckb_script_hash when is_binary(ckb_script_hash) <-
+             Application.get_env(:godwoken_explorer, :ckb_token_script_hash),
+           %__MODULE__{id: id} <- Repo.get_by(__MODULE__, script_hash: ckb_script_hash) do
+        FastGlobal.put(:ckb_account_id, id)
+        id
+      else
+        _ -> nil
+      end
+    end
+  end
+
+  def eth_account_id do
+    if FastGlobal.get(:eth_account_id) do
+      FastGlobal.get(:eth_account_id)
+    else
+      with eth_script_hash when is_binary(eth_script_hash) <-
+             Application.get_env(:godwoken_explorer, :eth_token_script_hash),
+           %__MODULE__{id: id} <- Repo.get_by(__MODULE__, script_hash: eth_script_hash) do
+        FastGlobal.put(:eth_account_id, id)
+        id
+      else
+        _ -> nil
+      end
+    end
+  end
+
   defp filter_config(:udts) do
     defconfig do
       number(:decimal)

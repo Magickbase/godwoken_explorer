@@ -14,7 +14,7 @@ task "buildhost:mix:deps.get" do
   on build_host do |host|
     within build_path do
       with mix_env: mix_env do
-        execute :mix, "local.hex", "--force"
+        # execute :mix, "local.hex", "--force"
         execute :mix, "local.rebar", "rebar3", "/home/#{fetch(:deploy_user)}/.mix/rebar3", "--force"
         execute :mix, "deps.get"
       end
