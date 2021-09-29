@@ -141,7 +141,8 @@ defmodule GodwokenExplorer.Account do
       %Account{type: :polyjuice_root} ->
         %{
           polyjuice: %{
-            script: account.script
+            script: account.script,
+            script_hash: account.script_hash
           }
         }
 
@@ -164,7 +165,8 @@ defmodule GodwokenExplorer.Account do
             decimal: (udt.decimal || 8) |> Integer.to_string(),
             supply: (udt.supply || Decimal.new(0)) |> Decimal.to_string(),
             holders: (holders || 0) |> Integer.to_string(),
-            type_script: udt.type_script
+            type_script: udt.type_script,
+            script_hash: account.script_hash
           }
         }
     end
