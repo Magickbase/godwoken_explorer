@@ -98,9 +98,10 @@ defmodule GodwokenExplorer.Account do
 
   def find_by_id(id) do
     account = Repo.get(Account, id)
+    ckb_udt_id = UDT.ckb_account_id()
 
     ckb_balance =
-      with udt_id when is_integer(udt_id) <- UDT.ckb_account_id() do
+      with udt_id when is_integer(udt_id) <- ckb_udt_id do
         case Repo.get_by(AccountUDT, %{account_id: id, udt_id: udt_id}) do
           %AccountUDT{balance: balance} -> balance
           nil -> Decimal.new(0)
@@ -166,6 +167,21 @@ defmodule GodwokenExplorer.Account do
           smart_contract: %{
             tx_hash: "0x3bd26903a0c8c418d1fba9be7eb13d088b8e68dc1f1d34941c8916246532cccf",
             eth_addr: account.eth_address
+          }
+        }
+
+      %Account{type: :udt, id: ^ckb_udt_id} ->
+        udt = Repo.get(UDT, id)
+        holders = UDT.count_holder(id)
+
+        %{
+          sudt: %{
+            name: udt.name || "Unkown##{id}",
+            symbol: udt.symbol,
+            decimal: (udt.decimal || 8) |> Integer.to_string(),
+            supply: (udt.supply || Decimal.new(0)) |> Decimal.to_string(),
+            holders: (holders || 0) |> Integer.to_string(),
+            script_hash: account.script_hash
           }
         }
 
