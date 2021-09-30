@@ -26,6 +26,7 @@ sudo apt-get install postgresql postgresql-contrib
 
 ```code
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+source ~/.bashrc
 ```
 
 ## Use Deploy Command
@@ -51,9 +52,9 @@ mix phx.gen.secret
 > At remote server
 
 1. Create `~/godwoken_explorer/app/shared/config/prod.secret.exs`
-2. Copy config/dev.per.exs content to secret.exs and update them to your own
-3. Add under code to secret.exs file
-```
+2. Copy project config/dev.per.exs file content to prod.secret.exs and update them to your own
+3. Add below code to prod.secret.exs file
+```code
   config :godwoken_explorer, GodwokenExplorerWeb.Endpoint,
   secret_key_base: #{GENERATED SECRET_KEY FROM STEP 2}
 ```
