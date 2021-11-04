@@ -12,8 +12,8 @@ use Mix.Config
 config :godwoken_explorer, GodwokenExplorerWeb.Endpoint,
   http: [port: 4001],
   # This is critical for ensuring web-sockets properly authorize.
-  url: [host: "agera.vercel.app", port: 443],
-  check_origin: false,
+  url: [host: "https://www.layerview.io"],
+  check_origin: ["https://www.layerview.io", "//layerview.io"],
   server: true,
   root: ".",
   version: Application.spec(:phoenix_distillery, :vsn)
