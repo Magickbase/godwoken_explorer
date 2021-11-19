@@ -87,6 +87,7 @@ defmodule GodwokenExplorer.Transaction do
     transaction
   end
 
+  # TODO: from and to may can refactor to be a single method
   def latest_10_records do
     case Transactions.all() do
       txs when is_list(txs) and length(txs) == 10 ->
@@ -108,14 +109,14 @@ defmodule GodwokenExplorer.Transaction do
           select: %{
             hash: t.hash,
             timestamp: b.timestamp,
-            from:
-              fragment(
-                "CASE WHEN a2.eth_address IS NOT NULL THEN encode(a2.eth_address, 'escape') ELSE a2.id::text END"
-              ),
-            to:
-              fragment(
-                "CASE WHEN a3.eth_address IS NOT NULL THEN encode(a3.eth_address, 'escape') ELSE a3.id::text END"
-              ),
+            from: fragment("
+              CASE WHEN a2.type = 'user' THEN encode(a2.eth_address, 'escape')
+                 WHEN a2.type = 'polyjuice_contract' THEN encode(a2.short_address, 'escape')
+                 ELSE a2.id::text END"),
+            to: fragment("
+              CASE WHEN a3.type = 'user' THEN encode(a3.eth_address, 'escape')
+                 WHEN a3.type = 'polyjuice_contract' THEN encode(a3.short_address, 'escape')
+                 ELSE a3.id::text END"),
             type: t.type,
             success: true
           },
@@ -141,14 +142,14 @@ defmodule GodwokenExplorer.Transaction do
           l2_block_number: t.block_number,
           timestamp: b.timestamp,
           l1_block_number: b.layer1_block_number,
-          from:
-            fragment(
-              "CASE WHEN a2.eth_address IS NOT NULL THEN encode(a2.eth_address, 'escape') ELSE a2.id::text END"
-            ),
-          to:
-            fragment(
-              "CASE WHEN a3.eth_address IS NOT NULL THEN encode(a3.eth_address, 'escape') ELSE a3.id::text END"
-            ),
+          from: fragment("
+              CASE WHEN a2.type = 'user' THEN encode(a2.eth_address, 'escape')
+                 WHEN a2.type = 'polyjuice_contract' THEN encode(a2.short_address, 'escape')
+                 ELSE a2.id::text END"),
+          to: fragment("
+              CASE WHEN a3.type = 'user' THEN encode(a3.eth_address, 'escape')
+                 WHEN a3.type = 'polyjuice_contract' THEN encode(a3.short_address, 'escape')
+                 ELSE a3.id::text END"),
           type: t.type,
           status: t.status,
           nonce: t.nonce,
@@ -180,14 +181,14 @@ defmodule GodwokenExplorer.Transaction do
         hash: t.hash,
         block_number: b.number,
         timestamp: b.timestamp,
-        from:
-          fragment(
-            "CASE WHEN a2.eth_address IS NOT NULL THEN encode(a2.eth_address, 'escape') ELSE a2.id::text END"
-          ),
-        to:
-          fragment(
-            "CASE WHEN a3.eth_address IS NOT NULL THEN encode(a3.eth_address, 'escape') ELSE a3.id::text END"
-          ),
+        from: fragment("
+              CASE WHEN a2.type = 'user' THEN encode(a2.eth_address, 'escape')
+                 WHEN a2.type = 'polyjuice_contract' THEN encode(a2.short_address, 'escape')
+                 ELSE a2.id::text END"),
+        to: fragment("
+              CASE WHEN a3.type = 'user' THEN encode(a3.eth_address, 'escape')
+                 WHEN a3.type = 'polyjuice_contract' THEN encode(a3.short_address, 'escape')
+                 ELSE a3.id::text END"),
         type: t.type
       },
       order_by: [desc: t.inserted_at]

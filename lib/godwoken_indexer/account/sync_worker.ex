@@ -42,10 +42,20 @@ defmodule GodwokenIndexer.Account.SyncWorker do
           eth_address: eth_address
         })
 
-        {:reply, eth_address || account_id, state, @auto_timeout}
+        display_value =
+          case type do
+            :user -> eth_address
+            :polyjuice_contract -> short_address
+            _ -> account_id
+          end
 
-      %Account{eth_address: eth_address} when is_binary(eth_address) ->
+        {:reply, display_value, state, @auto_timeout}
+
+      %Account{eth_address: eth_address, type: :user} when is_binary(eth_address) ->
         {:reply, eth_address, state, @auto_timeout}
+
+      %Account{short_address: short_address, type: :polyjuice_contract} when is_binary(short_address) ->
+        {:reply, short_address, state, @auto_timeout}
 
       _ ->
         {:reply, account_id, state, @auto_timeout}
