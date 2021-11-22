@@ -6,7 +6,7 @@
 - Lina nertwork: https://api.godwoken.nervina.cn
 
 ## API List
-- GET /api/account/{account_id | short_script_hash | eth_address | layer1_script_hash}
+- GET /api/accounts/{account_id | short_script_hash | eth_address | layer1_script_hash}
 
 > 查找账户
 
@@ -43,7 +43,7 @@
 |----|----|----|---|
 |account_id|integer|账户id| 2|
 
-- GET api/search?keywork={layer1_lock_script | block_hash | tx_hash | account_id | short_script_hash | eth_address | layer1_script_hash | account_id}
+- GET api/search?keyword={layer1_lock_script | block_hash | tx_hash | account_id | short_script_hash | eth_address | layer1_script_hash | account_id}
 > 聚合搜索
 
 |params|type|description|eg.|
