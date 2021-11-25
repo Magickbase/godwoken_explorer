@@ -36,12 +36,13 @@
 - GET api/home
 > 首页数据
 
-- GET api/txs?account_id={account_id}&page={page}
+- GET api/txs?(account_id={account_id} | eth_address={eth_address})&page={page}
 > 查找某个账户下的交易
 
 |params|type|description|eg.|
 |----|----|----|---|
 |account_id|integer|账户id| 2|
+|eth_address|sring|以太坊地址| 0x55824f0ed489feaaabd640459373dfb79c187dd2|
 
 - GET api/search?keyword={layer1_lock_script | block_hash | tx_hash | account_id | short_script_hash | eth_address | layer1_script_hash | account_id}
 > 聚合搜索
