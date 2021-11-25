@@ -79,6 +79,9 @@ defmodule GodwokenExplorer.MixProject do
       {:dialyxir, "~> 1.0", only: [:dev], runtime: false},
       {:sobelow, "~> 0.8", only: :dev},
 
+      # web3 tool
+      {:exw3, "~> 0.6"},
+
       # test
       {:ex_machina, "~> 2.7.0", only: :test},
       {:excoveralls, "~> 0.10", only: :test},
