@@ -11,6 +11,7 @@ defmodule GodwokenExplorer.Polyjuice do
     field :input_size, :integer
     field :input, :binary
     field :tx_hash, :binary
+    field :gas_used, :integer
 
     belongs_to(:transaction, GodwokenExplorer.Transaction,
       foreign_key: :tx_hash,
