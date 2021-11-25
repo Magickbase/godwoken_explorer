@@ -3,9 +3,16 @@ defmodule GodwokenExplorerWeb.API.TransactionController do
 
   import GodwokenRPC.Util, only: [stringify_and_unix_maps: 1]
 
-  alias GodwokenExplorer.{Transaction}
+  alias GodwokenExplorer.{Transaction, Account}
 
-  def index(conn, params) do
+  def index(conn, %{"eth_address" => "0x" <> _} = params) do
+    %Account{id: account_id} = Account.search(params["eth_address"])
+    results = Transaction.account_transactions_data(account_id, params["page"])
+
+    json(conn, results)
+  end
+
+  def index(conn, %{"account_id" => _} = params) do
     results = Transaction.account_transactions_data(params["account_id"], params["page"])
 
     json(conn, results)
@@ -13,13 +20,15 @@ defmodule GodwokenExplorerWeb.API.TransactionController do
 
   def show(conn, %{"hash" => "0x" <> _} = params) do
     tx = Transaction.find_by_hash(params["hash"])
-    result = if map_size(tx) == 0 do
-      %{
-        error_code: 404,
-        message: "not found"
-      }
-    else
-      %{
+
+    result =
+      if map_size(tx) == 0 do
+        %{
+          error_code: 404,
+          message: "not found"
+        }
+      else
+        %{
           hash: tx.hash,
           timestamp: tx.timestamp,
           finalize_state: tx.status,
@@ -32,8 +41,9 @@ defmodule GodwokenExplorerWeb.API.TransactionController do
           type: tx.type,
           gas_price: tx |> Map.get(:gas_price, Decimal.new(0)),
           fee: tx |> Map.get(:fee, Decimal.new(0))
-      } |> stringify_and_unix_maps()
-    end
+        }
+        |> stringify_and_unix_maps()
+      end
 
     json(
       conn,
@@ -47,5 +57,4 @@ defmodule GodwokenExplorerWeb.API.TransactionController do
       %{message: "Oops! An invalid Txn hash has been entered: #{params['hash']}"}
     )
   end
-
 end
