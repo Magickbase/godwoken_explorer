@@ -3,7 +3,7 @@ defmodule GodwokenExplorerWeb.API.TransactionController do
 
   import GodwokenRPC.Util, only: [stringify_and_unix_maps: 1]
 
-  alias GodwokenExplorer.{Transaction, Account}
+  alias GodwokenExplorer.{Transaction, Account, Repo, Polyjuice}
 
   def index(conn, %{"eth_address" => "0x" <> _} = params) do
     %Account{id: account_id} = Account.search(params["eth_address"])
@@ -28,7 +28,7 @@ defmodule GodwokenExplorerWeb.API.TransactionController do
           message: "not found"
         }
       else
-        %{
+        base_struct = %{
           hash: tx.hash,
           timestamp: tx.timestamp,
           finalize_state: tx.status,
@@ -39,9 +39,21 @@ defmodule GodwokenExplorerWeb.API.TransactionController do
           nonce: tx.nonce,
           args: tx.args,
           type: tx.type,
-          gas_price: tx |> Map.get(:gas_price, Decimal.new(0)),
           fee: tx |> Map.get(:fee, Decimal.new(0))
         }
+
+        if tx.type == :polyjuice do
+          polyjuice = Repo.get_by(Polyjuice, tx_hash: tx.hash)
+
+          Map.merge(base_struct, %{
+            gas_price: polyjuice.gas_price,
+            gas_used: polyjuice.gas_used,
+            gas_limit: polyjuice.gas_limit,
+            value: polyjuice.value
+          })
+        else
+          base_struct
+        end
         |> stringify_and_unix_maps()
       end
 

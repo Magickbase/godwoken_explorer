@@ -1,8 +1,8 @@
 defmodule GodwokenRPC.Util do
   alias Blake2.Blake2b
 
-  @stringify_integer_keys ~w(block_number number tx_count l2_block nonce aggregator)a
-  @stringify_decimal_keys ~w(gas_price fee)a
+  @stringify_integer_keys ~w(block_number number tx_count l2_block nonce aggregator gas_limit gas_used)a
+  @stringify_decimal_keys ~w(gas_price fee value)a
   @full_length_size 4
   @offset_size 4
 

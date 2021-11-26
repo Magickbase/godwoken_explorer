@@ -5,6 +5,7 @@ defmodule GodwokenRPC do
 
   alias GodwokenExplorer.{Account, Repo}
   alias GodwokenRPC.{Blocks, Block, HTTP}
+  alias GodwokenRPC.Transaction.FetchedReceipt
   alias GodwokenRPC.CKBIndexer.{FetchedTransactions, FetchedTransaction, FetchedTip}
 
   alias GodwokenRPC.Account.{
@@ -161,6 +162,17 @@ defmodule GodwokenRPC do
          |> HTTP.json_rpc(options) do
       {:ok, balance} -> {:ok, balance |> hex_to_number()}
       {:error, _error} -> {:error, 0}
+    end
+  end
+
+  def fetch_receipt(tx_hash) do
+    case FetchedReceipt.request(tx_hash) do
+      {:ok, %{"gasUsed" => gas_used}} ->
+        {:ok, gas_used}
+
+      _ ->
+        Logger.error(fn -> ["Failed to fetch tx receipt: ", tx_hash] end)
+        {:error, 0}
     end
   end
 

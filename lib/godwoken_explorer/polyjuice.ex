@@ -25,7 +25,7 @@ defmodule GodwokenExplorer.Polyjuice do
   @doc false
   def changeset(polyjuice, attrs) do
     polyjuice
-    |> cast(attrs, [:is_create, :gas_limit, :gas_price, :value, :input_size, :input])
+    |> cast(attrs, [:is_create, :gas_limit, :gas_price, :value, :input_size, :input, :gas_used])
     |> validate_required([:is_create, :gas_limit, :gas_price, :value, :input_size, :input])
   end
 
