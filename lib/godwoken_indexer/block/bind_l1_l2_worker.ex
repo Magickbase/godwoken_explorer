@@ -27,21 +27,34 @@ defmodule GodwokenIndexer.Block.BindL1L2Worker do
         nil -> init_godwoken_l1_block_number
       end
 
-    schedule_work(start_block_number)
+    schedule_l1_work(start_block_number)
+    schedule_bind_work(start_block_number)
 
     {:ok, state}
   end
 
-  @impl true
-  def handle_info({:bind_work, block_number}, state) do
+  def handle_info({:bind_l1_work, block_number}, state) do
     {:ok, l1_tip_number} = GodwokenRPC.fetch_l1_tip_block_nubmer()
 
     {:ok, next_start_block_number} =
       fetch_l1_number_and_update(block_number, l1_tip_number - @buffer_block_number)
 
-    fetch_deposition_script_and_update(block_number, l1_tip_number - @deposit_buffer_block_number)
+    schedule_l1_work(next_start_block_number)
 
-    schedule_work(next_start_block_number)
+    {:noreply, state}
+  end
+
+  @impl true
+  def handle_info({:bind_deposit_work, block_number}, state) do
+    {:ok, l1_tip_number} = GodwokenRPC.fetch_l1_tip_block_nubmer()
+
+    {:ok, next_start_block_number} =
+      fetch_deposition_script_and_update(
+        block_number,
+        l1_tip_number - @deposit_buffer_block_number
+      )
+
+    schedule_bind_work(next_start_block_number)
 
     {:noreply, state}
   end
@@ -59,7 +72,7 @@ defmodule GodwokenIndexer.Block.BindL1L2Worker do
            script: rollup_cell_type,
            script_type: "type",
            order: "asc",
-           limit: "0x64",
+           limit: "0x3e8",
            filter: %{block_range: block_range}
          }) do
       {:ok, response} ->
@@ -91,12 +104,16 @@ defmodule GodwokenIndexer.Block.BindL1L2Worker do
              script: deposition_lock,
              script_type: "lock",
              order: "asc",
-             limit: "0x64",
+             limit: "0x3e8",
              filter: %{block_range: block_range}
            }),
          txs when txs != [] <-
            response["objects"] |> Enum.filter(fn obj -> obj["io_type"] == "output" end) do
       parse_lock_script_and_bind(txs)
+      {:ok, block_range |> List.last() |> hex_to_number()}
+    else
+      _ ->
+        {:ok, block_range |> List.first() |> hex_to_number()}
     end
   end
 
@@ -213,11 +230,19 @@ defmodule GodwokenIndexer.Block.BindL1L2Worker do
     |> Enum.map(&number_to_hex(&1))
   end
 
-  defp schedule_work(start_block_number) do
+  defp schedule_l1_work(start_block_number) do
     second =
       Application.get_env(:godwoken_explorer, :bind_l1_worker_interval) ||
         @default_worker_interval
 
-    Process.send_after(self(), {:bind_work, start_block_number}, second * 1000)
+    Process.send_after(self(), {:bind_l1_work, start_block_number}, second * 1000)
+  end
+
+  defp schedule_bind_work(start_block_number) do
+    second =
+      Application.get_env(:godwoken_explorer, :bind_l1_worker_interval) ||
+        @default_worker_interval
+
+    Process.send_after(self(), {:bind_deposit_work, start_block_number}, second * 1000)
   end
 end
