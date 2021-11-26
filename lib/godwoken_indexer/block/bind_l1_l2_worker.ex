@@ -9,6 +9,7 @@ defmodule GodwokenIndexer.Block.BindL1L2Worker do
   alias GodwokenIndexer.Account.Worker
 
   @buffer_block_number 50
+  @deposit_buffer_block_number 10
   @default_worker_interval 5
 
   def start_link(state \\ []) do
@@ -38,7 +39,7 @@ defmodule GodwokenIndexer.Block.BindL1L2Worker do
     {:ok, next_start_block_number} =
       fetch_l1_number_and_update(block_number, l1_tip_number - @buffer_block_number)
 
-    fetch_deposition_script_and_update(block_number, l1_tip_number - @buffer_block_number)
+    fetch_deposition_script_and_update(block_number, l1_tip_number - @deposit_buffer_block_number)
 
     schedule_work(next_start_block_number)
 
