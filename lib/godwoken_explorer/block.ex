@@ -65,7 +65,8 @@ defmodule GodwokenExplorer.Block do
   end
 
   def find_by_number_or_hash("0x" <> _ = param) do
-    from(b in Block, where: b.hash == ^param) |> Repo.one()
+    downcase_param = String.downcase(param)
+    from(b in Block, where: b.hash == ^downcase_param) |> Repo.one()
   end
 
   def find_by_number_or_hash(number) when is_binary(number) or is_integer(number) do
@@ -80,11 +81,13 @@ defmodule GodwokenExplorer.Block do
   end
 
   def latest_10_records do
-    case Blocks.all do
+    case Blocks.all() do
       blocks when is_list(blocks) and length(blocks) == 10 ->
-        blocks |> Enum.map(fn b ->
+        blocks
+        |> Enum.map(fn b ->
           b |> Map.take([:hash, :number, :timestamp, :transaction_count])
         end)
+
       _ ->
         from(b in "blocks",
           select: %{
@@ -121,26 +124,59 @@ defmodule GodwokenExplorer.Block do
   end
 
   def update_blocks_finalized(latest_finalized_block_number) do
-    block_query = from(b in Block, where: b.number <= ^latest_finalized_block_number and b.status == :committed)
+    block_query =
+      from(b in Block,
+        where: b.number <= ^latest_finalized_block_number and b.status == :committed
+      )
+
     updated_blocks = block_query |> Repo.all()
-    transaction_query = from(t in Transaction,
-      where: t.block_number <= ^latest_finalized_block_number and t.status == :committed
-    )
+
+    transaction_query =
+      from(t in Transaction,
+        where: t.block_number <= ^latest_finalized_block_number and t.status == :committed
+      )
+
     # updated_txs = transaction_query |> Repo.all()
 
     case Multi.new()
-    |> Multi.update_all(:blocks, block_query, set: [status: "finalized", updated_at: DateTime.now!("Etc/UTC")])
-    |> Multi.update_all(:transactions, transaction_query, set: [status: "finalized", updated_at: DateTime.now!("Etc/UTC")])
-    |> Repo.transaction() do
-      {:ok, %{blocks: {updated_blocks_number, nil}, transactions: _}} when updated_blocks_number > 0 ->
-        updated_blocks |> Enum.each(fn b ->
-          Publisher.broadcast([{:blocks, %{number: b.number, l1_block_number: b.layer1_block_number, l1_tx_hash: b.layer1_tx_hash, status: "finalized"}}], :realtime)
+         |> Multi.update_all(:blocks, block_query,
+           set: [status: "finalized", updated_at: DateTime.now!("Etc/UTC")]
+         )
+         |> Multi.update_all(:transactions, transaction_query,
+           set: [status: "finalized", updated_at: DateTime.now!("Etc/UTC")]
+         )
+         |> Repo.transaction() do
+      {:ok, %{blocks: {updated_blocks_number, nil}, transactions: _}}
+      when updated_blocks_number > 0 ->
+        updated_blocks
+        |> Enum.each(fn b ->
+          Publisher.broadcast(
+            [
+              {:blocks,
+               %{
+                 number: b.number,
+                 l1_block_number: b.layer1_block_number,
+                 l1_tx_hash: b.layer1_tx_hash,
+                 status: "finalized"
+               }}
+            ],
+            :realtime
+          )
+
           broadcast_tx_of_block(b.number, b.layer1_block_number)
         end)
+
       {:ok, %{blocks: _, transactions: {updated_txs_number, nil}}} when updated_txs_number > 0 ->
         :ok
+
       {:error, _} ->
-        Logger.error(fn -> ["Failed to update blocks finalized status before block_number: ", latest_finalized_block_number] end)
+        Logger.error(fn ->
+          [
+            "Failed to update blocks finalized status before block_number: ",
+            latest_finalized_block_number
+          ]
+        end)
+
       _ ->
         :ok
     end
@@ -152,7 +188,19 @@ defmodule GodwokenExplorer.Block do
       |> Ecto.Changeset.change(%{layer1_block_number: l1_block_number, layer1_tx_hash: l1_tx_hash})
       |> Repo.update!()
 
-      Publisher.broadcast([{:blocks, %{number: l2_block_number, l1_block_number: l1_block_number, l1_tx_hash: l1_tx_hash, status: block.status}}], :realtime)
+      Publisher.broadcast(
+        [
+          {:blocks,
+           %{
+             number: l2_block_number,
+             l1_block_number: l1_block_number,
+             l1_tx_hash: l1_tx_hash,
+             status: block.status
+           }}
+        ],
+        :realtime
+      )
+
       broadcast_tx_of_block(l2_block_number, l1_block_number)
 
       l1_block_number
@@ -160,12 +208,21 @@ defmodule GodwokenExplorer.Block do
   end
 
   defp broadcast_tx_of_block(l2_block_number, l1_block_number) do
-    query = from(t in Transaction,
+    query =
+      from(t in Transaction,
         where: t.block_number == ^l2_block_number,
         select: %{hash: t.hash, status: t.status}
-    )
-    Repo.all(query) |> Enum.each(fn tx ->
-      Publisher.broadcast([{:transactions, %{tx_hash: tx.hash, l1_block_number: l1_block_number, status: tx.status}}], :realtime)
+      )
+
+    Repo.all(query)
+    |> Enum.each(fn tx ->
+      Publisher.broadcast(
+        [
+          {:transactions,
+           %{tx_hash: tx.hash, l1_block_number: l1_block_number, status: tx.status}}
+        ],
+        :realtime
+      )
     end)
   end
 

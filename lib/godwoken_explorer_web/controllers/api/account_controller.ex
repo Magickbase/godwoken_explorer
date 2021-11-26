@@ -4,8 +4,10 @@ defmodule GodwokenExplorerWeb.API.AccountController do
   alias GodwokenExplorer.{Repo, Account}
 
   def show(conn, %{"id" => "0x" <> _} = params) do
+    downcase_id = params["id"] |> String.downcase()
+
     result =
-      case Account.search(params["id"]) do
+      case Account.search(downcase_id) do
         %Account{id: id} ->
           id
           |> Account.find_by_id()

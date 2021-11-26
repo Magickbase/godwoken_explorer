@@ -6,7 +6,7 @@ defmodule GodwokenExplorerWeb.API.TransactionController do
   alias GodwokenExplorer.{Transaction, Account, Repo, Polyjuice}
 
   def index(conn, %{"eth_address" => "0x" <> _} = params) do
-    %Account{id: account_id} = Account.search(params["eth_address"])
+    %Account{id: account_id} = Account.search(String.downcase(params["eth_address"]))
     results = Transaction.account_transactions_data(account_id, params["page"])
 
     json(conn, results)
@@ -19,7 +19,7 @@ defmodule GodwokenExplorerWeb.API.TransactionController do
   end
 
   def show(conn, %{"hash" => "0x" <> _} = params) do
-    tx = Transaction.find_by_hash(params["hash"])
+    tx = Transaction.find_by_hash(String.downcase(params["hash"]))
 
     result =
       if map_size(tx) == 0 do
