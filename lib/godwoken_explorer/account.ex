@@ -8,6 +8,7 @@ defmodule GodwokenExplorer.Account do
 
   alias GodwokenRPC
   alias GodwokenExplorer.Chain.Events.Publisher
+  alias GodwokenIndexer.Account.Worker, as: AccountWorker
 
   @primary_key {:id, :integer, autogenerate: false}
   schema "accounts" do
@@ -237,12 +238,20 @@ defmodule GodwokenExplorer.Account do
   end
 
   def search(keyword) do
-    from(a in Account,
-      where:
-        a.eth_address == ^keyword or a.ckb_lock_hash == ^keyword or a.script_hash == ^keyword or
-          a.short_address == ^keyword
-    )
-    |> Repo.one()
+    results =
+      from(a in Account,
+        where:
+          a.eth_address == ^keyword or a.ckb_lock_hash == ^keyword or a.script_hash == ^keyword or
+            a.short_address == ^keyword,
+        order_by: a.id
+      )
+      |> Repo.all()
+
+    if length(results) > 1 do
+      AccountWorker.trigger_account(Enum.map(results, fn account -> account.id end))
+    else
+      results |> List.first()
+    end
   end
 
   def bind_ckb_lock_script(l1_lock_script, script_hash, l1_lock_hash) do
