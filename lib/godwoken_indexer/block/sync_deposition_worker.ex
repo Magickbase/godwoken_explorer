@@ -10,6 +10,7 @@ defmodule GodwokenIndexer.Block.SyncDepositionWorker do
   alias GodwokenExplorer.{Block, Account}
   alias GodwokenIndexer.Account.Worker
 
+  @buffer_block_number 5
   @default_worker_interval 5
 
   def start_link(state \\ []) do
@@ -46,29 +47,35 @@ defmodule GodwokenIndexer.Block.SyncDepositionWorker do
   end
 
   def fetch_deposition_script_and_update(start_block_number, l1_tip_number) do
-    block_range = cal_block_range(start_block_number, l1_tip_number)
+    Logger.info("#{start_block_number}-----#{l1_tip_number}")
+    block_range = cal_block_range(start_block_number, l1_tip_number - @buffer_block_number)
     deposition_lock = Application.get_env(:godwoken_explorer, :deposition_lock)
 
-    with {:ok, response} <-
-           GodwokenRPC.fetch_l1_txs_by_range(%{
-             script: deposition_lock,
-             script_type: "lock",
-             order: "asc",
-             limit: "0x3e8",
-             filter: %{block_range: block_range}
-           }),
-         txs when txs != [] <-
-           response["objects"] |> Enum.filter(fn obj -> obj["io_type"] == "output" end) do
-      try do
-        parse_lock_script_and_bind(txs)
-      catch
-        e ->
-          Logger.error(e)
-          fetch_deposition_script_and_update(start_block_number, l1_tip_number)
-      end
+    case(
+      GodwokenRPC.fetch_l1_txs_by_range(%{
+        script: deposition_lock,
+        script_type: "lock",
+        order: "asc",
+        limit: "0x3e8",
+        filter: %{block_range: block_range}
+      })
+    ) do
+      {:ok, response} ->
+        txs = response["objects"] |> Enum.filter(fn obj -> obj["io_type"] == "output" end)
 
-      {:ok, block_range |> List.last() |> hex_to_number()}
-    else
+        if txs != [] do
+          try do
+            parse_lock_script_and_bind(txs)
+          catch
+            e ->
+              Logger.error("==============")
+              Logger.error(e)
+              fetch_deposition_script_and_update(start_block_number, l1_tip_number)
+          end
+        end
+
+        {:ok, block_range |> List.last() |> hex_to_number()}
+
       _ ->
         {:ok, block_range |> List.first() |> hex_to_number()}
     end
@@ -143,7 +150,7 @@ defmodule GodwokenIndexer.Block.SyncDepositionWorker do
     |> Map.merge(%{"name" => "secp256k1/blake160"})
   end
 
-  defp cal_block_range(start_block_number, l1_tip_number) do
+  def cal_block_range(start_block_number, l1_tip_number) do
     cond do
       start_block_number == l1_tip_number ->
         [l1_tip_number, l1_tip_number + 1]
