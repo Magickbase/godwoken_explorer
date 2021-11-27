@@ -10,7 +10,8 @@ defmodule GodwokenIndexer.Server do
       GodwokenIndexer.Block.Supervisor,
       GodwokenIndexer.Account.Supervisor,
       GodwokenIndexer.Account.SyncSupervisor,
-      GodwokenIndexer.Transaction.Supervisor
+      GodwokenIndexer.Transaction.Supervisor,
+      GodwokenIndexer.Account.SyncDepositSupervisor
     ]
 
     Supervisor.init(children, strategy: :one_for_one)

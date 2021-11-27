@@ -8,7 +8,6 @@ defmodule GodwokenIndexer.Block.TempSyncDepositionWorker do
 
   alias GodwkenRPC
   alias GodwokenExplorer.{Account}
-  alias GodwokenIndexer.Account.Worker
 
   def start_link(_) do
     GenServer.start_link(__MODULE__, %{}, name: TempWorker)
@@ -77,11 +76,32 @@ defmodule GodwokenIndexer.Block.TempSyncDepositionWorker do
         with {:ok, udt_account_id} <- Account.create_udt_account(udt_script, udt_script_hash) do
           case user_account do
             {:ok, user} ->
-              Worker.trigger_account([user.id])
-              Worker.trigger_sudt_account([{udt_account_id, [user.id]}])
+              case GodwokenIndexer.Account.SyncDepositSupervisor.start_child([user.id]) do
+                {:ok, from_pid} ->
+                  GodwokenIndexer.Account.SyncDepositWorker.trigger_account(from_pid)
+
+                {:error, {:already_started, _from_pid}} ->
+                  Logger.error("alreay started#{user.id}")
+              end
+
+              case GodwokenIndexer.Account.SyncDepositSupervisor.start_child([
+                     {udt_account_id, [user.id]}
+                   ]) do
+                {:ok, from_pid} ->
+                  GodwokenIndexer.Account.SyncDepositWorker.trigger_sudt_account(from_pid)
+
+                {:error, {:already_started, _from_pid}} ->
+                  Logger.error("alreay started#{user.id}")
+              end
 
             {:error, nil} ->
-              Worker.trigger_account([udt_account_id])
+              case GodwokenIndexer.Account.SyncDepositSupervisor.start_child([udt_account_id]) do
+                {:ok, from_pid} ->
+                  GodwokenIndexer.Account.SyncDepositWorker.trigger_account(from_pid)
+
+                {:error, {:already_started, _from_pid}} ->
+                  Logger.error("alreay started#{udt_account_id}")
+              end
           end
         end
       end
