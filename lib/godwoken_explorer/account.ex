@@ -249,9 +249,9 @@ defmodule GodwokenExplorer.Account do
 
     if length(results) > 1 do
       AccountWorker.trigger_account(Enum.map(results, fn account -> account.id end))
-    else
-      results |> List.first()
     end
+
+    results |> List.first()
   end
 
   def bind_ckb_lock_script(l1_lock_script, script_hash, l1_lock_hash) do
