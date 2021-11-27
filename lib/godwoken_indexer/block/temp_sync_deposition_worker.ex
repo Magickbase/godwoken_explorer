@@ -10,36 +10,26 @@ defmodule GodwokenIndexer.Block.TempSyncDepositionWorker do
   alias GodwokenExplorer.{Account}
   alias GodwokenIndexer.Account.Worker
 
-  @default_worker_interval 5
-
-  def start_link(state \\ []) do
-    GenServer.start_link(__MODULE__, state)
+  def start_link(_) do
+    GenServer.start_link(__MODULE__, %{}, name: TempWorker)
   end
 
   def init(state) do
-    start_block_number = Application.get_env(:godwoken_explorer, :temp_sync_l1_block_number)
-
-    schedule_work(start_block_number)
-
     {:ok, state}
   end
 
-  def handle_info({:bind_deposit_work, block_number}, state) do
-    {:ok, l1_tip_number} = GodwokenRPC.fetch_l1_tip_block_nubmer()
+  def trigger_deposit(block_range) do
+    GenServer.cast(TempWorker, {:bind_deposit_worker, block_range})
+  end
 
-    {:ok, next_start_block_number} =
-      fetch_deposition_script_and_update(
-        block_number,
-        l1_tip_number
-      )
-
-    schedule_work(next_start_block_number)
+  def handle_cast({:bind_deposit_worker, block_range}, state) do
+    fetch_deposition_script_and_update(block_range)
 
     {:noreply, state}
   end
 
-  def fetch_deposition_script_and_update(start_block_number, l1_tip_number) do
-    block_range = cal_block_range(start_block_number, l1_tip_number)
+  def fetch_deposition_script_and_update(original_block_range) do
+    block_range = original_block_range |> Enum.map(&number_to_hex(&1))
     deposition_lock = Application.get_env(:godwoken_explorer, :deposition_lock)
 
     with {:ok, response} <-
@@ -53,11 +43,12 @@ defmodule GodwokenIndexer.Block.TempSyncDepositionWorker do
          txs when txs != [] <-
            response["objects"] |> Enum.filter(fn obj -> obj["io_type"] == "output" end) do
       try do
+        Logger.info("#{original_block_range |> List.first()}")
         parse_lock_script_and_bind(txs)
       catch
         e ->
           Logger.error(e)
-          fetch_deposition_script_and_update(start_block_number, l1_tip_number)
+          fetch_deposition_script_and_update(original_block_range)
       end
 
       {:ok, block_range |> List.last() |> hex_to_number()}
@@ -134,27 +125,5 @@ defmodule GodwokenIndexer.Block.TempSyncDepositionWorker do
       end
     end
     |> Map.merge(%{"name" => "secp256k1/blake160"})
-  end
-
-  defp cal_block_range(start_block_number, l1_tip_number) do
-    cond do
-      start_block_number == l1_tip_number ->
-        [l1_tip_number, l1_tip_number]
-
-      start_block_number + 10 < l1_tip_number ->
-        [start_block_number, start_block_number + 10]
-
-      start_block_number + 10 >= l1_tip_number ->
-        [start_block_number, l1_tip_number]
-    end
-    |> Enum.map(&number_to_hex(&1))
-  end
-
-  defp schedule_work(start_block_number) do
-    second =
-      Application.get_env(:godwoken_explorer, :temp_sync_deposition_worker_interval) ||
-        @default_worker_interval
-
-    Process.send_after(self(), {:bind_deposit_work, start_block_number}, second * 1000)
   end
 end
