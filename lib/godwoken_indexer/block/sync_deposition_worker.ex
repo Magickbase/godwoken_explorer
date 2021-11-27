@@ -146,7 +146,7 @@ defmodule GodwokenIndexer.Block.SyncDepositionWorker do
   defp cal_block_range(start_block_number, l1_tip_number) do
     cond do
       start_block_number == l1_tip_number ->
-        [l1_tip_number, l1_tip_number]
+        [l1_tip_number, l1_tip_number + 1]
 
       start_block_number + 1 < l1_tip_number ->
         [start_block_number, start_block_number + 1]
