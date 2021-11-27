@@ -4,6 +4,8 @@ defmodule GodwokenIndexer.Account.SyncDepositWorker do
   alias GodwokenRPC
   alias GodwokenExplorer.{Account, AccountUDT}
 
+  @auto_timeout 10_000
+
   @spec start_link(any) :: :ignore | {:error, any} | {:ok, pid}
   def start_link(state) do
     GenServer.start_link(__MODULE__, state)
@@ -46,7 +48,7 @@ defmodule GodwokenIndexer.Account.SyncDepositWorker do
       })
     end)
 
-    {:noreply, [state]}
+    {:noreply, state, @auto_timeout}
   end
 
   def handle_cast(:sudt_account, state) do
@@ -66,7 +68,11 @@ defmodule GodwokenIndexer.Account.SyncDepositWorker do
       end)
     end)
 
-    {:noreply, [state]}
+    {:noreply, state, @auto_timeout}
+  end
+
+  def handle_info(:timeout, state) do
+    {:stop, :normal, state}
   end
 
   defp switch_account_type(code_hash, args) do
