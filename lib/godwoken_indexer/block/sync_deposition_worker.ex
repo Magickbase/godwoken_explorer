@@ -65,6 +65,7 @@ defmodule GodwokenIndexer.Block.SyncDepositionWorker do
 
         if txs != [] do
           try do
+            Logger.info("size: #{Enum.count(txs)}")
             parse_lock_script_and_bind(txs)
           catch
             e ->
@@ -95,6 +96,7 @@ defmodule GodwokenIndexer.Block.SyncDepositionWorker do
             "0x" <> l1_lock_hash
           )
 
+        Logger.info("#{l2_script_hash}")
         {udt_script, udt_script_hash} = parse_udt_script(outputs, io_index)
 
         with {:ok, udt_account_id} <- Account.create_udt_account(udt_script, udt_script_hash) do
@@ -107,6 +109,10 @@ defmodule GodwokenIndexer.Block.SyncDepositionWorker do
               Worker.trigger_account([udt_account_id])
           end
         end
+      else
+        _ ->
+          Logger.error("==============")
+          Logger.error("#{tx_hash} get failed")
       end
     end)
   end
