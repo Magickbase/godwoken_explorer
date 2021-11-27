@@ -43,7 +43,7 @@ defmodule GodwokenIndexer.Block.SyncDepositionWorker do
     {:noreply, state}
   end
 
-  defp fetch_deposition_script_and_update(start_block_number, l1_tip_number) do
+  def fetch_deposition_script_and_update(start_block_number, l1_tip_number) do
     block_range = cal_block_range(start_block_number, l1_tip_number)
     deposition_lock = Application.get_env(:godwoken_explorer, :deposition_lock)
 
@@ -52,7 +52,7 @@ defmodule GodwokenIndexer.Block.SyncDepositionWorker do
              script: deposition_lock,
              script_type: "lock",
              order: "asc",
-             limit: "0x3e8",
+             limit: "0x64",
              filter: %{block_range: block_range}
            }),
          txs when txs != [] <-

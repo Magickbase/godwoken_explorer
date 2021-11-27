@@ -40,12 +40,12 @@ defmodule GodwokenIndexer.Block.BindL1L2Worker do
     {:noreply, state}
   end
 
-  defp fetch_l1_number_and_update(start_block_number, l1_tip_number)
-       when start_block_number > l1_tip_number do
+  def fetch_l1_number_and_update(start_block_number, l1_tip_number)
+      when start_block_number > l1_tip_number do
     {:ok, start_block_number}
   end
 
-  defp fetch_l1_number_and_update(start_block_number, l1_tip_number) do
+  def fetch_l1_number_and_update(start_block_number, l1_tip_number) do
     block_range = cal_block_range(start_block_number, l1_tip_number)
     rollup_cell_type = Application.get_env(:godwoken_explorer, :rollup_cell_type)
 
