@@ -10,7 +10,8 @@ defmodule GodwokenIndexer.Block.Supervisor do
       GodwokenIndexer.Block.SyncWorker,
       GodwokenIndexer.Block.GlobalStateWorker,
       GodwokenIndexer.Block.BindL1L2Worker,
-      GodwokenIndexer.Block.SyncDepositionWorker
+      GodwokenIndexer.Block.SyncDepositionWorker,
+      GodwokenIndexer.Block.TempSyncDepositionWorker
     ]
 
     Supervisor.init(children, strategy: :one_for_one)

@@ -1,4 +1,4 @@
-defmodule GodwokenIndexer.Block.SyncDepositionWorker do
+defmodule GodwokenIndexer.Block.TempSyncDepositionWorker do
   use GenServer
 
   import Godwoken.MoleculeParser, only: [parse_deposition_lock_args: 1]
@@ -7,7 +7,7 @@ defmodule GodwokenIndexer.Block.SyncDepositionWorker do
   require Logger
 
   alias GodwkenRPC
-  alias GodwokenExplorer.{Block, Account}
+  alias GodwokenExplorer.{Account}
   alias GodwokenIndexer.Account.Worker
 
   @default_worker_interval 5
@@ -17,14 +17,7 @@ defmodule GodwokenIndexer.Block.SyncDepositionWorker do
   end
 
   def init(state) do
-    init_godwoken_l1_block_number =
-      Application.get_env(:godwoken_explorer, :init_godwoken_l1_block_number)
-
-    start_block_number =
-      case Block.find_last_bind_l1_block() do
-        %Block{layer1_block_number: l1_block_number} -> l1_block_number + 1
-        nil -> init_godwoken_l1_block_number
-      end
+    start_block_number = Application.get_env(:godwoken_explorer, :temp_sync_l1_block_number)
 
     schedule_work(start_block_number)
 
@@ -148,10 +141,10 @@ defmodule GodwokenIndexer.Block.SyncDepositionWorker do
       start_block_number == l1_tip_number ->
         [l1_tip_number, l1_tip_number]
 
-      start_block_number + 1 < l1_tip_number ->
-        [start_block_number, start_block_number + 1]
+      start_block_number + 10 < l1_tip_number ->
+        [start_block_number, start_block_number + 10]
 
-      start_block_number + 1 >= l1_tip_number ->
+      start_block_number + 10 >= l1_tip_number ->
         [start_block_number, l1_tip_number]
     end
     |> Enum.map(&number_to_hex(&1))
@@ -159,7 +152,7 @@ defmodule GodwokenIndexer.Block.SyncDepositionWorker do
 
   defp schedule_work(start_block_number) do
     second =
-      Application.get_env(:godwoken_explorer, :sync_deposition_worker_interval) ||
+      Application.get_env(:godwoken_explorer, :temp_sync_deposition_worker_interval) ||
         @default_worker_interval
 
     Process.send_after(self(), {:bind_deposit_work, start_block_number}, second * 1000)
