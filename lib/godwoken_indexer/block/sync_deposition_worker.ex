@@ -96,13 +96,17 @@ defmodule GodwokenIndexer.Block.SyncDepositionWorker do
             "0x" <> l1_lock_hash
           )
 
-        Logger.info("#{l2_script_hash}")
+        Logger.info("l2:#{l2_script_hash}")
         {udt_script, udt_script_hash} = parse_udt_script(outputs, io_index)
+        Logger.info("udt:#{udt_script_hash}")
+
+        with {:ok, user} <- user_account do
+          Worker.trigger_account([user.id])
+        end
 
         with {:ok, udt_account_id} <- Account.create_udt_account(udt_script, udt_script_hash) do
           case user_account do
             {:ok, user} ->
-              Worker.trigger_account([user.id])
               Worker.trigger_sudt_account([{udt_account_id, [user.id]}])
 
             {:error, nil} ->
