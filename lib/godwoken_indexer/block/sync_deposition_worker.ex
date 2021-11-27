@@ -4,6 +4,8 @@ defmodule GodwokenIndexer.Block.SyncDepositionWorker do
   import Godwoken.MoleculeParser, only: [parse_deposition_lock_args: 1]
   import GodwokenRPC.Util, only: [hex_to_number: 1, number_to_hex: 1, script_to_hash: 1]
 
+  require Logger
+
   alias GodwkenRPC
   alias GodwokenExplorer.{Block, Account}
   alias GodwokenIndexer.Account.Worker
@@ -57,7 +59,14 @@ defmodule GodwokenIndexer.Block.SyncDepositionWorker do
            }),
          txs when txs != [] <-
            response["objects"] |> Enum.filter(fn obj -> obj["io_type"] == "output" end) do
-      parse_lock_script_and_bind(txs)
+      try do
+        parse_lock_script_and_bind(txs)
+      catch
+        e ->
+          Logger.error(e)
+          fetch_deposition_script_and_update(start_block_number, l1_tip_number)
+      end
+
       {:ok, block_range |> List.last() |> hex_to_number()}
     else
       _ ->

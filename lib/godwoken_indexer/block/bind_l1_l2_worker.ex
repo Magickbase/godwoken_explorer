@@ -4,6 +4,8 @@ defmodule GodwokenIndexer.Block.BindL1L2Worker do
   import Godwoken.MoleculeParser, only: [parse_global_state: 1]
   import GodwokenRPC.Util, only: [hex_to_number: 1, number_to_hex: 1]
 
+  require Logger
+
   alias GodwkenRPC
   alias GodwokenExplorer.Block
 
@@ -62,12 +64,18 @@ defmodule GodwokenIndexer.Block.BindL1L2Worker do
             {:ok, block_range |> List.last() |> hex_to_number()}
 
           txs ->
-            updated_l1_numbers = parse_data_and_bind(txs)
+            try do
+              updated_l1_numbers = parse_data_and_bind(txs)
 
-            if updated_l1_numbers == [] do
-              {:ok, block_range |> List.first() |> hex_to_number()}
-            else
-              {:ok, (updated_l1_numbers |> List.first()) + 1}
+              if updated_l1_numbers == [] do
+                {:ok, block_range |> List.first() |> hex_to_number()}
+              else
+                {:ok, (updated_l1_numbers |> List.first()) + 1}
+              end
+            catch
+              e ->
+                Logger.error(e)
+                fetch_l1_number_and_update(start_block_number, l1_tip_number)
             end
         end
 
