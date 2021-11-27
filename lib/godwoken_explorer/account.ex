@@ -263,6 +263,7 @@ defmodule GodwokenExplorer.Account do
         case GodwokenRPC.fetch_account_id(script_hash) do
           nil ->
             Logger.error("Fetch user account error:#{script_hash}")
+            bind_ckb_lock_script(l1_lock_script, script_hash, l1_lock_hash)
             {:error, nil}
 
           hex_account_id ->
@@ -306,8 +307,8 @@ defmodule GodwokenExplorer.Account do
       nil ->
         case GodwokenRPC.fetch_account_id(l2_udt_script_hash) do
           nil ->
-            Logger.error("Fetch account id failed: #{l2_udt_script_hash}")
-            {:error, nil}
+            Logger.error("Fetch udt account id failed: #{l2_udt_script_hash}")
+            create_udt_account(udt_script, udt_script_hash)
 
           hex_account_id when is_binary(hex_account_id) ->
             udt_account_id = hex_to_number(hex_account_id)
