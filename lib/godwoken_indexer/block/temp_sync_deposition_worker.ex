@@ -73,17 +73,19 @@ defmodule GodwokenIndexer.Block.TempSyncDepositionWorker do
 
         {udt_script, udt_script_hash} = parse_udt_script(outputs, io_index)
 
+        with {:ok, user} <- user_account do
+          case GodwokenIndexer.Account.SyncDepositSupervisor.start_child([user.id]) do
+            {:ok, from_pid} ->
+              GodwokenIndexer.Account.SyncDepositWorker.trigger_account(from_pid)
+
+            {:error, {:already_started, _from_pid}} ->
+              Logger.error("alreay started#{user.id}")
+          end
+        end
+
         with {:ok, udt_account_id} <- Account.create_udt_account(udt_script, udt_script_hash) do
           case user_account do
             {:ok, user} ->
-              case GodwokenIndexer.Account.SyncDepositSupervisor.start_child([user.id]) do
-                {:ok, from_pid} ->
-                  GodwokenIndexer.Account.SyncDepositWorker.trigger_account(from_pid)
-
-                {:error, {:already_started, _from_pid}} ->
-                  Logger.error("alreay started#{user.id}")
-              end
-
               case GodwokenIndexer.Account.SyncDepositSupervisor.start_child([
                      {udt_account_id, [user.id]}
                    ]) do
