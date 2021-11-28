@@ -263,7 +263,7 @@ defmodule GodwokenExplorer.Account do
         case GodwokenRPC.fetch_account_id(script_hash) do
           nil ->
             Logger.error("Fetch user account error:#{script_hash}")
-            Process.sleep(2000)
+            Process.sleep(5000)
             bind_ckb_lock_script(l1_lock_script, script_hash, l1_lock_hash)
 
           hex_account_id ->
