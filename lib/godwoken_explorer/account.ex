@@ -255,38 +255,54 @@ defmodule GodwokenExplorer.Account do
   end
 
   def bind_ckb_lock_script(l1_lock_script, script_hash, l1_lock_hash) do
-    account = Repo.get_by(Account, script_hash: script_hash)
-    short_address = String.slice(script_hash, 0, 42)
+    accounts = from(a in Account, where: a.script_hash == ^script_hash) |> Repo.all()
 
-    case account do
-      nil ->
-        case GodwokenRPC.fetch_account_id(script_hash) do
-          nil ->
-            Logger.error("Fetch user account error:#{script_hash}")
-            Process.sleep(5000)
-            bind_ckb_lock_script(l1_lock_script, script_hash, l1_lock_hash)
-
-          hex_account_id ->
-            account_id = hex_to_number(hex_account_id)
-
-            create_or_update_account(%{
-              id: account_id,
-              ckb_lock_script: l1_lock_script,
-              ckb_lock_hash: l1_lock_hash,
-              script_hash: script_hash,
-              short_address: short_address,
-              type: "user"
-            })
+    if length(accounts) > 1 do
+      accounts
+      |> Enum.each(fn account ->
+        with new_script_hash when is_binary(new_script_hash) <-
+               GodwokenRPC.fetch_script_hash(%{account_id: account.id}) do
+          if new_script_hash != script_hash do
+            account.create_or_update_attrs(%{id: account.id, script_hash: new_script_hash})
+          end
         end
+      end)
 
-      %Account{ckb_lock_script: ckb_lock_script, ckb_lock_hash: ckb_lock_hash}
-      when is_nil(ckb_lock_script) or is_nil(ckb_lock_hash) ->
-        account
-        |> Ecto.Changeset.change(%{ckb_lock_script: l1_lock_script, ckb_lock_hash: l1_lock_hash})
-        |> Repo.update()
+      bind_ckb_lock_script(l1_lock_script, script_hash, l1_lock_hash)
+    else
+      account = accounts |> List.first()
+      short_address = String.slice(script_hash, 0, 42)
 
-      _ ->
-        {:ok, account}
+      case account do
+        nil ->
+          case GodwokenRPC.fetch_account_id(script_hash) do
+            nil ->
+              Logger.error("Fetch user account error:#{script_hash}")
+              Process.sleep(5000)
+              bind_ckb_lock_script(l1_lock_script, script_hash, l1_lock_hash)
+
+            hex_account_id ->
+              account_id = hex_to_number(hex_account_id)
+
+              create_or_update_account(%{
+                id: account_id,
+                ckb_lock_script: l1_lock_script,
+                ckb_lock_hash: l1_lock_hash,
+                script_hash: script_hash,
+                short_address: short_address,
+                type: "user"
+              })
+          end
+
+        %Account{ckb_lock_script: ckb_lock_script, ckb_lock_hash: ckb_lock_hash}
+        when is_nil(ckb_lock_script) or is_nil(ckb_lock_hash) ->
+          account
+          |> Ecto.Changeset.change(%{ckb_lock_script: l1_lock_script, ckb_lock_hash: l1_lock_hash})
+          |> Repo.update()
+
+        _ ->
+          {:ok, account}
+      end
     end
   end
 
