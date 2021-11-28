@@ -237,6 +237,14 @@ defmodule GodwokenExplorer.Account do
       balance
   end
 
+  def refetch_accounts(accounts) do
+    ckb_udt_id = UDT.ckb_account_id()
+    account_ids = accounts |> Enum.map(fn x -> x.id end)
+
+    AccountWorker.trigger_account(account_ids)
+    AccountWorker.trigger_sudt_account([{ckb_udt_id, account_ids}])
+  end
+
   def search(keyword) do
     results =
       from(a in Account,
@@ -248,27 +256,20 @@ defmodule GodwokenExplorer.Account do
       |> Repo.all()
 
     if length(results) > 1 do
-      AccountWorker.trigger_account(Enum.map(results, fn account -> account.id end))
+      refetch_accounts(results)
+      nil
+    else
+      results |> List.first()
     end
-
-    results |> List.first()
   end
 
   def bind_ckb_lock_script(l1_lock_script, script_hash, l1_lock_hash) do
     accounts = from(a in Account, where: a.script_hash == ^script_hash) |> Repo.all()
 
     if length(accounts) > 1 do
-      accounts
-      |> Enum.each(fn account ->
-        with new_script_hash when is_binary(new_script_hash) <-
-               GodwokenRPC.fetch_script_hash(%{account_id: account.id}) do
-          if new_script_hash != script_hash do
-            account.create_or_update_attrs(%{id: account.id, script_hash: new_script_hash})
-          end
-        end
-      end)
+      refetch_accounts(accounts)
 
-      bind_ckb_lock_script(l1_lock_script, script_hash, l1_lock_hash)
+      nil
     else
       account = accounts |> List.first()
       short_address = String.slice(script_hash, 0, 42)
@@ -278,7 +279,7 @@ defmodule GodwokenExplorer.Account do
           case GodwokenRPC.fetch_account_id(script_hash) do
             nil ->
               Logger.error("Fetch user account error:#{script_hash}")
-              Process.sleep(5000)
+              Process.sleep(2000)
               bind_ckb_lock_script(l1_lock_script, script_hash, l1_lock_hash)
 
             hex_account_id ->

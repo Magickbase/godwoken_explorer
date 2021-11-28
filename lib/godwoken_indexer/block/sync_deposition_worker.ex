@@ -71,6 +71,7 @@ defmodule GodwokenIndexer.Block.SyncDepositionWorker do
             e ->
               Logger.error("==============fetch_deposition_script_and_update")
               Logger.error(Exception.format(:error, e, __STACKTRACE__))
+              Process.sleep(2000)
               fetch_deposition_script_and_update(start_block_number, l1_tip_number)
           end
         end

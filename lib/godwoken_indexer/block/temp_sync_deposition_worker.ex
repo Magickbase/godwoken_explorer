@@ -48,6 +48,7 @@ defmodule GodwokenIndexer.Block.TempSyncDepositionWorker do
         e ->
           Logger.info("============temp")
           Logger.error(Exception.format(:error, e, __STACKTRACE__))
+          Process.sleep(2000)
           fetch_deposition_script_and_update(original_block_range)
       end
 
