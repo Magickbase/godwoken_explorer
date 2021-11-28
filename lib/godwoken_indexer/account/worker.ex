@@ -1,6 +1,8 @@
 defmodule GodwokenIndexer.Account.Worker do
   use GenServer
 
+  require Logger
+
   alias GodwokenRPC
   alias GodwokenExplorer.{Account, AccountUDT}
 
@@ -28,23 +30,29 @@ defmodule GodwokenIndexer.Account.Worker do
   def handle_cast({:account, account_ids}, state) do
     account_ids
     |> Enum.each(fn account_id ->
-      nonce = GodwokenRPC.fetch_nonce(account_id)
-      script_hash = GodwokenRPC.fetch_script_hash(%{account_id: account_id})
-      short_address = String.slice(script_hash, 0, 42)
-      script = GodwokenRPC.fetch_script(script_hash)
-      type = switch_account_type(script["code_hash"], script["args"])
-      eth_address = account_to_eth_adress(type, script["args"])
-      parsed_script = add_name_to_polyjuice_script(type, script)
+      try do
+        nonce = GodwokenRPC.fetch_nonce(account_id)
+        script_hash = GodwokenRPC.fetch_script_hash(%{account_id: account_id})
+        short_address = String.slice(script_hash, 0, 42)
+        script = GodwokenRPC.fetch_script(script_hash)
+        type = switch_account_type(script["code_hash"], script["args"])
+        eth_address = account_to_eth_adress(type, script["args"])
+        parsed_script = add_name_to_polyjuice_script(type, script)
 
-      Account.create_or_update_account(%{
-        id: account_id,
-        script: parsed_script,
-        script_hash: script_hash,
-        short_address: short_address,
-        type: type,
-        nonce: nonce,
-        eth_address: eth_address
-      })
+        Account.create_or_update_account(%{
+          id: account_id,
+          script: parsed_script,
+          script_hash: script_hash,
+          short_address: short_address,
+          type: type,
+          nonce: nonce,
+          eth_address: eth_address
+        })
+      catch
+        e ->
+          Logger.error("==========#{e}")
+          trigger_account([account_id])
+      end
     end)
 
     {:noreply, [state]}
@@ -55,13 +63,19 @@ defmodule GodwokenIndexer.Account.Worker do
     |> Enum.each(fn {udt_id, account_ids} ->
       account_ids
       |> Enum.each(fn account_id ->
-        {:ok, balance} = GodwokenRPC.fetch_balance(account_id, udt_id)
+        try do
+          {:ok, balance} = GodwokenRPC.fetch_balance(account_id, udt_id)
 
-        AccountUDT.create_or_update_account_udt(%{
-          account_id: account_id,
-          udt_id: udt_id,
-          balance: balance
-        })
+          AccountUDT.create_or_update_account_udt(%{
+            account_id: account_id,
+            udt_id: udt_id,
+            balance: balance
+          })
+        catch
+          e ->
+            Logger.error("==========#{e}")
+            trigger_account([{udt_id, [account_id]}])
+        end
       end)
     end)
 

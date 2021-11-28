@@ -3,6 +3,8 @@ defmodule GodwokenIndexer.Block.SyncWorker do
 
   import GodwokenRPC.Util, only: [hex_to_number: 1]
 
+  require Logger
+
   alias GodwokenRPC.Block.{FetchedTipBlockHash, ByHash}
   alias GodwokenRPC.{Blocks, HTTP}
   alias GodwokenExplorer.{Block, Transaction, Chain}
@@ -134,6 +136,10 @@ defmodule GodwokenIndexer.Block.SyncWorker do
     sudt_account_ids = extract_sudt_account_ids(transactions_params)
 
     if length(sudt_account_ids) > 0 do
+      Logger.info(
+        "==================l2 create account:#{sudt_account_ids |> List.first() |> elem(1) |> Enum.join(",")}"
+      )
+
       AccountWorker.trigger_sudt_account(sudt_account_ids)
     end
   end
