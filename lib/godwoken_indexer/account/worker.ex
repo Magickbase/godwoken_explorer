@@ -49,8 +49,9 @@ defmodule GodwokenIndexer.Account.Worker do
           eth_address: eth_address
         })
       rescue
-        _ ->
-          Logger.error("==========account")
+        e ->
+          Logger.info("==========account")
+          Logger.error(Exception.format(:error, e, __STACKTRACE__))
           trigger_account([account_id])
       end
     end)
@@ -72,8 +73,9 @@ defmodule GodwokenIndexer.Account.Worker do
             balance: balance
           })
         rescue
-          _ ->
+          e ->
             Logger.error("==========sudt_account")
+            Logger.error(Exception.format(:error, e, __STACKTRACE__))
             trigger_account([{udt_id, [account_id]}])
         end
       end)

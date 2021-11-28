@@ -72,9 +72,10 @@ defmodule GodwokenIndexer.Block.BindL1L2Worker do
               else
                 {:ok, (updated_l1_numbers |> List.first()) + 1}
               end
-            catch
+            rescue
               e ->
-                Logger.error(e)
+                Logger.info("============bind_l1_l2")
+                Logger.error(Exception.format(:error, e, __STACKTRACE__))
                 fetch_l1_number_and_update(start_block_number, l1_tip_number)
             end
         end

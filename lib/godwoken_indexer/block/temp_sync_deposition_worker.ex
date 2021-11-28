@@ -46,7 +46,8 @@ defmodule GodwokenIndexer.Block.TempSyncDepositionWorker do
         parse_lock_script_and_bind(txs)
       rescue
         e ->
-          Logger.error(e)
+          Logger.info("============temp")
+          Logger.error(Exception.format(:error, e, __STACKTRACE__))
           fetch_deposition_script_and_update(original_block_range)
       end
 
