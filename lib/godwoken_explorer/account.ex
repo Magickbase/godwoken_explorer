@@ -264,7 +264,6 @@ defmodule GodwokenExplorer.Account do
           nil ->
             Logger.error("Fetch user account error:#{script_hash}")
             bind_ckb_lock_script(l1_lock_script, script_hash, l1_lock_hash)
-            {:error, nil}
 
           hex_account_id ->
             account_id = hex_to_number(hex_account_id)
