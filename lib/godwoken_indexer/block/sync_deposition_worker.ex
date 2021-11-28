@@ -68,9 +68,8 @@ defmodule GodwokenIndexer.Block.SyncDepositionWorker do
             Logger.info("size: #{Enum.count(txs)}")
             parse_lock_script_and_bind(txs)
           rescue
-            e ->
-              Logger.error("==============")
-              Logger.error(e)
+            _ ->
+              Logger.error("==============fetch_deposition_script_and_update")
               fetch_deposition_script_and_update(start_block_number, l1_tip_number)
           end
         end

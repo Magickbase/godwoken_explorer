@@ -307,48 +307,54 @@ defmodule GodwokenExplorer.Account do
   end
 
   def create_udt_account(udt_script, udt_script_hash) do
-    udt_code_hash = Application.get_env(:godwoken_explorer, :udt_code_hash)
-    rollup_script_hash = Application.get_env(:godwoken_explorer, :rollup_script_hash)
+    if udt_script_hash == "0x0000000000000000000000000000000000000000000000000000000000000000" do
+      ckb_udt_id = UDT.ckb_account_id()
 
-    account_script = %{
-      "code_hash" => udt_code_hash,
-      "hash_type" => "type",
-      "args" => rollup_script_hash <> String.slice(udt_script_hash, 2..-1)
-    }
+      {:ok, ckb_udt_id}
+    else
+      udt_code_hash = Application.get_env(:godwoken_explorer, :udt_code_hash)
+      rollup_script_hash = Application.get_env(:godwoken_explorer, :rollup_script_hash)
 
-    l2_udt_script_hash = script_to_hash(account_script)
-    short_address = String.slice(l2_udt_script_hash, 0, 42)
+      account_script = %{
+        "code_hash" => udt_code_hash,
+        "hash_type" => "type",
+        "args" => rollup_script_hash <> String.slice(udt_script_hash, 2..-1)
+      }
 
-    case Repo.get_by(Account, script_hash: l2_udt_script_hash) do
-      nil ->
-        case GodwokenRPC.fetch_account_id(l2_udt_script_hash) do
-          nil ->
-            Logger.error("Fetch udt account id failed: #{l2_udt_script_hash}")
-            {:error, nil}
+      l2_udt_script_hash = script_to_hash(account_script)
+      short_address = String.slice(l2_udt_script_hash, 0, 42)
 
-          hex_account_id when is_binary(hex_account_id) ->
-            udt_account_id = hex_to_number(hex_account_id)
+      case Repo.get_by(Account, script_hash: l2_udt_script_hash) do
+        nil ->
+          case GodwokenRPC.fetch_account_id(l2_udt_script_hash) do
+            nil ->
+              Logger.error("Fetch udt account id failed: #{l2_udt_script_hash}")
+              {:error, nil}
 
-            {:ok, _udt} =
-              UDT.find_or_create_by(%{
+            hex_account_id when is_binary(hex_account_id) ->
+              udt_account_id = hex_to_number(hex_account_id)
+
+              {:ok, _udt} =
+                UDT.find_or_create_by(%{
+                  id: udt_account_id,
+                  script_hash: udt_script_hash,
+                  type_script: udt_script
+                })
+
+              __MODULE__.create_or_update_account(%{
                 id: udt_account_id,
-                script_hash: udt_script_hash,
-                type_script: udt_script
+                script: account_script,
+                script_hash: l2_udt_script_hash,
+                short_address: short_address,
+                type: "udt"
               })
 
-            __MODULE__.create_or_update_account(%{
-              id: udt_account_id,
-              script: account_script,
-              script_hash: l2_udt_script_hash,
-              short_address: short_address,
-              type: "udt"
-            })
+              {:ok, udt_account_id}
+          end
 
-            {:ok, udt_account_id}
-        end
-
-      %__MODULE__{id: udt_account_id} ->
-        {:ok, udt_account_id}
+        %__MODULE__{id: udt_account_id} ->
+          {:ok, udt_account_id}
+      end
     end
   end
 
