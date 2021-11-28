@@ -48,7 +48,7 @@ defmodule GodwokenIndexer.Account.Worker do
           nonce: nonce,
           eth_address: eth_address
         })
-      catch
+      rescue
         e ->
           Logger.error("==========#{e}")
           trigger_account([account_id])
@@ -71,7 +71,7 @@ defmodule GodwokenIndexer.Account.Worker do
             udt_id: udt_id,
             balance: balance
           })
-        catch
+        rescue
           e ->
             Logger.error("==========#{e}")
             trigger_account([{udt_id, [account_id]}])

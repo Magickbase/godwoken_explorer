@@ -67,7 +67,7 @@ defmodule GodwokenIndexer.Block.SyncDepositionWorker do
           try do
             Logger.info("size: #{Enum.count(txs)}")
             parse_lock_script_and_bind(txs)
-          catch
+          rescue
             e ->
               Logger.error("==============")
               Logger.error(e)
@@ -96,6 +96,7 @@ defmodule GodwokenIndexer.Block.SyncDepositionWorker do
             "0x" <> l1_lock_hash
           )
 
+        Logger.info((user_account |> elem(1)).id)
         Logger.info("l2:#{l2_script_hash}")
         {udt_script, udt_script_hash} = parse_udt_script(outputs, io_index)
         Logger.info("udt:#{udt_script_hash}")

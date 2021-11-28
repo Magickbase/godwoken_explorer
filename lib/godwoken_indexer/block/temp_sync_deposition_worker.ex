@@ -44,7 +44,7 @@ defmodule GodwokenIndexer.Block.TempSyncDepositionWorker do
       try do
         Logger.info("#{original_block_range |> List.first()}")
         parse_lock_script_and_bind(txs)
-      catch
+      rescue
         e ->
           Logger.error(e)
           fetch_deposition_script_and_update(original_block_range)
