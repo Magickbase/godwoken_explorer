@@ -284,6 +284,7 @@ defmodule GodwokenExplorer.Account do
               bind_ckb_lock_script(l1_lock_script, script_hash, l1_lock_hash)
 
             hex_account_id ->
+              Logger.info("nil and create")
               account_id = hex_to_number(hex_account_id)
 
               create_or_update_account(%{
@@ -304,9 +305,11 @@ defmodule GodwokenExplorer.Account do
               bind_ckb_lock_script(l1_lock_script, script_hash, l1_lock_hash)
 
             hex_account_id ->
+              Logger.info("exist one and create")
               account_id = hex_to_number(hex_account_id)
 
               if account_id != id do
+                Logger.info("exist one and account_id not same")
                 refetch_accounts([account])
 
                 create_or_update_account(%{
