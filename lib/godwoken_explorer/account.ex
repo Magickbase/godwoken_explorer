@@ -237,10 +237,8 @@ defmodule GodwokenExplorer.Account do
       balance
   end
 
-  def refetch_accounts(accounts) do
+  def refetch_accounts(account_ids) do
     ckb_udt_id = UDT.ckb_account_id()
-    account_ids = accounts |> Enum.map(fn x -> x.id end)
-
     AccountWorker.trigger_account(account_ids)
     AccountWorker.trigger_sudt_account([{ckb_udt_id, account_ids}])
   end
@@ -264,67 +262,45 @@ defmodule GodwokenExplorer.Account do
   end
 
   def bind_ckb_lock_script(l1_lock_script, script_hash, l1_lock_hash) do
-    accounts = from(a in Account, where: a.script_hash == ^script_hash) |> Repo.all()
+    case GodwokenRPC.fetch_account_id(script_hash) do
+      nil ->
+        Logger.error("Fetch user account error:#{script_hash}")
+        Process.sleep(2000)
+        bind_ckb_lock_script(l1_lock_script, script_hash, l1_lock_hash)
+      hex_account_id ->
+        account_id = hex_to_number(hex_account_id)
+        short_address = String.slice(script_hash, 0, 42)
 
-    if length(accounts) > 1 do
-      refetch_accounts(accounts)
-      Logger.error("Too many same script hash accounts error:#{script_hash}")
+        if from(a in Account, where: a.script_hash == ^script_hash and a.id != ^account_id) |> Repo.exists? do
+          exist_accounts_ids = from(a in Account, select: a.id, where: a.script_hash == ^script_hash and a.id != ^account_id) |> Repo.all()
+          Logger.info("script_hash same but id not same#{Enum.join(exist_accounts_ids, ",")}")
+          refetch_accounts(exist_accounts_ids)
+        end
 
-      nil
-    else
-      account = accounts |> List.first()
-      short_address = String.slice(script_hash, 0, 42)
+        if from(a in Account, where: a.script_hash != ^script_hash and a.id == ^account_id) |> Repo.exists? do
+          from(a in Account, where: a.script_hash != ^script_hash and a.id == ^account_id)
+          |> Repo.all()
+          |> Enum.each(fn account ->
+            Logger.info("script_hash is not same but id same#{account.id}")
 
-      case account do
-        nil ->
-          case GodwokenRPC.fetch_account_id(script_hash) do
-            nil ->
-              Logger.error("Fetch user account error:#{script_hash}")
-              Process.sleep(2000)
-              bind_ckb_lock_script(l1_lock_script, script_hash, l1_lock_hash)
+            spawn(Account, :bind_ckb_lock_script, [account.ckb_lock_script, account.script_hash, account.ckb_lock_hash])
+          end)
+        end
 
-            hex_account_id ->
-              Logger.info("nil and create")
-              account_id = hex_to_number(hex_account_id)
-
-              create_or_update_account(%{
-                id: account_id,
-                ckb_lock_script: l1_lock_script,
-                ckb_lock_hash: l1_lock_hash,
-                script_hash: script_hash,
-                short_address: short_address,
-                type: "user"
-              })
-          end
-
-        %Account{id: id} ->
-          case GodwokenRPC.fetch_account_id(script_hash) do
-            nil ->
-              Logger.error("Fetch exist user account error:#{script_hash}")
-              Process.sleep(2000)
-              bind_ckb_lock_script(l1_lock_script, script_hash, l1_lock_hash)
-
-            hex_account_id ->
-              Logger.info("exist one and create")
-              account_id = hex_to_number(hex_account_id)
-
-              if account_id != id do
-                Logger.info("exist one and account_id not same")
-                refetch_accounts([account])
-
-                create_or_update_account(%{
-                  id: account_id,
-                  ckb_lock_script: l1_lock_script,
-                  ckb_lock_hash: l1_lock_hash,
-                  script_hash: script_hash,
-                  short_address: short_address,
-                  type: "user"
-                })
-              else
-                {:ok, account}
-              end
-          end
-      end
+        if from(a in Account, where: a.script_hash == ^script_hash and a.id == ^account_id) |> Repo.exists? do
+          Logger.info("already exist account")
+          {:ok, Repo.get(Account, account_id)}
+          # deposit history
+        else
+          create_or_update_account(%{
+            id: account_id,
+            ckb_lock_script: l1_lock_script,
+            ckb_lock_hash: l1_lock_hash,
+            script_hash: script_hash,
+            short_address: short_address,
+            type: "user"
+          })
+        end
     end
   end
 
