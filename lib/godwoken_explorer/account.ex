@@ -268,6 +268,7 @@ defmodule GodwokenExplorer.Account do
 
     if length(accounts) > 1 do
       refetch_accounts(accounts)
+      Logger.error("Too many same script hash accounts error:#{script_hash}")
 
       nil
     else
@@ -295,14 +296,31 @@ defmodule GodwokenExplorer.Account do
               })
           end
 
-        %Account{ckb_lock_script: ckb_lock_script, ckb_lock_hash: ckb_lock_hash}
-        when is_nil(ckb_lock_script) or is_nil(ckb_lock_hash) ->
-          account
-          |> Ecto.Changeset.change(%{ckb_lock_script: l1_lock_script, ckb_lock_hash: l1_lock_hash})
-          |> Repo.update()
+        %Account{id: id} ->
+          case GodwokenRPC.fetch_account_id(script_hash) do
+            nil ->
+              Logger.error("Fetch exist user account error:#{script_hash}")
+              Process.sleep(2000)
+              bind_ckb_lock_script(l1_lock_script, script_hash, l1_lock_hash)
 
-        _ ->
-          {:ok, account}
+            hex_account_id ->
+              account_id = hex_to_number(hex_account_id)
+
+              if account_id != id do
+                refetch_accounts([account])
+
+                create_or_update_account(%{
+                  id: account_id,
+                  ckb_lock_script: l1_lock_script,
+                  ckb_lock_hash: l1_lock_hash,
+                  script_hash: script_hash,
+                  short_address: short_address,
+                  type: "user"
+                })
+              else
+                {:ok, account}
+              end
+          end
       end
     end
   end
