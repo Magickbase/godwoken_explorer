@@ -50,7 +50,7 @@ defmodule GodwokenIndexer.Account.Worker do
         })
       rescue
         e ->
-          Logger.info("==========account")
+          Logger.info("==========account_error:#{account_id}")
           Logger.error(Exception.format(:error, e, __STACKTRACE__))
           Process.sleep(2000)
           trigger_account([account_id])
@@ -75,7 +75,7 @@ defmodule GodwokenIndexer.Account.Worker do
           })
         rescue
           e ->
-            Logger.error("==========sudt_account")
+            Logger.error("==========sudt_account_error:#{account_id}")
             Logger.error(Exception.format(:error, e, __STACKTRACE__))
             Process.sleep(2000)
             trigger_account([{udt_id, [account_id]}])
