@@ -8,7 +8,7 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
 
   alias GodwkenRPC
   alias GodwokenExplorer.{Block, Account}
-  alias GodwokenIndexer.Account.Worker
+  alias GodwokenIndexer.Account.{UpdateInfoWorker, UpdateUDTWorker}
 
   @default_worker_interval 5
 
@@ -80,8 +80,8 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
 
     with {:ok, udt_account_id} <- Account.find_or_create_udt_account(udt_script, udt_script_hash) do
       with {:ok, user} <- user_account do
-          Worker.trigger_account([user.id])
-          Worker.trigger_sudt_account([{udt_account_id, [user.id]}])
+          UpdateInfoWorker.sync_trigger_account([user.id])
+          UpdateUDTWorker.sync_trigger_sudt_account([{udt_account_id, [user.id]}])
       end
     end
   end
