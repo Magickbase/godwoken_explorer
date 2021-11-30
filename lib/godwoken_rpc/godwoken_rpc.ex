@@ -6,7 +6,7 @@ defmodule GodwokenRPC do
   alias GodwokenExplorer.{Account, Repo}
   alias GodwokenRPC.{Blocks, Block, HTTP}
   alias GodwokenRPC.Transaction.FetchedReceipt
-  alias GodwokenRPC.CKBIndexer.{FetchedTransactions, FetchedTransaction, FetchedTip}
+  alias GodwokenRPC.CKBIndexer.{FetchedTransactions, FetchedTransaction, FetchedTip, FetchedBlock}
 
   alias GodwokenRPC.Account.{
     FetchedAccountID,
@@ -85,6 +85,22 @@ defmodule GodwokenRPC do
 
       {:error, msg} ->
         Logger.error(fn -> ["Failed to request L1 transaction: ", msg] end, tx_hash: tx_hash)
+        {:error, msg}
+    end
+  end
+
+  def fetch_l1_block(block_number) do
+    rpc_options = Application.get_env(:godwoken_explorer, :ckb_rpc_named_arguments)
+
+    case FetchedBlock.request(block_number) |> HTTP.json_rpc(rpc_options) do
+      {:ok, response} ->
+        {:ok, response}
+
+      {:error, msg} ->
+        Logger.error(fn -> ["Failed to request L1 block: ", msg] end,
+          block_number: block_number
+        )
+
         {:error, msg}
     end
   end
