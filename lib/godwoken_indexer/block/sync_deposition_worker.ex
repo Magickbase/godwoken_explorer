@@ -10,7 +10,7 @@ defmodule GodwokenIndexer.Block.SyncDepositionWorker do
   alias GodwokenExplorer.{Block, Account}
   alias GodwokenIndexer.Account.Worker
 
-  @buffer_block_number 10
+  @buffer_block_number 20
   @default_worker_interval 5
 
   def start_link(state \\ []) do
