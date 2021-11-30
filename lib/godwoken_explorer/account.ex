@@ -7,7 +7,6 @@ defmodule GodwokenExplorer.Account do
 
   alias GodwokenRPC
   alias GodwokenExplorer.Chain.Events.Publisher
-  alias GodwokenIndexer.Account.Worker, as: AccountWorker
 
   @primary_key {:id, :integer, autogenerate: false}
   schema "accounts" do
@@ -48,21 +47,21 @@ defmodule GodwokenExplorer.Account do
     |> validate_required([:id, :script_hash])
   end
 
-  def create_or_update_account(attrs) do
-    case Repo.get(__MODULE__, attrs[:id]) do
+  def create_or_update_account!(attrs) do
+    case Repo.get_by(__MODULE__, script_hash: attrs[:script_hash]) do
       nil -> %__MODULE__{}
       account -> account
     end
     |> changeset(attrs)
-    |> Repo.insert_or_update()
+    |> Repo.insert_or_update!()
     |> case do
-      {:ok, account} ->
+      account = %Account{} ->
         account_api_data = account.id |> find_by_id() |> account_to_view()
         Publisher.broadcast([{:accounts, account_api_data}], :realtime)
         {:ok, account}
 
       {:error, error_msg} ->
-        Logger.error(fn -> ["Failed to create or update account: ", error_msg] end)
+        Logger.error("Failed to create or update account: #{inspect(error_msg)}")
         {:error, nil}
     end
   end
@@ -236,12 +235,6 @@ defmodule GodwokenExplorer.Account do
       balance
   end
 
-  def refetch_accounts(account_ids) do
-    ckb_udt_id = UDT.ckb_account_id()
-    AccountWorker.trigger_account(account_ids)
-    AccountWorker.trigger_sudt_account([{ckb_udt_id, account_ids}])
-  end
-
   def search(keyword) do
     results =
       from(a in Account,
@@ -253,57 +246,14 @@ defmodule GodwokenExplorer.Account do
       |> Repo.all()
 
     if length(results) > 1 do
-      refetch_accounts(results |> Enum.map(fn account -> account.id end))
+      Logger.error("Same keyword Error: #{keyword}")
       nil
     else
       results |> List.first()
     end
   end
 
-  def bind_ckb_lock_script(l1_lock_script, script_hash, l1_lock_hash) do
-    case GodwokenRPC.fetch_account_id(script_hash) do
-      nil ->
-        Logger.error("Fetch user account error:#{script_hash}")
-        Process.sleep(2000)
-        bind_ckb_lock_script(l1_lock_script, script_hash, l1_lock_hash)
-      hex_account_id ->
-        account_id = hex_to_number(hex_account_id)
-        short_address = String.slice(script_hash, 0, 42)
-
-        if from(a in Account, where: a.script_hash == ^script_hash and a.id != ^account_id) |> Repo.exists? do
-          exist_accounts_ids = from(a in Account, select: a.id, where: a.script_hash == ^script_hash and a.id != ^account_id) |> Repo.all()
-          Logger.info("script_hash same but id not same#{Enum.join(exist_accounts_ids, ",")}")
-          refetch_accounts(exist_accounts_ids)
-        end
-
-        if from(a in Account, where: a.script_hash != ^script_hash and a.id == ^account_id) |> Repo.exists? do
-          from(a in Account, where: a.script_hash != ^script_hash and a.id == ^account_id)
-          |> Repo.all()
-          |> Enum.each(fn account ->
-            Logger.info("script_hash is not same but id same#{account.id}")
-
-            spawn(Account, :bind_ckb_lock_script, [account.ckb_lock_script, account.script_hash, account.ckb_lock_hash])
-          end)
-        end
-
-        if from(a in Account, where: a.script_hash == ^script_hash and a.id == ^account_id) |> Repo.exists? do
-          Logger.info("already exist account")
-          {:ok, Repo.get(Account, account_id)}
-          # deposit history
-        else
-          create_or_update_account(%{
-            id: account_id,
-            ckb_lock_script: l1_lock_script,
-            ckb_lock_hash: l1_lock_hash,
-            script_hash: script_hash,
-            short_address: short_address,
-            type: "user"
-          })
-        end
-    end
-  end
-
-  def find_or_create_udt_account(udt_script, udt_script_hash) do
+  def find_or_create_udt_account!(udt_script, udt_script_hash) do
     case Repo.get_by(UDT, script_hash: udt_script_hash) do
       %UDT{id: id} -> {:ok, id}
       nil ->
@@ -318,11 +268,10 @@ defmodule GodwokenExplorer.Account do
         short_address = String.slice(l2_udt_script_hash, 0, 42)
 
         case GodwokenRPC.fetch_account_id(l2_udt_script_hash) do
-          nil ->
-            Logger.error("Fetch udt account id failed: #{l2_udt_script_hash}")
-            find_or_create_udt_account(udt_script, udt_script_hash)
+          {:error, nil} ->
+            {:error, nil}
 
-          hex_account_id when is_binary(hex_account_id) ->
+          {:ok, hex_account_id}->
             udt_account_id = hex_to_number(hex_account_id)
 
             {:ok, _udt} =
@@ -332,7 +281,7 @@ defmodule GodwokenExplorer.Account do
                 type_script: udt_script
               })
 
-            __MODULE__.create_or_update_account(%{
+            __MODULE__.create_or_update_account!(%{
               id: udt_account_id,
               script: account_script,
               script_hash: l2_udt_script_hash,
@@ -352,8 +301,45 @@ defmodule GodwokenExplorer.Account do
 
       nil ->
         script_hash = GodwokenRPC.fetch_script_hash(%{short_address: short_address})
-        account_id = script_hash |> GodwokenRPC.fetch_account_id() |> hex_to_number()
+        account_id = script_hash |> GodwokenRPC.fetch_account_id() |> elem(1)  |> hex_to_number()
         {:ok, account_id}
+    end
+  end
+
+  def switch_account_type(code_hash, args) do
+    polyjuice_code_hash = Application.get_env(:godwoken_explorer, :polyjuice_validator_code_hash)
+    layer2_lock_code_hash = Application.get_env(:godwoken_explorer, :layer2_lock_code_hash)
+    udt_code_hash = Application.get_env(:godwoken_explorer, :udt_code_hash)
+    meta_contract_code_hash = Application.get_env(:godwoken_explorer, :meta_contract_code_hash)
+    eoa_code_hash = Application.get_env(:godwoken_explorer, :eoa_code_hash)
+
+    case code_hash do
+      ^meta_contract_code_hash -> :meta_contract
+      ^udt_code_hash -> :udt
+      ^polyjuice_code_hash when byte_size(args) == 74 -> :polyjuice_root
+      ^polyjuice_code_hash -> :polyjuice_contract
+      ^layer2_lock_code_hash -> :user
+      ^eoa_code_hash -> :user
+      _ -> :unkonw
+    end
+  end
+
+  def script_to_eth_adress(type, args) do
+    rollup_script_hash = Application.get_env(:godwoken_explorer, :rollup_script_hash)
+
+    if type in [:user, :polyjuice_contract] &&
+         args |> String.slice(0, 66) == rollup_script_hash do
+      "0x" <> String.slice(args, -40, 40)
+    else
+      nil
+    end
+  end
+
+  def add_name_to_polyjuice_script(type, script) do
+    if type in [:polyjuice_contract, :polyjuice_root] do
+      script |> Map.merge(%{"name" => "validator"})
+    else
+      script
     end
   end
 end

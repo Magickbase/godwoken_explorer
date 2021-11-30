@@ -16,18 +16,19 @@ defmodule GodwokenExplorer do
 
       alias Ecto.Multi
       alias GodwokenExplorer.{
+        Account,
+        AccountUDT,
         Block,
         CheckInfo,
-        Transaction,
-        Repo,
-        UDTTransfer,
+        DepositHistory,
         PolyjuiceCreator,
         Polyjuice,
-        Withdrawal,
-        Account,
+        Repo,
+        Transaction,
         UDT,
-        AccountUDT,
-        Version
+        UDTTransfer,
+        Version,
+        Withdrawal
       }
     end
   end

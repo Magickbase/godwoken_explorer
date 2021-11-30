@@ -117,7 +117,12 @@ defmodule GodwokenExplorer.Block do
            |> Enum.sum() do
       %{timestamp: last_timestamp, tx_count: _} = timestamp_with_tx_count |> List.first()
       %{timestamp: first_timestamp, tx_count: _} = timestamp_with_tx_count |> List.last()
-      (all_tx_count / NaiveDateTime.diff(last_timestamp, first_timestamp)) |> Float.floor(1)
+
+      if NaiveDateTime.diff(last_timestamp, first_timestamp) == 0 do
+        0.0
+      else
+        (all_tx_count / NaiveDateTime.diff(last_timestamp, first_timestamp)) |> Float.floor(1)
+      end
     else
       _ -> 0.0
     end
@@ -170,12 +175,9 @@ defmodule GodwokenExplorer.Block do
         :ok
 
       {:error, _} ->
-        Logger.error(fn ->
-          [
-            "Failed to update blocks finalized status before block_number: ",
-            latest_finalized_block_number
-          ]
-        end)
+        Logger.error(
+          "Failed to update blocks finalized status before block_number: #{latest_finalized_block_number}"
+        )
 
       _ ->
         :ok
@@ -235,8 +237,15 @@ defmodule GodwokenExplorer.Block do
     |> Repo.one()
   end
 
-  def reset_layer1_bind_info(layer1_block_number) do
+  def reset_layer1_bind_info!(layer1_block_number) do
     from(b in Block, where: b.layer1_block_number == ^layer1_block_number)
-    |> Repo.update_all(set: [layer1_block_number: nil, layer1_tx_hash: nil, status: :committed])
+    |> Enum.each(fn block ->
+      Ecto.Changeset.change(block, %{
+        layer1_block_number: nil,
+        layer1_tx_hash: nil,
+        status: :committed
+      })
+      |> Repo.update!()
+    end)
   end
 end

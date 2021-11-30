@@ -31,7 +31,17 @@ defmodule GodwokenExplorer.CheckInfo do
     end
   end
 
-  def rollback(check_info) do
-    check_info |> Repo.revert()
+  def rollback!(check_info) do
+    check_info
+    |> Repo.history()
+    |> List.first()
+    |> Repo.revert()
+
+    check_info
+    |> Repo.history()
+    |> Enum.take(2)
+    |> Enum.each(fn info ->
+      Repo.delete!(info)
+    end)
   end
 end
