@@ -39,6 +39,13 @@ config :godwoken_explorer, GodwokenExplorer.Chain.Cache.Transactions,
 config :torch,
   otp_app: :godwoken_explorer,
   template_format: "eex"
+
+config :ex_audit,
+  ecto_repos: [GodwokenExplorer.Repo],
+  version_schema: GodwokenExplorer.Version,
+  tracked_schemas: [
+    GodwokenExplorer.CheckInfo
+  ]
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{Mix.env()}.exs"

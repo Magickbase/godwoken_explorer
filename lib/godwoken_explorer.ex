@@ -17,6 +17,7 @@ defmodule GodwokenExplorer do
       alias Ecto.Multi
       alias GodwokenExplorer.{
         Block,
+        CheckInfo,
         Transaction,
         Repo,
         UDTTransfer,
@@ -25,7 +26,8 @@ defmodule GodwokenExplorer do
         Withdrawal,
         Account,
         UDT,
-        AccountUDT
+        AccountUDT,
+        Version
       }
     end
   end

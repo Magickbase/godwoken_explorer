@@ -7,7 +7,7 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
   require Logger
 
   alias GodwkenRPC
-  alias GodwokenExplorer.{Block, Account}
+  alias GodwokenExplorer.{Account, CheckInfo, Repo, Block}
   alias GodwokenIndexer.Account.{UpdateInfoWorker, UpdateUDTWorker}
 
   @default_worker_interval 5
@@ -22,8 +22,8 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
       Application.get_env(:godwoken_explorer, :init_godwoken_l1_block_number)
 
     start_block_number =
-      case Block.find_last_bind_l1_block() do
-        %Block{layer1_block_number: l1_block_number} -> l1_block_number + 1
+      case Repo.get_by(CheckInfo, type: "main_deposit") do
+        %CheckInfo{tip_block_number: l1_block_number} when is_integer(l1_block_number) -> l1_block_number + 1
         nil -> init_godwoken_l1_block_number
       end
 
@@ -45,11 +45,21 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
     {:noreply, state}
   end
 
+
   def fetch_deposition_script_and_update(block_number) do
     deposition_lock = Application.get_env(:godwoken_explorer, :deposition_lock)
+    check_info = Repo.get_by(CheckInfo, type: "main_deposoit")
     {:ok, response} = GodwokenRPC.fetch_l1_block(block_number)
-    # TODO: rollback
     header = response["header"]
+    block_hash = header["hash"]
+
+    # TODO: rollback
+    if forked?(header["parent_hash"], check_info) do
+      Block.reset_layer1_bind_info(check_info.tip_block_number)
+      # rollback account
+      CheckInfo.rollback(check_info)
+      throw :rollback
+    end
 
     response["transactions"]
     |> Enum.each(fn tx ->
@@ -63,6 +73,8 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
         end
       end)
     end)
+
+    CheckInfo.create_or_update_info(%{type: :main_deposit, tip_block_number: block_number,block_hash: block_hash})
 
     {:ok, block_number + 1}
   end
@@ -120,5 +132,13 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
         @default_worker_interval
 
     Process.send_after(self(), {:bind_deposit_work, start_block_number}, second * 1000)
+  end
+
+  defp forked?(parent_hash, check_info) do
+    if is_nil(check_info) || check_info.block_hash.blank? do
+      false
+    else
+      parent_hash != check_info.block_hash
+    end
   end
 end
