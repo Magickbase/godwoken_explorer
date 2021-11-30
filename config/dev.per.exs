@@ -18,7 +18,7 @@ config :godwoken_explorer,
     hash_type: "type",
     args: "0x4cc2e6526204ae6a2e8fcf12f7ad472f41a1606d5b9624beebd215d780809f6a"
   },
-  init_godwoken_l1_block_number: 2_286_200,
+  init_godwoken_l1_block_number: 2_970000,
   ckb_token_script_hash: "0x0000000000000000000000000000000000000000000000000000000000000000",
   eth_token_script_hash: "0xa9eb9df467715766b009ad57cf4c7a2977bc8377d51ace37a3653f3bbb540b7c"
 
@@ -37,7 +37,7 @@ config :godwoken_explorer, GodwokenExplorer.Repo,
 config :godwoken_explorer,
   json_rpc_named_arguments: [
     http: GodwokenRPC.HTTP.HTTPoison,
-    url: "http://localhost:8119",
+    url: "http://godwoken-testnet-web3-rpc.ckbapp.dev",
     http_options: [
       recv_timeout: :timer.minutes(10),
       timeout: :timer.minutes(10)
@@ -45,7 +45,7 @@ config :godwoken_explorer,
   ],
   ckb_indexer_named_arguments: [
     http: GodwokenRPC.HTTP.HTTPoison,
-    url: "http://localhost:8116",
+    url: "http://116.62.22.144:8116",
     http_options: [
       recv_timeout: :timer.minutes(10),
       timeout: :timer.minutes(10)
@@ -53,7 +53,7 @@ config :godwoken_explorer,
   ],
   ckb_rpc_named_arguments: [
     http: GodwokenRPC.HTTP.HTTPoison,
-    url: "http://localhost:8114",
+    url: "http://116.62.22.144:8114",
     http_options: [
       recv_timeout: :timer.minutes(10),
       timeout: :timer.minutes(10)
@@ -62,7 +62,7 @@ config :godwoken_explorer,
 
 config :ethereumex,
   client_type: :http,
-  url: "http://localhost:8119"
+  url: "http://godwoken-testnet-web3-rpc.ckbapp.dev"
 
 config :godwoken_explorer,
   sync_worker_interval: 1,

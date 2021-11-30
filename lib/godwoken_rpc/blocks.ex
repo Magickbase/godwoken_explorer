@@ -45,5 +45,4 @@ defmodule GodwokenRPC.Blocks do
   def elixir_to_transactions(elixir) when is_list(elixir) do
     Enum.flat_map(elixir, &Block.elixir_to_transactions/1)
   end
-
 end

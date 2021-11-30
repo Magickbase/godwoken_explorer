@@ -7,9 +7,8 @@ defmodule GodwokenIndexer.Block.SyncWorker do
 
   alias GodwokenRPC.Block.{FetchedTipBlockHash, ByHash}
   alias GodwokenRPC.{Blocks, HTTP}
-  alias GodwokenExplorer.{Block, Transaction, Chain}
+  alias GodwokenExplorer.{Block, Transaction, Chain, AccountUDT}
   alias GodwokenExplorer.Chain.Events.Publisher
-  alias GodwokenIndexer.Account.Worker, as: AccountWorker
   alias GodwokenExplorer.Chain.Cache.Blocks, as: BlocksCache
   alias GodwokenExplorer.Chain.Cache.Transactions
 
@@ -133,14 +132,16 @@ defmodule GodwokenIndexer.Block.SyncWorker do
   end
 
   defp trigger_sudt_account_worker(transactions_params) do
-    sudt_account_ids = extract_sudt_account_ids(transactions_params)
+    udt_account_ids = extract_sudt_account_ids(transactions_params)
 
-    if length(sudt_account_ids) > 0 do
-      Logger.info(
-        "==================l2 create account:#{sudt_account_ids |> List.first() |> elem(1) |> Enum.join(",")}"
-      )
-
-      AccountWorker.trigger_sudt_account(sudt_account_ids)
+    if length(udt_account_ids) > 0 do
+      udt_account_ids
+      |> Enum.each(fn {udt_id, account_ids} ->
+        account_ids
+        |> Enum.each(fn account_id ->
+          AccountUDT.sync_balance!(account_id, udt_id)
+        end)
+      end)
     end
   end
 

@@ -19,7 +19,6 @@ defmodule GodwokenRPC.Transaction do
     {{code_hash, hash_type, script_args}, {fee_sudt_id, fee_amount_hex_string}} =
       parse_meta_contract_args(args)
 
-    udt_id = script_args |> String.slice(64..-1) |> parse_le_number()
     fee_amount = fee_amount_hex_string |> parse_le_number()
     from_account_id = hex_to_number(from_account_id)
 
@@ -34,7 +33,6 @@ defmodule GodwokenRPC.Transaction do
       to_account_id: hex_to_number(to_account_id),
       code_hash: "0x" <> code_hash,
       hash_type: transform_hash_type(hash_type),
-      udt_id: udt_id,
       fee_udt_id: fee_sudt_id,
       fee_amount: fee_amount,
       script_args: script_args,

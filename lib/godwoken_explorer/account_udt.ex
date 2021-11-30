@@ -1,8 +1,7 @@
 defmodule GodwokenExplorer.AccountUDT do
   use GodwokenExplorer, :schema
 
-  import Ecto.Changeset
-
+  alias GodwokenRPC
   alias GodwokenExplorer.Chain.Events.Publisher
 
   schema "account_udts" do
@@ -20,15 +19,15 @@ defmodule GodwokenExplorer.AccountUDT do
     |> validate_required([:account_id, :udt_id])
   end
 
-  def create_or_update_account_udt(attrs) do
+  def create_or_update_account_udt!(attrs) do
     case Repo.get_by(__MODULE__, %{account_id: attrs[:account_id], udt_id: attrs[:udt_id]}) do
       nil -> %__MODULE__{}
       account_udt -> account_udt
     end
     |> changeset(attrs)
-    |> Repo.insert_or_update()
+    |> Repo.insert_or_update!()
     |> case do
-      {:ok, account_udt} ->
+      account_udt = %AccountUDT{} ->
         account_api_data =
           account_udt.account_id |> Account.find_by_id() |> Account.account_to_view()
 
@@ -60,5 +59,16 @@ defmodule GodwokenExplorer.AccountUDT do
     )
     |> Repo.all()
     |> Enum.map(fn u -> %{u | balance: Decimal.to_string(u.balance)} end)
+  end
+
+  def sync_balance!(account_id, udt_id) do
+    account = Repo.get(Account, account_id)
+    {:ok, balance} = GodwokenRPC.fetch_balance(account.short_address, udt_id)
+
+    AccountUDT.create_or_update_account_udt!(%{
+      account_id: account.id,
+      udt_id: udt_id,
+      balance: balance
+    })
   end
 end

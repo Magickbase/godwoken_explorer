@@ -3,7 +3,6 @@ defmodule GodwokenRPC do
 
   require Logger
 
-  alias GodwokenExplorer.{Account, Repo}
   alias GodwokenRPC.{Blocks, Block, HTTP}
   alias GodwokenRPC.Transaction.FetchedReceipt
   alias GodwokenRPC.CKBIndexer.{FetchedTransactions, FetchedTransaction, FetchedTip, FetchedBlock}
@@ -111,14 +110,12 @@ defmodule GodwokenRPC do
     case FetchedAccountID.request(%{script_hash: account_script_hash})
          |> HTTP.json_rpc(options) do
       {:ok, account_id} ->
-        account_id
+        {:ok, account_id }
 
       {:error, msg} ->
-        Logger.error(fn -> ["Failed to fetch L2 account_id: ", msg] end,
-          account_script_hash: account_script_hash
-        )
+        Logger.error("Failed to fetch #{account_script_hash} L2 account_id: #{inspect(msg)}")
 
-        nil
+        {:error, nil}
     end
   end
 
@@ -162,17 +159,8 @@ defmodule GodwokenRPC do
     end
   end
 
-  def fetch_balance(account_id, udt_id) do
+  def fetch_balance(short_address, udt_id) do
     options = Application.get_env(:godwoken_explorer, :json_rpc_named_arguments)
-
-    short_address =
-      case Repo.get(Account, account_id) do
-        %Account{short_address: short_address} ->
-          short_address
-
-        nil ->
-          %{account_id: account_id} |> GodwokenRPC.fetch_script_hash() |> String.slice(0, 42)
-      end
 
     case FetchedBalance.request(%{short_address: short_address, udt_id: udt_id})
          |> HTTP.json_rpc(options) do
