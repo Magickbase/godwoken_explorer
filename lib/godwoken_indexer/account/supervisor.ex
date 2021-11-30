@@ -6,7 +6,10 @@ defmodule GodwokenIndexer.Account.Supervisor do
   end
 
   def init(_) do
-    children = [GodwokenIndexer.Account.Worker]
+    children = [
+      GodwokenIndexer.Account.UpdateInfoWorker,
+      GodwokenIndexer.Account.UpdateUDTWorker
+    ]
 
     Supervisor.init(children, strategy: :one_for_one)
   end
