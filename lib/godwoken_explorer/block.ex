@@ -60,7 +60,7 @@ defmodule GodwokenExplorer.Block do
 
   def create_block(attrs \\ %{}) do
     %Block{}
-    |> Block.changeset(attrs)
+    |> changeset(attrs)
     |> Repo.insert()
   end
 
@@ -233,5 +233,10 @@ defmodule GodwokenExplorer.Block do
       limit: 1
     )
     |> Repo.one()
+  end
+
+  def reset_layer1_bind_info(layer1_block_number) do
+    from(b in Block, where: b.layer1_block_number == ^layer1_block_number)
+    |> Repo.update_all(set: [layer1_block_number: nil, layer1_tx_hash: nil, status: :committed])
   end
 end

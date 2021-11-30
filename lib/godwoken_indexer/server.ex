@@ -7,11 +7,11 @@ defmodule GodwokenIndexer.Server do
 
   def init(_) do
     children = [
-      GodwokenIndexer.Block.Supervisor,
-      GodwokenIndexer.Account.Supervisor,
-      GodwokenIndexer.Account.SyncSupervisor,
-      GodwokenIndexer.Transaction.Supervisor,
-      GodwokenIndexer.Account.SyncDepositSupervisor
+      # GodwokenIndexer.Block.Supervisor,
+      # GodwokenIndexer.Account.Supervisor,
+      # GodwokenIndexer.Account.SyncSupervisor,
+      # GodwokenIndexer.Transaction.Supervisor,
+      # GodwokenIndexer.Account.SyncDepositSupervisor
     ]
 
     Supervisor.init(children, strategy: :one_for_one)

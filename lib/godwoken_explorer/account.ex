@@ -1,7 +1,6 @@
 defmodule GodwokenExplorer.Account do
   use GodwokenExplorer, :schema
 
-  import Ecto.Changeset
   import GodwokenRPC.Util, only: [script_to_hash: 1, hex_to_number: 1]
 
   require Logger
