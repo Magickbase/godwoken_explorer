@@ -254,7 +254,7 @@ defmodule GodwokenExplorer.Account do
       |> Repo.all()
 
     if length(results) > 1 do
-      refetch_accounts(results)
+      refetch_accounts(results |> Enum.map(fn account -> account.id end))
       nil
     else
       results |> List.first()
