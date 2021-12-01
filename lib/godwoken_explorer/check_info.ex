@@ -5,7 +5,7 @@ defmodule GodwokenExplorer.CheckInfo do
     field :block_hash, :string
     field :tip_block_number, :integer
     field :type, Ecto.Enum,
-      values: [:main_deposit]
+      values: [:main_deposit, :fix_history_deposit]
 
     timestamps()
   end
