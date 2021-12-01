@@ -96,7 +96,7 @@ defmodule GodwokenExplorer.Transaction do
         |> Enum.map(fn t ->
           t
           |> Map.take([:hash, :from_account_id, :to_account_id, :type])
-          |> Map.merge(%{timestamp: t.block.timestamp, success: true})
+          |> Map.merge(%{timestamp: t.block.inserted_at, success: true})
         end)
 
       _ ->
@@ -109,7 +109,7 @@ defmodule GodwokenExplorer.Transaction do
           on: a3.id == t.to_account_id,
           select: %{
             hash: t.hash,
-            timestamp: b.timestamp,
+            timestamp: b.inserted_at,
             from: fragment("
               CASE WHEN a2.type = 'user' THEN encode(a2.eth_address, 'escape')
                  WHEN a2.type = 'polyjuice_contract' THEN encode(a2.short_address, 'escape')

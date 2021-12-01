@@ -113,7 +113,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
         tx
         |> Map.take([:hash, :type, :from_account_id, :to_account_id])
         |> Map.merge(%{
-          timestamp: home_blocks |> List.first() |> Map.get(:timestamp),
+          timestamp: home_blocks |> List.first() |> Map.get(:inserted_at),
           success: true
         })
       end)
