@@ -105,7 +105,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
   defp broadcast_block_and_tx(inserted_blocks, inserted_transactions) do
     home_blocks =
       Enum.map(inserted_blocks, fn block ->
-        Map.take(block, [:hash, :number, :timestamp, :transaction_count])
+        Map.take(block, [:hash, :number, :inserted_at, :transaction_count])
       end)
 
     home_transactions =

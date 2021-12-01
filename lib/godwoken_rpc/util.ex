@@ -34,6 +34,7 @@ defmodule GodwokenRPC.Util do
           :transaction_count -> :tx_count
           :from_account_id -> :from
           :to_account_id -> :to
+          :inserted_at -> :timestamp
           _ -> k
         end
 
@@ -43,6 +44,7 @@ defmodule GodwokenRPC.Util do
           d when d in @stringify_decimal_keys -> Decimal.to_string(v)
           :l1_block when not is_nil(v) -> Integer.to_string(v)
           :timestamp -> utc_to_unix(v)
+          :inserted_at -> utc_to_unix(v)
           _ -> v
         end
 

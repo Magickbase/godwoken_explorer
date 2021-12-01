@@ -85,7 +85,7 @@ defmodule GodwokenExplorer.Block do
       blocks when is_list(blocks) and length(blocks) == 10 ->
         blocks
         |> Enum.map(fn b ->
-          b |> Map.take([:hash, :number, :timestamp, :transaction_count])
+          b |> Map.take([:hash, :number, :inserted_at, :transaction_count])
         end)
 
       _ ->
@@ -93,7 +93,7 @@ defmodule GodwokenExplorer.Block do
           select: %{
             hash: b.hash,
             number: b.number,
-            timestamp: b.timestamp,
+            timestamp: b.inserted_at,
             transaction_count: b.transaction_count
           },
           order_by: [desc: b.number],
