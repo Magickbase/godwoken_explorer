@@ -18,5 +18,6 @@ defmodule GodwokenExplorer.Repo.Migrations.CreateWithdrawalHistories do
       timestamps()
     end
     create unique_index("withdrawal_histories", [:layer1_tx_hash, :layer1_block_number, :layer1_output_index])
+    create unique_index("deposit_histories", [:layer1_tx_hash, :layer1_block_number, :layer1_output_index])
   end
 end
