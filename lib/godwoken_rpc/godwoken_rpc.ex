@@ -110,7 +110,7 @@ defmodule GodwokenRPC do
     case FetchedAccountID.request(%{script_hash: account_script_hash})
          |> HTTP.json_rpc(options) do
       {:ok, account_id} when is_nil(account_id) ->
-        Logger.error("Fetch account succeed.But is nil!!!#{l1_block_number}-#{tx_hash}-#{index}:#{script_hash}")
+        Logger.error("Fetch account succeed.But is nil!!!:#{account_script_hash}")
         {:error, :account_slow}
       {:ok, account_id} ->
         {:ok, account_id |> hex_to_number() }
