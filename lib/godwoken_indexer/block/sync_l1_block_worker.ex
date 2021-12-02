@@ -99,6 +99,9 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
     [script_hash, l1_lock_hash] = parse_lock_args(output["lock"]["args"])
     {udt_script, udt_script_hash, amount} = parse_udt_script(output, output_data)
     {:ok, hex_account_id} = GodwokenRPC.fetch_account_id(script_hash)
+    if is_nil(hex_account_id) do
+      Logger.error("Fetch account succeed.But is nil!!!#{l1_block_number}-#{tx_hash}-#{index}:#{script_hash}")
+    else
     account_id = hex_account_id |> hex_to_number()
     nonce = GodwokenRPC.fetch_nonce(account_id)
     short_address = String.slice(script_hash, 0, 42)
@@ -149,6 +152,7 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
         AccountUDT.sync_balance!(account_id, udt_id)
       end
     end)
+  end
   end
 
   defp parse_udt_script(output, output_data) do
