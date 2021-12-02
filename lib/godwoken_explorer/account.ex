@@ -271,9 +271,7 @@ defmodule GodwokenExplorer.Account do
           {:error, nil} ->
             {:error, nil}
 
-          {:ok, hex_account_id}->
-            udt_account_id = hex_to_number(hex_account_id)
-
+          {:ok, udt_account_id}->
             {:ok, _udt} =
               UDT.find_or_create_by(%{
                 id: udt_account_id,
@@ -301,7 +299,7 @@ defmodule GodwokenExplorer.Account do
 
       nil ->
         script_hash = GodwokenRPC.fetch_script_hash(%{short_address: short_address})
-        account_id = script_hash |> GodwokenRPC.fetch_account_id() |> elem(1)  |> hex_to_number()
+        account_id = script_hash |> GodwokenRPC.fetch_account_id() |> elem(1)
         {:ok, account_id}
     end
   end
