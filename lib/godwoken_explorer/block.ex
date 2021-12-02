@@ -1,8 +1,6 @@
 defmodule GodwokenExplorer.Block do
   use GodwokenExplorer, :schema
 
-  import Ecto.Changeset
-
   require Logger
 
   alias GodwokenExplorer.Chain.Cache.Blocks

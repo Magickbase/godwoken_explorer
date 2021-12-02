@@ -1,13 +1,13 @@
 defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
   use GenServer
 
-  import Godwoken.MoleculeParser, only: [parse_deposition_lock_args: 1]
+  import Godwoken.MoleculeParser, only: [parse_deposition_lock_args: 1, parse_withdrawal_lock_args: 1]
   import GodwokenRPC.Util, only: [hex_to_number: 1, script_to_hash: 1, parse_le_number: 1]
 
   require Logger
 
   alias GodwkenRPC
-  alias GodwokenExplorer.{Account, CheckInfo, Repo, Block, DepositHistory, AccountUDT}
+  alias GodwokenExplorer.{Account, CheckInfo, Repo, Block, DepositHistory, AccountUDT, WithdrawalHistory}
 
   @default_worker_interval 5
 
@@ -51,6 +51,7 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
 
   def fetch_deposition_script_and_update(block_number) do
     deposition_lock = Application.get_env(:godwoken_explorer, :deposition_lock)
+    withdrawal_lock = Application.get_env(:godwoken_explorer, :withdrawal_lock)
     check_info = Repo.get_by(CheckInfo, type: :main_deposit)
     {:ok, response} = GodwokenRPC.fetch_l1_block(block_number)
     header = response["header"]
@@ -74,6 +75,7 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
       |> Enum.with_index()
       |> Enum.each(fn {output, index} ->
         if output["lock"]["code_hash"] == deposition_lock.code_hash &&
+          output["lock"]["hash_type"] == deposition_lock.hash_type &&
              String.starts_with?(output["lock"]["args"], deposition_lock.args) do
           parse_lock_args_and_bind(
             output,
@@ -81,6 +83,17 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
             tx["hash"],
             tx["outputs_data"] |> Enum.at(index),
             index
+          )
+        end
+
+        if output["lock"]["code_hash"] == withdrawal_lock.code_hash &&
+           output["lock"]["hash_type"] == withdrawal_lock.hash_type &&
+             String.starts_with?(output["lock"]["args"], withdrawal_lock.args) do
+          parse_withdrawal_lock_args_and_save(
+            block_number,
+            tx["hash"],
+            index,
+            output["lock"]["args"]
           )
         end
       end)
@@ -93,6 +106,29 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
     })
 
     {:ok, block_number + 1}
+  end
+
+  defp parse_withdrawal_lock_args_and_save(block_number, tx_hash, index, args) do
+    {
+      l2_script_hash,
+      {l2_block_hash, l2_block_number},
+      {sudt_script_hash, sell_amount, sell_capacity},
+      owner_lock_hash,
+      payment_lock_hash
+    } = parse_withdrawal_lock_args(args)
+    WithdrawalHistory.create(%{
+      layer1_block_number: block_number,
+      layer1_tx_hash: tx_hash,
+      layer1_output_index: index,
+      l2_script_hash: l2_script_hash,
+      block_hash: l2_block_hash,
+      block_number: l2_block_number,
+      udt_script_hash: sudt_script_hash,
+      sell_amount: sell_amount |> parse_le_number,
+      sell_capacity: sell_capacity |> parse_le_number,
+      owner_lock_hash: owner_lock_hash,
+      payment_lock_hash: payment_lock_hash
+    })
   end
 
   defp parse_lock_args_and_bind(output, l1_block_number, tx_hash, output_data, index) do
