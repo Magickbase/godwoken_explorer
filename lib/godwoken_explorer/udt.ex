@@ -26,6 +26,7 @@ defmodule GodwokenExplorer.UDT do
     udt
     |> cast(attrs, [:id, :name, :symbol, :decimal, :icon, :supply, :type_script, :script_hash])
     |> validate_required([:id, :script_hash])
+    |> unique_constraint(:id, name: :udts_pkey)
   end
 
   def find_or_create_by(attrs) do
