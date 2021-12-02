@@ -22,11 +22,23 @@ defmodule GodwokenExplorer.WithdrawalHistory do
     withdrawal_history
     |> cast(attrs, [:layer1_block_number, :layer1_tx_hash, :layer1_output_index, :l2_script_hash, :block_hash, :block_number, :udt_script_hash, :sell_amount, :sell_capacity, :owner_lock_hash, :payment_lock_hash])
     |> validate_required([:layer1_block_number, :layer1_tx_hash, :layer1_output_index, :l2_script_hash, :block_hash, :block_number, :udt_script_hash, :sell_amount, :sell_capacity, :owner_lock_hash, :payment_lock_hash])
+    |> unique_constraint([:layer1_tx_hash, :layer1_block_number, :layer1_output_index])
   end
 
-  def create(attrs) do
-    %__MODULE__{}
+  def create_or_update_history!(attrs) do
+    case Repo.get_by(__MODULE__, layer1_tx_hash: attrs[:layer1_tx_hash], layer1_block_number: attrs[:layer1_block_number], layer1_output_index: attrs[:layer1_output_index]) do
+      nil -> %__MODULE__{}
+      history -> history
+    end
     |> changeset(attrs)
-    |> Repo.insert
+    |> Repo.insert_or_update!()
+  end
+
+  def rollback!(layer1_block_number) do
+    from(w in WithdrawalHistory, where: w.layer1_block_number == ^layer1_block_number)
+    |> Repo.all()
+    |> Enum.each(fn history ->
+      Repo.delete!(history)
+    end)
   end
 end

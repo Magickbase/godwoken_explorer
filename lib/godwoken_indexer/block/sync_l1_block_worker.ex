@@ -63,6 +63,7 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
       Repo.transaction(fn ->
         Block.reset_layer1_bind_info!(check_info.tip_block_number)
         DepositHistory.rollback!(check_info.tip_block_number)
+        WithdrawalHistory.rollback!(check_info.tip_block_number)
         CheckInfo.rollback!(check_info)
       end)
 
@@ -93,7 +94,7 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
             block_number,
             tx["hash"],
             index,
-            output["lock"]["args"]
+            output["lock"]["args"] |> String.slice(2..-1)
           )
         end
       end)
@@ -116,18 +117,18 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
       owner_lock_hash,
       payment_lock_hash
     } = parse_withdrawal_lock_args(args)
-    WithdrawalHistory.create(%{
+    WithdrawalHistory.create_or_update_history!(%{
       layer1_block_number: block_number,
       layer1_tx_hash: tx_hash,
       layer1_output_index: index,
-      l2_script_hash: l2_script_hash,
-      block_hash: l2_block_hash,
+      l2_script_hash: "0x" <> l2_script_hash,
+      block_hash: "0x" <> l2_block_hash,
       block_number: l2_block_number,
-      udt_script_hash: sudt_script_hash,
+      udt_script_hash: "0x" <> sudt_script_hash,
       sell_amount: sell_amount |> parse_le_number,
-      sell_capacity: sell_capacity |> parse_le_number,
-      owner_lock_hash: owner_lock_hash,
-      payment_lock_hash: payment_lock_hash
+      sell_capacity: sell_capacity,
+      owner_lock_hash: "0x" <> owner_lock_hash,
+      payment_lock_hash: "0x" <> payment_lock_hash
     })
   end
 
@@ -171,7 +172,7 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
       end
 
       with {:ok, udt_id} <- Account.find_or_create_udt_account!(udt_script, udt_script_hash) do
-        DepositHistory.create!(%{
+        DepositHistory.create_or_update_history!(%{
           layer1_block_number: l1_block_number,
           layer1_tx_hash: tx_hash,
           udt_id: udt_id,

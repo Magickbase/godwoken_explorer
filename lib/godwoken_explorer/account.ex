@@ -1,7 +1,7 @@
 defmodule GodwokenExplorer.Account do
   use GodwokenExplorer, :schema
 
-  import GodwokenRPC.Util, only: [script_to_hash: 1, hex_to_number: 1]
+  import GodwokenRPC.Util, only: [script_to_hash: 1]
 
   require Logger
 
