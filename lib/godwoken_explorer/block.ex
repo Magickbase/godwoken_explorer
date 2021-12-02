@@ -239,6 +239,7 @@ defmodule GodwokenExplorer.Block do
 
   def reset_layer1_bind_info!(layer1_block_number) do
     from(b in Block, where: b.layer1_block_number == ^layer1_block_number)
+    |> Repo.all()
     |> Enum.each(fn block ->
       Ecto.Changeset.change(block, %{
         layer1_block_number: nil,

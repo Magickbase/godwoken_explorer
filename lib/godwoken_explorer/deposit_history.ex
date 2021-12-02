@@ -28,6 +28,7 @@ defmodule GodwokenExplorer.DepositHistory do
 
   def rollback!(layer1_block_number) do
     from(d in DepositHistory, where: d.layer1_block_number == ^layer1_block_number)
+    |> Repo.all()
     |> Enum.each(fn history ->
       exist_count = from(d in DepositHistory, where: d.script_hash == ^history.script_hash) |> Repo.aggregate(:count)
       account = Repo.get_by(Account, script_hash: history.scrript_hash)
