@@ -149,7 +149,6 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
       end
     end)
   end
-  end
 
   defp parse_udt_script(output, output_data) do
     case Map.get(output, "type") do
