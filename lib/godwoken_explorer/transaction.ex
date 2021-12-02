@@ -177,6 +177,8 @@ defmodule GodwokenExplorer.Transaction do
       on: a2.id == t.from_account_id,
       join: a3 in Account,
       on: a3.id == t.to_account_id,
+      join: p in Polyjuice,
+      on: p.tx_hash == t.hash,
       where: t.from_account_id == ^account_id or t.to_account_id == ^account_id,
       select: %{
         hash: t.hash,
@@ -190,8 +192,12 @@ defmodule GodwokenExplorer.Transaction do
               CASE WHEN a3.type = 'user' THEN encode(a3.eth_address, 'escape')
                  WHEN a3.type = 'polyjuice_contract' THEN encode(a3.short_address, 'escape')
                  ELSE a3.id::text END"),
-        type: t.type
-      },
+        type: t.type,
+        gas_price: p.gas_price,
+        gas_used: p.gas_used,
+        gas_limit: p.gas_limit,
+        value: p.value
+    },
       order_by: [desc: t.inserted_at]
     )
   end
