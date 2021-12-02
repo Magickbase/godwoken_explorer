@@ -30,7 +30,7 @@ defmodule GodwokenExplorer.UDT do
   end
 
   def find_or_create_by(attrs) do
-    case Repo.get_by(__MODULE__, %{script_hash: attrs[:script_hash], id: attrs[:id]}) do
+    case Repo.get(__MODULE__, attrs[:id]) do
       nil ->
         %__MODULE__{}
         |> changeset(attrs)
