@@ -175,7 +175,7 @@ defmodule GodwokenIndexer.Block.TempSyncL1BlockWorker do
 
   defp schedule_work(start_block_number) do
     second =
-      Application.get_env(:godwoken_explorer, :sync_deposition_worker_interval) ||
+      Application.get_env(:godwoken_explorer, :temp_sync_deposition_worker_interval) ||
         @default_worker_interval
 
     Process.send_after(self(), {:bind_deposit_work, start_block_number}, second * 1000)
