@@ -255,15 +255,19 @@ defmodule GodwokenExplorer.Account do
 
   def find_or_create_udt_account!(udt_script, udt_script_hash) do
     case Repo.get_by(UDT, script_hash: udt_script_hash) do
-      %UDT{id: id} -> {:ok, id}
+      %UDT{id: id} ->
+        {:ok, id}
+
       nil ->
         udt_code_hash = Application.get_env(:godwoken_explorer, :udt_code_hash)
         rollup_script_hash = Application.get_env(:godwoken_explorer, :rollup_script_hash)
+
         account_script = %{
           "code_hash" => udt_code_hash,
           "hash_type" => "type",
           "args" => rollup_script_hash <> String.slice(udt_script_hash, 2..-1)
         }
+
         l2_udt_script_hash = script_to_hash(account_script)
         short_address = String.slice(l2_udt_script_hash, 0, 42)
 
@@ -271,7 +275,7 @@ defmodule GodwokenExplorer.Account do
           {:error, nil} ->
             {:error, nil}
 
-          {:ok, udt_account_id}->
+          {:ok, udt_account_id} ->
             {:ok, _udt} =
               UDT.find_or_create_by(%{
                 id: udt_account_id,
@@ -301,6 +305,27 @@ defmodule GodwokenExplorer.Account do
         script_hash = GodwokenRPC.fetch_script_hash(%{short_address: short_address})
         account_id = script_hash |> GodwokenRPC.fetch_account_id() |> elem(1)
         {:ok, account_id}
+    end
+  end
+
+  def find_by_ckb_args(ckb_args) do
+    case Repo.get_by(Account,
+           script: %{
+             code_hash: Application.get_env(:godwoken_explorer, :layer2_lock_code_hash),
+             hash_type: "type",
+             args:
+               Application.get_env(:godwoken_explorer, :rollup_script_hash) <>
+                 String.slice(ckb_args, 2..-1)
+           }
+         ) do
+      %Account{id: id} ->
+        %{type: "account", id: id}
+
+      nil ->
+        %{
+          error_code: 404,
+          message: "not found"
+        }
     end
   end
 
