@@ -6,6 +6,7 @@ use packed::GlobalState;
 use packed::L2Block;
 use packed::WitnessArgs;
 use packed::DepositLockArgs;
+use packed::WithdrawalLockArgs;
 use packed::SUDTArgs;
 use packed::SUDTArgsUnion;
 use molecule::prelude::Entity;
@@ -89,6 +90,39 @@ fn parse_deposition_lock_args(arg: String) -> (String, String) {
 }
 
 #[rustler::nif]
+fn parse_withdrawal_lock_args(arg: String) -> (String, (String, u64), (String, String, u64), String, String) {
+    let args = hex::decode(arg).unwrap();
+    let withdrawal_args = WithdrawalLockArgs::from_slice(&args[32..]).unwrap();
+    let l2_script_hash = withdrawal_args.account_script_hash();
+    let withdrawal_block_hash = withdrawal_args.withdrawal_block_hash();
+    let block_number = withdrawal_args.withdrawal_block_number();
+    let mut block_buf = [0u8; 8];
+    block_buf.copy_from_slice(block_number.as_slice());
+    let sudt_script_hash = withdrawal_args.sudt_script_hash();
+    let sell_amount = withdrawal_args.sell_amount();
+    let sell_capacity = withdrawal_args.sell_capacity();
+    let mut sell_capacity_buf = [0u8; 8];
+    sell_capacity_buf.copy_from_slice(sell_capacity.as_slice());
+    let owner_lock_hash = withdrawal_args.owner_lock_hash();
+    let payment_lock_hash = withdrawal_args.payment_lock_hash();
+
+    (
+      hex::encode(l2_script_hash.as_slice()),
+      (
+        hex::encode(withdrawal_block_hash.as_slice()),
+        u64::from_le_bytes(block_buf)
+      ),
+      (
+        hex::encode(sudt_script_hash.as_slice()),
+        hex::encode(sell_amount.as_slice()),
+        u64::from_le_bytes(sell_capacity_buf)
+      ),
+      hex::encode(owner_lock_hash.as_slice()),
+      hex::encode(payment_lock_hash.as_slice()),
+    )
+}
+
+#[rustler::nif]
 fn parse_sudt_transfer_args(arg: String) -> (String, String, String) {
     let sudt_transfer_args = hex::decode(arg).unwrap();
     let short_address = SUDTArgs::from_slice(&sudt_transfer_args).unwrap();
@@ -113,6 +147,7 @@ rustler::init!(
         parse_global_state,
         parse_witness,
         parse_deposition_lock_args,
-        parse_sudt_transfer_args
+        parse_sudt_transfer_args,
+        parse_withdrawal_lock_args
     ]
 );
