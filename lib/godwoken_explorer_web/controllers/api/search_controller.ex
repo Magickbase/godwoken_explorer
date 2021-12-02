@@ -7,25 +7,8 @@ defmodule GodwokenExplorerWeb.API.SearchController do
   def index(conn, %{"keyword" => script} = params) when byte_size(script) > 73 do
     result =
       case params["keyword"] |> String.split("_") do
-        [code_hash, hash_type, args] ->
-          account =
-            Repo.get_by(Account,
-              ckb_lock_script: %{
-                name: "secp256k1/blake160",
-                code_hash: code_hash,
-                hash_type: hash_type,
-                args: args
-              }
-            )
-
-          if is_nil(account) do
-            %{
-              error_code: 404,
-              message: "not found"
-            }
-          else
-            %{type: "account", id: account.id}
-          end
+        [_code_hash, _hash_type, args] ->
+          Account.find_by_ckb_args(args)
 
         _ ->
           %{
