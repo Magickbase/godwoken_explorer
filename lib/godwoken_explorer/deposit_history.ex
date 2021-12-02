@@ -18,12 +18,16 @@ defmodule GodwokenExplorer.DepositHistory do
     deposit_history
     |> cast(attrs, [:layer1_block_number, :layer1_tx_hash, :udt_id, :amount, :script_hash, :layer1_output_index, :ckb_lock_hash])
     |> validate_required([:layer1_block_number, :layer1_tx_hash, :udt_id, :amount, :script_hash, :layer1_output_index, :ckb_lock_hash])
+    |> unique_constraint([:layer1_tx_hash, :layer1_block_number, :layer1_output_index])
   end
 
-  def create!(attrs) do
-    %__MODULE__{}
+  def create_or_update_history!(attrs) do
+    case Repo.get_by(__MODULE__, layer1_tx_hash: attrs[:layer1_tx_hash], layer1_block_number: attrs[:layer1_block_number], layer1_output_index: attrs[:layer1_output_index]) do
+      nil -> %__MODULE__{}
+      history -> history
+    end
     |> changeset(attrs)
-    |> Repo.insert!
+    |> Repo.insert_or_update!()
   end
 
   def rollback!(layer1_block_number) do

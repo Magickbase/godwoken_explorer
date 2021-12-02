@@ -1,13 +1,13 @@
 defmodule GodwokenIndexer.Block.TempSyncL1BlockWorker do
   use GenServer
 
-  import Godwoken.MoleculeParser, only: [parse_deposition_lock_args: 1]
+  import Godwoken.MoleculeParser, only: [parse_deposition_lock_args: 1, parse_withdrawal_lock_args: 1]
   import GodwokenRPC.Util, only: [hex_to_number: 1, script_to_hash: 1, parse_le_number: 1]
 
   require Logger
 
   alias GodwkenRPC
-  alias GodwokenExplorer.{Account, CheckInfo, Repo, Block, DepositHistory, AccountUDT}
+  alias GodwokenExplorer.{Account, CheckInfo, Repo, Block, DepositHistory, AccountUDT, WithdrawalHistory}
 
   @default_worker_interval 5
 
@@ -21,7 +21,7 @@ defmodule GodwokenIndexer.Block.TempSyncL1BlockWorker do
       Application.get_env(:godwoken_explorer, :temp_init_godwoken_l1_block_number)
 
     start_block_number =
-      case Repo.get_by(CheckInfo, type: "fix_history_deposit") do
+      case Repo.get_by(CheckInfo, type: :fix_history_deposit) do
         %CheckInfo{tip_block_number: l1_block_number} when is_integer(l1_block_number) ->
           l1_block_number + 1
 
@@ -34,7 +34,7 @@ defmodule GodwokenIndexer.Block.TempSyncL1BlockWorker do
     {:ok, state}
   end
 
-  def handle_info({:bind_deposit_work, block_number}, state) do
+  def handle_info({:temp_bind_deposit_work, block_number}, state) do
     {:ok, l1_tip_number} = GodwokenRPC.fetch_l1_tip_block_nubmer()
 
     {:ok, next_block_number} =
@@ -51,17 +51,19 @@ defmodule GodwokenIndexer.Block.TempSyncL1BlockWorker do
 
   def fetch_deposition_script_and_update(block_number) do
     deposition_lock = Application.get_env(:godwoken_explorer, :deposition_lock)
+    withdrawal_lock = Application.get_env(:godwoken_explorer, :withdrawal_lock)
+    check_info = Repo.get_by(CheckInfo, type: :fix_history_deposit)
     {:ok, response} = GodwokenRPC.fetch_l1_block(block_number)
     header = response["header"]
     block_hash = header["hash"]
 
-    check_info = Repo.get_by(CheckInfo, type: :fix_history_deposit)
     if forked?(header["parent_hash"], check_info) do
       Logger.error("!!!!!!forked!!!!!!#{block_number}")
 
       Repo.transaction(fn ->
         Block.reset_layer1_bind_info!(check_info.tip_block_number)
         DepositHistory.rollback!(check_info.tip_block_number)
+        WithdrawalHistory.rollback!(check_info.tip_block_number)
         CheckInfo.rollback!(check_info)
       end)
 
@@ -74,6 +76,7 @@ defmodule GodwokenIndexer.Block.TempSyncL1BlockWorker do
       |> Enum.with_index()
       |> Enum.each(fn {output, index} ->
         if output["lock"]["code_hash"] == deposition_lock.code_hash &&
+          output["lock"]["hash_type"] == deposition_lock.hash_type &&
              String.starts_with?(output["lock"]["args"], deposition_lock.args) do
           parse_lock_args_and_bind(
             output,
@@ -81,6 +84,17 @@ defmodule GodwokenIndexer.Block.TempSyncL1BlockWorker do
             tx["hash"],
             tx["outputs_data"] |> Enum.at(index),
             index
+          )
+        end
+
+        if output["lock"]["code_hash"] == withdrawal_lock.code_hash &&
+           output["lock"]["hash_type"] == withdrawal_lock.hash_type &&
+             String.starts_with?(output["lock"]["args"], withdrawal_lock.args) do
+          parse_withdrawal_lock_args_and_save(
+            block_number,
+            tx["hash"],
+            index,
+            output["lock"]["args"] |> String.slice(2..-1)
           )
         end
       end)
@@ -93,6 +107,29 @@ defmodule GodwokenIndexer.Block.TempSyncL1BlockWorker do
     })
 
     {:ok, block_number + 1}
+  end
+
+  defp parse_withdrawal_lock_args_and_save(block_number, tx_hash, index, args) do
+    {
+      l2_script_hash,
+      {l2_block_hash, l2_block_number},
+      {sudt_script_hash, sell_amount, sell_capacity},
+      owner_lock_hash,
+      payment_lock_hash
+    } = parse_withdrawal_lock_args(args)
+    WithdrawalHistory.create_or_update_history!(%{
+      layer1_block_number: block_number,
+      layer1_tx_hash: tx_hash,
+      layer1_output_index: index,
+      l2_script_hash: "0x" <> l2_script_hash,
+      block_hash: "0x" <> l2_block_hash,
+      block_number: l2_block_number,
+      udt_script_hash: "0x" <> sudt_script_hash,
+      sell_amount: sell_amount |> parse_le_number,
+      sell_capacity: sell_capacity,
+      owner_lock_hash: "0x" <> owner_lock_hash,
+      payment_lock_hash: "0x" <> payment_lock_hash
+    })
   end
 
   defp parse_lock_args_and_bind(output, l1_block_number, tx_hash, output_data, index) do
@@ -135,7 +172,7 @@ defmodule GodwokenIndexer.Block.TempSyncL1BlockWorker do
       end
 
       with {:ok, udt_id} <- Account.find_or_create_udt_account!(udt_script, udt_script_hash) do
-        DepositHistory.create!(%{
+        DepositHistory.create_or_update_history!(%{
           layer1_block_number: l1_block_number,
           layer1_tx_hash: tx_hash,
           udt_id: udt_id,
@@ -177,7 +214,7 @@ defmodule GodwokenIndexer.Block.TempSyncL1BlockWorker do
       Application.get_env(:godwoken_explorer, :temp_sync_deposition_worker_interval) ||
         @default_worker_interval
 
-    Process.send_after(self(), {:bind_deposit_work, start_block_number}, second * 1000)
+    Process.send_after(self(), {:temp_bind_deposit_work, start_block_number}, second * 1000)
   end
 
   defp forked?(parent_hash, check_info) do
