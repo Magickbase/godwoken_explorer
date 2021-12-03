@@ -1,5 +1,5 @@
 defmodule GodwokenRPC.Block do
-  import GodwokenRPC.Util, only: [hex_to_number: 1]
+  import GodwokenRPC.Util, only: [hex_to_number: 1, timestamp_to_datetime: 1]
 
   def from_response(%{id: id, result: nil}, id_to_params) when is_map(id_to_params) do
     params = Map.fetch!(id_to_params, id)
@@ -55,8 +55,5 @@ defmodule GodwokenRPC.Block do
 
   def elixir_to_transactions(_), do: []
 
-  defp timestamp_to_datetime(timestamp) do
-      timestamp
-      |> DateTime.from_unix!(:millisecond)
-  end
+
 end

@@ -13,6 +13,11 @@ defmodule GodwokenExplorer.WithdrawalHistory do
     field :sell_amount, :decimal
     field :sell_capacity, :decimal
     field :udt_script_hash, :binary
+    field :amount, :decimal
+    field :udt_id, :integer
+    field :timestamp, :utc_datetime_usec
+    field :state, Ecto.Enum,
+      values: [:pending, :succeed]
 
     timestamps()
   end
@@ -20,8 +25,8 @@ defmodule GodwokenExplorer.WithdrawalHistory do
   @doc false
   def changeset(withdrawal_history, attrs) do
     withdrawal_history
-    |> cast(attrs, [:layer1_block_number, :layer1_tx_hash, :layer1_output_index, :l2_script_hash, :block_hash, :block_number, :udt_script_hash, :sell_amount, :sell_capacity, :owner_lock_hash, :payment_lock_hash])
-    |> validate_required([:layer1_block_number, :layer1_tx_hash, :layer1_output_index, :l2_script_hash, :block_hash, :block_number, :udt_script_hash, :sell_amount, :sell_capacity, :owner_lock_hash, :payment_lock_hash])
+    |> cast(attrs, [:layer1_block_number, :layer1_tx_hash, :layer1_output_index, :l2_script_hash, :block_hash, :block_number, :udt_script_hash, :sell_amount, :sell_capacity, :owner_lock_hash, :payment_lock_hash, :amount, :udt_id, :timestamp, :state])
+    |> validate_required([:layer1_block_number, :layer1_tx_hash, :layer1_output_index, :l2_script_hash, :block_hash, :block_number, :udt_script_hash, :sell_amount, :sell_capacity, :owner_lock_hash, :payment_lock_hash, :amount, :udt_id, :timestamp])
     |> unique_constraint([:layer1_tx_hash, :layer1_block_number, :layer1_output_index])
   end
 
@@ -40,5 +45,13 @@ defmodule GodwokenExplorer.WithdrawalHistory do
     |> Enum.each(fn history ->
       Repo.delete!(history)
     end)
+  end
+
+  def search(keyword) do
+    from(h in WithdrawalHistory,
+      where:
+        h.l2_script_hash == ^keyword or h.owner_lock_hash == ^keyword, order_by: [desc: :id]
+    )
+    |> Repo.all()
   end
 end
