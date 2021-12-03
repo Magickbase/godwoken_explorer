@@ -1,13 +1,25 @@
 defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
   use GenServer
 
-  import Godwoken.MoleculeParser, only: [parse_deposition_lock_args: 1, parse_withdrawal_lock_args: 1]
-  import GodwokenRPC.Util, only: [hex_to_number: 1, script_to_hash: 1, parse_le_number: 1]
+  import Godwoken.MoleculeParser,
+    only: [parse_deposition_lock_args: 1, parse_withdrawal_lock_args: 1]
+
+  import GodwokenRPC.Util,
+    only: [hex_to_number: 1, script_to_hash: 1, parse_le_number: 1, timestamp_to_datetime: 1]
 
   require Logger
 
   alias GodwkenRPC
-  alias GodwokenExplorer.{Account, CheckInfo, Repo, Block, DepositHistory, AccountUDT, WithdrawalHistory}
+
+  alias GodwokenExplorer.{
+    Account,
+    CheckInfo,
+    Repo,
+    Block,
+    DepositHistory,
+    AccountUDT,
+    WithdrawalHistory
+  }
 
   @default_worker_interval 5
 
@@ -57,6 +69,9 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
     header = response["header"]
     block_hash = header["hash"]
 
+    timestamp =
+      header["timestamp"] |> String.slice(2..-1) |> String.to_integer(16) |> timestamp_to_datetime
+
     if forked?(header["parent_hash"], check_info) do
       Logger.error("!!!!!!forked!!!!!!#{block_number}")
 
@@ -76,26 +91,30 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
       |> Enum.with_index()
       |> Enum.each(fn {output, index} ->
         if output["lock"]["code_hash"] == deposition_lock.code_hash &&
-          output["lock"]["hash_type"] == deposition_lock.hash_type &&
+             output["lock"]["hash_type"] == deposition_lock.hash_type &&
              String.starts_with?(output["lock"]["args"], deposition_lock.args) do
-          parse_lock_args_and_bind(
-            output,
-            block_number,
-            tx["hash"],
-            tx["outputs_data"] |> Enum.at(index),
-            index
-          )
+          parse_lock_args_and_bind(%{
+            output: output,
+            index: index,
+            block_number: block_number,
+            timestamp: timestamp,
+            tx_hash: tx["hash"],
+            output_data: tx["outputs_data"] |> Enum.at(index)
+          })
         end
 
         if output["lock"]["code_hash"] == withdrawal_lock.code_hash &&
-           output["lock"]["hash_type"] == withdrawal_lock.hash_type &&
+             output["lock"]["hash_type"] == withdrawal_lock.hash_type &&
              String.starts_with?(output["lock"]["args"], withdrawal_lock.args) do
-          parse_withdrawal_lock_args_and_save(
-            block_number,
-            tx["hash"],
-            index,
-            output["lock"]["args"] |> String.slice(2..-1)
-          )
+          parse_withdrawal_lock_args_and_save(%{
+            block_number: block_number,
+            tx_hash: tx["hash"],
+            index: index,
+            args: output["lock"]["args"] |> String.slice(2..-1),
+            timestamp: timestamp,
+            output_data: tx["outputs_data"] |> Enum.at(index),
+            output: output
+          })
         end
       end)
     end)
@@ -109,7 +128,16 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
     {:ok, block_number + 1}
   end
 
-  defp parse_withdrawal_lock_args_and_save(block_number, tx_hash, index, args) do
+  defp parse_withdrawal_lock_args_and_save(
+    %{
+      block_number: block_number,
+      tx_hash: tx_hash,
+      index: index,
+      args: args,
+      timestamp: timestamp,
+      output_data: output_data,
+      output: output
+    }) do
     {
       l2_script_hash,
       {l2_block_hash, l2_block_number},
@@ -117,22 +145,35 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
       owner_lock_hash,
       payment_lock_hash
     } = parse_withdrawal_lock_args(args)
-    WithdrawalHistory.create_or_update_history!(%{
-      layer1_block_number: block_number,
-      layer1_tx_hash: tx_hash,
-      layer1_output_index: index,
-      l2_script_hash: "0x" <> l2_script_hash,
-      block_hash: "0x" <> l2_block_hash,
-      block_number: l2_block_number,
-      udt_script_hash: "0x" <> sudt_script_hash,
-      sell_amount: sell_amount |> parse_le_number,
-      sell_capacity: sell_capacity,
-      owner_lock_hash: "0x" <> owner_lock_hash,
-      payment_lock_hash: "0x" <> payment_lock_hash
-    })
+    {udt_script, udt_script_hash, amount} = parse_udt_script(output, output_data)
+    with {:ok, udt_id} <- Account.find_or_create_udt_account!(udt_script, udt_script_hash) do
+      WithdrawalHistory.create_or_update_history!(%{
+        layer1_block_number: block_number,
+        layer1_tx_hash: tx_hash,
+        layer1_output_index: index,
+        l2_script_hash: "0x" <> l2_script_hash,
+        block_hash: "0x" <> l2_block_hash,
+        block_number: l2_block_number,
+        udt_script_hash: "0x" <> sudt_script_hash,
+        sell_amount: sell_amount |> parse_le_number,
+        sell_capacity: sell_capacity,
+        owner_lock_hash: "0x" <> owner_lock_hash,
+        payment_lock_hash: "0x" <> payment_lock_hash,
+        timestamp: timestamp,
+        udt_id: udt_id,
+        amount: amount
+      })
+    end
   end
 
-  defp parse_lock_args_and_bind(output, l1_block_number, tx_hash, output_data, index) do
+  defp parse_lock_args_and_bind(%{
+    output: output,
+    block_number: l1_block_number,
+    index: index,
+    timestamp: timestamp,
+    tx_hash: tx_hash,
+    output_data: output_data
+  }) do
     [script_hash, l1_lock_hash] = parse_lock_args(output["lock"]["args"])
     {udt_script, udt_script_hash, amount} = parse_udt_script(output, output_data)
     {:ok, account_id} = GodwokenRPC.fetch_account_id(script_hash)
@@ -175,11 +216,12 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
         DepositHistory.create_or_update_history!(%{
           layer1_block_number: l1_block_number,
           layer1_tx_hash: tx_hash,
+          layer1_output_index: index,
+          timestamp: timestamp,
           udt_id: udt_id,
           amount: amount,
           ckb_lock_hash: l1_lock_hash,
-          script_hash: script_hash,
-          layer1_output_index: index
+          script_hash: script_hash
         })
 
         AccountUDT.sync_balance!(account_id, udt_id)

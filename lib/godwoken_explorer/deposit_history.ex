@@ -9,6 +9,7 @@ defmodule GodwokenExplorer.DepositHistory do
     field :layer1_tx_hash, :binary
     field :layer1_output_index, :integer
     field :ckb_lock_hash, :binary
+    field :timestamp, :utc_datetime_usec
 
     timestamps()
   end
@@ -16,8 +17,8 @@ defmodule GodwokenExplorer.DepositHistory do
   @doc false
   def changeset(deposit_history, attrs) do
     deposit_history
-    |> cast(attrs, [:layer1_block_number, :layer1_tx_hash, :udt_id, :amount, :script_hash, :layer1_output_index, :ckb_lock_hash])
-    |> validate_required([:layer1_block_number, :layer1_tx_hash, :udt_id, :amount, :script_hash, :layer1_output_index, :ckb_lock_hash])
+    |> cast(attrs, [:layer1_block_number, :layer1_tx_hash, :udt_id, :amount, :script_hash, :layer1_output_index, :ckb_lock_hash, :timestamp])
+    |> validate_required([:layer1_block_number, :layer1_tx_hash, :udt_id, :amount, :script_hash, :layer1_output_index, :ckb_lock_hash, :timestamp])
     |> unique_constraint([:layer1_tx_hash, :layer1_block_number, :layer1_output_index])
   end
 
