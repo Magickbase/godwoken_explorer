@@ -19,6 +19,8 @@ defmodule GodwokenExplorer.WithdrawalHistory do
     field :state, Ecto.Enum,
       values: [:pending, :succeed]
 
+    belongs_to(:udt, UDT, foreign_key: :udt_id, references: :id, define_field: false)
+
     timestamps()
   end
 
