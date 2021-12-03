@@ -42,7 +42,7 @@ config :godwoken_explorer, GodwokenExplorer.Repo,
 config :godwoken_explorer,
   json_rpc_named_arguments: [
     http: GodwokenRPC.HTTP.HTTPoison,
-    url: "http://godwoken-testnet-web3-rpc.ckbapp.dev",
+    url: "http://localhost:8119",
     http_options: [
       recv_timeout: :timer.minutes(10),
       timeout: :timer.minutes(10)
@@ -50,7 +50,7 @@ config :godwoken_explorer,
   ],
   ckb_indexer_named_arguments: [
     http: GodwokenRPC.HTTP.HTTPoison,
-    url: "http://116.62.22.144:8116",
+    url: "http://localhost:8116",
     http_options: [
       recv_timeout: :timer.minutes(10),
       timeout: :timer.minutes(10)
@@ -58,7 +58,7 @@ config :godwoken_explorer,
   ],
   ckb_rpc_named_arguments: [
     http: GodwokenRPC.HTTP.HTTPoison,
-    url: "http://116.62.22.144:8114",
+    url: "http://localhost:8114",
     http_options: [
       recv_timeout: :timer.minutes(10),
       timeout: :timer.minutes(10)
@@ -67,10 +67,26 @@ config :godwoken_explorer,
 
 config :ethereumex,
   client_type: :http,
-  url: "http://godwoken-testnet-web3-rpc.ckbapp.dev"
+  url: "http://localhost:8119"
 
 config :godwoken_explorer,
   sync_worker_interval: 1,
   global_state_worker_interval: 30,
   bind_l1_worker_interval: 10,
   sync_deposition_worker_interval: 5
+
+config :sentry,
+  dsn: "",
+  environment_name: "",
+  enable_source_code_context: true,
+  root_source_code_path: File.cwd!(),
+  tags: %{
+    env: ""
+  },
+  included_environments: [""]
+
+config :appsignal, :config,
+  otp_app: :godwoken_explorer,
+  name: "godwoken_explorer",
+  push_api_key: "",
+  env: Mix.env
