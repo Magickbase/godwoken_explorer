@@ -178,7 +178,19 @@ defmodule GodwokenRPC do
         {:ok, gas_used}
 
       _ ->
-        Logger.error(fn -> ["Failed to fetch tx receipt: ", tx_hash] end)
+        Logger.error("Failed to fetch tx receipt: #{tx_hash}")
+        {:error, 0}
+    end
+  end
+
+  def fetch_cells(script, script_type) do
+    options = Application.get_env(:godwoken_explorer, :json_rpc_named_arguments)
+
+    case FetchedCells.request(script, script_type) |> HTTP.json_rpc(options) do
+      {:ok, response} -> {:ok, response}
+
+      _ ->
+        Logger.error("Failed to fetch cells: #{inspect(script)}")
         {:error, 0}
     end
   end

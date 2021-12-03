@@ -3,9 +3,7 @@ defmodule GodwokenIndexer.Block.GlobalStateWorker do
 
   import Godwoken.MoleculeParser, only: [parse_global_state: 1]
 
-  alias GodwokenRPC.CKBIndexer.FetchedCells
   alias GodwokenExplorer.{Block, Account}
-  alias GodwokenRPC.HTTP
 
   @default_worker_interval 40
 
@@ -40,11 +38,9 @@ defmodule GodwokenIndexer.Block.GlobalStateWorker do
   end
 
   defp fetch_global_state_info do
-    options = Application.get_env(:godwoken_explorer, :ckb_indexer_named_arguments)
     rollup_cell_type = Application.get_env(:godwoken_explorer, :rollup_cell_type)
 
-    with {:ok, response} <-
-           FetchedCells.request(rollup_cell_type, "type") |> HTTP.json_rpc(options),
+    with {:ok, response} <- GodwokenRPC.fetch_cells(rollup_cell_type, "type"),
          %{"output_data" => "0x" <> global_state} <- response["objects"] |> List.first() do
       {
         latest_finalized_block_number,
