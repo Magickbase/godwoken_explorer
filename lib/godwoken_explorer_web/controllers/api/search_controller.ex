@@ -3,26 +3,6 @@ defmodule GodwokenExplorerWeb.API.SearchController do
 
   alias GodwokenExplorer.{Repo, Account, Block, Transaction}
 
-  # 0x0000000000000000000000000000000000000000000000000000000000000001_data_0x06820f679f7c9c6e399dcb25ab88a5babaf7d5db
-  def index(conn, %{"keyword" => script} = params) when byte_size(script) > 73 do
-    result =
-      case params["keyword"] |> String.split("_") do
-        [_code_hash, _hash_type, args] ->
-          Account.find_by_ckb_args(args)
-
-        _ ->
-          %{
-            error_code: 404,
-            message: "not found"
-          }
-      end
-
-    json(
-      conn,
-      result
-    )
-  end
-
   def index(conn, %{"keyword" => "0x" <> _} = params) do
     downcase_keyword = String.downcase(params["keyword"])
 
