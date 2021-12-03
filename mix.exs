@@ -81,7 +81,12 @@ defmodule GodwokenExplorer.MixProject do
 
       # web3 tool
       {:exw3, "~> 0.6"},
+
+      # database_history
       {:ex_audit, "~> 0.9"},
+
+      # jsonapi
+      {:jsonapi, "~> 1.3.0"},
 
       # test
       {:ex_machina, "~> 2.7.0", only: :test},
