@@ -308,27 +308,6 @@ defmodule GodwokenExplorer.Account do
     end
   end
 
-  def find_by_ckb_args(ckb_args) do
-    case Repo.get_by(Account,
-           script: %{
-             code_hash: Application.get_env(:godwoken_explorer, :layer2_lock_code_hash),
-             hash_type: "type",
-             args:
-               Application.get_env(:godwoken_explorer, :rollup_script_hash) <>
-                 String.slice(ckb_args, 2..-1)
-           }
-         ) do
-      %Account{id: id} ->
-        %{type: "account", id: id}
-
-      nil ->
-        %{
-          error_code: 404,
-          message: "not found"
-        }
-    end
-  end
-
   def switch_account_type(code_hash, args) do
     polyjuice_code_hash = Application.get_env(:godwoken_explorer, :polyjuice_validator_code_hash)
     layer2_lock_code_hash = Application.get_env(:godwoken_explorer, :layer2_lock_code_hash)
