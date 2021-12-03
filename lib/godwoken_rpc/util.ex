@@ -98,6 +98,11 @@ defmodule GodwokenRPC.Util do
     end)
   end
 
+  def timestamp_to_datetime(timestamp) do
+      timestamp
+      |> DateTime.from_unix!(:millisecond)
+  end
+
   defp serialized_args(args) do
     header = <<args |> String.length() |> Kernel.div(2)::32-little>> |> Base.encode16()
     "0x" <> header <> args
