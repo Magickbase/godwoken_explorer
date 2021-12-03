@@ -253,7 +253,7 @@ defmodule GodwokenExplorer.Account do
     end
   end
 
-  def find_or_create_udt_account!(udt_script, udt_script_hash) do
+  def find_or_create_udt_account!(udt_script, udt_script_hash, l1_block_number \\ 0, tip_block_number \\ 0) do
     case Repo.get_by(UDT, script_hash: udt_script_hash) do
       %UDT{id: id} ->
         {:ok, id}
@@ -272,6 +272,10 @@ defmodule GodwokenExplorer.Account do
         short_address = String.slice(l2_udt_script_hash, 0, 42)
 
         case GodwokenRPC.fetch_account_id(l2_udt_script_hash) do
+          {:error, :account_slow} ->
+            if l1_block_number + 100 > tip_block_number do
+              raise "account may not created now at #{l1_block_number}"
+            end
           {:error, nil} ->
             {:error, nil}
 
