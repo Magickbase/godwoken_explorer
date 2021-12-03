@@ -35,7 +35,7 @@ defmodule GodwokenExplorer.DepositHistory do
     |> Repo.all()
     |> Enum.each(fn history ->
       exist_count = from(d in DepositHistory, where: d.script_hash == ^history.script_hash) |> Repo.aggregate(:count)
-      account = Repo.get_by(Account, script_hash: history.scrript_hash)
+      account = Repo.get_by(Account, script_hash: history.script_hash)
       if exist_count == 1 do
         Repo.delete!(account)
       else
