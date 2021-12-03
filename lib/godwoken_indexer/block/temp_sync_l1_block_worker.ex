@@ -1,13 +1,24 @@
 defmodule GodwokenIndexer.Block.TempSyncL1BlockWorker do
   use GenServer
 
-  import Godwoken.MoleculeParser, only: [parse_deposition_lock_args: 1, parse_withdrawal_lock_args: 1]
+  import Godwoken.MoleculeParser,
+    only: [parse_deposition_lock_args: 1, parse_withdrawal_lock_args: 1]
+
   import GodwokenRPC.Util, only: [hex_to_number: 1, script_to_hash: 1, parse_le_number: 1]
 
   require Logger
 
   alias GodwkenRPC
-  alias GodwokenExplorer.{Account, CheckInfo, Repo, Block, DepositHistory, AccountUDT, WithdrawalHistory}
+
+  alias GodwokenExplorer.{
+    Account,
+    CheckInfo,
+    Repo,
+    Block,
+    DepositHistory,
+    AccountUDT,
+    WithdrawalHistory
+  }
 
   @default_worker_interval 5
 
@@ -39,7 +50,7 @@ defmodule GodwokenIndexer.Block.TempSyncL1BlockWorker do
 
     {:ok, next_block_number} =
       if block_number <= l1_tip_number do
-        {:ok, _new_block_number} = fetch_deposition_script_and_update(block_number)
+        {:ok, _new_block_number} = fetch_deposition_script_and_update(block_number, l1_tip_number)
       else
         {:ok, block_number}
       end
@@ -49,7 +60,7 @@ defmodule GodwokenIndexer.Block.TempSyncL1BlockWorker do
     {:noreply, state}
   end
 
-  def fetch_deposition_script_and_update(block_number) do
+  def fetch_deposition_script_and_update(block_number, tip_block_number) do
     deposition_lock = Application.get_env(:godwoken_explorer, :deposition_lock)
     withdrawal_lock = Application.get_env(:godwoken_explorer, :withdrawal_lock)
     check_info = Repo.get_by(CheckInfo, type: :fix_history_deposit)
@@ -76,19 +87,20 @@ defmodule GodwokenIndexer.Block.TempSyncL1BlockWorker do
       |> Enum.with_index()
       |> Enum.each(fn {output, index} ->
         if output["lock"]["code_hash"] == deposition_lock.code_hash &&
-          output["lock"]["hash_type"] == deposition_lock.hash_type &&
+             output["lock"]["hash_type"] == deposition_lock.hash_type &&
              String.starts_with?(output["lock"]["args"], deposition_lock.args) do
           parse_lock_args_and_bind(
             output,
             block_number,
             tx["hash"],
             tx["outputs_data"] |> Enum.at(index),
-            index
+            index,
+            tip_block_number
           )
         end
 
         if output["lock"]["code_hash"] == withdrawal_lock.code_hash &&
-           output["lock"]["hash_type"] == withdrawal_lock.hash_type &&
+             output["lock"]["hash_type"] == withdrawal_lock.hash_type &&
              String.starts_with?(output["lock"]["args"], withdrawal_lock.args) do
           parse_withdrawal_lock_args_and_save(
             block_number,
@@ -117,6 +129,7 @@ defmodule GodwokenIndexer.Block.TempSyncL1BlockWorker do
       owner_lock_hash,
       payment_lock_hash
     } = parse_withdrawal_lock_args(args)
+
     WithdrawalHistory.create_or_update_history!(%{
       layer1_block_number: block_number,
       layer1_tx_hash: tx_hash,
@@ -132,59 +145,77 @@ defmodule GodwokenIndexer.Block.TempSyncL1BlockWorker do
     })
   end
 
-  defp parse_lock_args_and_bind(output, l1_block_number, tx_hash, output_data, index) do
+  defp parse_lock_args_and_bind(
+         output,
+         l1_block_number,
+         tx_hash,
+         output_data,
+         index,
+         tip_block_number
+       ) do
     [script_hash, l1_lock_hash] = parse_lock_args(output["lock"]["args"])
     {udt_script, udt_script_hash, amount} = parse_udt_script(output, output_data)
-    {:ok, account_id} = GodwokenRPC.fetch_account_id(script_hash)
-    nonce = GodwokenRPC.fetch_nonce(account_id)
-    short_address = String.slice(script_hash, 0, 42)
-    script = GodwokenRPC.fetch_script(script_hash)
-    type = Account.switch_account_type(script["code_hash"], script["args"])
-    eth_address = Account.script_to_eth_adress(type, script["args"])
-    parsed_script = Account.add_name_to_polyjuice_script(type, script)
 
-    Repo.transaction(fn ->
-      case Repo.get_by(Account, script_hash: script_hash) do
-        %Account{id: id} ->
-          if id != account_id do
-            Logger.error(
-              "Account id is changed!!!!old id:#{id}, new id: #{account_id}, script_hash: #{script_hash}"
-            )
+    case GodwokenRPC.fetch_account_id(script_hash) do
+      {:error, :account_slow} ->
+        if l1_block_number + 100 > tip_block_number do
+          raise "account may not created now at #{l1_block_number}:#{tx_hash}:#{index}"
+        end
+
+      {:ok, account_id} ->
+        nonce = GodwokenRPC.fetch_nonce(account_id)
+        short_address = String.slice(script_hash, 0, 42)
+        script = GodwokenRPC.fetch_script(script_hash)
+        type = Account.switch_account_type(script["code_hash"], script["args"])
+        eth_address = Account.script_to_eth_adress(type, script["args"])
+        parsed_script = Account.add_name_to_polyjuice_script(type, script)
+
+        Repo.transaction(fn ->
+          case Repo.get_by(Account, script_hash: script_hash) do
+            %Account{id: id} ->
+              if id != account_id do
+                Logger.error(
+                  "Account id is changed!!!!old id:#{id}, new id: #{account_id}, script_hash: #{script_hash}"
+                )
+              end
+
+              Account.create_or_update_account!(%{
+                id: account_id,
+                script_hash: script_hash,
+                nonce: nonce
+              })
+
+            nil ->
+              Account.create_or_update_account!(%{
+                id: account_id,
+                script: parsed_script,
+                script_hash: script_hash,
+                short_address: short_address,
+                type: type,
+                nonce: nonce,
+                eth_address: eth_address,
+                ckb_lock_hash: l1_lock_hash
+              })
           end
 
-          Account.create_or_update_account!(%{
-            id: account_id,
-            script_hash: script_hash,
-            nonce: nonce
-          })
+          with {:ok, udt_id} <- Account.find_or_create_udt_account!(udt_script, udt_script_hash) do
+            DepositHistory.create_or_update_history!(%{
+              layer1_block_number: l1_block_number,
+              layer1_tx_hash: tx_hash,
+              udt_id: udt_id,
+              amount: amount,
+              ckb_lock_hash: l1_lock_hash,
+              script_hash: script_hash,
+              layer1_output_index: index
+            })
 
-        nil ->
-          Account.create_or_update_account!(%{
-            id: account_id,
-            script: parsed_script,
-            script_hash: script_hash,
-            short_address: short_address,
-            type: type,
-            nonce: nonce,
-            eth_address: eth_address,
-            ckb_lock_hash: l1_lock_hash
-          })
-      end
+            AccountUDT.sync_balance!(account_id, udt_id)
+          end
+        end)
 
-      with {:ok, udt_id} <- Account.find_or_create_udt_account!(udt_script, udt_script_hash) do
-        DepositHistory.create_or_update_history!(%{
-          layer1_block_number: l1_block_number,
-          layer1_tx_hash: tx_hash,
-          udt_id: udt_id,
-          amount: amount,
-          ckb_lock_hash: l1_lock_hash,
-          script_hash: script_hash,
-          layer1_output_index: index
-        })
-
-        AccountUDT.sync_balance!(account_id, udt_id)
-      end
-    end)
+      {:error, _} ->
+        raise "Connect node error for #{l1_block_number}:#{tx_hash}:#{index}"
+    end
   end
 
   defp parse_udt_script(output, output_data) do
