@@ -27,7 +27,7 @@ defmodule GodwokenExplorer.MixProject do
   def application do
     [
       mod: {GodwokenExplorer.Application, []},
-      extra_applications: [:logger, :runtime_tools, :os_mon]
+      extra_applications: [:retry, :logger, :runtime_tools, :os_mon]
     ]
   end
 
@@ -90,6 +90,7 @@ defmodule GodwokenExplorer.MixProject do
 
       {:appsignal_phoenix, "~> 2.0"},
       {:appsignal, "~> 2.0"},
+      {:retry, "~> 0.15"},
 
       # test
       {:ex_machina, "~> 2.7.0", only: :test},
