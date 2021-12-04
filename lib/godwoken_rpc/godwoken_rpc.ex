@@ -5,7 +5,7 @@ defmodule GodwokenRPC do
 
   alias GodwokenRPC.{Blocks, Block, HTTP}
   alias GodwokenRPC.Transaction.FetchedReceipt
-  alias GodwokenRPC.CKBIndexer.{FetchedTransactions, FetchedTransaction, FetchedTip, FetchedBlock}
+  alias GodwokenRPC.CKBIndexer.{FetchedTransactions, FetchedTransaction, FetchedTip, FetchedBlock, FetchedLiveCell, FetchedCells}
 
   alias GodwokenRPC.Account.{
     FetchedAccountID,
@@ -192,6 +192,19 @@ defmodule GodwokenRPC do
       _ ->
         Logger.error("Failed to fetch cells: #{inspect(script)}")
         {:error, 0}
+    end
+  end
+
+  def fetch_live_cell(index, tx_hash) do
+    rpc_options = Application.get_env(:godwoken_explorer, :ckb_rpc_named_arguments)
+
+    case FetchedLiveCell.request(index, tx_hash) |> HTTP.json_rpc(rpc_options) do
+      {:ok, response} ->
+        {:ok, response["status"] == "live"}
+
+      {:error, msg} ->
+        Logger.error("Failed to request live cell: #{tx_hash}:#{index} for #{inspect(msg)}")
+        {:error, :node_error}
     end
   end
 
