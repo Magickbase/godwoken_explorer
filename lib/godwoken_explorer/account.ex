@@ -348,4 +348,18 @@ defmodule GodwokenExplorer.Account do
       script
     end
   end
+
+  def display_id(id) do
+    case Repo.get(Account, id) do
+      %Account{type: type, eth_address: eth_address, short_address: short_address} ->
+        cond do
+          type == :user -> eth_address
+          type == :polyjuice_contract -> short_address
+          type == :polyjuice_root -> "deploy contract"
+          true -> id
+        end
+      nil ->
+        nil
+    end
+  end
 end
