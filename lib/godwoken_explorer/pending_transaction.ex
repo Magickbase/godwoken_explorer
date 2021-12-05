@@ -8,6 +8,8 @@ defmodule GodwokenExplorer.PendingTransaction do
     field :from_account_id, :integer
     field :nonce, :integer
     field :to_account_id, :integer
+    field :type, Ecto.Enum, values: [:sudt, :polyjuice_creator, :polyjuice]
+    field :parsed_args, :map
 
     timestamps()
   end
