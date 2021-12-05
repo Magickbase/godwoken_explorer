@@ -30,7 +30,7 @@ defmodule GodwokenExplorer.WithdrawalHistoryView do
         after
           result -> result
         else
-          error -> {:ok, true}
+          _error -> {:ok, true}
         end
 
         if !elem(result, 1) do
