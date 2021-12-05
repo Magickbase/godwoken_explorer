@@ -3,7 +3,7 @@ defmodule GodwokenExplorerWeb.API.TransactionController do
 
   import GodwokenRPC.Util, only: [stringify_and_unix_maps: 1]
 
-  alias GodwokenExplorer.{Transaction, Account, Repo, Polyjuice}
+  alias GodwokenExplorer.{Transaction, Account, Repo, Polyjuice, PendingTransaction}
 
   def index(conn, %{"eth_address" => "0x" <> _} = params) do
     %Account{id: account_id} = Account.search(String.downcase(params["eth_address"]))
@@ -19,14 +19,41 @@ defmodule GodwokenExplorerWeb.API.TransactionController do
   end
 
   def show(conn, %{"hash" => "0x" <> _} = params) do
-    tx = Transaction.find_by_hash(String.downcase(params["hash"]))
+    downcased_hash = String.downcase(params["hash"])
+    tx = Transaction.find_by_hash(downcased_hash)
 
     result =
       if map_size(tx) == 0 do
-        %{
-          error_code: 404,
-          message: "not found"
-        }
+        case PendingTransaction.find_by_hash(String.downcase(params["hash"])) do
+          nil ->
+            %{
+              error_code: 404,
+              message: "not found"
+            }
+          tx = %PendingTransaction{} ->
+            base_struct = %{
+              hash: tx.hash,
+              timestamp: nil,
+              finalize_state: nil,
+              l2_block: nil,
+              l1_block: nil,
+              from: Account.display_id(tx.from_account_id),
+              to: Account.display_id(tx.to_account_id),
+              nonce: tx.nonce,
+              args: tx.args,
+              type: tx.type
+            }
+
+            if tx.type == :polyjuice do
+              Map.merge(base_struct, %{
+                gas_price: tx.parsed_args["gas_price"],
+                gas_limit: tx.parsed_args["gas_limit"],
+                value: tx.parsed_args["value"]
+              })
+            else
+              base_struct
+            end
+          end
       else
         base_struct = %{
           hash: tx.hash,

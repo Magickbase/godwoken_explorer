@@ -41,7 +41,9 @@ defmodule GodwokenRPC.Util do
       parsed_value =
         case parsed_key do
           n when n in @stringify_integer_keys -> Integer.to_string(v)
-          d when d in @stringify_decimal_keys -> Decimal.to_string(v)
+          d when d in @stringify_decimal_keys ->
+            IO.puts(d)
+            Decimal.to_string(v)
           :l1_block when not is_nil(v) -> Integer.to_string(v)
           :timestamp -> utc_to_unix(v)
           :inserted_at -> utc_to_unix(v)
@@ -101,6 +103,40 @@ defmodule GodwokenRPC.Util do
   def timestamp_to_datetime(timestamp) do
       timestamp
       |> DateTime.from_unix!(:millisecond)
+  end
+
+  def parse_polyjuice_args(hex_string) do
+    is_create = hex_string |> String.slice(14, 2) == "03"
+
+    gas_limit =
+      hex_string
+      |> String.slice(16, 16)
+      |> parse_le_number()
+
+    gas_price =
+      hex_string
+      |> String.slice(32, 32)
+      |> parse_le_number()
+
+    value =
+      hex_string
+      |> String.slice(64, 32)
+      |> parse_le_number()
+
+    input_size =
+      hex_string
+      |> String.slice(96, 8)
+      |> parse_le_number()
+
+    input = hex_string |> String.slice(104..-1)
+    [is_create, gas_limit, gas_price, value, input_size, "0x" <> input]
+  end
+
+  def transform_hash_type(hash_type) do
+    case hash_type do
+      "00" -> "data"
+      _ -> "type"
+    end
   end
 
   defp serialized_args(args) do
