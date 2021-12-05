@@ -1,8 +1,6 @@
 defmodule GodwokenExplorer.Transaction do
   use GodwokenExplorer, :schema
 
-  import Ecto.Changeset
-
   alias GodwokenExplorer.Chain.Cache.Transactions
 
   @primary_key {:hash, :binary, autogenerate: false}
@@ -12,7 +10,7 @@ defmodule GodwokenExplorer.Transaction do
     field :nonce, :integer
     field :status, Ecto.Enum, values: [:committed, :finalized], default: :committed
     field :to_account_id, :integer
-    field :type, Ecto.Enum, values: [:sudt, :polyjuice_creator, :polyjuice, :withdrawal]
+    field :type, Ecto.Enum, values: [:sudt, :polyjuice_creator, :polyjuice]
     field :block_number, :integer
     field :block_hash, :binary
 
@@ -64,16 +62,6 @@ defmodule GodwokenExplorer.Transaction do
       |> Repo.insert()
 
     PolyjuiceCreator.create_polyjuice_creator(attrs)
-    transaction
-  end
-
-  def create_transaction(%{type: :withdrawal} = attrs) do
-    transaction =
-      %Transaction{}
-      |> Transaction.changeset(attrs)
-      |> Repo.insert()
-
-    Withdrawal.create_withdrawal(attrs)
     transaction
   end
 
