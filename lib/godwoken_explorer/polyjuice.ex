@@ -1,5 +1,6 @@
 defmodule GodwokenExplorer.Polyjuice do
   use GodwokenExplorer, :schema
+  use Retry
 
   import Ecto.Changeset
 
@@ -30,9 +31,24 @@ defmodule GodwokenExplorer.Polyjuice do
   end
 
   def create_polyjuice(attrs) do
+    gas_used = retry with: constant_backoff(500) |> Stream.take(3) do
+      case GodwokenRPC.fetch_receipt(attrs[:hash]) do
+        {:ok, gas_used} ->
+          gas_used
+
+        {:error, _} ->
+          {:error, :node_error}
+      end
+    after
+      result -> result
+    else
+      _error -> nil
+    end
+
     %Polyjuice{}
     |> Polyjuice.changeset(attrs)
     |> Ecto.Changeset.put_change(:tx_hash, attrs[:hash])
+    |> Ecto.Changeset.put_change(:gas_used, gas_used)
     |> Repo.insert()
   end
 end
