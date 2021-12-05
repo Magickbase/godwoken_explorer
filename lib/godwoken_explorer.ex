@@ -21,6 +21,7 @@ defmodule GodwokenExplorer do
         Block,
         CheckInfo,
         DepositHistory,
+        PendingTransaction,
         PolyjuiceCreator,
         Polyjuice,
         Repo,
