@@ -38,9 +38,11 @@ defmodule GodwokenExplorer.PendingTransaction do
         retry with: constant_backoff(500) |> Stream.take(3) do
           case GodwokenRPC.fetch_transaction(tx_hash) do
             {:ok, response} ->
-              {:ok, tx} = response["transaction"]["raw"]
-              |> parse_raw()
-              |> create_pending_transaction()
+              {:ok, tx} =
+                response["transaction"]["raw"]
+                |> parse_raw()
+                |> Map.merge(%{hash: tx_hash})
+                |> create_pending_transaction()
 
               tx
             {:error, msg} ->
