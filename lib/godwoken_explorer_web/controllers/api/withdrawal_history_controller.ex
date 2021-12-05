@@ -1,7 +1,7 @@
 defmodule GodwokenExplorerWeb.API.WithdrawalHistoryController do
   use GodwokenExplorerWeb, :controller
 
-  alias GodwokenExplorer.{WithdrawalHistoryView, Account}
+  alias GodwokenExplorer.WithdrawalHistoryView
 
   def index(conn, %{"owner_lock_hash" => "0x" <> _} = params) do
     results = WithdrawalHistoryView.find_by_owner_lock_hash(String.downcase(params["owner_lock_hash"]), conn.assigns[:page] || 1)
