@@ -71,8 +71,7 @@ defmodule GodwokenExplorer.Transaction do
       |> Transaction.changeset(attrs)
       |> Repo.insert()
 
-    {:ok, %{tx_hash: tx_hash}} = Polyjuice.create_polyjuice(attrs)
-    GodwokenIndexer.Transaction.ReceiptWorker.fetch_and_update(tx_hash)
+    Polyjuice.create_polyjuice(attrs)
     transaction
   end
 
