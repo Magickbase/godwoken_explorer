@@ -1,7 +1,7 @@
 defmodule GodwokenExplorerWeb.API.SearchController do
   use GodwokenExplorerWeb, :controller
 
-  alias GodwokenExplorer.{Repo, Account, Block, Transaction}
+  alias GodwokenExplorer.{Repo, Account, Block, Transaction, PendingTransaction}
 
   def index(conn, %{"keyword" => "0x" <> _} = params) do
     downcase_keyword = String.downcase(params["keyword"])
@@ -13,6 +13,9 @@ defmodule GodwokenExplorerWeb.API.SearchController do
 
         (transaction = Repo.get_by(Transaction, hash: downcase_keyword)) != nil ->
           %{type: "transaction", id: transaction.hash}
+
+        (pending_tx = PendingTransaction.find_by_hash(downcase_keyword)) != nil ->
+          %{type: "transaction", id: pending_tx.hash}
 
         (account = Account.search(downcase_keyword)) != nil ->
           %{type: "account", id: account.id}
