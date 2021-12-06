@@ -22,6 +22,8 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
   }
 
   @default_worker_interval 5
+  @smallest_ckb_capacity 290 * :math.pow(10, 8)
+  @smallest_udt_ckb_capacity 371 * :math.pow(10, 8)
 
   def start_link(state \\ []) do
     GenServer.start_link(__MODULE__, state)
@@ -92,7 +94,9 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
       |> Enum.each(fn {output, index} ->
         if output["lock"]["code_hash"] == deposition_lock.code_hash &&
              output["lock"]["hash_type"] == deposition_lock.hash_type &&
-             String.starts_with?(output["lock"]["args"], deposition_lock.args) do
+             String.starts_with?(output["lock"]["args"], deposition_lock.args) &&
+             (is_nil(Map.get(output, "type")) && hex_to_number(output["capacity"]) >= @smallest_ckb_capacity ||
+             not(is_nil(Map.get(output, "type"))) && hex_to_number(output["capacity"]) >= @smallest_udt_ckb_capacity) do
           parse_lock_args_and_bind(%{
             output: output,
             index: index,
