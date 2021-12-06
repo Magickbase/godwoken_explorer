@@ -24,6 +24,8 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
   @default_worker_interval 5
   @smallest_ckb_capacity 290 * :math.pow(10, 8)
   @smallest_udt_ckb_capacity 371 * :math.pow(10, 8)
+  @buffer_block_for_create_account 10
+  @biggest_buffer_block_for_create_account 20
 
   def start_link(state \\ []) do
     GenServer.start_link(__MODULE__, state)
@@ -52,7 +54,7 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
     {:ok, l1_tip_number} = GodwokenRPC.fetch_l1_tip_block_nubmer()
 
     {:ok, next_block_number} =
-      if block_number <= l1_tip_number do
+      if block_number + @buffer_block_for_create_account <= l1_tip_number do
         {:ok, _new_block_number} = fetch_deposition_script_and_update(block_number, l1_tip_number)
       else
         {:ok, block_number}
@@ -186,7 +188,7 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
 
     case GodwokenRPC.fetch_account_id(script_hash) do
       {:error, :account_slow} ->
-        if l1_block_number + 30 > tip_block_number do
+        if l1_block_number + @biggest_buffer_block_for_create_account > tip_block_number do
           raise "account #{script_hash} may not created now at #{l1_block_number} #{tx_hash} #{index}"
         end
 
