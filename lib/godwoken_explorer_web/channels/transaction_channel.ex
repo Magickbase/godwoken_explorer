@@ -6,7 +6,7 @@ defmodule GodwokenExplorerWeb.TransactionChannel do
 
   import GodwokenRPC.Util, only: [stringify_and_unix_maps: 1]
 
-  alias GodwokenExplorer.{Transaction, PendingTransaction}
+  alias GodwokenExplorer.Transaction
 
   intercept(["refresh"])
 
