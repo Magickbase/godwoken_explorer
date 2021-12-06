@@ -37,6 +37,8 @@ defmodule GodwokenExplorer.PendingTransaction do
       nil ->
         retry with: constant_backoff(500) |> Stream.take(3) do
           case GodwokenRPC.fetch_transaction(tx_hash) do
+            {:ok, response} when is_nil(response) ->
+              nil
             {:ok, response} ->
               {:ok, tx} =
                 response["transaction"]["raw"]
