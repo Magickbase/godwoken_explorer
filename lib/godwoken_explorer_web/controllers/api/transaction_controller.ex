@@ -41,7 +41,8 @@ defmodule GodwokenExplorerWeb.API.TransactionController do
               to: Account.display_id(tx.to_account_id),
               nonce: tx.nonce,
               args: tx.args,
-              type: tx.type
+              type: tx.type,
+              fee: tx |> Map.get(:fee, Decimal.new(0))
             }
 
             if tx.type == :polyjuice do
