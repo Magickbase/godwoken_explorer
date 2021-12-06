@@ -24,8 +24,8 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
   @default_worker_interval 5
   @smallest_ckb_capacity 290 * :math.pow(10, 8)
   @smallest_udt_ckb_capacity 371 * :math.pow(10, 8)
-  @buffer_block_for_create_account 10
-  @biggest_buffer_block_for_create_account 20
+  @buffer_block_for_create_account 20
+  @biggest_buffer_block_for_create_account 30
 
   def start_link(state \\ []) do
     GenServer.start_link(__MODULE__, state)
