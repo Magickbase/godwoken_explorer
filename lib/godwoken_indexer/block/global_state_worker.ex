@@ -3,7 +3,7 @@ defmodule GodwokenIndexer.Block.GlobalStateWorker do
 
   import Godwoken.MoleculeParser, only: [parse_global_state: 1]
 
-  alias GodwokenExplorer.{Block, Account}
+  alias GodwokenExplorer.{Block, Account, WithdrawalHistory}
 
   @default_worker_interval 40
 
@@ -34,6 +34,7 @@ defmodule GodwokenIndexer.Block.GlobalStateWorker do
     with {:ok, latest_finalized_block_number, global_state} <- fetch_global_state_info() do
       Block.update_blocks_finalized(latest_finalized_block_number)
       Account.update_meta_contract(global_state)
+      WithdrawalHistory.update_available_state(latest_finalized_block_number)
     end
   end
 
