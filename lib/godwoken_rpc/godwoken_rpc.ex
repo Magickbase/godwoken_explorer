@@ -185,7 +185,7 @@ defmodule GodwokenRPC do
   end
 
   def fetch_cells(script, script_type) do
-    options = Application.get_env(:godwoken_explorer, :json_rpc_named_arguments)
+    options = Application.get_env(:godwoken_explorer, :ckb_indexer_named_arguments)
 
     case FetchedCells.request(script, script_type) |> HTTP.json_rpc(options) do
       {:ok, response} -> {:ok, response}
