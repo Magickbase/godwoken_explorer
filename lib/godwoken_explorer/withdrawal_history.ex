@@ -17,7 +17,7 @@ defmodule GodwokenExplorer.WithdrawalHistory do
     field :udt_id, :integer
     field :timestamp, :utc_datetime_usec
     field :state, Ecto.Enum,
-      values: [:pending, :succeed]
+      values: [:pending, :available, :succeed]
 
     belongs_to(:udt, UDT, foreign_key: :udt_id, references: :id, define_field: false)
 
@@ -55,5 +55,10 @@ defmodule GodwokenExplorer.WithdrawalHistory do
         h.l2_script_hash == ^keyword or h.owner_lock_hash == ^keyword, order_by: [desc: :id]
     )
     |> Repo.all()
+  end
+
+  def update_available_state(latest_finalized_block_number) do
+    from(h in WithdrawalHistory, where: h.block_number <= ^latest_finalized_block_number and h.state == :pending)
+    |> Repo.update_all(set: [state: :available])
   end
 end
