@@ -23,7 +23,7 @@ defmodule GodwokenExplorer.WithdrawalHistoryView do
 
     succeed_history_ids =
       query_results.entries
-      |> Enum.filter(fn h -> h.state == :pending end)
+      |> Enum.filter(fn h -> h.state == :available end)
       |> Enum.map(fn h ->
         result = retry with: constant_backoff(500) |> Stream.take(3) do
           GodwokenRPC.fetch_live_cell(h.layer1_output_index, h.layer1_tx_hash)
