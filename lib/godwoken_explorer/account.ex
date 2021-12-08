@@ -23,7 +23,8 @@ defmodule GodwokenExplorer.Account do
       values: [:meta_contract, :udt, :user, :polyjuice_root, :polyjuice_contract]
 
     field :layer2_tx, :binary
-    has_many :account_udts, GodwokenExplorer.AccountUDT
+    has_many :account_udts, AccountUDT
+    has_one :smart_contract, SmartContract
 
     timestamps()
   end

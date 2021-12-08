@@ -6,13 +6,13 @@ defmodule GodwokenExplorerWeb.API.UDTController do
   plug JSONAPI.QueryParser, view: UDTView
 
   # fields[udt]=id,name,symbol,supply,holders,type,short_address
-  def index(conn, params) do
+  def index(conn, _params) do
     results = UDTView.list(conn.assigns[:page] || 1)
     data = JSONAPI.Serializer.serialize(UDTView, results.entries, conn, %{total_page: results.total_pages, current_page: results.page_number} )
     json(conn, data)
   end
 
-  def show(conn, %{"id" => id} = params) do
+  def show(conn, %{"id" => id} = _params) do
     case Repo.get(UDT, id) do
       nil -> %{
         error_code: 404,
