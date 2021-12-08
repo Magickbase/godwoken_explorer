@@ -1,0 +1,46 @@
+<%= form_for @changeset, @action, [multipart: true, id: "torch-form"], fn f -> %>
+  <fieldset class="torch-panel">
+    <legend>
+      <span>Details</span>
+    </legend>
+    <%= if @changeset.action do %>
+      <p class="torch-form-error">Oops, something went wrong! Please check the errors below.</p>
+    <% end %>
+
+    <div class="torch-form-group">
+      <%= label f, :name %>
+      <%= text_input f, :name %>
+      <%= error_tag f, :name %>
+    </div>
+
+    <div class="torch-form-group">
+      <%= label f, :contract_source_code %>
+      <%= textarea f, :contract_source_code %>
+      <%= error_tag f, :contract_source_code %>
+    </div>
+
+    <%= if @conn.private[:phoenix_action] == :edit do %>
+      <div class="torch-form-group">
+          <%= label f, :abi %>
+          <%= textarea f, :abi, value: Poison.encode!(@smart_contract.abi) %>
+          <%= error_tag f, :abi %>
+      </div>
+    <% else %>
+      <div class="torch-form-group">
+          <%= label f, :abi %>
+          <%= textarea f, :abi %>
+          <%= error_tag f, :abi %>
+      </div>
+    <% end %>
+
+    <div class="torch-form-group">
+      <%= label f, :account_id %>
+      <%= number_input f, :account_id %>
+      <%= error_tag f, :account_id %>
+    </div>
+
+    <div class="torch-submit-form">
+      <%= submit "Submit", class: "torch-submit-button" %>
+    </div>
+  </fieldset>
+<% end %>
