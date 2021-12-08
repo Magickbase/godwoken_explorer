@@ -5,12 +5,18 @@ defmodule GodwokenExplorer.UDTView do
   alias GodwokenExplorer.{UDT, Repo, Account, AccountUDT}
 
   def fields do
-    [:id, :script_hash, :symbol, :decimal, :name, :supply, :holders, :type, :short_address]
+    [:id, :script_hash, :symbol, :decimal, :name, :supply, :holder_count, :type, :short_address, :type_script, :script_hash, :official_site, :description, :value, :transfer_count]
   end
 
-  def holders(udt, _conn) do
-    from(au in AccountUDT,
-    where: au.udt_id == ^udt.id and au.balance > 0) |> Repo.aggregate(:count)
+  def holder_count(udt, _conn) do
+    from(
+      au in AccountUDT,
+      where: au.udt_id == ^udt.id and au.balance > 0
+      ) |> Repo.aggregate(:count)
+  end
+
+  def transfer_count(udt, _conn) do
+    0
   end
 
   def list(page) do
