@@ -25,6 +25,7 @@ defmodule GodwokenExplorerWeb.Router do
     get("/accounts/:id", AccountController, :show)
     get("/search", SearchController, :index)
     get("/withdrawal_histories", WithdrawalHistoryController, :index)
+    get("/udts", UDTController, :index)
   end
 
   scope "/", GodwokenExplorerWeb do
