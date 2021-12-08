@@ -1,7 +1,6 @@
 defmodule GodwokenExplorer.UDT do
   use GodwokenExplorer, :schema
 
-  import Ecto.Changeset
   import Torch.Helpers, only: [sort: 1, paginate: 4]
   import Filtrex.Type.Config
 
@@ -17,6 +16,9 @@ defmodule GodwokenExplorer.UDT do
     field(:supply, :decimal)
     field(:type_script, :map)
     field(:script_hash, :binary)
+    field(:description, :string)
+    field(:official_site, :string)
+    field :type, Ecto.Enum, values: [:bridge, :native]
 
     timestamps()
   end
@@ -24,8 +26,7 @@ defmodule GodwokenExplorer.UDT do
   @doc false
   def changeset(udt, attrs) do
     udt
-    |> cast(attrs, [:id, :name, :symbol, :decimal, :icon, :supply, :type_script, :script_hash])
-    |> validate_required([:id, :script_hash])
+    |> cast(attrs, [:id, :name, :symbol, :decimal, :icon, :supply, :type_script, :script_hash, :description, :official_site, :type])
     |> unique_constraint(:id, name: :udts_pkey)
   end
 

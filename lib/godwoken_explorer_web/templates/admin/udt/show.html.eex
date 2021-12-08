@@ -11,6 +11,10 @@
       <h3>Udt Details</h3>
     </div>
     <ul>
+        <li>
+          <div class="torch-show-label">Type:</div>
+          <div class="torch-show-data"><%= @udt.type %></div>
+        </li>
 
         <li>
           <div class="torch-show-label">Decimal:</div>
@@ -38,17 +42,25 @@
         </li>
         <%= for {key, value} <- @udt.type_script do %>
           <li>
-            <div class="torch-show-label">type_script-<%= key %>:</div>
+            <div class="torch-show-label">Layer1 Type Script-<%= key %>:</div>
             <div class="torch-show-data">  <%= value%></div>
-          <li>
+          </li>
         <% end %>
-        </li>
 
         <li>
-          <div class="torch-show-label">Script hash:</div>
+          <div class="torch-show-label">Layer1 Script hash:</div>
           <div class="torch-show-data"><%= @udt.script_hash %></div>
         </li>
 
+        <li>
+          <div class="torch-show-label">Description:</div>
+          <div class="torch-show-data"><%= @udt.description %></div>
+        </li>
+
+        <li>
+          <div class="torch-show-label">Official Site:</div>
+          <div class="torch-show-data"><%= @udt.official_site %></div>
+        </li>
     </ul>
   </div>
 </section>
