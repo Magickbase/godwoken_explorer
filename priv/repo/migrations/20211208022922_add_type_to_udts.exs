@@ -3,6 +3,7 @@ defmodule GodwokenExplorer.Repo.Migrations.AddTypeToUdts do
 
   def change do
     alter table(:udts) do
+      add :price, :decimal
       add :value, :decimal
       add :description, :string
       add :official_site, :string
