@@ -25,6 +25,7 @@ defmodule GodwokenExplorer do
         PolyjuiceCreator,
         Polyjuice,
         Repo,
+        SmartContract,
         Transaction,
         UDT,
         UDTTransfer,

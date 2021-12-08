@@ -87,6 +87,7 @@ defmodule GodwokenExplorer.MixProject do
 
       # jsonapi
       {:jsonapi, "~> 1.3.0"},
+      {:poison, "~> 5.0"},
 
       {:appsignal_phoenix, "~> 2.0"},
       {:appsignal, "~> 2.0"},
