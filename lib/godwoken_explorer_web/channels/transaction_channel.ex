@@ -13,7 +13,7 @@ defmodule GodwokenExplorerWeb.TransactionChannel do
   def join("transactions:" <> tx_hash, _params, socket) do
     tx = Transaction.find_by_hash(tx_hash)
 
-    if is_nil(tx) do
+    if tx == %{} do
       {:error, %{reason: "may be a pending tx"}}
     else
       result =
