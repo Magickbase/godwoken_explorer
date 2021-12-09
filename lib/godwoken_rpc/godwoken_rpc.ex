@@ -229,7 +229,7 @@ defmodule GodwokenRPC do
          |> HTTP.json_rpc(options) do
       {:ok, response} -> {:ok, response}
       {:error, msg} ->
-        Logger.error("Failed to eth call: #{inspect(params)}")
+        Logger.error("Failed to eth call: #{msg} #{inspect(params)}")
         {:error, :node_error}
     end
   end
