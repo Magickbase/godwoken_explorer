@@ -27,7 +27,7 @@ defmodule GodwokenExplorerWeb.Admin.SmartContractController do
   end
 
   def create(conn, %{"smart_contract" => smart_contract_params}) do
-    case Admin.create_smart_contract(smart_contract_params |> Map.merge(%{"abi" => Poison.decode!(smart_contract_params["abi"])})) do
+    case Admin.create_smart_contract(smart_contract_params |> Map.merge(%{"abi" => Jason.decode!(smart_contract_params["abi"])})) do
       {:ok, smart_contract} ->
         conn
         |> put_flash(:info, "Smart contract created successfully.")
@@ -52,7 +52,7 @@ defmodule GodwokenExplorerWeb.Admin.SmartContractController do
   def update(conn, %{"id" => id, "smart_contract" => smart_contract_params}) do
     smart_contract = Admin.get_smart_contract!(id)
 
-    case Admin.update_smart_contract(smart_contract, smart_contract_params |> Map.merge(%{"abi" => Poison.decode!(smart_contract_params["abi"])})) do
+    case Admin.update_smart_contract(smart_contract, smart_contract_params |> Map.merge(%{"abi" => Jason.decode!(smart_contract_params["abi"])})) do
       {:ok, smart_contract} ->
         conn
         |> put_flash(:info, "Smart contract updated successfully.")

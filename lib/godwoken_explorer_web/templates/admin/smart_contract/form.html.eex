@@ -22,7 +22,7 @@
     <%= if @conn.private[:phoenix_action] == :edit do %>
       <div class="torch-form-group">
           <%= label f, :abi %>
-          <%= textarea f, :abi, value: Poison.encode!(@smart_contract.abi) %>
+          <%= textarea f, :abi, value: Jason.encode!(@smart_contract.abi) %>
           <%= error_tag f, :abi %>
       </div>
     <% else %>
