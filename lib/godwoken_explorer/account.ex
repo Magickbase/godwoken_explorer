@@ -120,7 +120,7 @@ defmodule GodwokenExplorer.Account do
         nil -> Decimal.new(0)
       end
 
-    tx_count = Transaction.list_by_account_id(id) |> Repo.aggregate(:count)
+    tx_count = Transaction.list_by_account(%{type: account.type, account_id: account.id, eth_address: account.eth_address}) |> Repo.aggregate(:count)
 
     base_map = %{
       id: id,
