@@ -52,7 +52,11 @@ defmodule GodwokenExplorer.Polyjuice do
         _error -> nil
       end
 
-    {receive_address, transfer_count} = decode_transfer_args(%{hash: attrs[:hash], input: attrs[:input]})
+    {receive_address, transfer_count} = decode_transfer_args(attrs[:to_account_id], attrs[:input], attrs[:hash])
+    if receive_address do
+      AccountUDT.update_erc20_balance(attrs[:to_account_id], attrs[:from_account_id])
+      AccountUDT.update_erc20_balance(attrs[:to_account_id], attrs[:receive_address])
+    end
 
     %Polyjuice{}
     |> Polyjuice.changeset(attrs)
@@ -63,8 +67,8 @@ defmodule GodwokenExplorer.Polyjuice do
     |> Repo.insert()
   end
 
-  def get_method_name(transaction) do
-    case decode_input(transaction) do
+  def get_method_name(to_account_id, input, hash \\ "") do
+    case decode_input(to_account_id, input, hash) do
       {:ok, _, decoded_func, _} ->
         parse_method_name(decoded_func)
       nil ->
@@ -72,8 +76,8 @@ defmodule GodwokenExplorer.Polyjuice do
     end
   end
 
-  def decode_transfer_args(record) do
-    case decode_input(record) do
+  def decode_transfer_args(to_account_id, input, hash \\ "") do
+    case decode_input(to_account_id, input, hash) do
       {:ok, _method_sign, method_desc, args} ->
         method_name = parse_method_name(method_desc)
         if method_name == "Transfer" do
@@ -86,18 +90,16 @@ defmodule GodwokenExplorer.Polyjuice do
     end
   end
 
-  def decode_input(transaction) do
-    with %Transaction{to_account_id: to_account_id, hash: hash} <-
-           Repo.get_by(Transaction, hash: transaction.hash),
-         %SmartContract{abi: full_abi} <- Repo.get_by(SmartContract, account_id: to_account_id) do
+  defp decode_input(to_account_id, input, hash) do
+      with  %SmartContract{abi: full_abi} <- Repo.get_by(SmartContract, account_id: to_account_id) do
       do_decoded_input_data(
-        Base.decode16!(String.slice(transaction.input, 2..-1), case: :lower),
+        Base.decode16!(String.slice(input, 2..-1), case: :lower),
         full_abi,
         hash
       )
     else
       _ ->
-        Logger.error("decord input data failed #{transaction.hash}")
+        Logger.error("decord input data failed #{hash}")
         nil
     end
   end
@@ -139,7 +141,7 @@ defmodule GodwokenExplorer.Polyjuice do
     {:ok, result}
   rescue
     _ ->
-      Logger.warn(fn -> ["Could not decode input data for transaction: ", hash] end)
+      Logger.warn(fn -> ["Could not find_and_decode input data for transaction: ", hash] end)
       {:error, :could_not_decode}
   end
 

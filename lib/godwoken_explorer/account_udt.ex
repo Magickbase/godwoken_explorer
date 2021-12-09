@@ -1,6 +1,8 @@
 defmodule GodwokenExplorer.AccountUDT do
   use GodwokenExplorer, :schema
 
+  import GodwokenRPC.Util, only: [hex_to_number: 1]
+
   alias GodwokenRPC
   alias GodwokenExplorer.Chain.Events.Publisher
 
@@ -70,5 +72,31 @@ defmodule GodwokenExplorer.AccountUDT do
       udt_id: udt_id,
       balance: balance
     })
+  end
+
+  def update_erc20_balance(contract_id, "0x" <> _ = short_address) do
+    balance_of_method = "0x70a08231"
+    contract_address = Repo.get(Account, contract_id).short_address
+    account_id = Repo.get_by(Account, short_address: short_address).id
+    case GodwokenRPC.eth_call(%{to: contract_address, data: balance_of_method <> String.duplicate("0", 24) <> String.slice(short_address, 2..-1)}) do
+      {:ok, balance} ->
+        number = balance |> hex_to_number
+        AccountUDT.create_or_update_account_udt!(%{accunt_id: account_id, udt_id: contract_id, balance: number})
+      {:error, _} ->
+        nil
+    end
+  end
+
+  def update_erc20_balance(contract_id, account_id) do
+    balance_of_method = "0x70a08231"
+    contract_address = Repo.get(Account, contract_id).short_address
+    user_address = Repo.get(Account, account_id).sohrt_address
+    case GodwokenRPC.eth_call(%{to: contract_address, data: balance_of_method <> String.duplicate("0", 24) <> String.slice(user_address, 2..-1)}) do
+      {:ok, balance} ->
+        number = balance |> hex_to_number
+        AccountUDT.create_or_update_account_udt!(%{accunt_id: account_id, udt_id: contract_id, balance: number})
+      {:error, _} ->
+        nil
+    end
   end
 end

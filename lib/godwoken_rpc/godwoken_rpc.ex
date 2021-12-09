@@ -7,6 +7,7 @@ defmodule GodwokenRPC do
   alias GodwokenRPC.Transaction.FetchedReceipt
   alias GodwokenRPC.Transaction.FetchedTransaction, as: FetchedGodwokenTransaction
   alias GodwokenRPC.CKBIndexer.{FetchedTransactions, FetchedTransaction, FetchedTip, FetchedBlock, FetchedLiveCell, FetchedCells}
+  alias GodwokenRPC.Web3.EthCall
 
   alias GodwokenRPC.Account.{
     FetchedAccountID,
@@ -217,6 +218,18 @@ defmodule GodwokenRPC do
       {:ok, response} -> {:ok, response}
       {:error, msg} ->
         Logger.error("Failed to request transaction: #{tx_hash} > #{inspect(msg)}")
+        {:error, :node_error}
+    end
+  end
+
+  def eth_call(params) do
+    options = Application.get_env(:godwoken_explorer, :json_rpc_named_arguments)
+
+    case EthCall.request(params)
+         |> HTTP.json_rpc(options) do
+      {:ok, response} -> {:ok, response}
+      {:error, msg} ->
+        Logger.error("Failed to eth call: #{inspect(params)}")
         {:error, :node_error}
     end
   end
