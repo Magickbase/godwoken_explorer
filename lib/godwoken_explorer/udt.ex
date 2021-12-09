@@ -207,6 +207,21 @@ defmodule GodwokenExplorer.UDT do
     end
   end
 
+  def yokai_account_id do
+    if FastGlobal.get(:yokai_account_id) do
+      FastGlobal.get(:yokai_account_id)
+    else
+        with  %__MODULE__{id: id} <- Repo.get_by(__MODULE__, name: "YOKAI") do
+        FastGlobal.put(:yokai_account_id, id)
+        id
+      else
+        _ -> nil
+      end
+    end
+  end
+
+
+
   defp filter_config(:udts) do
     defconfig do
       number(:decimal)

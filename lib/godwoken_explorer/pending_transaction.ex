@@ -96,7 +96,7 @@ defmodule GodwokenExplorer.PendingTransaction do
 
       from_account_id = hex_to_number(from_account_id)
       to_account_id = hex_to_number(to_id)
-      {receive_address, transfer_count} = Polyjuice.decode_transfer_args(%{hash: "pending_tx", input: input})
+      {receive_address, transfer_count} = Polyjuice.decode_transfer_args(to_account_id, input)
 
       %{
         type: :polyjuice,

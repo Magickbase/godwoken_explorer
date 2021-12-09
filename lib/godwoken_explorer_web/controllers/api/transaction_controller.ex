@@ -3,7 +3,7 @@ defmodule GodwokenExplorerWeb.API.TransactionController do
 
   import GodwokenRPC.Util, only: [stringify_and_unix_maps: 1]
 
-  alias GodwokenExplorer.{Transaction, Account, Repo, Polyjuice, PendingTransaction}
+  alias GodwokenExplorer.{Transaction, Account, Repo, PendingTransaction}
 
   def index(conn, %{"eth_address" => "0x" <> _} = params) do
     %Account{id: account_id, type: type, eth_address: eth_address} = Account.search(String.downcase(params["eth_address"]))
