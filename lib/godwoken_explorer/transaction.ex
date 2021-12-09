@@ -183,7 +183,8 @@ defmodule GodwokenExplorer.Transaction do
         gas_price: p.gas_price,
         gas_used: p.gas_used,
         gas_limit: p.gas_limit,
-        value: p.value
+        value: p.value,
+        input: p.input
     },
       order_by: [desc: t.inserted_at]
     )
@@ -195,7 +196,9 @@ defmodule GodwokenExplorer.Transaction do
 
     parsed_result =
       Enum.map(original_struct.entries, fn record ->
-        stringify_and_unix_maps(record)
+        record
+        |> Polyjuice.merge_transfer_args()
+        |> stringify_and_unix_maps()
       end)
 
     %{

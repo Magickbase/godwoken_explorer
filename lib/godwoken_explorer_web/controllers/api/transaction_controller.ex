@@ -49,7 +49,7 @@ defmodule GodwokenExplorerWeb.API.TransactionController do
               Map.merge(base_struct, %{
                 gas_price: tx.parsed_args["gas_price"],
                 gas_limit: tx.parsed_args["gas_limit"],
-                value: tx.parsed_args["value"]
+                value: tx.parsed_args["value"],
               })
             else
               base_struct
@@ -65,9 +65,7 @@ defmodule GodwokenExplorerWeb.API.TransactionController do
           from: tx.from,
           to: tx.to,
           nonce: tx.nonce,
-          args: tx.args,
-          type: tx.type,
-          fee: tx |> Map.get(:fee, Decimal.new(0))
+          type: tx.type
         }
 
         if tx.type == :polyjuice do
@@ -77,8 +75,10 @@ defmodule GodwokenExplorerWeb.API.TransactionController do
             gas_price: polyjuice.gas_price,
             gas_used: polyjuice.gas_used,
             gas_limit: polyjuice.gas_limit,
-            value: polyjuice.value
+            value: polyjuice.value,
+            input: polyjuice.input
           })
+          |> Polyjuice.merge_transfer_args()
         else
           base_struct
         end
