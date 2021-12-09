@@ -17,6 +17,8 @@ defmodule GodwokenExplorer.Polyjuice do
     field :input, :binary
     field :tx_hash, :binary
     field :gas_used, :integer
+    field :receive_address, :binary
+    field :transfer_count, :decimal
 
     belongs_to(:transaction, GodwokenExplorer.Transaction,
       foreign_key: :tx_hash,
@@ -30,7 +32,7 @@ defmodule GodwokenExplorer.Polyjuice do
   @doc false
   def changeset(polyjuice, attrs) do
     polyjuice
-    |> cast(attrs, [:is_create, :gas_limit, :gas_price, :value, :input_size, :input, :gas_used])
+    |> cast(attrs, [:is_create, :gas_limit, :gas_price, :value, :input_size, :input, :gas_used, :receive_address, :transfer_count])
     |> validate_required([:is_create, :gas_limit, :gas_price, :value, :input_size, :input])
   end
 
@@ -50,10 +52,20 @@ defmodule GodwokenExplorer.Polyjuice do
         _error -> nil
       end
 
+    {receive_address, transfer_count} =
+      case  merge_transfer_args(%{hash: attrs[:hash], input: attrs[:input]}) do
+        %{to: to, contract_address: _, transfer_count: transfer_count} ->
+          {to, transfer_count}
+        _ ->
+          {nil, nil}
+      end
+
     %Polyjuice{}
     |> Polyjuice.changeset(attrs)
     |> Ecto.Changeset.put_change(:tx_hash, attrs[:hash])
     |> Ecto.Changeset.put_change(:gas_used, gas_used)
+    |> Ecto.Changeset.put_change(:receive_address, receive_address)
+    |> Ecto.Changeset.put_change(:transfer_count, transfer_count)
     |> Repo.insert()
   end
 
