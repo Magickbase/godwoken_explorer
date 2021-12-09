@@ -24,7 +24,7 @@
 
         <li>
           <div class="torch-show-label">Abi:</div>
-          <div class="torch-show-data"><%= Poison.encode!(@smart_contract.abi) %></div>
+          <div class="torch-show-data"><%= Jason.encode!(@smart_contract.abi) %></div>
         </li>
 
         <li>
