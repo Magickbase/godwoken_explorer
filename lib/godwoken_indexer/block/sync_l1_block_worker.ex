@@ -186,6 +186,7 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
     [script_hash, l1_lock_hash] = parse_lock_args(output["lock"]["args"])
     {udt_script, udt_script_hash, amount} = parse_udt_script(output, output_data)
 
+    Logger.info(script_hash)
     case GodwokenRPC.fetch_account_id(script_hash) do
       {:error, :account_slow} ->
         if l1_block_number + @biggest_buffer_block_for_create_account > tip_block_number do

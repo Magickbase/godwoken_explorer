@@ -48,6 +48,7 @@ defmodule GodwokenExplorer.Account do
   end
 
   def create_or_update_account!(attrs) do
+    Logger.info(inspect(attrs))
     case Repo.get_by(__MODULE__, script_hash: attrs[:script_hash]) do
       nil -> %__MODULE__{}
       account -> account
