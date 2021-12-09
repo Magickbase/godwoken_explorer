@@ -80,7 +80,7 @@ defmodule GodwokenExplorer.Polyjuice do
 
   def merge_transfer_args(record) do
     case decode_input(record) do
-      {:ok, method_sign, method_desc, args} ->
+      {:ok, _method_sign, method_desc, args} ->
         method_name = parse_method_name(method_desc)
         if method_name == "Transfer" do
           {address, transfer_count} = Polyjuice.parse_transfer_args(args)
