@@ -211,7 +211,7 @@ defmodule GodwokenExplorer.UDT do
     if FastGlobal.get(:yokai_account_id) do
       FastGlobal.get(:yokai_account_id)
     else
-        with  %__MODULE__{id: id} <- Repo.get_by(__MODULE__, name: "YOKAI") do
+        with  %__MODULE__{id: id} <- Repo.get_by(__MODULE__, name: "Yokai") do
         FastGlobal.put(:yokai_account_id, id)
         id
       else
