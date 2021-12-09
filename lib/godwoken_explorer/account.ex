@@ -376,4 +376,24 @@ defmodule GodwokenExplorer.Account do
         nil
     end
   end
+
+  def manual_create_account(id) do
+    nonce = GodwokenRPC.fetch_nonce(id)
+    script_hash = GodwokenRPC.fetch_script_hash(%{account_id: id})
+    short_address = String.slice(script_hash, 0, 42)
+    script = GodwokenRPC.fetch_script(script_hash)
+    type = switch_account_type(script["code_hash"], script["args"])
+    eth_address = script_to_eth_adress(type, script["args"])
+    parsed_script = add_name_to_polyjuice_script(type, script)
+
+    create_or_update_account!(%{
+      id: id,
+      script: parsed_script,
+      script_hash: script_hash,
+      short_address: short_address,
+      type: type,
+      nonce: nonce,
+      eth_address: eth_address
+    })
+  end
 end
