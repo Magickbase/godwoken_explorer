@@ -81,6 +81,7 @@ defmodule GodwokenExplorer.MixProject do
 
       # web3 tool
       {:exw3, "~> 0.6"},
+      {:ex_abi, "~> 0.5.8"},
 
       # database_history
       {:ex_audit, "~> 0.9"},
