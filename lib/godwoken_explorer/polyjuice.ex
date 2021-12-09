@@ -52,13 +52,7 @@ defmodule GodwokenExplorer.Polyjuice do
         _error -> nil
       end
 
-    {receive_address, transfer_count} =
-      case  merge_transfer_args(%{hash: attrs[:hash], input: attrs[:input]}) do
-        %{to: to, contract_address: _, transfer_count: transfer_count} ->
-          {to, transfer_count}
-        _ ->
-          {nil, nil}
-      end
+    {receive_address, transfer_count} = decode_transfer_args(%{hash: attrs[:hash], input: attrs[:input]})
 
     %Polyjuice{}
     |> Polyjuice.changeset(attrs)
@@ -78,17 +72,17 @@ defmodule GodwokenExplorer.Polyjuice do
     end
   end
 
-  def merge_transfer_args(record) do
+  def decode_transfer_args(record) do
     case decode_input(record) do
       {:ok, _method_sign, method_desc, args} ->
         method_name = parse_method_name(method_desc)
         if method_name == "Transfer" do
-          {address, transfer_count} = Polyjuice.parse_transfer_args(args)
-          record |> Map.merge(%{to: "0x" <> address, contract_address: record.to, transfer_count: transfer_count})
+          Polyjuice.parse_transfer_args(args)
         else
-          record
+          {nil, nil}
         end
-      _ -> record
+      _ ->
+        {nil, nil}
     end
   end
 
@@ -102,12 +96,14 @@ defmodule GodwokenExplorer.Polyjuice do
         hash
       )
     else
-      _ -> nil
+      _ ->
+        Logger.error("decord input data failed #{transaction.hash}")
+        nil
     end
   end
 
   def parse_transfer_args(args) do
-    {args |> List.first() |> elem(2) |> Base.encode16(), args |> List.last() |> elem(2)}
+    {"0x" <> (args |> List.first() |> elem(2) |> Base.encode16(case: :lower)), args |> List.last() |> elem(2)}
   end
 
   #  {:ok, "a9059cbb", "transfer(address _to, uint256 _value)",
