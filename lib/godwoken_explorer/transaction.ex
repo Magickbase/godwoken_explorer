@@ -97,10 +97,7 @@ defmodule GodwokenExplorer.Transaction do
           select: %{
             hash: t.hash,
             timestamp: b.inserted_at,
-            from: fragment("
-              CASE WHEN a2.type = 'user' THEN encode(a2.eth_address, 'escape')
-                 WHEN a2.type = 'polyjuice_contract' THEN encode(a2.short_address, 'escape')
-                 ELSE a2.id::text END"),
+            from: a2.eth_address,
             to: fragment("
               CASE WHEN a3.type = 'user' THEN encode(a3.eth_address, 'escape')
                  WHEN a3.type = 'polyjuice_contract' THEN encode(a3.short_address, 'escape')
@@ -124,16 +121,15 @@ defmodule GodwokenExplorer.Transaction do
         on: a2.id == t.from_account_id,
         join: a3 in Account,
         on: a3.id == t.to_account_id,
+        join: p in Polyjuice,
+        on: p.tx_hash == t.hash,
         where: t.hash == ^hash,
         select: %{
           hash: t.hash,
           l2_block_number: t.block_number,
           timestamp: b.timestamp,
           l1_block_number: b.layer1_block_number,
-          from: fragment("
-              CASE WHEN a2.type = 'user' THEN encode(a2.eth_address, 'escape')
-                 WHEN a2.type = 'polyjuice_contract' THEN encode(a2.short_address, 'escape')
-                 ELSE a2.id::text END"),
+          from: a2.eth_address,
           to: fragment("
               CASE WHEN a3.type = 'user' THEN encode(a3.eth_address, 'escape')
                  WHEN a3.type = 'polyjuice_contract' THEN encode(a3.short_address, 'escape')
@@ -141,22 +137,24 @@ defmodule GodwokenExplorer.Transaction do
           type: t.type,
           status: t.status,
           nonce: t.nonce,
-          args: t.args
+          args: t.args,
+          gas_price: p.gas_price,
+          gas_used: p.gas_used,
+          gas_limit: p.gas_limit,
+          value: p.value,
+          input: p.input
         }
       )
       |> Repo.one()
 
-    case tx do
-      nil ->
-        %{}
-
-      _ ->
-        args = join_args(tx) || %{}
-        tx |> Map.merge(args)
+    if is_nil(tx) do
+      %{}
+    else
+      tx
     end
   end
 
-  def list_by_account_id(account_id) do
+  def list_by_account(%{type: type, account_id: account_id, eth_address: eth_address}) when type == :user do
     from(t in Transaction,
       join: b in Block,
       on: [hash: t.block_hash],
@@ -166,15 +164,45 @@ defmodule GodwokenExplorer.Transaction do
       on: a3.id == t.to_account_id,
       join: p in Polyjuice,
       on: p.tx_hash == t.hash,
-      where: t.from_account_id == ^account_id or t.to_account_id == ^account_id,
+      where: t.from_account_id == ^account_id or p.receive_address == ^eth_address,
       select: %{
         hash: t.hash,
         block_number: b.number,
         timestamp: b.timestamp,
-        from: fragment("
-              CASE WHEN a2.type = 'user' THEN encode(a2.eth_address, 'escape')
-                 WHEN a2.type = 'polyjuice_contract' THEN encode(a2.short_address, 'escape')
-                 ELSE a2.id::text END"),
+        from: a2.eth_address,
+        to: fragment("
+              CASE WHEN a3.type = 'user' THEN encode(a3.eth_address, 'escape')
+                 WHEN a3.type = 'polyjuice_contract' THEN encode(a3.short_address, 'escape')
+                 ELSE a3.id::text END"),
+        type: t.type,
+        nonce: t.nonce,
+        args: t.args,
+        gas_price: p.gas_price,
+        gas_used: p.gas_used,
+        gas_limit: p.gas_limit,
+        value: p.value,
+        input: p.input
+    },
+      order_by: [desc: t.inserted_at]
+    )
+  end
+
+  def list_by_account(%{type: type, account_id: account_id, eth_address: _eth_address}) when type in [:meta_contract, :udt, :polyjuice_root, :polyjuice_contract] do
+    from(t in Transaction,
+      join: b in Block,
+      on: [hash: t.block_hash],
+      join: a2 in Account,
+      on: a2.id == t.from_account_id,
+      join: a3 in Account,
+      on: a3.id == t.to_account_id,
+      join: p in Polyjuice,
+      on: p.tx_hash == t.hash,
+      where: t.to_account_id == ^account_id,
+      select: %{
+        hash: t.hash,
+        block_number: b.number,
+        timestamp: b.timestamp,
+        from: a2.eth_address,
         to: fragment("
               CASE WHEN a3.type = 'user' THEN encode(a3.eth_address, 'escape')
                  WHEN a3.type = 'polyjuice_contract' THEN encode(a3.short_address, 'escape')
@@ -190,8 +218,8 @@ defmodule GodwokenExplorer.Transaction do
     )
   end
 
-  def account_transactions_data(account_id, page) do
-    txs = list_by_account_id(account_id)
+  def account_transactions_data(%{type: type, account_id: account_id, eth_address: eth_address}, page) do
+    txs = list_by_account(%{type: type, account_id: account_id, eth_address: eth_address})
     original_struct = Repo.paginate(txs, page: page)
 
     parsed_result =
@@ -206,17 +234,5 @@ defmodule GodwokenExplorer.Transaction do
       total_count: Integer.to_string(original_struct.total_entries),
       txs: parsed_result
     }
-  end
-
-  defp join_args(%{type: :polyjuice, hash: tx_hash}) do
-    from(p in Polyjuice,
-      where: p.tx_hash == ^tx_hash,
-      select: %{gas_price: p.gas_price}
-    )
-    |> Repo.one()
-  end
-
-  defp join_args(_) do
-    %{}
   end
 end

@@ -6,14 +6,15 @@ defmodule GodwokenExplorerWeb.API.TransactionController do
   alias GodwokenExplorer.{Transaction, Account, Repo, Polyjuice, PendingTransaction}
 
   def index(conn, %{"eth_address" => "0x" <> _} = params) do
-    %Account{id: account_id} = Account.search(String.downcase(params["eth_address"]))
-    results = Transaction.account_transactions_data(account_id, params["page"])
+    %Account{id: account_id, type: type, eth_address: eth_address} = Account.search(String.downcase(params["eth_address"]))
+    results = Transaction.account_transactions_data(%{type: type, account_id: account_id, eth_address: eth_address}, params["page"])
 
     json(conn, results)
   end
 
   def index(conn, %{"account_id" => _} = params) do
-    results = Transaction.account_transactions_data(params["account_id"], params["page"])
+    %Account{id: account_id, type: type, eth_address: eth_address} = Repo.get(Account, params["account_id"])
+    results = Transaction.account_transactions_data(%{type: type, account_id: account_id, eth_address: eth_address}, params["page"])
 
     json(conn, results)
   end
