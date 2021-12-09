@@ -33,7 +33,6 @@ defmodule GodwokenExplorerWeb.Admin.SmartContractController do
         |> put_flash(:info, "Smart contract created successfully.")
         |> redirect(to: Routes.admin_smart_contract_path(conn, :show, smart_contract))
       {:error, %Ecto.Changeset{} = changeset} ->
-        IO.puts(changeset)
         render(conn, "new.html", changeset: changeset)
     end
   end
