@@ -20,6 +20,7 @@ defmodule GodwokenExplorer do
         AccountUDT,
         Block,
         CheckInfo,
+        ContractMethod,
         DepositHistory,
         PendingTransaction,
         PolyjuiceCreator,
