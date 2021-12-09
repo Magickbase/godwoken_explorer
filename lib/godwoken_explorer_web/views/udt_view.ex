@@ -2,7 +2,7 @@ defmodule GodwokenExplorer.UDTView do
   use JSONAPI.View, type: "udt"
 
   import Ecto.Query, only: [from: 2]
-  alias GodwokenExplorer.{UDT, Repo, Account, AccountUDT}
+  alias GodwokenExplorer.{UDT, Repo, Account, AccountUDT, Transaction}
 
   def fields do
     [:id, :script_hash, :symbol, :decimal, :name, :supply, :holder_count, :type, :short_address, :type_script, :script_hash, :official_site, :description, :value, :transfer_count]
@@ -16,7 +16,7 @@ defmodule GodwokenExplorer.UDTView do
   end
 
   def transfer_count(udt, _conn) do
-    0
+    from(t in Transaction, where: t.to_account_id == ^udt.id) |> Repo.aggregate(:count)
   end
 
   def list(page) do
