@@ -141,6 +141,8 @@ defmodule GodwokenExplorer.Transaction do
           gas_price: p.gas_price,
           gas_used: p.gas_used,
           gas_limit: p.gas_limit,
+          receive_address: p.receive_address,
+          transfer_count: p.transfer_count,
           value: p.value,
           input: p.input
         }
@@ -152,6 +154,41 @@ defmodule GodwokenExplorer.Transaction do
     else
       tx
     end
+  end
+
+  def list_by_account(%{type: type, account_id: account_id, eth_address: eth_address, contract_id: contract_id}) when type == :user do
+    from(t in Transaction,
+      join: b in Block,
+      on: [hash: t.block_hash],
+      join: a2 in Account,
+      on: a2.id == t.from_account_id,
+      join: a3 in Account,
+      on: a3.id == t.to_account_id,
+      join: p in Polyjuice,
+      on: p.tx_hash == t.hash,
+      where: (t.from_account_id == ^account_id or p.receive_address == ^eth_address) and t.to_address_id == ^contract_id,
+      select: %{
+        hash: t.hash,
+        block_number: b.number,
+        timestamp: b.timestamp,
+        from: a2.eth_address,
+        to: fragment("
+              CASE WHEN a3.type = 'user' THEN encode(a3.eth_address, 'escape')
+                 WHEN a3.type = 'polyjuice_contract' THEN encode(a3.short_address, 'escape')
+                 ELSE a3.id::text END"),
+        type: t.type,
+        nonce: t.nonce,
+        args: t.args,
+        gas_price: p.gas_price,
+        gas_used: p.gas_used,
+        gas_limit: p.gas_limit,
+        value: p.value,
+        receive_address: p.receive_address,
+        transfer_count: p.transfer_count,
+        input: p.input
+    },
+      order_by: [desc: t.inserted_at]
+    )
   end
 
   def list_by_account(%{type: type, account_id: account_id, eth_address: eth_address}) when type == :user do
@@ -181,7 +218,9 @@ defmodule GodwokenExplorer.Transaction do
         gas_used: p.gas_used,
         gas_limit: p.gas_limit,
         value: p.value,
-        input: p.input
+        receive_address: p.receive_address,
+        transfer_count: p.transfer_count,
+        input: p.input,
     },
       order_by: [desc: t.inserted_at]
     )
@@ -211,6 +250,8 @@ defmodule GodwokenExplorer.Transaction do
         gas_price: p.gas_price,
         gas_used: p.gas_used,
         gas_limit: p.gas_limit,
+        receive_address: p.receive_address,
+        transfer_count: p.transfer_count,
         value: p.value,
         input: p.input
     },
@@ -224,9 +265,7 @@ defmodule GodwokenExplorer.Transaction do
 
     parsed_result =
       Enum.map(original_struct.entries, fn record ->
-        record
-        |> Polyjuice.merge_transfer_args()
-        |> stringify_and_unix_maps()
+        stringify_and_unix_maps(record)
       end)
 
     %{
@@ -235,4 +274,21 @@ defmodule GodwokenExplorer.Transaction do
       txs: parsed_result
     }
   end
+
+  def account_transactions_data(%{type: type, account_id: account_id, eth_address: eth_address, contract_id: contract_id}, page) do
+    txs = list_by_account(%{type: type, account_id: account_id, eth_address: eth_address, contract_id: contract_id})
+    original_struct = Repo.paginate(txs, page: page)
+
+    parsed_result =
+      Enum.map(original_struct.entries, fn record ->
+        stringify_and_unix_maps(record)
+      end)
+
+    %{
+      page: Integer.to_string(original_struct.page_number),
+      total_count: Integer.to_string(original_struct.total_entries),
+      txs: parsed_result
+    }
+  end
+
 end
