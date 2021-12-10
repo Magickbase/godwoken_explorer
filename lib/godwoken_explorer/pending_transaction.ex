@@ -99,10 +99,12 @@ defmodule GodwokenExplorer.PendingTransaction do
       {short_address, transfer_count} = Polyjuice.decode_transfer_args(to_account_id, input)
 
       eth_address =
-        case Account |> Repo.get_by(short_address: short_address) do
-          nil -> nil
-          %Account{eth_address: eth_address} ->
-            eth_address
+        if short_address do
+          case Account |> Repo.get_by(short_address: short_address) do
+            nil -> nil
+            %Account{eth_address: eth_address} ->
+              eth_address
+          end
         end
 
       %{
