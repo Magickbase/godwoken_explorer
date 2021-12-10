@@ -275,6 +275,26 @@ defmodule GodwokenExplorer.Transaction do
     )
   end
 
+  def count_of_account(%{
+      type: type,
+      account_id: account_id,
+      eth_address: eth_address,
+    })
+      when type == :user do
+    from(t in Transaction,
+      left_join: p in Polyjuice,
+      on: p.tx_hash == t.hash,
+      where:
+        t.from_account_id == ^account_id or p.receive_address == ^eth_address)
+  end
+  def count_of_account(%{type: type, account_id: account_id, eth_address: _eth_address})
+      when type in [:meta_contract, :udt, :polyjuice_root, :polyjuice_contract] do
+    from(t in Transaction,
+      left_join: p in Polyjuice,
+      on: p.tx_hash == t.hash,
+      where: t.to_account_id == ^account_id)
+  end
+
   def account_transactions_data(
         %{type: type, account_id: account_id, eth_address: eth_address},
         page
