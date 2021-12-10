@@ -74,19 +74,6 @@ defmodule GodwokenExplorer.AccountUDT do
     })
   end
 
-  def update_erc20_balance(contract_id, "0x" <> _ = short_address) do
-    balance_of_method = "0x70a08231"
-    contract_address = Repo.get(Account, contract_id).short_address
-    account_id = Repo.get_by(Account, short_address: short_address).id
-    case GodwokenRPC.eth_call(%{to: contract_address, data: balance_of_method <> String.duplicate("0", 24) <> String.slice(short_address, 2..-1)}) do
-      {:ok, balance} ->
-        number = balance |> hex_to_number
-        AccountUDT.create_or_update_account_udt!(%{account_id: account_id, udt_id: contract_id, balance: number})
-      {:error, _} ->
-        nil
-    end
-  end
-
   def update_erc20_balance(contract_id, account_id) do
     balance_of_method = "0x70a08231"
     contract_address = Repo.get(Account, contract_id).short_address
