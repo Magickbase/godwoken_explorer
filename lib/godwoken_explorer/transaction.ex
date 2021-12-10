@@ -150,7 +150,7 @@ defmodule GodwokenExplorer.Transaction do
             gas_price: p.gas_price,
             gas_used: p.gas_used,
             gas_limit: p.gas_limit,
-            receive_address: p.receive_address,
+            receive_eth_address: p.receive_eth_address,
             transfer_count: p.transfer_count,
             value: p.value,
             input: p.input
@@ -179,7 +179,7 @@ defmodule GodwokenExplorer.Transaction do
       left_join: p in Polyjuice,
       on: p.tx_hash == t.hash,
       where:
-        (t.from_account_id == ^account_id or p.receive_address == ^eth_address) and
+        (t.from_account_id == ^account_id or p.receive_eth_address == ^eth_address) and
           t.to_address_id == ^contract_id,
       select: %{
         hash: t.hash,
@@ -197,7 +197,7 @@ defmodule GodwokenExplorer.Transaction do
         gas_used: p.gas_used,
         gas_limit: p.gas_limit,
         value: p.value,
-        receive_address: p.receive_address,
+        receive_eth_address: p.receive_eth_address,
         transfer_count: p.transfer_count,
         input: p.input
       },
@@ -216,7 +216,7 @@ defmodule GodwokenExplorer.Transaction do
       on: a3.id == t.to_account_id,
       left_join: p in Polyjuice,
       on: p.tx_hash == t.hash,
-      where: t.from_account_id == ^account_id or p.receive_address == ^eth_address,
+      where: t.from_account_id == ^account_id or p.receive_eth_address == ^eth_address,
       select: %{
         hash: t.hash,
         block_number: b.number,
@@ -233,7 +233,7 @@ defmodule GodwokenExplorer.Transaction do
         gas_used: p.gas_used,
         gas_limit: p.gas_limit,
         value: p.value,
-        receive_address: p.receive_address,
+        receive_eth_address: p.receive_eth_address,
         transfer_count: p.transfer_count,
         input: p.input
       },
@@ -266,7 +266,7 @@ defmodule GodwokenExplorer.Transaction do
         gas_price: p.gas_price,
         gas_used: p.gas_used,
         gas_limit: p.gas_limit,
-        receive_address: p.receive_address,
+        receive_eth_address: p.receive_eth_address,
         transfer_count: p.transfer_count,
         value: p.value,
         input: p.input
@@ -285,7 +285,7 @@ defmodule GodwokenExplorer.Transaction do
       left_join: p in Polyjuice,
       on: p.tx_hash == t.hash,
       where:
-        t.from_account_id == ^account_id or p.receive_address == ^eth_address)
+        t.from_account_id == ^account_id or p.receive_eth_address == ^eth_address)
   end
   def count_of_account(%{type: type, account_id: account_id, eth_address: _eth_address})
       when type in [:meta_contract, :udt, :polyjuice_root, :polyjuice_contract] do
