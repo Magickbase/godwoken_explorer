@@ -275,24 +275,34 @@ defmodule GodwokenExplorer.Transaction do
     )
   end
 
+  # TODO: maybe can refactor
   def count_of_account(%{
       type: type,
       account_id: account_id,
       eth_address: eth_address,
     })
       when type == :user do
-    from(t in Transaction,
-      left_join: p in Polyjuice,
-      on: p.tx_hash == t.hash,
-      where:
-        t.from_account_id == ^account_id or p.receive_eth_address == ^eth_address)
+    query_a =
+      from(t in Transaction,
+        where:
+          t.from_account_id == ^account_id,
+        select: t.hash
+          )
+    query_b =
+      from(p in Polyjuice,
+        where:
+          p.receive_eth_address == ^eth_address,
+        select: p.tx_hash
+          )
+    query_a |> union(^query_b) |> Repo.all() |> Enum.count()
   end
   def count_of_account(%{type: type, account_id: account_id, eth_address: _eth_address})
       when type in [:meta_contract, :udt, :polyjuice_root, :polyjuice_contract] do
     from(t in Transaction,
       left_join: p in Polyjuice,
       on: p.tx_hash == t.hash,
-      where: t.to_account_id == ^account_id)
+      where: t.to_account_id == ^account_id
+      ) |> Repo.aggregate(:count)
   end
 
   def account_transactions_data(
