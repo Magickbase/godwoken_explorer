@@ -65,7 +65,7 @@ defmodule GodwokenExplorerWeb.API.TransactionController do
                 gas_price: tx.parsed_args["gas_price"],
                 gas_limit: tx.parsed_args["gas_limit"],
                 value: tx.parsed_args["value"],
-                receive_address: tx.parsed_args["receive_address"],
+                receive_eth_address: tx.parsed_args["receive_eth_address"],
                 transfer_count: tx.parsed_args["transfer_count"]
               })
             else

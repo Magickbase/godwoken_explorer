@@ -18,6 +18,7 @@ defmodule GodwokenExplorer.Polyjuice do
     field :tx_hash, :binary
     field :gas_used, :integer
     field :receive_address, :binary
+    field :receive_eth_address, :binary
     field :transfer_count, :decimal
 
     belongs_to(:transaction, GodwokenExplorer.Transaction,
@@ -32,7 +33,7 @@ defmodule GodwokenExplorer.Polyjuice do
   @doc false
   def changeset(polyjuice, attrs) do
     polyjuice
-    |> cast(attrs, [:is_create, :gas_limit, :gas_price, :value, :input_size, :input, :gas_used, :receive_address, :transfer_count])
+    |> cast(attrs, [:is_create, :gas_limit, :gas_price, :value, :input_size, :input, :gas_used, :receive_address, :transfer_count, :receive_eth_address])
     |> validate_required([:is_create, :gas_limit, :gas_price, :value, :input_size, :input])
   end
 
@@ -52,17 +53,26 @@ defmodule GodwokenExplorer.Polyjuice do
         _error -> nil
       end
 
-    {receive_address, transfer_count} = decode_transfer_args(attrs[:to_account_id], attrs[:input], attrs[:hash])
-    if receive_address do
-      AccountUDT.update_erc20_balance(attrs[:to_account_id], attrs[:from_account_id])
-      AccountUDT.update_erc20_balance(attrs[:to_account_id], receive_address)
-    end
+    {short_address, transfer_count} = decode_transfer_args(attrs[:to_account_id], attrs[:input], attrs[:hash])
+
+    eth_address =
+      if short_address do
+        AccountUDT.update_erc20_balance(attrs[:to_account_id], attrs[:from_account_id])
+
+        case Account |> Repo.get_by(short_address: short_address) do
+          nil -> nil
+          %Account{eth_address: eth_address} ->
+            AccountUDT.update_erc20_balance(attrs[:to_account_id], short_address)
+            eth_address
+        end
+      end
 
     %Polyjuice{}
     |> Polyjuice.changeset(attrs)
     |> Ecto.Changeset.put_change(:tx_hash, attrs[:hash])
     |> Ecto.Changeset.put_change(:gas_used, gas_used)
-    |> Ecto.Changeset.put_change(:receive_address, receive_address)
+    |> Ecto.Changeset.put_change(:receive_address, short_address)
+    |> Ecto.Changeset.put_change(:receive_eth_address, eth_address)
     |> Ecto.Changeset.put_change(:transfer_count, transfer_count)
     |> Repo.insert()
   end
