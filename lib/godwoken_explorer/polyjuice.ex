@@ -54,9 +54,8 @@ defmodule GodwokenExplorer.Polyjuice do
 
     {receive_address, transfer_count} = decode_transfer_args(attrs[:to_account_id], attrs[:input], attrs[:hash])
     if receive_address do
-      Logger.info("Polyjuice detail #{inspect(attrs)}")
       AccountUDT.update_erc20_balance(attrs[:to_account_id], attrs[:from_account_id])
-      AccountUDT.update_erc20_balance(attrs[:to_account_id], attrs[:receive_address])
+      AccountUDT.update_erc20_balance(attrs[:to_account_id], receive_address)
     end
 
     %Polyjuice{}
