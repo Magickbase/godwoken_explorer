@@ -25,7 +25,8 @@ defmodule GodwokenExplorer.Application do
       GodwokenExplorer.Chain.Cache.BlockCount,
       GodwokenExplorer.Chain.Cache.TransactionCount,
       GodwokenExplorer.Chain.Cache.Blocks,
-      GodwokenExplorer.Chain.Cache.Transactions
+      GodwokenExplorer.Chain.Cache.Transactions,
+      GodwokenExplorer.Chain.Cache.AccountTransactionCount
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
