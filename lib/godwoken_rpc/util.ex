@@ -42,7 +42,11 @@ defmodule GodwokenRPC.Util do
         case parsed_key do
           n when n in @stringify_integer_keys -> Integer.to_string(v)
           d when d in @stringify_decimal_keys ->
-            Decimal.to_string(v)
+            if is_nil(v) do
+              "0"
+            else
+              Decimal.to_string(v)
+            end
           :l1_block when not is_nil(v) -> Integer.to_string(v)
           :timestamp -> utc_to_unix(v)
           :inserted_at -> utc_to_unix(v)
