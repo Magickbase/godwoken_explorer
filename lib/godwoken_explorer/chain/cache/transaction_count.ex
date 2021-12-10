@@ -3,14 +3,14 @@ defmodule GodwokenExplorer.Chain.Cache.TransactionCount do
   Cache for estimated transaction count.
   """
 
-  @default_cache_period :timer.seconds(1)
+  @default_cache_period :timer.minutes(2)
 
   use GodwokenExplorer.Chain.MapCache,
     name: :transaction_count,
     key: :count,
     key: :async_task,
     global_ttl: cache_period(),
-    ttl_check_interval: :timer.seconds(5),
+    ttl_check_interval: :timer.minutes(1),
     callback: &async_task_on_deletion(&1)
 
   require Logger
