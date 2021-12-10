@@ -121,8 +121,6 @@ defmodule GodwokenExplorer.Transaction do
         on: a2.id == t.from_account_id,
         join: a3 in Account,
         on: a3.id == t.to_account_id,
-        left_join: p in Polyjuice,
-        on: p.tx_hash == t.hash,
         where: t.hash == ^hash,
         select: %{
           hash: t.hash,
@@ -137,25 +135,40 @@ defmodule GodwokenExplorer.Transaction do
           type: t.type,
           status: t.status,
           nonce: t.nonce,
-          args: t.args,
-          gas_price: p.gas_price,
-          gas_used: p.gas_used,
-          gas_limit: p.gas_limit,
-          receive_address: p.receive_address,
-          transfer_count: p.transfer_count,
-          value: p.value,
-          input: p.input
+          args: t.args
         }
-      ) |> Repo.one()
+      )
+      |> Repo.one()
 
     if is_nil(tx) do
       %{}
     else
-      tx
+      if tx.type == :polyjuice do
+        with %Polyjuice{} = p <- Repo.get_by(Polyjuice, tx_hash: tx.hash) do
+          tx
+          |> Map.merge(%{
+            gas_price: p.gas_price,
+            gas_used: p.gas_used,
+            gas_limit: p.gas_limit,
+            receive_address: p.receive_address,
+            transfer_count: p.transfer_count,
+            value: p.value,
+            input: p.input
+          })
+        end
+      else
+        tx
+      end
     end
   end
 
-  def list_by_account(%{type: type, account_id: account_id, eth_address: eth_address, contract_id: contract_id}) when type == :user do
+  def list_by_account(%{
+        type: type,
+        account_id: account_id,
+        eth_address: eth_address,
+        contract_id: contract_id
+      })
+      when type == :user do
     from(t in Transaction,
       join: b in Block,
       on: [hash: t.block_hash],
@@ -165,7 +178,9 @@ defmodule GodwokenExplorer.Transaction do
       on: a3.id == t.to_account_id,
       left_join: p in Polyjuice,
       on: p.tx_hash == t.hash,
-      where: (t.from_account_id == ^account_id or p.receive_address == ^eth_address) and t.to_address_id == ^contract_id,
+      where:
+        (t.from_account_id == ^account_id or p.receive_address == ^eth_address) and
+          t.to_address_id == ^contract_id,
       select: %{
         hash: t.hash,
         block_number: b.number,
@@ -185,12 +200,13 @@ defmodule GodwokenExplorer.Transaction do
         receive_address: p.receive_address,
         transfer_count: p.transfer_count,
         input: p.input
-    },
+      },
       order_by: [desc: t.inserted_at]
     )
   end
 
-  def list_by_account(%{type: type, account_id: account_id, eth_address: eth_address}) when type == :user do
+  def list_by_account(%{type: type, account_id: account_id, eth_address: eth_address})
+      when type == :user do
     from(t in Transaction,
       join: b in Block,
       on: [hash: t.block_hash],
@@ -219,13 +235,14 @@ defmodule GodwokenExplorer.Transaction do
         value: p.value,
         receive_address: p.receive_address,
         transfer_count: p.transfer_count,
-        input: p.input,
-    },
+        input: p.input
+      },
       order_by: [desc: t.inserted_at]
     )
   end
 
-  def list_by_account(%{type: type, account_id: account_id, eth_address: _eth_address}) when type in [:meta_contract, :udt, :polyjuice_root, :polyjuice_contract] do
+  def list_by_account(%{type: type, account_id: account_id, eth_address: _eth_address})
+      when type in [:meta_contract, :udt, :polyjuice_root, :polyjuice_contract] do
     from(t in Transaction,
       join: b in Block,
       on: [hash: t.block_hash],
@@ -253,12 +270,15 @@ defmodule GodwokenExplorer.Transaction do
         transfer_count: p.transfer_count,
         value: p.value,
         input: p.input
-    },
+      },
       order_by: [desc: t.inserted_at]
     )
   end
 
-  def account_transactions_data(%{type: type, account_id: account_id, eth_address: eth_address}, page) do
+  def account_transactions_data(
+        %{type: type, account_id: account_id, eth_address: eth_address},
+        page
+      ) do
     txs = list_by_account(%{type: type, account_id: account_id, eth_address: eth_address})
     original_struct = Repo.paginate(txs, page: page)
 
@@ -274,8 +294,18 @@ defmodule GodwokenExplorer.Transaction do
     }
   end
 
-  def account_transactions_data(%{type: type, account_id: account_id, eth_address: eth_address, contract_id: contract_id}, page) do
-    txs = list_by_account(%{type: type, account_id: account_id, eth_address: eth_address, contract_id: contract_id})
+  def account_transactions_data(
+        %{type: type, account_id: account_id, eth_address: eth_address, contract_id: contract_id},
+        page
+      ) do
+    txs =
+      list_by_account(%{
+        type: type,
+        account_id: account_id,
+        eth_address: eth_address,
+        contract_id: contract_id
+      })
+
     original_struct = Repo.paginate(txs, page: page)
 
     parsed_result =
@@ -289,5 +319,4 @@ defmodule GodwokenExplorer.Transaction do
       txs: parsed_result
     }
   end
-
 end
