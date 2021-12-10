@@ -121,7 +121,7 @@ defmodule GodwokenExplorer.Transaction do
         on: a2.id == t.from_account_id,
         join: a3 in Account,
         on: a3.id == t.to_account_id,
-        join: p in Polyjuice,
+        left_join: p in Polyjuice,
         on: p.tx_hash == t.hash,
         where: t.hash == ^hash,
         select: %{
@@ -146,8 +146,7 @@ defmodule GodwokenExplorer.Transaction do
           value: p.value,
           input: p.input
         }
-      )
-      |> Repo.one()
+      ) |> Repo.one()
 
     if is_nil(tx) do
       %{}
@@ -164,7 +163,7 @@ defmodule GodwokenExplorer.Transaction do
       on: a2.id == t.from_account_id,
       join: a3 in Account,
       on: a3.id == t.to_account_id,
-      join: p in Polyjuice,
+      left_join: p in Polyjuice,
       on: p.tx_hash == t.hash,
       where: (t.from_account_id == ^account_id or p.receive_address == ^eth_address) and t.to_address_id == ^contract_id,
       select: %{
@@ -199,7 +198,7 @@ defmodule GodwokenExplorer.Transaction do
       on: a2.id == t.from_account_id,
       join: a3 in Account,
       on: a3.id == t.to_account_id,
-      join: p in Polyjuice,
+      left_join: p in Polyjuice,
       on: p.tx_hash == t.hash,
       where: t.from_account_id == ^account_id or p.receive_address == ^eth_address,
       select: %{
@@ -234,7 +233,7 @@ defmodule GodwokenExplorer.Transaction do
       on: a2.id == t.from_account_id,
       join: a3 in Account,
       on: a3.id == t.to_account_id,
-      join: p in Polyjuice,
+      left_join: p in Polyjuice,
       on: p.tx_hash == t.hash,
       where: t.to_account_id == ^account_id,
       select: %{
