@@ -19,11 +19,29 @@ defmodule GodwokenExplorer.UDTView do
     from(t in Transaction, where: t.to_account_id == ^udt.id) |> Repo.aggregate(:count)
   end
 
-  def list(page) do
-    from(
-      u in UDT,
-      join: a in Account, on: a.id == u.id,
-      select: %{id: u.id, short_address: a.short_address, script_hash: u.script_hash, symbol: u.symbol, decimal: u.decimal, name: u.name, supply: u.supply, type: u.type}
-    ) |> Repo.paginate(page: page)
+  def list(type, page) do
+    cond do
+      type == "bridge" ->
+        from(
+          u in UDT,
+          join: a in Account, on: a.id == u.id,
+          where: u.type == :bridge,
+          select: %{id: u.id, short_address: a.short_address, script_hash: u.script_hash, symbol: u.symbol, decimal: u.decimal, name: u.name, supply: u.supply, type: u.type}
+        )
+      type == "native" ->
+        from(
+          u in UDT,
+          join: a in Account, on: a.id == u.id,
+          where: u.type == :native,
+          select: %{id: u.id, short_address: a.short_address, script_hash: u.script_hash, symbol: u.symbol, decimal: u.decimal, name: u.name, supply: u.supply, type: u.type}
+        )
+      true ->
+        from(
+          u in UDT,
+          join: a in Account, on: a.id == u.id,
+          select: %{id: u.id, short_address: a.short_address, script_hash: u.script_hash, symbol: u.symbol, decimal: u.decimal, name: u.name, supply: u.supply, type: u.type}
+        )
+    end
+    |> Repo.paginate(page: page)
   end
 end
