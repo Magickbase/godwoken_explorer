@@ -8,6 +8,14 @@ defmodule GodwokenExplorer.UDTView do
     [:id, :script_hash, :symbol, :decimal, :name, :supply, :holder_count, :type, :short_address, :type_script, :script_hash, :official_site, :description, :value, :transfer_count]
   end
 
+  def supply(udt, _conn) do
+    if is_nil(udt.supply) do
+      ""
+    else
+      Decimal.to_string(udt.supply)
+    end
+  end
+
   def holder_count(udt, _conn) do
     from(
       au in AccountUDT,
