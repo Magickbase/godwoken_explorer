@@ -34,20 +34,20 @@ defmodule GodwokenExplorer.UDTView do
           u in UDT,
           join: a in Account, on: a.id == u.id,
           where: u.type == :bridge,
-          select: %{id: u.id, short_address: a.short_address, script_hash: u.script_hash, symbol: u.symbol, decimal: u.decimal, name: u.name, supply: u.supply, type: u.type}
+          select: %{id: u.id, short_address: a.short_address, script_hash: u.script_hash, symbol: u.symbol, decimal: u.decimal, name: u.name, supply: u.supply, type: u.type, icon: u.icon}
         )
       type == "native" ->
         from(
           u in UDT,
           join: a in Account, on: a.id == u.id,
           where: u.type == :native,
-          select: %{id: u.id, short_address: a.short_address, script_hash: u.script_hash, symbol: u.symbol, decimal: u.decimal, name: u.name, supply: u.supply, type: u.type}
+          select: %{id: u.id, short_address: a.short_address, script_hash: u.script_hash, symbol: u.symbol, decimal: u.decimal, name: u.name, supply: u.supply, type: u.type, icon: u.icon}
         )
       true ->
         from(
           u in UDT,
           join: a in Account, on: a.id == u.id,
-          select: %{id: u.id, short_address: a.short_address, script_hash: u.script_hash, symbol: u.symbol, decimal: u.decimal, name: u.name, supply: u.supply, type: u.type}
+          select: %{id: u.id, short_address: a.short_address, script_hash: u.script_hash, symbol: u.symbol, decimal: u.decimal, name: u.name, supply: u.supply, type: u.type, icon: u.icon}
         )
     end
     |> Repo.paginate(page: page)
