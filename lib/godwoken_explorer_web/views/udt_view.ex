@@ -5,7 +5,7 @@ defmodule GodwokenExplorer.UDTView do
   alias GodwokenExplorer.{UDT, Repo, Account, AccountUDT, Transaction}
 
   def fields do
-    [:id, :script_hash, :symbol, :decimal, :name, :supply, :holder_count, :type, :short_address, :type_script, :script_hash, :official_site, :description, :value, :transfer_count]
+    [:id, :script_hash, :symbol, :decimal, :name, :supply, :holder_count, :type, :short_address, :type_script, :script_hash, :official_site, :description, :value, :transfer_count, :icon]
   end
 
   def supply(udt, _conn) do
