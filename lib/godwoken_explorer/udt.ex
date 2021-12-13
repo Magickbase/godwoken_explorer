@@ -20,6 +20,7 @@ defmodule GodwokenExplorer.UDT do
     field(:official_site, :string)
     field(:value, :decimal)
     field(:price, :decimal)
+    field(:bridge_account_id, :integer)
     field :type, Ecto.Enum, values: [:bridge, :native]
 
     timestamps()
@@ -28,7 +29,7 @@ defmodule GodwokenExplorer.UDT do
   @doc false
   def changeset(udt, attrs) do
     udt
-    |> cast(attrs, [:id, :name, :symbol, :decimal, :icon, :supply, :type_script, :script_hash, :description, :official_site, :type, :value])
+    |> cast(attrs, [:id, :name, :symbol, :decimal, :icon, :supply, :type_script, :script_hash, :description, :official_site, :type, :value, :bridge_account_id])
     |> unique_constraint(:id, name: :udts_pkey)
   end
 
