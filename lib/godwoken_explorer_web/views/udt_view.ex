@@ -31,7 +31,7 @@ defmodule GodwokenExplorer.UDTView do
     from(u in UDT,
       join: a in Account, on: a.id == u.id,
       where: u.id == ^id,
-      select: %{id: u.id, short_address: a.short_address, script_hash: u.script_hash, symbol: u.symbol, decimal: u.decimal, name: u.name, supply: u.supply, type: u.type, icon: u.icon}
+      select: %{id: u.id, short_address: a.short_address, script_hash: u.script_hash, symbol: u.symbol, decimal: u.decimal, name: u.name, supply: u.supply, type: u.type, icon: u.icon, type_script: u.type_script}
    ) |> Repo.one()
   end
 
@@ -42,20 +42,20 @@ defmodule GodwokenExplorer.UDTView do
           u in UDT,
           join: a in Account, on: a.id == u.id,
           where: u.type == :bridge,
-          select: %{id: u.id, short_address: a.short_address, script_hash: u.script_hash, symbol: u.symbol, decimal: u.decimal, name: u.name, supply: u.supply, type: u.type, icon: u.icon}
+          select: %{id: u.id, short_address: a.short_address, script_hash: u.script_hash, symbol: u.symbol, decimal: u.decimal, name: u.name, supply: u.supply, type: u.type, icon: u.icon, type_script: u.type_script}
         )
       type == "native" ->
         from(
           u in UDT,
           join: a in Account, on: a.id == u.id,
           where: u.type == :native,
-          select: %{id: u.id, short_address: a.short_address, script_hash: u.script_hash, symbol: u.symbol, decimal: u.decimal, name: u.name, supply: u.supply, type: u.type, icon: u.icon}
+          select: %{id: u.id, short_address: a.short_address, script_hash: u.script_hash, symbol: u.symbol, decimal: u.decimal, name: u.name, supply: u.supply, type: u.type, icon: u.icon, type_script: u.type_script}
         )
       true ->
         from(
           u in UDT,
           join: a in Account, on: a.id == u.id,
-          select: %{id: u.id, short_address: a.short_address, script_hash: u.script_hash, symbol: u.symbol, decimal: u.decimal, name: u.name, supply: u.supply, type: u.type, icon: u.icon}
+          select: %{id: u.id, short_address: a.short_address, script_hash: u.script_hash, symbol: u.symbol, decimal: u.decimal, name: u.name, supply: u.supply, type: u.type, icon: u.icon, type_script: u.type_script}
         )
     end
     |> Repo.paginate(page: page)
