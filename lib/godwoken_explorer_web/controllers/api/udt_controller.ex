@@ -1,7 +1,7 @@
 defmodule GodwokenExplorerWeb.API.UDTController do
   use GodwokenExplorerWeb, :controller
 
-  alias GodwokenExplorer.{UDT, UDTView, Repo}
+  alias GodwokenExplorer.UDTView
 
   plug JSONAPI.QueryParser, view: UDTView
 
@@ -14,12 +14,12 @@ defmodule GodwokenExplorerWeb.API.UDTController do
 
 
   def show(conn, %{"id" => id} = _params) do
-    case Repo.get(UDT, id) do
+    case UDTView.get_udt(id) do
       nil -> %{
         error_code: 404,
         message: "not found"
       }
-      udt = %UDT{} ->
+      udt = %{name: _name} ->
         data = JSONAPI.Serializer.serialize(UDTView, udt, conn)
         json(conn, data)
     end
