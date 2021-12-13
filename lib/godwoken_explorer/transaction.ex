@@ -180,7 +180,7 @@ defmodule GodwokenExplorer.Transaction do
       on: p.tx_hash == t.hash,
       where:
         (t.from_account_id == ^account_id or p.receive_eth_address == ^eth_address) and
-          t.to_address_id == ^contract_id,
+          t.to_account_id == ^contract_id,
       select: %{
         hash: t.hash,
         block_number: b.number,
@@ -306,10 +306,17 @@ defmodule GodwokenExplorer.Transaction do
   end
 
   def account_transactions_data(
-        %{type: type, account_id: account_id, eth_address: eth_address},
+        %{type: type, account_id: account_id, eth_address: eth_address, contract_id: contract_id},
         page
       ) do
-    txs = list_by_account(%{type: type, account_id: account_id, eth_address: eth_address})
+    txs =
+      list_by_account(%{
+        type: type,
+        account_id: account_id,
+        eth_address: eth_address,
+        contract_id: contract_id
+      })
+
     original_struct = Repo.paginate(txs, page: page)
 
     parsed_result =
@@ -323,19 +330,11 @@ defmodule GodwokenExplorer.Transaction do
       txs: parsed_result
     }
   end
-
   def account_transactions_data(
-        %{type: type, account_id: account_id, eth_address: eth_address, contract_id: contract_id},
+        %{type: type, account_id: account_id, eth_address: eth_address},
         page
       ) do
-    txs =
-      list_by_account(%{
-        type: type,
-        account_id: account_id,
-        eth_address: eth_address,
-        contract_id: contract_id
-      })
-
+    txs = list_by_account(%{type: type, account_id: account_id, eth_address: eth_address})
     original_struct = Repo.paginate(txs, page: page)
 
     parsed_result =
