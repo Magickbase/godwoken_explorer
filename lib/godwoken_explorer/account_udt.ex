@@ -3,6 +3,8 @@ defmodule GodwokenExplorer.AccountUDT do
 
   import GodwokenRPC.Util, only: [hex_to_number: 1]
 
+  require Logger
+
   alias GodwokenRPC
   alias GodwokenExplorer.Chain.Events.Publisher
 
@@ -74,15 +76,23 @@ defmodule GodwokenExplorer.AccountUDT do
     })
   end
 
-  def update_erc20_balance(contract_id, account_id) do
-    balance_of_method = "0x70a08231"
-    contract_address = Repo.get(Account, contract_id).short_address
-    user_address = Repo.get(Account, account_id).short_address
-    case GodwokenRPC.eth_call(%{to: contract_address, data: balance_of_method <> String.duplicate("0", 24) <> String.slice(user_address, 2..-1)}) do
-      {:ok, balance} ->
-        number = balance |> hex_to_number
-        AccountUDT.create_or_update_account_udt!(%{account_id: account_id, udt_id: contract_id, balance: number})
-      {:error, _} ->
+  def update_erc20_balance!(contract_account_id, account_id) do
+    case UDT |> Repo.get_by(bridge_account_id: contract_account_id) do
+      nil ->
+        balance_of_method = "0x70a08231"
+        contract_address = Repo.get(Account, contract_account_id).short_address
+        user_address = Repo.get(Account, account_id).short_address
+        case GodwokenRPC.eth_call(%{to: contract_address, data: balance_of_method <> String.duplicate("0", 24) <> String.slice(user_address, 2..-1)}) do
+          {:ok, balance} ->
+            number = balance |> hex_to_number
+            AccountUDT.create_or_update_account_udt!(%{account_id: account_id, udt_id: contract_account_id, balance: number})
+          {:error, _} ->
+            nil
+        end
+      %UDT{id: udt_id, type: :bridge} ->
+        sync_balance!(account_id, udt_id)
+      _ ->
+        Logger.error("may be type is not right #{contract_account_id}")
         nil
     end
   end
