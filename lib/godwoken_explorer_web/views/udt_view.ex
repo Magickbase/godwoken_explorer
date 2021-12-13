@@ -27,6 +27,14 @@ defmodule GodwokenExplorer.UDTView do
     from(t in Transaction, where: t.to_account_id == ^udt.id) |> Repo.aggregate(:count)
   end
 
+  def get_udt(id) do
+    from(u in UDT,
+      join: a in Account, on: a.id == u.id,
+      where: u.id == ^id,
+      select: %{id: u.id, short_address: a.short_address, script_hash: u.script_hash, symbol: u.symbol, decimal: u.decimal, name: u.name, supply: u.supply, type: u.type, icon: u.icon}
+   ) |> Repo.one()
+  end
+
   def list(type, page) do
     cond do
       type == "bridge" ->
