@@ -207,20 +207,9 @@ defmodule GodwokenExplorer.UDT do
     end
   end
 
-  def yokai_account_id do
-    if FastGlobal.get(:yokai_account_id) do
-      FastGlobal.get(:yokai_account_id)
-    else
-        with  %__MODULE__{id: id} <- Repo.get_by(__MODULE__, name: "Yokai") do
-        FastGlobal.put(:yokai_account_id, id)
-        id
-      else
-        _ -> nil
-      end
-    end
+  def find_by_name_or_token(keyword) do
+    from(u in UDT, where: u.name == ^keyword or u.symbol == ^keyword) |> Repo.all() |> List.first
   end
-
-
 
   defp filter_config(:udts) do
     defconfig do
