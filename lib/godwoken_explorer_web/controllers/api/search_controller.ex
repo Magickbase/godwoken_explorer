@@ -1,7 +1,7 @@
 defmodule GodwokenExplorerWeb.API.SearchController do
   use GodwokenExplorerWeb, :controller
 
-  alias GodwokenExplorer.{Repo, Account, Block, Transaction, PendingTransaction}
+  alias GodwokenExplorer.{Repo, Account, Block, Transaction, PendingTransaction, UDT}
 
   def index(conn, %{"keyword" => "0x" <> _} = params) do
     downcase_keyword = String.downcase(params["keyword"])
@@ -49,10 +49,15 @@ defmodule GodwokenExplorerWeb.API.SearchController do
           end
 
         _ ->
-          %{
-            error_code: 404,
-            message: "not found"
-          }
+          cond do
+            (udt = UDT.find_by_name_or_token(keyword)) != nil ->
+              %{type: "udt", id: udt.id}
+            true ->
+              %{
+                error_code: 404,
+                message: "not found"
+              }
+          end
       end
 
     json(

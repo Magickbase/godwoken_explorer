@@ -121,16 +121,6 @@ defmodule GodwokenExplorer.Account do
         nil -> Decimal.new(0)
       end
 
-    yokai_balance =
-      with udt_id when is_integer(udt_id) <- UDT.yokai_account_id() do
-        case Repo.get_by(AccountUDT, %{account_id: id, udt_id: udt_id}) do
-          %AccountUDT{balance: balance} -> balance
-          nil -> Decimal.new(0)
-        end
-      else
-        nil -> Decimal.new(0)
-      end
-
     tx_count = GodwokenExplorer.Chain.Cache.AccountTransactionCount.get(account.id)
 
     base_map = %{
@@ -138,7 +128,6 @@ defmodule GodwokenExplorer.Account do
       type: account.type,
       ckb: ckb_balance |> Decimal.to_string(),
       eth: eth_balance |> Decimal.to_string(),
-      yokai: yokai_balance |> Decimal.to_string(),
       tx_count: tx_count |> Integer.to_string()
     }
 
