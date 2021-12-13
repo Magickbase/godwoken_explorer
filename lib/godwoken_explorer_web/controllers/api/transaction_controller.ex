@@ -5,25 +5,26 @@ defmodule GodwokenExplorerWeb.API.TransactionController do
 
   alias GodwokenExplorer.{Transaction, Account, Repo, PendingTransaction}
 
+  def index(conn, %{"eth_address" => "0x" <> _, "contract_address" => "0x" <> _} = params) do
+    results =
+      with %Account{id: account_id, type: :user, eth_address: eth_address} <- Account.search(String.downcase(params["eth_address"])),
+        %Account{id: contract_id, type: :polyjuice_contract} <- Repo.get_by(Account, short_address: params["contract_address"]) do
+        Transaction.account_transactions_data(%{type: :user, account_id: account_id, eth_address: eth_address, contract_id: contract_id}, conn.params["page"] || 1)
+      else
+        _ ->
+          %{
+            error_code: 404,
+            message: "not found"
+          }
+      end
+    json(conn, results)
+  end
+
   def index(conn, %{"eth_address" => "0x" <> _} = params) do
     %Account{id: account_id, type: type, eth_address: eth_address} = Account.search(String.downcase(params["eth_address"]))
     results = Transaction.account_transactions_data(%{type: type, account_id: account_id, eth_address: eth_address},  conn.params["page"] || 1)
 
     json(conn, results)
-  end
-
-  def index(conn, %{"eth_address" => "0x" <> _, "contract_address" => "0x" <> _} = params) do
-    with %Account{id: account_id, type: :user, eth_address: eth_address} <- Account.search(String.downcase(params["eth_address"])),
-       %Account{id: contract_id, type: :polyjuice_contract} <- Repo.get_by(Account, short_address: params["contract_address"]) do
-      results = Transaction.account_transactions_data(%{type: :user, account_id: account_id, eth_address: eth_address, contract_id: contract_id}, conn.params["page"] || 1)
-      json(conn, results)
-    else
-      _ ->
-        %{
-          error_code: 404,
-          message: "not found"
-        }
-    end
   end
 
   def index(conn, %{"account_id" => _} = params) do
