@@ -17,6 +17,11 @@
         </li>
 
         <li>
+          <div class="torch-show-label">Bridge Account ID:</div>
+          <div class="torch-show-data"><%= @udt.bridge_account_id %></div>
+        </li>
+
+        <li>
           <div class="torch-show-label">Decimal:</div>
           <div class="torch-show-data"><%= @udt.decimal %></div>
         </li>
