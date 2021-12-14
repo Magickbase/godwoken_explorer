@@ -29,7 +29,7 @@
 
     <div class="torch-form-group">
       <%= label f, :bridge_account_id, "bridge_account_id(only with bridge type udt)" %>
-      <%= number_input f, :bridge_account_id, required: true %>
+      <%= number_input f, :bridge_account_id %>
       <%= error_tag f, :bridge_account_id %>
     </div>
 
@@ -80,7 +80,6 @@
       <input id="torch-form_udt_type_script_args" name="udt[type_script][args]" type="text" value="<%= type_script_value(@conn, "args") %>" >
       <%= error_tag f, :type_script_args %>
     </div>
-
 
     <div class="torch-form-group">
       <%= label f, :description %>

@@ -209,7 +209,10 @@ defmodule GodwokenExplorer.UDT do
   end
 
   def find_by_name_or_token(keyword) do
-    from(u in UDT, where: u.name == ^keyword or u.symbol == ^keyword) |> Repo.all() |> List.first
+    from(u in UDT,
+    where: fragment("lower(?)", u.name) == ^keyword or fragment("lower(?)", u.symbol) == ^keyword)
+    |> Repo.all()
+    |> List.first
   end
 
   defp filter_config(:udts) do
