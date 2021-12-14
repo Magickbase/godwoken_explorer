@@ -50,7 +50,7 @@ defmodule GodwokenExplorerWeb.API.SearchController do
 
         _ ->
           cond do
-            (udt = UDT.find_by_name_or_token(keyword)) != nil ->
+            (udt = UDT.find_by_name_or_token(String.downcase(keyword))) != nil ->
               %{type: "udt", id: udt.id}
             true ->
               %{
