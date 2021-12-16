@@ -65,6 +65,32 @@ defmodule GodwokenExplorer.AccountUDT do
     |> Enum.map(fn u -> %{u | balance: Decimal.to_string(u.balance)} end)
   end
 
+  def realtime_update_balance(account_id, udt_id) do
+    result = from(au in AccountUDT,
+      join: a in Account, on: a.id == au.account_id,
+      where: au.account_id == ^account_id and au.udt_id == ^udt_id,
+      select: %{short_address: a.short_address, balance: au.balance, updated_at: au.updated_at}
+    ) |> Repo.one()
+
+    case result do
+      %{balance: balance, short_address: short_address, updated_at: updated_at} ->
+        with second when second > 60 <- NaiveDateTime.diff(NaiveDateTime.utc_now |> NaiveDateTime.truncate(:second), updated_at),
+          {:ok, on_chain_balance} <- GodwokenRPC.fetch_balance(short_address, udt_id),
+          compare when compare != :eq <- Decimal.compare(Decimal.new(balance), Decimal.new(on_chain_balance)) do
+            AccountUDT.create_or_update_account_udt!(%{
+              account_id: account_id,
+              udt_id: udt_id,
+              balance: on_chain_balance
+            })
+            on_chain_balance
+        else
+          _ -> balance
+        end
+      nil ->
+        Decimal.new(0)
+    end
+  end
+
   def sync_balance!(account_id, udt_id) do
     account = Repo.get(Account, account_id)
     {:ok, balance} = GodwokenRPC.fetch_balance(account.short_address, udt_id)
@@ -74,6 +100,7 @@ defmodule GodwokenExplorer.AccountUDT do
       udt_id: udt_id,
       balance: balance
     })
+    balance
   end
 
   def update_erc20_balance!(contract_account_id, account_id) do

@@ -103,22 +103,16 @@ defmodule GodwokenExplorer.Account do
 
     ckb_balance =
       with udt_id when is_integer(udt_id) <- ckb_udt_id do
-        case Repo.get_by(AccountUDT, %{account_id: id, udt_id: udt_id}) do
-          %AccountUDT{balance: balance} -> balance
-          nil -> Decimal.new(0)
-        end
+        AccountUDT.realtime_update_balance(id, udt_id)
       else
-        nil -> Decimal.new(0)
+        _ -> Decimal.new(0)
       end
 
     eth_balance =
       with udt_id when is_integer(udt_id) <- UDT.eth_account_id() do
-        case Repo.get_by(AccountUDT, %{account_id: id, udt_id: udt_id}) do
-          %AccountUDT{balance: balance} -> balance
-          nil -> Decimal.new(0)
-        end
+        AccountUDT.realtime_update_balance(id, udt_id)
       else
-        nil -> Decimal.new(0)
+        _ -> Decimal.new(0)
       end
 
     tx_count = GodwokenExplorer.Chain.Cache.AccountTransactionCount.get(account.id)
