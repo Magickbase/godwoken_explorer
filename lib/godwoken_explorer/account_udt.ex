@@ -82,7 +82,7 @@ defmodule GodwokenExplorer.AccountUDT do
               udt_id: udt_id,
               balance: on_chain_balance
             })
-            on_chain_balance
+            Decimal.new(on_chain_balance)
         else
           _ -> balance
         end
