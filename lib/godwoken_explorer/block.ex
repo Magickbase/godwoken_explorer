@@ -71,13 +71,6 @@ defmodule GodwokenExplorer.Block do
     from(b in Block, where: b.number == ^number) |> Repo.one()
   end
 
-  def get_next_number do
-    case Repo.one(from block in Block, order_by: [desc: block.number], limit: 1) do
-      %Block{number: number} -> number + 1
-      nil -> 0
-    end
-  end
-
   def latest_10_records do
     case Blocks.all() do
       blocks when is_list(blocks) and length(blocks) == 10 ->
@@ -246,5 +239,10 @@ defmodule GodwokenExplorer.Block do
       })
       |> Repo.update!()
     end)
+  end
+
+  def rollback!(hash) do
+    Repo.get(__MODULE__, hash) |> Repo.delete!()
+    from(t in Transaction, where: t.block_hash == ^hash) |> Repo.delete_all()
   end
 end

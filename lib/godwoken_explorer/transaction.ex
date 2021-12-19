@@ -48,7 +48,7 @@ defmodule GodwokenExplorer.Transaction do
       %Transaction{}
       |> Transaction.changeset(attrs)
       |> Ecto.Changeset.put_change(:block_hash, attrs[:block_hash])
-      |> Repo.insert()
+      |> Repo.insert([on_conflict: :nothing])
 
     UDTTransfer.create_udt_transfer(attrs)
     transaction
@@ -59,7 +59,7 @@ defmodule GodwokenExplorer.Transaction do
       %Transaction{}
       |> Transaction.changeset(attrs)
       |> Ecto.Changeset.put_change(:block_hash, attrs[:block_hash])
-      |> Repo.insert()
+      |> Repo.insert([on_conflict: :nothing])
 
     PolyjuiceCreator.create_polyjuice_creator(attrs)
     transaction
@@ -69,7 +69,7 @@ defmodule GodwokenExplorer.Transaction do
     transaction =
       %Transaction{}
       |> Transaction.changeset(attrs)
-      |> Repo.insert()
+      |> Repo.insert([on_conflict: :nothing])
 
     Polyjuice.create_polyjuice(attrs)
     transaction
@@ -83,7 +83,7 @@ defmodule GodwokenExplorer.Transaction do
         |> Enum.map(fn t ->
           t
           |> Map.take([:hash, :from_account_id, :to_account_id, :type])
-          |> Map.merge(%{timestamp: t.block.inserted_at, success: true})
+          |> Map.merge(%{timestamp: t.block.inserted_at})
         end)
 
       _ ->
@@ -102,8 +102,7 @@ defmodule GodwokenExplorer.Transaction do
               CASE WHEN a3.type = 'user' THEN encode(a3.eth_address, 'escape')
                  WHEN a3.type = 'polyjuice_contract' THEN encode(a3.short_address, 'escape')
                  ELSE a3.id::text END"),
-            type: t.type,
-            success: true
+            type: t.type
           },
           order_by: [desc: t.block_number, desc: t.inserted_at],
           limit: 10

@@ -2,12 +2,13 @@ defmodule GodwokenIndexer.Block.SyncWorker do
   use GenServer
 
   import GodwokenRPC.Util, only: [hex_to_number: 1]
+  import Ecto.Query, only: [from: 2]
 
   require Logger
 
   alias GodwokenRPC.Block.{FetchedTipBlockHash, ByHash}
   alias GodwokenRPC.{Blocks, HTTP}
-  alias GodwokenExplorer.{Block, Transaction, Chain, AccountUDT}
+  alias GodwokenExplorer.{Block, Transaction, Chain, AccountUDT, Repo}
   alias GodwokenExplorer.Chain.Events.Publisher
   alias GodwokenExplorer.Chain.Cache.Blocks, as: BlocksCache
   alias GodwokenExplorer.Chain.Cache.Transactions
@@ -20,27 +21,24 @@ defmodule GodwokenIndexer.Block.SyncWorker do
 
   @impl true
   def init(state) do
-    # Schedule work to be performed on start
-    schedule_work()
+    next_number = get_next_number()
+    schedule_work(next_number)
 
     {:ok, state}
   end
 
   @impl true
-  def handle_info(:work, state) do
-    # Do the desired work here
-    fetch_and_import()
+  def handle_info({:work, next_number}, state) do
+    {:ok, block_number} = fetch_and_import(next_number)
 
     # Reschedule once more
-    schedule_work()
+    schedule_work(block_number)
 
     {:noreply, state}
   end
 
-  defp fetch_and_import do
+  defp fetch_and_import(next_number) do
     with {:ok, tip_number} <- fetch_tip_number() do
-      next_number = Block.get_next_number()
-
       if next_number <= tip_number do
         range = next_number..next_number
 
@@ -51,6 +49,17 @@ defmodule GodwokenIndexer.Block.SyncWorker do
            errors: _
          }} = GodwokenRPC.fetch_blocks_by_range(range)
 
+        parent_hash =
+          blocks_params
+          |> List.first
+          |> Map.get(:parent_hash)
+
+         if forked?(parent_hash, next_number - 1) do
+            Logger.error("!!!!!!Layer2 forked!!!!!!#{next_number - 1}")
+            Block.rollback!(parent_hash)
+            throw(:rollback)
+         end
+
         inserted_blocks =
           blocks_params
           |> Enum.map(fn block_params ->
@@ -60,38 +69,13 @@ defmodule GodwokenIndexer.Block.SyncWorker do
 
         update_block_cache(inserted_blocks)
 
-        old_inserted_transactions =
+        inserted_transactions =
           transactions_params
           |> Enum.map(fn transaction_params ->
             {:ok, %Transaction{} = tx} = Transaction.create_transaction(transaction_params)
 
             tx
           end)
-
-        inserted_transactions =
-          old_inserted_transactions
-          |> Enum.map(fn tx ->
-            from_account =
-              case GodwokenIndexer.Account.SyncSupervisor.start_child(tx.from_account_id) do
-                {:ok, from_pid} ->
-                  GodwokenIndexer.Account.SyncWorker.get_eth_address_or_id(from_pid)
-
-                {:error, {:already_started, from_pid}} ->
-                  GodwokenIndexer.Account.SyncWorker.get_eth_address_or_id(from_pid)
-              end
-
-            to_account =
-              case GodwokenIndexer.Account.SyncSupervisor.start_child(tx.to_account_id) do
-                {:ok, to_pid} ->
-                  GodwokenIndexer.Account.SyncWorker.get_eth_address_or_id(to_pid)
-
-                {:error, {:already_started, to_pid}} ->
-                  GodwokenIndexer.Account.SyncWorker.get_eth_address_or_id(to_pid)
-              end
-
-            tx |> struct(%{from_account_id: from_account, to_account_id: to_account})
-          end)
-
         update_transactions_cache(inserted_transactions)
 
         broadcast_block_and_tx(inserted_blocks, inserted_transactions)
@@ -112,8 +96,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
         tx
         |> Map.take([:hash, :type, :from_account_id, :to_account_id])
         |> Map.merge(%{
-          timestamp: home_blocks |> List.first() |> Map.get(:inserted_at),
-          success: true
+          timestamp: home_blocks |> List.first() |> Map.get(:inserted_at)
         })
       end)
 
@@ -178,11 +161,25 @@ defmodule GodwokenIndexer.Block.SyncWorker do
     end
   end
 
-  defp schedule_work do
+  defp get_next_number do
+    case Repo.one(from block in Block, order_by: [desc: block.number], limit: 1) do
+      %Block{number: number} -> number + 1
+      nil -> 0
+    end
+  end
+
+  defp forked?(parent_hash, parent_block_number) do
+    case Repo.get_by(Block, number: parent_block_number) do
+      nil -> false
+      %Block{hash: database_hash} -> parent_hash != database_hash
+    end
+  end
+
+  defp schedule_work(next_number) do
     second =
       Application.get_env(:godwoken_explorer, :sync_worker_interval) ||
         @default_worker_interval
 
-    Process.send_after(self(), :work, second * 1000)
+    Process.send_after(self(), {:work, next_number}, second * 1000)
   end
 end
