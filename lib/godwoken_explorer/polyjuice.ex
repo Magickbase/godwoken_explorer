@@ -109,7 +109,6 @@ defmodule GodwokenExplorer.Polyjuice do
       )
     else
       _ ->
-        Logger.error("decord input data failed #{hash}")
         nil
     end
   end

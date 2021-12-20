@@ -81,6 +81,8 @@ defmodule GodwokenIndexer.Block.SyncWorker do
         broadcast_block_and_tx(inserted_blocks, inserted_transactions)
 
         trigger_sudt_account_worker(transactions_params)
+
+        {:ok, next_number + 1}
       end
     end
   end
