@@ -319,7 +319,7 @@ defmodule GodwokenExplorer.Account do
         {:ok, id}
 
       nil ->
-        script_hash = GodwokenRPC.fetch_script_hash(%{short_address: short_address})
+        {:ok, script_hash} = GodwokenRPC.fetch_script_hash(%{short_address: short_address})
         account_id = script_hash |> GodwokenRPC.fetch_account_id() |> elem(1)
         {:ok, account_id}
     end
@@ -372,13 +372,21 @@ defmodule GodwokenExplorer.Account do
           true -> id
         end
       nil ->
-        nil
+        {:ok, script_hash} = GodwokenRPC.fetch_script_hash(%{account_id: id})
+        script = GodwokenRPC.fetch_script(script_hash)
+        type = switch_account_type(script["code_hash"], script["args"])
+        cond do
+          type == :user -> Account.script_to_eth_adress(type, script["args"])
+          type == :polyjuice_contract -> script_hash |> String.slice(0, 42)
+          type == :polyjuice_root -> "deploy contract"
+          true -> id
+        end
     end
   end
 
   def manual_create_account(id) do
     nonce = GodwokenRPC.fetch_nonce(id)
-    script_hash = GodwokenRPC.fetch_script_hash(%{account_id: id})
+    {:ok, script_hash} = GodwokenRPC.fetch_script_hash(%{account_id: id})
     short_address = String.slice(script_hash, 0, 42)
     script = GodwokenRPC.fetch_script(script_hash)
     type = switch_account_type(script["code_hash"], script["args"])
