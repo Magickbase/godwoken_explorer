@@ -27,7 +27,7 @@ defmodule GodwokenExplorer.PendingTransaction do
   def create_pending_transaction(attrs) do
     %PendingTransaction{}
     |> PendingTransaction.changeset(attrs)
-    |> Repo.insert()
+    |> Repo.insert([on_conflict: :nothing])
   end
 
   def find_by_hash(tx_hash) do
