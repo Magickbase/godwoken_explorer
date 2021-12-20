@@ -59,7 +59,7 @@ defmodule GodwokenExplorer.Block do
   def create_block(attrs \\ %{}) do
     %Block{}
     |> changeset(attrs)
-    |> Repo.insert()
+    |> Repo.insert([on_conflict: :nothing])
   end
 
   def find_by_number_or_hash("0x" <> _ = param) do

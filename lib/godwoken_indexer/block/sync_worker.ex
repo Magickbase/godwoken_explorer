@@ -38,52 +38,58 @@ defmodule GodwokenIndexer.Block.SyncWorker do
   end
 
   defp fetch_and_import(next_number) do
-    with {:ok, tip_number} <- fetch_tip_number() do
-      if next_number <= tip_number do
-        range = next_number..next_number
+    with {:ok, tip_number} <- fetch_tip_number(),
+         true <- next_number <= tip_number do
+      range = next_number..next_number
 
-        {:ok,
-         %Blocks{
-           blocks_params: blocks_params,
-           transactions_params: transactions_params,
-           errors: _
-         }} = GodwokenRPC.fetch_blocks_by_range(range)
+      {:ok,
+       %Blocks{
+         blocks_params: blocks_params,
+         transactions_params: transactions_params,
+         errors: _
+       }} = GodwokenRPC.fetch_blocks_by_range(range)
 
-        parent_hash =
-          blocks_params
-          |> List.first
-          |> Map.get(:parent_hash)
+      parent_hash =
+        blocks_params
+        |> List.first()
+        |> Map.get(:parent_hash)
 
-         if forked?(parent_hash, next_number - 1) do
-            Logger.error("!!!!!!Layer2 forked!!!!!!#{next_number - 1}")
-            Block.rollback!(parent_hash)
-            throw(:rollback)
-         end
-
-        inserted_blocks =
-          blocks_params
-          |> Enum.map(fn block_params ->
-            {:ok, %Block{} = block_struct} = Block.create_block(block_params)
-            block_struct
-          end)
-
-        update_block_cache(inserted_blocks)
-
-        inserted_transactions =
-          transactions_params
-          |> Enum.map(fn transaction_params ->
-            {:ok, %Transaction{} = tx} = Transaction.create_transaction(transaction_params)
-
-            tx |> Map.merge(%{from: Account.display_id(tx.from_account_id), to: Account.display_id(tx.to_account_id)})
-          end)
-        update_transactions_cache(inserted_transactions)
-
-        broadcast_block_and_tx(inserted_blocks, inserted_transactions)
-
-        trigger_sudt_account_worker(transactions_params)
-
-        {:ok, next_number + 1}
+      if forked?(parent_hash, next_number - 1) do
+        Logger.error("!!!!!!Layer2 forked!!!!!!#{next_number - 1}")
+        Block.rollback!(parent_hash)
+        throw(:rollback)
       end
+
+      inserted_blocks =
+        blocks_params
+        |> Enum.map(fn block_params ->
+          {:ok, %Block{} = block_struct} = Block.create_block(block_params)
+          block_struct
+        end)
+
+      update_block_cache(inserted_blocks)
+
+      inserted_transactions =
+        transactions_params
+        |> Enum.map(fn transaction_params ->
+          {:ok, %Transaction{} = tx} = Transaction.create_transaction(transaction_params)
+
+          tx
+          |> Map.merge(%{
+            from: Account.display_id(tx.from_account_id),
+            to: Account.display_id(tx.to_account_id)
+          })
+        end)
+
+      update_transactions_cache(inserted_transactions)
+
+      broadcast_block_and_tx(inserted_blocks, inserted_transactions)
+
+      trigger_sudt_account_worker(transactions_params)
+
+      {:ok, next_number + 1}
+    else
+      _ -> {:ok, next_number}
     end
   end
 
