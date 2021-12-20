@@ -74,7 +74,7 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
     block_hash = header["hash"]
 
     timestamp =
-      header["timestamp"] |> String.slice(2..-1) |> String.to_integer(16) |> timestamp_to_datetime
+      header["timestamp"] |> hex_to_number() |> timestamp_to_datetime
 
     if forked?(header["parent_hash"], check_info) do
       Logger.error("!!!!!!forked!!!!!!#{block_number}")

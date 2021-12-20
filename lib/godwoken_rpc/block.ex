@@ -36,7 +36,7 @@ defmodule GodwokenRPC.Block do
       hash: hash,
       parent_hash: parent_hash,
       number: hex_to_number(number),
-      timestamp: timestamp |> String.slice(2..-1) |> String.to_integer(16) |> timestamp_to_datetime,
+      timestamp: timestamp |> hex_to_number() |> timestamp_to_datetime,
       aggregator_id: hex_to_number(aggregator_id),
       transaction_count: transactions |> Enum.count()
     }
