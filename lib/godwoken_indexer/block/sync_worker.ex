@@ -8,7 +8,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
 
   alias GodwokenRPC.Block.{FetchedTipBlockHash, ByHash}
   alias GodwokenRPC.{Blocks, HTTP}
-  alias GodwokenExplorer.{Block, Transaction, Chain, AccountUDT, Repo}
+  alias GodwokenExplorer.{Block, Transaction, Chain, AccountUDT, Repo, Account}
   alias GodwokenExplorer.Chain.Events.Publisher
   alias GodwokenExplorer.Chain.Cache.Blocks, as: BlocksCache
   alias GodwokenExplorer.Chain.Cache.Transactions
@@ -74,7 +74,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
           |> Enum.map(fn transaction_params ->
             {:ok, %Transaction{} = tx} = Transaction.create_transaction(transaction_params)
 
-            tx
+            tx |> Map.merge(%{from: Account.display_id(tx.from_account_id), to: Account.display_id(tx.to_account_id)})
           end)
         update_transactions_cache(inserted_transactions)
 
@@ -96,7 +96,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
     home_transactions =
       Enum.map(inserted_transactions, fn tx ->
         tx
-        |> Map.take([:hash, :type, :from_account_id, :to_account_id])
+        |> Map.take([:hash, :type, :from, :to])
         |> Map.merge(%{
           timestamp: home_blocks |> List.first() |> Map.get(:inserted_at)
         })
