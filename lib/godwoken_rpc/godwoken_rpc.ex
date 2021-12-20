@@ -129,8 +129,11 @@ defmodule GodwokenRPC do
 
     case FetchedScriptHash.request(%{account_id: account_id})
          |> HTTP.json_rpc(options) do
-      {:ok, script_hash} -> script_hash
-      {:error, _error} -> nil
+      {:ok, script_hash} -> {:ok, script_hash}
+      {:error, msg} ->
+        Logger.error("Failed to fetch #{account_id} script_hash: #{inspect(msg)}")
+
+        {:error, :network_error}
     end
   end
 
@@ -139,8 +142,11 @@ defmodule GodwokenRPC do
 
     case FetchedScriptHash.request(%{short_address: short_address})
          |> HTTP.json_rpc(options) do
-      {:ok, script_hash} -> script_hash
-      {:error, _error} -> nil
+      {:ok, script_hash} -> {:ok, script_hash}
+      {:error, msg} ->
+        Logger.error("Failed to fetch #{short_address} script_hash: #{inspect(msg)}")
+
+        {:error, :network_error}
     end
   end
 
