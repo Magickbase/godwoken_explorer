@@ -273,6 +273,39 @@ defmodule GodwokenExplorer.Transaction do
       order_by: [desc: t.inserted_at]
     )
   end
+  def list_by_account(%{account_id: account_id, tx_type: tx_type})
+      when tx_type == "transfer" do
+    from(t in Transaction,
+      join: b in Block,
+      on: [hash: t.block_hash],
+      join: a2 in Account,
+      on: a2.id == t.from_account_id,
+      join: a3 in Account,
+      on: a3.id == t.to_account_id,
+      join: p in Polyjuice,
+      on: p.tx_hash == t.hash,
+      where: t.to_account_id == ^account_id and not(is_nil(p.transfer_count)),
+      select: %{
+        hash: t.hash,
+        block_number: b.number,
+        timestamp: b.timestamp,
+        from: a2.eth_address,
+        to: fragment("
+              CASE WHEN a3.type = 'user' THEN encode(a3.eth_address, 'escape')
+                 WHEN a3.type = 'polyjuice_contract' THEN encode(a3.short_address, 'escape')
+                 ELSE a3.id::text END"),
+        type: t.type,
+        gas_price: p.gas_price,
+        gas_used: p.gas_used,
+        gas_limit: p.gas_limit,
+        receive_eth_address: p.receive_eth_address,
+        transfer_count: p.transfer_count,
+        value: p.value,
+        input: p.input
+      },
+      order_by: [desc: t.inserted_at]
+    )
+  end
 
   # TODO: maybe can refactor
   def count_of_account(%{
@@ -302,6 +335,30 @@ defmodule GodwokenExplorer.Transaction do
       on: p.tx_hash == t.hash,
       where: t.to_account_id == ^account_id
       ) |> Repo.aggregate(:count)
+  end
+
+  def account_transactions_data(
+        %{account_id: account_id, tx_type: tx_type},
+        page
+      ) do
+    txs =
+      list_by_account(%{
+        account_id: account_id,
+        tx_type: tx_type
+      })
+
+    original_struct = Repo.paginate(txs, page: page)
+
+    parsed_result =
+      Enum.map(original_struct.entries, fn record ->
+        stringify_and_unix_maps(record)
+      end)
+
+    %{
+      page: Integer.to_string(original_struct.page_number),
+      total_count: Integer.to_string(original_struct.total_entries),
+      txs: parsed_result
+    }
   end
 
   def account_transactions_data(
