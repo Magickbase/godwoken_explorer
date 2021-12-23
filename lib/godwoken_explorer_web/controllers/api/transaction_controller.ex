@@ -28,7 +28,7 @@ defmodule GodwokenExplorerWeb.API.TransactionController do
   end
 
   def index(conn, %{"account_id" => _, "tx_type" => tx_type} = params) do
-    %Account{id: account_id, type: type, eth_address: eth_address} = Repo.get(Account, params["account_id"])
+    %Account{id: account_id} = Repo.get(Account, params["account_id"])
     results = Transaction.account_transactions_data(%{account_id: account_id, tx_type: tx_type}, conn.params["page"] || 1)
 
     json(conn, results)

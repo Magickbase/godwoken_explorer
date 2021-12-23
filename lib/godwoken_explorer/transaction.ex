@@ -1,6 +1,8 @@
 defmodule GodwokenExplorer.Transaction do
   use GodwokenExplorer, :schema
 
+  import GodwokenRPC.Util, only: [balance_to_view: 2, stringify_and_unix_maps: 1]
+
   alias GodwokenExplorer.Chain.Cache.Transactions
 
   @primary_key {:hash, :binary, autogenerate: false}
@@ -349,9 +351,19 @@ defmodule GodwokenExplorer.Transaction do
 
     original_struct = Repo.paginate(txs, page: page)
 
+    decimal =
+      case Repo.get(UDT,account_id) do
+        %UDT{decimal: decimal} ->
+          :math.pow(10, decimal)
+        _ ->
+          :math.pow(10, 8)
+      end
+
     parsed_result =
       Enum.map(original_struct.entries, fn record ->
-        stringify_and_unix_maps(record)
+        record
+        |> Map.merge(%{transfer_count: balance_to_view(record.transfer_count, decimal)})
+        |> stringify_and_unix_maps()
       end)
 
     %{
