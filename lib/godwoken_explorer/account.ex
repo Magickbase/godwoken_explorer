@@ -120,8 +120,8 @@ defmodule GodwokenExplorer.Account do
     base_map = %{
       id: id,
       type: account.type,
-      ckb: ckb_balance |> Decimal.to_string(),
-      eth: eth_balance |> Decimal.to_string(),
+      ckb: ckb_balance,
+      eth: eth_balance,
       tx_count: tx_count |> Integer.to_string()
     }
 
