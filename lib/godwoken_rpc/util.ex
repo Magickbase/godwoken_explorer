@@ -2,7 +2,7 @@ defmodule GodwokenRPC.Util do
   alias Blake2.Blake2b
 
   @stringify_integer_keys ~w(block_number number tx_count l2_block nonce aggregator)a
-  @stringify_decimal_keys ~w(gas_price fee value)a
+  @stringify_decimal_keys ~w(gas_price fee value transfer_count)a
   @full_length_size 4
   @offset_size 4
 
@@ -32,8 +32,6 @@ defmodule GodwokenRPC.Util do
       parsed_key =
         case k do
           :transaction_count -> :tx_count
-          :from_account_id -> :from
-          :to_account_id -> :to
           :inserted_at -> :timestamp
           _ -> k
         end
@@ -140,6 +138,14 @@ defmodule GodwokenRPC.Util do
       "00" -> "data"
       _ -> "type"
     end
+  end
+
+  def balance_to_view(balance, decimal) do
+    {val, _} = Integer.parse(balance)
+    (val / :math.pow(10, decimal)) |> :erlang.float_to_binary(decimals: decimal)
+  rescue
+    _ ->
+      balance
   end
 
   defp serialized_args(args) do

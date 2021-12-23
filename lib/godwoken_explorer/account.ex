@@ -1,7 +1,7 @@
 defmodule GodwokenExplorer.Account do
   use GodwokenExplorer, :schema
 
-  import GodwokenRPC.Util, only: [script_to_hash: 1]
+  import GodwokenRPC.Util, only: [script_to_hash: 1, balance_to_view: 2]
 
   require Logger
 
@@ -221,14 +221,6 @@ defmodule GodwokenExplorer.Account do
       _ ->
         account
     end
-  end
-
-  defp balance_to_view(balance, decimal) do
-    {val, _} = Integer.parse(balance)
-    (val / :math.pow(10, decimal)) |> :erlang.float_to_binary(decimals: decimal)
-  rescue
-    _ ->
-      balance
   end
 
   def search(keyword) do
