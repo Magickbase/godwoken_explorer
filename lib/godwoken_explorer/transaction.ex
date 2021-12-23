@@ -354,9 +354,9 @@ defmodule GodwokenExplorer.Transaction do
     decimal =
       case Repo.get(UDT,account_id) do
         %UDT{decimal: decimal} ->
-          :math.pow(10, decimal)
+          decimal
         _ ->
-          :math.pow(10, 8)
+          8
       end
 
     parsed_result =

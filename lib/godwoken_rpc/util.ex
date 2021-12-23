@@ -1,8 +1,10 @@
 defmodule GodwokenRPC.Util do
   alias Blake2.Blake2b
 
+  @type decimal() :: Decimal.t()
+
   @stringify_integer_keys ~w(block_number number tx_count l2_block nonce aggregator)a
-  @stringify_decimal_keys ~w(gas_price fee value transfer_count)a
+  @stringify_decimal_keys ~w(gas_price fee value)a
   @full_length_size 4
   @offset_size 4
 
@@ -140,12 +142,10 @@ defmodule GodwokenRPC.Util do
     end
   end
 
+
+  @spec balance_to_view(decimal, integer) :: String.t
   def balance_to_view(balance, decimal) do
-    {val, _} = Integer.parse(balance)
-    (val / :math.pow(10, decimal)) |> :erlang.float_to_binary(decimals: decimal)
-  rescue
-    _ ->
-      balance
+    balance |> Decimal.div(Integer.pow(10, decimal)) |> Decimal.to_string()
   end
 
   defp serialized_args(args) do

@@ -62,7 +62,6 @@ defmodule GodwokenExplorer.AccountUDT do
       select: %{name: u.name, icon: u.icon, balance: au.balance, decimal: u.decimal}
     )
     |> Repo.all()
-    |> Enum.map(fn u -> %{u | balance: Decimal.to_string(u.balance)} end)
   end
 
   def realtime_update_balance(account_id, udt_id) do
