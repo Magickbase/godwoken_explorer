@@ -214,7 +214,7 @@ defmodule GodwokenExplorer.Account do
           [:user, :udt_list],
           udt_list
           |> Enum.map(fn udt ->
-            %{udt | balance: balance_to_view(udt.balance, udt.decimal)}
+            %{udt | balance: balance_to_view(udt.balance, udt.decimal || 8)}
           end)
         )
 
