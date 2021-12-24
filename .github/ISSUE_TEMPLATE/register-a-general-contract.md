@@ -1,53 +1,18 @@
-name: Register a new native ERC20 token
-description: Required information to register a new native erc20 token
-title: '[Native ERC20 Token] **Token Name**'
-labels: Token Registration
+name: Register a general contract
+description: Required information to register a new general contract
+title: '[General Contract] **Contract Name**'
+labels: Contract Registration
 assignees: Keith-CY
 
 body:
+  - type: input
+    id: contract-name
+    validations:
+      required: true
+    attributes:
+      label: Contract Name
+      description: Identifies the contract.
   
-  - type: input
-    id: token-name
-    validations:
-      required: true
-    attributes:
-      label: Token Name
-      description: Identifies the asset represented by this token.
-      placeholder: e.g. Nervos CKB
-
-  - type: textarea
-    id: description
-    validations:
-      required: true
-    attributes:
-      label: Description
-      description: Describe the asset represented by this token.
-
-  - type: input
-    id: max-supply
-    validations:
-      required: false
-    attributes:
-      label: Max Supply
-      description: Specify the maximum amount of the asset identified by this token.
-      placeholder: e.g. 21000000 BTC
-
-  - type: input
-    id: website
-    validations:
-      required: false
-    attributes:
-      label: Website
-      description: The website of the project for more information.
-
-  - type: input
-    id: logo
-    validation:
-      required: true
-    attributes:
-      label: Logo URI
-      description: The logo of the project to easily recongize.
-
   - type: input
     id: contract-address
     validations:
