@@ -170,76 +170,18 @@ defmodule GodwokenExplorer.Transaction do
         contract_id: contract_id
       })
       when type == :user do
-    from(t in Transaction,
-      join: b in Block,
-      on: [hash: t.block_hash],
-      join: a2 in Account,
-      on: a2.id == t.from_account_id,
-      join: a3 in Account,
-      on: a3.id == t.to_account_id,
-      left_join: p in Polyjuice,
-      on: p.tx_hash == t.hash,
-      where:
-        (t.from_account_id == ^account_id or p.receive_eth_address == ^eth_address) and
-          t.to_account_id == ^contract_id,
-      select: %{
-        hash: t.hash,
-        block_number: b.number,
-        timestamp: b.timestamp,
-        from: a2.eth_address,
-        to: fragment("
-              CASE WHEN a3.type = 'user' THEN encode(a3.eth_address, 'escape')
-                 WHEN a3.type = 'polyjuice_contract' THEN encode(a3.short_address, 'escape')
-                 ELSE a3.id::text END"),
-        type: t.type,
-        nonce: t.nonce,
-        args: t.args,
-        gas_price: p.gas_price,
-        gas_used: p.gas_used,
-        gas_limit: p.gas_limit,
-        value: p.value,
-        receive_eth_address: p.receive_eth_address,
-        transfer_count: p.transfer_count,
-        input: p.input
-      },
-      order_by: [desc: t.inserted_at]
-    )
+    query_a = list_by_account_transaction_query(dynamic([t], t.from_account_id == ^account_id and t.to_account_id == ^contract_id))
+    query_b = list_by_account_polyjuice_query(eth_address)
+
+    from(q in subquery(query_a |> union(^query_b)), order_by: [desc: q.inserted_at])
   end
 
   def list_by_account(%{type: type, account_id: account_id, eth_address: eth_address})
       when type == :user do
-    from(t in Transaction,
-      join: b in Block,
-      on: [hash: t.block_hash],
-      join: a2 in Account,
-      on: a2.id == t.from_account_id,
-      join: a3 in Account,
-      on: a3.id == t.to_account_id,
-      left_join: p in Polyjuice,
-      on: p.tx_hash == t.hash,
-      where: t.from_account_id == ^account_id or p.receive_eth_address == ^eth_address,
-      select: %{
-        hash: t.hash,
-        block_number: b.number,
-        timestamp: b.timestamp,
-        from: a2.eth_address,
-        to: fragment("
-              CASE WHEN a3.type = 'user' THEN encode(a3.eth_address, 'escape')
-                 WHEN a3.type = 'polyjuice_contract' THEN encode(a3.short_address, 'escape')
-                 ELSE a3.id::text END"),
-        type: t.type,
-        nonce: t.nonce,
-        args: t.args,
-        gas_price: p.gas_price,
-        gas_used: p.gas_used,
-        gas_limit: p.gas_limit,
-        value: p.value,
-        receive_eth_address: p.receive_eth_address,
-        transfer_count: p.transfer_count,
-        input: p.input
-      },
-      order_by: [desc: t.inserted_at]
-    )
+    query_a = list_by_account_transaction_query(dynamic([t], t.from_account_id == ^account_id))
+    query_b = list_by_account_polyjuice_query(eth_address)
+
+    from(q in subquery(query_a |> union(^query_b)), order_by: [desc: q.inserted_at])
   end
 
   def list_by_account(%{type: type, account_id: account_id, eth_address: _eth_address})
@@ -415,5 +357,74 @@ defmodule GodwokenExplorer.Transaction do
       total_count: Integer.to_string(original_struct.total_entries),
       txs: parsed_result
     }
+  end
+
+  defp list_by_account_transaction_query(condition) do
+    from(t in Transaction,
+      join: b in Block,
+      on: [hash: t.block_hash],
+      join: sa2 in Account,
+      on: sa2.id == t.from_account_id,
+      join: sa3 in Account,
+      on: sa3.id == t.to_account_id,
+      left_join: p in Polyjuice,
+      on: p.tx_hash == t.hash,
+      where: ^condition,
+      select: %{
+        hash: t.hash,
+        block_number: b.number,
+        timestamp: b.timestamp,
+        from: sa2.eth_address,
+        to: fragment("
+              CASE WHEN sa3.type = 'user' THEN encode(sa3.eth_address, 'escape')
+                 WHEN sa3.type = 'polyjuice_contract' THEN encode(sa3.short_address, 'escape')
+                 ELSE sa3.id::text END"),
+        type: t.type,
+        nonce: t.nonce,
+        args: t.args,
+        inserted_at: t.inserted_at,
+        gas_price: p.gas_price,
+        gas_used: p.gas_used,
+        gas_limit: p.gas_limit,
+        value: p.value,
+        receive_eth_address: p.receive_eth_address,
+        transfer_count: p.transfer_count,
+        input: p.input
+      }
+    )
+  end
+
+  defp list_by_account_polyjuice_query(eth_address) do
+      from(p in Polyjuice,
+        join: t in Transaction, on: t.hash == p.tx_hash,
+        join: b in Block,
+        on: b.hash == t.block_hash,
+        join: a2 in Account,
+        on: a2.id == t.from_account_id,
+        join: a3 in Account,
+        on: a3.id == t.to_account_id,
+        where:
+          p.receive_eth_address == ^eth_address,
+        select: %{
+          hash: p.tx_hash,
+          block_number: b.number,
+          timestamp: b.timestamp,
+          from: a2.eth_address,
+          to: fragment("
+                CASE WHEN a3.type = 'user' THEN encode(a3.eth_address, 'escape')
+                  WHEN a3.type = 'polyjuice_contract' THEN encode(a3.short_address, 'escape')
+                  ELSE a3.id::text END"),
+          type: t.type,
+          nonce: t.nonce,
+          args: t.args,
+          insertetd_at: t.inserted_at,
+          gas_price: p.gas_price,
+          gas_used: p.gas_used,
+          gas_limit: p.gas_limit,
+          value: p.value,
+          receive_eth_address: p.receive_eth_address,
+          transfer_count: p.transfer_count,
+          input: p.input
+        })
   end
 end
