@@ -1,0 +1,90 @@
+name: Register a new bridged token
+description: Required information to register a new bridged token
+title: "[Bridged Token] **Token Name**"
+labels: Token Registration
+assignees: Keith-CY
+
+body:
+
+  - type: input
+    id: name
+    validations:
+      required: true
+    attributes:
+      label: Token Name
+      description: Identifies the asset represented by this token.
+      placeholder: e.g. Nervos CKB
+
+  - type: textarea
+    id: description
+    validations:
+      required: true
+    attributes:
+      label: Description
+      description: Describe the asset represented by this token.
+
+  - type: input
+    id: symbol
+    validations:
+      required: true
+    attributes:
+      label: Symbol
+      description: The symbol of the token
+      placeholder: e.g. CKB
+
+  - type: input
+    id: decimals
+    validations:
+      required: true
+    attributes:
+      label: Decimals
+      description: The number of decimal places that the token amount should display
+      placeholder: e.g. 18 means to divide the token amount by 10^18 to get its representation.
+    
+  - type: input
+    id: max-supply
+    validations:
+      required: false
+    attributes:
+      label: Max Supply
+      description: Specify the maximum amount of the asset identified by this token.
+      placeholder: e.g. 21000000 BTC
+
+  - type: input
+    id: website
+    validations:
+      required: false
+    attributes:
+      label: Website
+      description: The website of the project for more information.
+
+  - type: input
+    id: logo
+    validation:
+      required: true
+    attributes:
+      label: Logo URI
+      description: The logo of the project to easily recongize.
+
+  - type: textarea
+    id: sudt-script-args
+    validations:
+      required: true
+    attributes:
+      label: SUDT Script Arguments
+      description: SUDT args of the bridged token on the layer1
+
+  - type: input
+    id: contract-address
+    validations:
+      required: true
+    attributes:
+      label: Contract Address
+      description: Contract address of the bridged token on the layer2
+
+  - type: textarea
+    id: other-info
+    validations:
+      required: false
+    attributes:
+      label: Other Info
