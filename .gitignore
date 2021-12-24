@@ -40,3 +40,6 @@ npm-debug.log
 /priv/native
 # capistrano log
 /log
+
+native/*/target
+.elixir_ls

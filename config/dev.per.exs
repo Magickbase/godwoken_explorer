@@ -1,4 +1,4 @@
-use Mix.Config
+import Config
 
 config :godwoken_explorer,
   meta_contract_code_hash: "0xd6d4b52ed2882cb0b2e1f802817c0ab05bd27da89a41ceddb25e0e347689ce69",
