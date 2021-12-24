@@ -1,11 +1,12 @@
 name: Register a new native ERC20 token
 description: Required information to register a new native erc20 token
 title: '[Native ERC20 Token] **Token Name**'
-labels: Token Registration
-assignees: Keith-CY
+labels:
+  - Token Registration
+assignees:
+  - Keith-CY
 
 body:
-  
   - type: input
     id: token-name
     validations:
@@ -42,7 +43,7 @@ body:
 
   - type: input
     id: logo
-    validation:
+    validations:
       required: true
     attributes:
       label: Logo URI

@@ -1,9 +1,10 @@
 name: Register a general contract
 description: Required information to register a new general contract
 title: '[General Contract] **Contract Name**'
-labels: Contract Registration
-assignees: Keith-CY
-
+labels:
+  - Contract Registration
+assignees:
+  - Keith-CY
 body:
   - type: input
     id: contract-name
@@ -12,7 +13,7 @@ body:
     attributes:
       label: Contract Name
       description: Identifies the contract.
-  
+
   - type: input
     id: contract-address
     validations:

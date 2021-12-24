@@ -1,11 +1,12 @@
 name: Register a new bridged token
 description: Required information to register a new bridged token
-title: "[Bridged Token] **Token Name**"
-labels: Token Registration
-assignees: Keith-CY
+title: '[Bridged Token] **Token Name**'
+labels:
+  - Token Registration
+assignees:
+  - Keith-CY
 
 body:
-
   - type: input
     id: name
     validations:
@@ -40,7 +41,7 @@ body:
       label: Decimals
       description: The number of decimal places that the token amount should display
       placeholder: e.g. 18 means to divide the token amount by 10^18 to get its representation.
-    
+
   - type: input
     id: max-supply
     validations:
@@ -60,7 +61,7 @@ body:
 
   - type: input
     id: logo
-    validation:
+    validations:
       required: true
     attributes:
       label: Logo URI
