@@ -57,12 +57,12 @@ defmodule GodwokenExplorer.Polyjuice do
 
     eth_address =
       if short_address do
-        AccountUDT.update_erc20_balance!(attrs[:to_account_id], attrs[:from_account_id])
+        AccountUDT.update_erc20_balance!(attrs[:from_account_id], attrs[:to_account_id])
 
         case Account |> Repo.get_by(short_address: short_address) do
           nil -> nil
           %Account{id: id, eth_address: eth_address} ->
-            AccountUDT.update_erc20_balance!(attrs[:to_account_id], id)
+            AccountUDT.update_erc20_balance!(id, attrs[:to_account_id])
             eth_address
         end
       end

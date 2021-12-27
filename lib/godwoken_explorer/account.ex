@@ -115,6 +115,12 @@ defmodule GodwokenExplorer.Account do
         _ -> Decimal.new(0)
       end
 
+    with udt_id when is_integer(udt_id) <- UDT.yok_account_id() do
+      AccountUDT.update_erc20_balance!(id, udt_id)
+    else
+      _ -> Decimal.new(0)
+    end
+
     tx_count = GodwokenExplorer.Chain.Cache.AccountTransactionCount.get(account.id)
 
     base_map = %{

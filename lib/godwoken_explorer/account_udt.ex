@@ -74,8 +74,7 @@ defmodule GodwokenExplorer.AccountUDT do
     case result do
       %{balance: balance, short_address: short_address, updated_at: updated_at} ->
         with second when second > 60 <- NaiveDateTime.diff(NaiveDateTime.utc_now |> NaiveDateTime.truncate(:second), updated_at),
-          {:ok, on_chain_balance} <- GodwokenRPC.fetch_balance(short_address, udt_id),
-          compare when compare != :eq <- Decimal.compare(Decimal.new(balance), Decimal.new(on_chain_balance)) do
+          {:ok, on_chain_balance} <- GodwokenRPC.fetch_balance(short_address, udt_id) do
             AccountUDT.create_or_update_account_udt!(%{
               account_id: account_id,
               udt_id: udt_id,
@@ -102,7 +101,7 @@ defmodule GodwokenExplorer.AccountUDT do
     balance
   end
 
-  def update_erc20_balance!(contract_account_id, account_id) do
+  def update_erc20_balance!(account_id, contract_account_id) do
     case UDT |> Repo.get_by(bridge_account_id: contract_account_id) do
       nil ->
         balance_of_method = "0x70a08231"
