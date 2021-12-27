@@ -102,17 +102,18 @@ defmodule GodwokenExplorer.Account do
     ckb_udt_id = UDT.ckb_account_id()
 
     ckb_balance =
-      with udt_id when is_integer(udt_id) <- ckb_udt_id do
-        AccountUDT.realtime_update_balance(id, udt_id)
+      with {:ok, balance} <- GodwokenRPC.fetch_balance(account.short_address, ckb_udt_id) do
+        balance
       else
-        _ -> Decimal.new(0)
+        _ -> ""
       end
 
     eth_balance =
-      with udt_id when is_integer(udt_id) <- UDT.eth_account_id() do
-        AccountUDT.realtime_update_balance(id, udt_id)
+      with udt_id when is_integer(udt_id) <- UDT.eth_account_id(),
+        {:ok, balance} <- GodwokenRPC.fetch_balance(account.short_address, udt_id) do
+        balance
       else
-        _ -> Decimal.new(0)
+        _ -> ""
       end
 
     tx_count = GodwokenExplorer.Chain.Cache.AccountTransactionCount.get(account.id)
@@ -138,7 +139,7 @@ defmodule GodwokenExplorer.Account do
         }
 
       %Account{type: :user} ->
-        udt_list = AccountUDT.list_udt_by_account_id(id)
+        udt_list = AccountUDT.fetch_realtime_udt_blance(id)
 
         %{
           user: %{
@@ -377,5 +378,19 @@ defmodule GodwokenExplorer.Account do
       nonce: nonce,
       eth_address: eth_address
     })
+  end
+
+  def sync_special_udt_balance(id) do
+    with udt_id when is_integer(udt_id) <- UDT.ckb_account_id() do
+      AccountUDT.realtime_update_balance(id, udt_id)
+    end
+
+    with udt_id when is_integer(udt_id) <- UDT.eth_account_id() do
+      AccountUDT.realtime_update_balance(id, udt_id)
+    end
+
+    with udt_id when is_integer(udt_id) <- UDT.yok_account_id() do
+      AccountUDT.update_erc20_balance!(id, udt_id)
+    end
   end
 end
