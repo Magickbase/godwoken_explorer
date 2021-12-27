@@ -92,7 +92,7 @@ defmodule GodwokenExplorer.AccountUDT do
           Map.merge(u, %{balance: balance})
       end
     end)
-    |> Enum.filter(fn u ->
+    |> Enum.reject(fn u ->
       u.balance != "" && Decimal.compare(u.balance, Decimal.new(0)) == :eq
     end)
   end
