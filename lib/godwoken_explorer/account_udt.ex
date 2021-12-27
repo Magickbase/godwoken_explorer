@@ -102,7 +102,7 @@ defmodule GodwokenExplorer.AccountUDT do
     balance
   end
 
-  def update_erc20_balance!(contract_account_id, account_id) do
+  def update_erc20_balance!(account_id, contract_account_id) do
     case UDT |> Repo.get_by(bridge_account_id: contract_account_id) do
       nil ->
         balance_of_method = "0x70a08231"

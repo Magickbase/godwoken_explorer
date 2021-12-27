@@ -9,6 +9,7 @@ defmodule GodwokenExplorerWeb.API.AccountController do
     result =
       case Account.search(downcase_id) do
         %Account{id: id} ->
+          Account.sync_special_udt_balance(id)
           id
           |> Account.find_by_id()
           |> Account.account_to_view()
@@ -30,6 +31,7 @@ defmodule GodwokenExplorerWeb.API.AccountController do
     result =
       case Repo.get(Account, id) do
         %Account{} ->
+          Account.sync_special_udt_balance(id)
           id
           |> Account.find_by_id()
           |> Account.account_to_view()

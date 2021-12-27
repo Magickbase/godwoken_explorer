@@ -186,13 +186,12 @@ defmodule GodwokenExplorer.Transaction do
 
   def list_by_account(%{type: type, account_id: account_id, eth_address: _eth_address})
       when type in [:meta_contract, :udt, :polyjuice_root, :polyjuice_contract] do
+    displayed = Account.display_id(account_id)
     from(t in Transaction,
       join: b in Block,
       on: [hash: t.block_hash],
       join: a2 in Account,
       on: a2.id == t.from_account_id,
-      join: a3 in Account,
-      on: a3.id == t.to_account_id,
       left_join: p in Polyjuice,
       on: p.tx_hash == t.hash,
       where: t.to_account_id == ^account_id,
@@ -201,10 +200,7 @@ defmodule GodwokenExplorer.Transaction do
         block_number: b.number,
         timestamp: b.timestamp,
         from: a2.eth_address,
-        to: fragment("
-              CASE WHEN a3.type = 'user' THEN encode(a3.eth_address, 'escape')
-                 WHEN a3.type = 'polyjuice_contract' THEN encode(a3.short_address, 'escape')
-                 ELSE a3.id::text END"),
+        to: ^displayed,
         type: t.type,
         gas_price: p.gas_price,
         gas_used: p.gas_used,
