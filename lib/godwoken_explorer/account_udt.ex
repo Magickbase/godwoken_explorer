@@ -76,7 +76,7 @@ defmodule GodwokenExplorer.AccountUDT do
           balance =
             case fetch_erc20_balance(account_id, u.id) do
               {:ok, balance} ->
-                balance |> hex_to_number
+                balance |> hex_to_number |> Decimal.new
               {:error, _} ->
                 ""
             end
@@ -84,13 +84,16 @@ defmodule GodwokenExplorer.AccountUDT do
         :bridge ->
           balance =
             with {:ok, balance} <- GodwokenRPC.fetch_balance(account.short_address, u.id) do
-              balance
+              balance |> Decimal.new
             else
               _ -> ""
             end
 
           Map.merge(u, %{balance: balance})
       end
+    end)
+    |> Enum.filter(fn u ->
+      u.balance != "" && Decimal.compare(u.balance, Decimal.new(0)) == :eq
     end)
   end
 
