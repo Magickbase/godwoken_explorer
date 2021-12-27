@@ -67,7 +67,7 @@ defmodule GodwokenExplorer.AccountUDT do
   def fetch_realtime_udt_blance(account_id) do
     reserve_account_ids = Enum.reject([UDT.ckb_account_id()] ++ [UDT.eth_account_id()], &is_nil/1)
 
-    from(u in UDT, where: not(u.id in ^reserve_account_ids), select: %{id: u.id, name: u.name, icon: u.icon, decimal: u.decimal, type: u.type})
+    from(u in UDT, where: not(u.id in ^reserve_account_ids) and not(is_nil(u.symbol)), select: %{id: u.id, name: u.name, icon: u.icon, decimal: u.decimal, type: u.type})
     |> Repo.all()
     |> Enum.map(fn u ->
       account = Repo.get(Account, account_id)
