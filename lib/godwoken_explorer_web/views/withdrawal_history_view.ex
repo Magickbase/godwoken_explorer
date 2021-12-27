@@ -12,6 +12,27 @@ defmodule GodwokenExplorer.WithdrawalHistoryView do
     [udt: {GodwokenExplorer.UDTView, :include}]
   end
 
+  def find_by_l2_script_hash(l2_script_hash, page) do
+    query_results =
+      from(h in WithdrawalHistory,
+        preload: [:udt],
+        where:
+          h.l2_script_hash == ^l2_script_hash, order_by: [desc: :id]
+      )
+      |> Repo.paginate(page: page)
+
+    if updated_state?(query_results) do
+      from(h in WithdrawalHistory,
+        preload: [:udt],
+        where:
+          h.l2_script_hash == ^l2_script_hash, order_by: [desc: :id]
+      )
+      |> Repo.paginate(page: page)
+    else
+      query_results
+    end
+  end
+
   def find_by_owner_lock_hash(owner_lock_hash, page) do
     query_results =
       from(h in WithdrawalHistory,
@@ -21,6 +42,19 @@ defmodule GodwokenExplorer.WithdrawalHistoryView do
       )
       |> Repo.paginate(page: page)
 
+    if updated_state?(query_results) do
+      from(h in WithdrawalHistory,
+        preload: [:udt],
+        where:
+          h.owner_lock_hash == ^owner_lock_hash, order_by: [desc: :id]
+      )
+      |> Repo.paginate(page: page)
+    else
+      query_results
+    end
+  end
+
+  def updated_state?(query_results) do
     succeed_history_ids =
       query_results.entries
       |> Enum.filter(fn h -> h.state == :available end)
@@ -41,14 +75,9 @@ defmodule GodwokenExplorer.WithdrawalHistoryView do
 
     if length(succeed_history_ids) > 0 do
       from(h in WithdrawalHistory, where: h.id in ^succeed_history_ids) |> Repo.update_all(set: [state: :succeed])
-      from(h in WithdrawalHistory,
-        preload: [:udt],
-        where:
-          h.owner_lock_hash == ^owner_lock_hash, order_by: [desc: :id]
-      )
-      |> Repo.paginate(page: page)
+      true
     else
-      query_results
+      false
     end
   end
 end
