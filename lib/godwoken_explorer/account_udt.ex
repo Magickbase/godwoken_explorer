@@ -64,6 +64,36 @@ defmodule GodwokenExplorer.AccountUDT do
     |> Repo.all()
   end
 
+  def fetch_realtime_udt_blance(account_id) do
+    reserve_account_ids = Enum.reject([UDT.ckb_account_id()] ++ [UDT.eth_account_id()], &is_nil/1)
+
+    from(u in UDT, where: not(u.id in ^reserve_account_ids) and not(is_nil(u.symbol)), select: %{id: u.id, name: u.name, icon: u.icon, decimal: u.decimal, type: u.type})
+    |> Repo.all()
+    |> Enum.map(fn u ->
+      account = Repo.get(Account, account_id)
+      case u.type do
+        :native ->
+          balance =
+            case fetch_erc20_balance(account_id, u.id) do
+              {:ok, balance} ->
+                balance |> hex_to_number
+              {:error, _} ->
+                ""
+            end
+          Map.merge(u, %{balance: balance})
+        :bridge ->
+          balance =
+            with {:ok, balance} <- GodwokenRPC.fetch_balance(account.short_address, u.id) do
+              balance
+            else
+              _ -> ""
+            end
+
+          Map.merge(u, %{balance: balance})
+      end
+    end)
+  end
+
   def realtime_update_balance(account_id, udt_id) do
     result = from(au in AccountUDT,
       join: a in Account, on: a.id == au.account_id,
@@ -102,13 +132,21 @@ defmodule GodwokenExplorer.AccountUDT do
     balance
   end
 
+  def fetch_erc20_balance(account_id, contract_account_id) do
+    balance_of_method = "0x70a08231"
+    with %Account{short_address: contract_address} <- Repo.get(Account, contract_account_id),
+      %Account{short_address: user_address} <- Repo.get(Account, account_id) do
+        GodwokenRPC.eth_call(%{to: contract_address, data: balance_of_method <> String.duplicate("0", 24) <> String.slice(user_address, 2..-1)})
+    else
+      _ ->
+        {:error, :account_not_exist}
+    end
+  end
+
   def update_erc20_balance!(account_id, contract_account_id) do
     case UDT |> Repo.get_by(bridge_account_id: contract_account_id) do
       nil ->
-        balance_of_method = "0x70a08231"
-        contract_address = Repo.get(Account, contract_account_id).short_address
-        user_address = Repo.get(Account, account_id).short_address
-        case GodwokenRPC.eth_call(%{to: contract_address, data: balance_of_method <> String.duplicate("0", 24) <> String.slice(user_address, 2..-1)}) do
+        case fetch_erc20_balance(account_id, contract_account_id) do
           {:ok, balance} ->
             number = balance |> hex_to_number
             AccountUDT.create_or_update_account_udt!(%{account_id: account_id, udt_id: contract_account_id, balance: number})

@@ -145,7 +145,11 @@ defmodule GodwokenRPC.Util do
 
   @spec balance_to_view(decimal, integer) :: String.t
   def balance_to_view(balance, decimal) do
-    balance |> Decimal.div(Integer.pow(10, decimal)) |> Decimal.to_string()
+    if balance == "" do
+      ""
+    else
+      balance |> Decimal.div(Integer.pow(10, decimal)) |> Decimal.to_string()
+    end
   end
 
   defp serialized_args(args) do
