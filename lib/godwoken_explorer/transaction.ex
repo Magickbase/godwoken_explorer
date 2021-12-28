@@ -171,7 +171,7 @@ defmodule GodwokenExplorer.Transaction do
       })
       when type == :user do
     query_a = list_by_account_transaction_query(dynamic([t], t.from_account_id == ^account_id and t.to_account_id == ^contract_id))
-    query_b = list_by_account_polyjuice_query(eth_address)
+    query_b = list_by_account_polyjuice_query(dynamic([p, t], p.receive_eth_address == ^eth_address and t.to_account_id == ^contract_id))
 
     from(q in subquery(query_a |> union(^query_b)), order_by: [desc: q.inserted_at])
   end
@@ -179,7 +179,7 @@ defmodule GodwokenExplorer.Transaction do
   def list_by_account(%{type: type, account_id: account_id, eth_address: eth_address})
       when type == :user do
     query_a = list_by_account_transaction_query(dynamic([t], t.from_account_id == ^account_id))
-    query_b = list_by_account_polyjuice_query(eth_address)
+    query_b = list_by_account_polyjuice_query(dynamic([p], p.receive_eth_address == ^eth_address))
 
     from(q in subquery(query_a |> union(^query_b)), order_by: [desc: q.inserted_at])
   end
@@ -390,7 +390,7 @@ defmodule GodwokenExplorer.Transaction do
     )
   end
 
-  defp list_by_account_polyjuice_query(eth_address) do
+  defp list_by_account_polyjuice_query(condition) do
       from(p in Polyjuice,
         join: t in Transaction, on: t.hash == p.tx_hash,
         join: b in Block,
@@ -399,8 +399,7 @@ defmodule GodwokenExplorer.Transaction do
         on: a2.id == t.from_account_id,
         join: a3 in Account,
         on: a3.id == t.to_account_id,
-        where:
-          p.receive_eth_address == ^eth_address,
+        where: ^condition,
         select: %{
           hash: p.tx_hash,
           block_number: b.number,
