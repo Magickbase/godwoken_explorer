@@ -13,42 +13,20 @@ defmodule GodwokenExplorer.WithdrawalHistoryView do
   end
 
   def find_by_l2_script_hash(l2_script_hash, page) do
-    query_results =
-      from(h in WithdrawalHistory,
-        preload: [:udt],
-        where:
-          h.l2_script_hash == ^l2_script_hash, order_by: [desc: :id]
-      )
-      |> Repo.paginate(page: page)
+    query_results = base_query(dynamic([h], h.l2_script_hash == ^l2_script_hash), page)
 
     if updated_state?(query_results) do
-      from(h in WithdrawalHistory,
-        preload: [:udt],
-        where:
-          h.l2_script_hash == ^l2_script_hash, order_by: [desc: :id]
-      )
-      |> Repo.paginate(page: page)
+      base_query(dynamic([h], h.l2_script_hash == ^l2_script_hash), page)
     else
       query_results
     end
   end
 
   def find_by_owner_lock_hash(owner_lock_hash, page) do
-    query_results =
-      from(h in WithdrawalHistory,
-        preload: [:udt],
-        where:
-          h.owner_lock_hash == ^owner_lock_hash, order_by: [desc: :id]
-      )
-      |> Repo.paginate(page: page)
+    query_results = base_query(dynamic([h], h.owner_lock_hash == ^owner_lock_hash), page)
 
     if updated_state?(query_results) do
-      from(h in WithdrawalHistory,
-        preload: [:udt],
-        where:
-          h.owner_lock_hash == ^owner_lock_hash, order_by: [desc: :id]
-      )
-      |> Repo.paginate(page: page)
+      base_query(dynamic([h], h.owner_lock_hash == ^owner_lock_hash), page)
     else
       query_results
     end
@@ -79,5 +57,14 @@ defmodule GodwokenExplorer.WithdrawalHistoryView do
     else
       false
     end
+  end
+
+  defp base_query(condition, page) do
+    from(h in WithdrawalHistory,
+      preload: [:udt],
+      where: ^condition,
+      order_by: [desc: :id]
+    )
+    |> Repo.paginate(page: page)
   end
 end
