@@ -175,7 +175,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
   defp get_next_number do
     case Repo.one(from block in Block, order_by: [desc: block.number], limit: 1) do
       %Block{number: number} -> number + 1
-      nil -> 218516
+      nil -> 0
     end
   end
 
