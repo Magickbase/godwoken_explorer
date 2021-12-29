@@ -1,9 +1,10 @@
 defmodule GodwokenRPC.Blocks do
 
-  alias GodwokenRPC.{Block, Transactions}
+  alias GodwokenRPC.{Block, Transactions, WithdrawalRequests}
 
   defstruct blocks_params: [],
             transactions_params: [],
+            withdrawal_params: [],
             errors: []
 
   def requests(id_to_params, request) when is_map(id_to_params) and is_function(request, 1) do
@@ -27,14 +28,17 @@ defmodule GodwokenRPC.Blocks do
       end)
 
     elixir_transactions = elixir_to_transactions(blocks)
+    withdrawal_requests = elixir_to_withdrawal_requests(blocks)
     transactions_params = Transactions.elixir_to_params(elixir_transactions)
+    withdrawal_params = WithdrawalRequests.elixir_to_params(withdrawal_requests)
 
     blocks_params = elixir_to_params(blocks)
 
     %__MODULE__{
       errors: errors,
       blocks_params: blocks_params,
-      transactions_params: transactions_params
+      transactions_params: transactions_params,
+      withdrawal_params: withdrawal_params
     }
   end
 
@@ -44,5 +48,9 @@ defmodule GodwokenRPC.Blocks do
 
   def elixir_to_transactions(elixir) when is_list(elixir) do
     Enum.flat_map(elixir, &Block.elixir_to_transactions/1)
+  end
+
+  def elixir_to_withdrawal_requests(elixir) when is_list(elixir) do
+    Enum.flat_map(elixir, &Block.elixir_to_withdrawal_requests/1)
   end
 end

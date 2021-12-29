@@ -30,8 +30,8 @@ defmodule GodwokenExplorer do
         UDT,
         UDTTransfer,
         Version,
-        Withdrawal,
-        WithdrawalHistory
+        WithdrawalHistory,
+        WithdrawalRequest
       }
     end
   end
