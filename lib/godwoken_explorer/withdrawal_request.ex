@@ -19,7 +19,6 @@ defmodule GodwokenExplorer.WithdrawalRequest do
     field :block_hash, :binary
     field :block_number, :integer
 
-
     belongs_to(:udt, GodwokenExplorer.UDT,
       foreign_key: :udt_id,
       references: :id,
