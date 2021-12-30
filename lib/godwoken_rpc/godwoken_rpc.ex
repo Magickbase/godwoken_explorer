@@ -216,8 +216,8 @@ defmodule GodwokenRPC do
     end
   end
 
-  def fetch_transaction(tx_hash) do
-    options = Application.get_env(:godwoken_explorer, :json_rpc_named_arguments)
+  def fetch_mempool_transaction(tx_hash) do
+    options = Application.get_env(:godwoken_explorer, :mempool_rpc_named_arguments)
 
     case FetchedGodwokenTransaction.request(tx_hash)
          |> HTTP.json_rpc(options) do

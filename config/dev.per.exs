@@ -40,7 +40,17 @@ config :godwoken_explorer, GodwokenExplorer.Repo,
   timeout: 60_000
 
 config :godwoken_explorer,
+  # only read node
   json_rpc_named_arguments: [
+    http: GodwokenRPC.HTTP.HTTPoison,
+    url: "http://localhost:8119",
+    http_options: [
+      recv_timeout: :timer.minutes(10),
+      timeout: :timer.minutes(10)
+    ]
+  ],
+  # mempool node
+  mempool_rpc_named_arguments: [
     http: GodwokenRPC.HTTP.HTTPoison,
     url: "http://localhost:8119",
     http_options: [
