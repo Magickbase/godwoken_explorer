@@ -1,27 +1,23 @@
-defmodule GodwokenExplorer.Withdrawal do
+defmodule GodwokenExplorer.WithdrawalRequest do
   use GodwokenExplorer, :schema
 
   import Ecto.Changeset
 
-  schema "withdrawals" do
-    field :account_script_hash, :binary
-    field :amount, :decimal
+  schema "withdrawal_requests" do
+    field :nonce, :integer
     field :capacity, :decimal
-    field :owner_lock_hash, :binary
-    field :payment_lock_hash, :binary
+    field :amount, :decimal
     field :sell_amount, :decimal
     field :sell_capacity, :decimal
     field :sudt_script_hash, :binary
-    field :tx_hash, :binary
-    field :udt_id, :integer
+    field :account_script_hash, :binary
+    field :owner_lock_hash, :binary
+    field :payment_lock_hash, :binary
     field :fee_amount, :decimal
     field :fee_udt_id, :integer
-
-    belongs_to(:transaction, GodwokenExplorer.Transaction,
-      foreign_key: :tx_hash,
-      references: :hash,
-      define_field: false
-    )
+    field :udt_id, :integer
+    field :block_hash, :binary
+    field :block_number, :integer
 
     belongs_to(:udt, GodwokenExplorer.UDT,
       foreign_key: :udt_id,
@@ -33,8 +29,8 @@ defmodule GodwokenExplorer.Withdrawal do
   end
 
   @doc false
-  def changeset(withdrawal, attrs) do
-    withdrawal
+  def changeset(withdrawal_request, attrs) do
+    withdrawal_request
     |> cast(attrs, [
       :account_script_hash,
       :amount,
@@ -44,7 +40,10 @@ defmodule GodwokenExplorer.Withdrawal do
       :sell_amount,
       :sell_capacity,
       :sudt_script_hash,
-      :udt_id
+      :udt_id,
+      :block_hash,
+      :nonce,
+      :block_number
     ])
     |> validate_required([
       :account_script_hash,
@@ -55,15 +54,15 @@ defmodule GodwokenExplorer.Withdrawal do
       :sell_amount,
       :sell_capacity,
       :sudt_script_hash,
-      :udt_id
+      :nonce,
+      :block_hash,
+      :block_number
     ])
   end
 
-  def create_withdrawal(attrs) do
-    %Withdrawal{}
-    |> Withdrawal.changeset(attrs)
-    |> Ecto.Changeset.put_change(:tx_hash, attrs[:hash])
-    |> Ecto.Changeset.put_change(:udt_id, attrs[:udt_id])
+  def create_withdrawal_request(attrs) do
+    %WithdrawalRequest{}
+    |> WithdrawalRequest.changeset(attrs)
     |> Repo.insert()
   end
 end

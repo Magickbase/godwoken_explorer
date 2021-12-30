@@ -55,5 +55,14 @@ defmodule GodwokenRPC.Block do
 
   def elixir_to_transactions(_), do: []
 
-
+  def elixir_to_withdrawal_requests(
+      %{
+        "hash" => block_hash,
+        "raw" => %{"number" => block_number },
+        "withdrawal_requests" => withdrawal_requests
+        }
+    ) when length(withdrawal_requests) != 0 do
+    withdrawal_requests |> Enum.map(fn t -> Map.merge(t, %{"block_hash" => block_hash, "block_number" => hex_to_number(block_number)}) end)
+  end
+  def elixir_to_withdrawal_requests(_), do: []
 end

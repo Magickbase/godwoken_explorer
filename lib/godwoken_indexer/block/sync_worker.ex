@@ -8,7 +8,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
 
   alias GodwokenRPC.Block.{FetchedTipBlockHash, ByHash}
   alias GodwokenRPC.{Blocks, HTTP}
-  alias GodwokenExplorer.{Block, Transaction, Chain, AccountUDT, Repo, Account}
+  alias GodwokenExplorer.{Block, Transaction, Chain, AccountUDT, Repo, Account, WithdrawalRequest}
   alias GodwokenExplorer.Chain.Events.Publisher
   alias GodwokenExplorer.Chain.Cache.Blocks, as: BlocksCache
   alias GodwokenExplorer.Chain.Cache.Transactions
@@ -46,6 +46,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
        %Blocks{
          blocks_params: blocks_params,
          transactions_params: transactions_params,
+         withdrawal_params: withdrawal_params,
          errors: _
        }} = GodwokenRPC.fetch_blocks_by_range(range)
 
@@ -82,6 +83,8 @@ defmodule GodwokenIndexer.Block.SyncWorker do
         end)
 
       update_transactions_cache(inserted_transactions)
+
+      Repo.insert_all(WithdrawalRequest, withdrawal_params, [on_conflict: :nothing])
 
       broadcast_block_and_tx(inserted_blocks, inserted_transactions)
 
