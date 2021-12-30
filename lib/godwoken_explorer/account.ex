@@ -342,9 +342,9 @@ defmodule GodwokenExplorer.Account do
       %Account{type: type, eth_address: eth_address, short_address: short_address} ->
         cond do
           type == :user -> eth_address
-          type == :polyjuice_contract -> short_address
+          type in [:udt, :polyjuice_contract] -> short_address
           type == :polyjuice_root -> "deploy contract"
-          true -> id
+          true -> Integer.to_string(id)
         end
       nil ->
         {:ok, script_hash} = GodwokenRPC.fetch_script_hash(%{account_id: id})
