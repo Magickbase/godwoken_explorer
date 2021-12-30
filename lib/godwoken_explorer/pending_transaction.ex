@@ -36,7 +36,7 @@ defmodule GodwokenExplorer.PendingTransaction do
         pending_tx
       nil ->
         retry with: constant_backoff(500) |> Stream.take(3) do
-          case GodwokenRPC.fetch_transaction(tx_hash) do
+          case GodwokenRPC.fetch_mempool_transaction(tx_hash) do
             {:ok, response} when is_nil(response) ->
               nil
             {:ok, response} ->
