@@ -219,16 +219,37 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
               })
 
             nil ->
-              Account.create_or_update_account!(%{
-                id: account_id,
-                script: parsed_script,
-                script_hash: script_hash,
-                short_address: short_address,
-                type: type,
-                nonce: nonce,
-                eth_address: eth_address,
-                ckb_lock_hash: l1_lock_hash
-              })
+              case Repo.get(Account, account_id) do
+                account = %Account{script_hash: wrong_script_hash} ->
+                  {:ok, new_account_id} = GodwokenRPC.fetch_account_id(wrong_script_hash)
+                  Logger.error(
+                    "Account id is changed!!!!old id:#{account_id}, new id: #{new_account_id}, script_hash: #{wrong_script_hash}"
+                  )
+                  Ecto.Changeset.change(account, %{id: new_account_id}) |> Repo.update!()
+
+                  Account.create_or_update_account!(%{
+                    id: account_id,
+                    script: parsed_script,
+                    script_hash: script_hash,
+                    short_address: short_address,
+                    type: type,
+                    nonce: nonce,
+                    eth_address: eth_address,
+                    ckb_lock_hash: l1_lock_hash
+                  })
+
+                nil ->
+                  Account.create_or_update_account!(%{
+                    id: account_id,
+                    script: parsed_script,
+                    script_hash: script_hash,
+                    short_address: short_address,
+                    type: type,
+                    nonce: nonce,
+                    eth_address: eth_address,
+                    ckb_lock_hash: l1_lock_hash
+                  })
+              end
           end
 
           with {:ok, udt_id} <- Account.find_or_create_udt_account!(udt_script, udt_script_hash) do
