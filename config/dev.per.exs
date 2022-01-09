@@ -30,6 +30,7 @@ config :godwoken_explorer,
 config :godwoken_explorer, :basic_auth, username: "hello", password: "secret"
 
 config :godwoken_explorer, GodwokenExplorer.Repo,
+  username: "postgres",
   username: "user",
   password: "password",
   database: "godwoken_explorer_dev",
@@ -99,4 +100,4 @@ config :appsignal, :config,
   otp_app: :godwoken_explorer,
   name: "godwoken_explorer",
   push_api_key: "",
-  env: Mix.env
+  env: Mix.env()

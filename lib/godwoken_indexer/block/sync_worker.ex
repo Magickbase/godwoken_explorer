@@ -77,14 +77,15 @@ defmodule GodwokenIndexer.Block.SyncWorker do
 
           tx
           |> Map.merge(%{
-            from: Account.display_id(tx.from_account_id),
-            to: Account.display_id(tx.to_account_id)
+            from: elem(Account.display_id(tx.from_account_id), 0),
+            to: elem(Account.display_id(tx.to_account_id), 0),
+            to_alias: elem(Account.display_id(tx.to_account_id), 1)
           })
         end)
 
       update_transactions_cache(inserted_transactions)
 
-      Repo.insert_all(WithdrawalRequest, withdrawal_params, [on_conflict: :nothing])
+      Repo.insert_all(WithdrawalRequest, withdrawal_params, on_conflict: :nothing)
 
       broadcast_block_and_tx(inserted_blocks, inserted_transactions)
 

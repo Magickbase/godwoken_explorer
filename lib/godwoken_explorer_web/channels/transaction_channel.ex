@@ -17,20 +17,9 @@ defmodule GodwokenExplorerWeb.TransactionChannel do
       {:error, %{reason: "may be a pending tx"}}
     else
       result =
-        stringify_and_unix_maps(%{
-            hash: tx.hash,
-            timestamp: tx.timestamp,
-            finalize_state: tx.status,
-            l2_block: tx.l2_block_number,
-            l1_block: tx.l1_block_number,
-            from: tx.from,
-            to: tx.to,
-            nonce: tx.nonce,
-            args: tx.args,
-            type: tx.type,
-            gas_price: tx |> Map.get(:gas_price, Decimal.new(0)),
-            fee: tx |> Map.get(:fee, Decimal.new(0))
-        })
+        tx
+        |> stringify_and_unix_maps
+        |> Map.drop([:input, :to_account_id])
 
       {:ok, result, assign(socket, :tx_hash, tx_hash)}
     end
