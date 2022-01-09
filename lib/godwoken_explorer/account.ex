@@ -103,7 +103,8 @@ defmodule GodwokenExplorer.Account do
     ckb_udt_id = UDT.ckb_account_id()
 
     ckb_balance =
-      with {:ok, balance} <- GodwokenRPC.fetch_balance(account.short_address, ckb_udt_id) do
+      with udt_id when is_integer(udt_id) <- ckb_udt_id,
+           {:ok, balance} <- GodwokenRPC.fetch_balance(account.short_address, ckb_udt_id) do
         balance
       else
         _ -> ""
@@ -111,7 +112,7 @@ defmodule GodwokenExplorer.Account do
 
     eth_balance =
       with udt_id when is_integer(udt_id) <- UDT.eth_account_id(),
-        {:ok, balance} <- GodwokenRPC.fetch_balance(account.short_address, udt_id) do
+           {:ok, balance} <- GodwokenRPC.fetch_balance(account.short_address, udt_id) do
         balance
       else
         _ -> ""
@@ -251,7 +252,12 @@ defmodule GodwokenExplorer.Account do
     end
   end
 
-  def find_or_create_udt_account!(udt_script, udt_script_hash, l1_block_number \\ 0, tip_block_number \\ 0) do
+  def find_or_create_udt_account!(
+        udt_script,
+        udt_script_hash,
+        l1_block_number \\ 0,
+        tip_block_number \\ 0
+      ) do
     case Repo.get_by(UDT, script_hash: udt_script_hash) do
       %UDT{id: id} ->
         {:ok, id}
@@ -274,6 +280,7 @@ defmodule GodwokenExplorer.Account do
             if l1_block_number + 100 > tip_block_number do
               raise "account may not created now at #{l1_block_number}"
             end
+
           {:error, nil} ->
             {:error, nil}
 
@@ -348,23 +355,49 @@ defmodule GodwokenExplorer.Account do
   end
 
   def display_id(id) do
-    case Repo.get(Account, id) do
-      %Account{type: type, eth_address: eth_address, short_address: short_address} ->
+    case from(a in Account,
+           left_join: s in SmartContract,
+           on: s.account_id == a.id,
+           where: a.id == ^id,
+           select: %{
+             type: a.type,
+             eth_address: a.eth_address,
+             short_address: a.short_address,
+             contract_name: s.name
+           }
+         )
+         |> Repo.one() do
+      %{
+        type: type,
+        eth_address: eth_address,
+        short_address: short_address,
+        contract_name: contract_name
+      } ->
         cond do
-          type == :user -> eth_address
-          type in [:udt, :polyjuice_contract] -> short_address
-          type == :polyjuice_root -> "deploy contract"
-          true -> Integer.to_string(id)
+          type == :user -> {eth_address, eth_address}
+          type in [:udt, :polyjuice_contract] -> {short_address, contract_name || short_address}
+          type == :polyjuice_root -> {short_address, "Deploy Contract"}
+          true -> {id, id}
         end
+
       nil ->
         {:ok, script_hash} = GodwokenRPC.fetch_script_hash(%{account_id: id})
         script = GodwokenRPC.fetch_script(script_hash)
         type = switch_account_type(script["code_hash"], script["args"])
+
         cond do
-          type == :user -> Account.script_to_eth_adress(type, script["args"])
-          type == :polyjuice_contract -> script_hash |> String.slice(0, 42)
-          type == :polyjuice_root -> "deploy contract"
-          true -> id
+          type == :user ->
+            {Account.script_to_eth_adress(type, script["args"]),
+             Account.script_to_eth_adress(type, script["args"])}
+
+          type == :polyjuice_contract ->
+            {script_hash |> String.slice(0, 42), script_hash |> String.slice(0, 42)}
+
+          type == :polyjuice_root ->
+            {script_hash |> String.slice(0, 42), "Deploy Contract"}
+
+          true ->
+            {id, id}
         end
     end
   end

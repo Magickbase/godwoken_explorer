@@ -6,7 +6,7 @@ import Config
 # to provide built-in test partitioning in CI environment.
 # Run `mix help test` for more information.
 config :godwoken_explorer, GodwokenExplorer.Repo,
-  username: "user",
+  username: "postgres",
   password: "password",
   database: "godwoken_explorer_test#{System.get_env("MIX_TEST_PARTITION")}",
   hostname: "localhost",
@@ -17,6 +17,10 @@ config :godwoken_explorer, GodwokenExplorer.Repo,
 config :godwoken_explorer, GodwokenExplorerWeb.Endpoint,
   http: [port: 4002],
   server: false
+
+config :ethereumex,
+  client_type: :http,
+  url: "http://localhost:8119"
 
 # Print only warnings and errors during test
 config :logger, level: :warn

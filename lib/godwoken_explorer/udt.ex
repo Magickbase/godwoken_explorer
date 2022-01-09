@@ -29,7 +29,21 @@ defmodule GodwokenExplorer.UDT do
   @doc false
   def changeset(udt, attrs) do
     udt
-    |> cast(attrs, [:id, :name, :symbol, :decimal, :icon, :supply, :type_script, :script_hash, :description, :official_site, :type, :value, :bridge_account_id])
+    |> cast(attrs, [
+      :id,
+      :name,
+      :symbol,
+      :decimal,
+      :icon,
+      :supply,
+      :type_script,
+      :script_hash,
+      :description,
+      :official_site,
+      :type,
+      :value,
+      :bridge_account_id
+    ])
     |> unique_constraint(:id, name: :udts_pkey)
   end
 
@@ -74,6 +88,16 @@ defmodule GodwokenExplorer.UDT do
        }}
     else
       {:error, error} -> {:error, error}
+    end
+  end
+
+  def get_decimal(id) do
+    case Repo.get(UDT, id) do
+      nil ->
+        8
+
+      %UDT{decimal: decimal} ->
+        decimal
     end
   end
 
@@ -223,9 +247,11 @@ defmodule GodwokenExplorer.UDT do
 
   def find_by_name_or_token(keyword) do
     from(u in UDT,
-    where: fragment("lower(?)", u.name) == ^keyword or fragment("lower(?)", u.symbol) == ^keyword)
+      where:
+        fragment("lower(?)", u.name) == ^keyword or fragment("lower(?)", u.symbol) == ^keyword
+    )
     |> Repo.all()
-    |> List.first
+    |> List.first()
   end
 
   defp filter_config(:udts) do
