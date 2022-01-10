@@ -290,6 +290,7 @@ defmodule GodwokenExplorer.Transaction do
         hash: t.hash,
         block_hash: b.hash,
         block_number: b.number,
+        l1_block_number: b.layer1_block_number,
         timestamp: b.timestamp,
         from: a2.eth_address,
         to: fragment("
@@ -351,6 +352,7 @@ defmodule GodwokenExplorer.Transaction do
         hash: p.tx_hash,
         block_hash: b.hash,
         block_number: b.number,
+        l1_block_number: b.layer1_block_number,
         timestamp: b.timestamp,
         from: a3.eth_address,
         to: fragment("

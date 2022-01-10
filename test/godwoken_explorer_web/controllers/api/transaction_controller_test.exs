@@ -38,24 +38,30 @@ defmodule GodwokenExplorerWeb.API.TransactionControllerTest do
       type: :meta_contract
     })
 
-    Transaction.create_transaction(%{
-      args:
-        "0x00000000790000000c0000006500000059000000100000003000000031000000636b89329db092883883ab5256e435ccabeee07b52091a78be22179636affce8012400000040d73f0d3c561fcaae330eabc030d8d96a9d0af36d0c5114883658a350cb9e3b010000000100000001000000000000000000000000000000",
-      block_hash: block.hash,
-      block_number: block.number,
-      from_account_id: 468,
-      hash: "0xfedbbb474af0e0c93026946a6cfb44cd221ac97d7159600db51a59367f2a8ee0",
-      nonce: 0,
-      status: :finalized,
-      to_account_id: 0,
-      type: :polyjuice_creator,
-      code_hash: "0x636b89329db092883883ab5256e435ccabeee07b52091a78be22179636affce8",
-      fee_amount: D.new(1),
-      fee_udt_id: 1,
-      script_args: "40d73f0d3c561fcaae330eabc030d8d96a9d0af36d0c5114883658a350cb9e3b01000000",
-      hash_type: "type",
-      inserted_at: ~U[2021-10-31 05:39:38.000000Z]
+    {:ok, creator_transaction} =
+      Transaction.create_transaction(%{
+        args:
+          "0x00000000790000000c0000006500000059000000100000003000000031000000636b89329db092883883ab5256e435ccabeee07b52091a78be22179636affce8012400000040d73f0d3c561fcaae330eabc030d8d96a9d0af36d0c5114883658a350cb9e3b010000000100000001000000000000000000000000000000",
+        block_hash: block.hash,
+        block_number: block.number,
+        from_account_id: 468,
+        hash: "0xfedbbb474af0e0c93026946a6cfb44cd221ac97d7159600db51a59367f2a8ee0",
+        nonce: 0,
+        status: :finalized,
+        to_account_id: 0,
+        type: :polyjuice_creator,
+        code_hash: "0x636b89329db092883883ab5256e435ccabeee07b52091a78be22179636affce8",
+        fee_amount: D.new(1),
+        fee_udt_id: 1,
+        script_args: "40d73f0d3c561fcaae330eabc030d8d96a9d0af36d0c5114883658a350cb9e3b01000000",
+        hash_type: "type"
+      })
+
+    creator_transaction
+    |> Ecto.Changeset.change(%{
+      inserted_at: NaiveDateTime.truncate(~U[2021-10-31 05:39:38.000000Z], :second)
     })
+    |> Repo.update()
 
     Account.create_or_update_account!(%{
       id: 468,
@@ -170,6 +176,7 @@ defmodule GodwokenExplorerWeb.API.TransactionControllerTest do
                  "txs" => [
                    %{
                      "block_number" => 14,
+                     "l1_block_number" => nil,
                      "block_hash" =>
                        "0x9e449451846827df40c9a8bcb2809256011afbbf394de676d52535c3ca32a518",
                      "fee" => "0.00044483",
@@ -211,6 +218,31 @@ defmodule GodwokenExplorerWeb.API.TransactionControllerTest do
                  "txs" => [
                    %{
                      "block_number" => 14,
+                     "l1_block_number" => nil,
+                     "block_hash" =>
+                       "0x9e449451846827df40c9a8bcb2809256011afbbf394de676d52535c3ca32a518",
+                     "fee" => "0.00044483",
+                     "from" => "0x085a61d7164735fc5378e590b5ed1448561e1a48",
+                     "to" => "0xb02c930c2825a960a50ba4ab005e8264498b64a0",
+                     "to_alias" => "Yokai",
+                     "gas_limit" => 16_777_216,
+                     "gas_price" => D.new(1) |> D.div(Integer.pow(10, 8)) |> D.to_string(),
+                     "gas_used" => 44483,
+                     "hash" =>
+                       "0x5d71c8a372aab6a326c31e02a50829b65be278913cb0d0eb990e5714a1b38ff5",
+                     "nonce" => 78,
+                     "receive_eth_address" => "0x085a61d7164735fc5378e590b5ed1448561e1a48",
+                     "timestamp" => 1_635_658_778,
+                     "transfer_value" => "1.549337056272630883",
+                     "udt_id" => 12119,
+                     "type" => "polyjuice",
+                     "value" => "0",
+                     "method" => "Transfer",
+                     "status" => "finalized"
+                   },
+                   %{
+                     "block_number" => 14,
+                     "l1_block_number" => nil,
                      "block_hash" =>
                        "0x9e449451846827df40c9a8bcb2809256011afbbf394de676d52535c3ca32a518",
                      "fee" => "",
@@ -231,29 +263,6 @@ defmodule GodwokenExplorerWeb.API.TransactionControllerTest do
                      "value" => "",
                      "method" => nil,
                      "status" => "finalized"
-                   },
-                   %{
-                     "block_number" => 14,
-                     "block_hash" =>
-                       "0x9e449451846827df40c9a8bcb2809256011afbbf394de676d52535c3ca32a518",
-                     "fee" => "0.00044483",
-                     "from" => "0x085a61d7164735fc5378e590b5ed1448561e1a48",
-                     "to" => "0xb02c930c2825a960a50ba4ab005e8264498b64a0",
-                     "to_alias" => "Yokai",
-                     "gas_limit" => 16_777_216,
-                     "gas_price" => D.new(1) |> D.div(Integer.pow(10, 8)) |> D.to_string(),
-                     "gas_used" => 44483,
-                     "hash" =>
-                       "0x5d71c8a372aab6a326c31e02a50829b65be278913cb0d0eb990e5714a1b38ff5",
-                     "nonce" => 78,
-                     "receive_eth_address" => "0x085a61d7164735fc5378e590b5ed1448561e1a48",
-                     "timestamp" => 1_635_658_778,
-                     "transfer_value" => "1.549337056272630883",
-                     "udt_id" => 12119,
-                     "type" => "polyjuice",
-                     "value" => "0",
-                     "method" => "Transfer",
-                     "status" => "finalized"
                    }
                  ]
                }
@@ -273,6 +282,7 @@ defmodule GodwokenExplorerWeb.API.TransactionControllerTest do
                  "txs" => [
                    %{
                      "block_number" => 14,
+                     "l1_block_number" => nil,
                      "block_hash" =>
                        "0x9e449451846827df40c9a8bcb2809256011afbbf394de676d52535c3ca32a518",
                      "fee" => "0.00044483",
@@ -296,6 +306,7 @@ defmodule GodwokenExplorerWeb.API.TransactionControllerTest do
                    },
                    %{
                      "block_number" => 14,
+                     "l1_block_number" => nil,
                      "block_hash" =>
                        "0x9e449451846827df40c9a8bcb2809256011afbbf394de676d52535c3ca32a518",
                      "fee" => "",
@@ -337,6 +348,7 @@ defmodule GodwokenExplorerWeb.API.TransactionControllerTest do
       assert json_response(conn, 200) ==
                %{
                  "block_number" => 14,
+                 "l1_block_number" => nil,
                  "block_hash" =>
                    "0x9e449451846827df40c9a8bcb2809256011afbbf394de676d52535c3ca32a518",
                  "fee" => "0.00044483",
@@ -374,6 +386,7 @@ defmodule GodwokenExplorerWeb.API.TransactionControllerTest do
       assert json_response(conn, 200) ==
                %{
                  "block_number" => 14,
+                 "l1_block_number" => nil,
                  "block_hash" =>
                    "0x9e449451846827df40c9a8bcb2809256011afbbf394de676d52535c3ca32a518",
                  "fee" => "",
