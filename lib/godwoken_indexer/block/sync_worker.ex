@@ -106,7 +106,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
     home_transactions =
       Enum.map(inserted_transactions, fn tx ->
         tx
-        |> Map.take([:hash, :type, :from, :to])
+        |> Map.take([:hash, :type, :from, :to, :to_alias])
         |> Map.merge(%{
           timestamp: home_blocks |> List.first() |> Map.get(:inserted_at)
         })
