@@ -68,7 +68,7 @@ defmodule GodwokenExplorerWeb.API.TransactionController do
   end
 
   # Compatible with old api
-  def index(conn, %{"account_id" => _, "tx_type" => tx_type} = params) do
+  def index(conn, %{"account_id" => _, "tx_type" => _tx_type} = params) do
     %Account{id: account_id} = Repo.get(Account, params["account_id"])
 
     results =
