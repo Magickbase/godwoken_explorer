@@ -176,7 +176,7 @@ GET /txs
 ### Code samples
 
 ```console
-curl https://api.godwoken.nervina.cn/api/txs?udt_address=0xb02c930c2825a960a50ba4ab005e8264498b64a0
+curl https://api.godwoken.staging.nervina.cn/api/txs?udt_address=0xc5e133e6b01b2c335055576c51a53647b1b9b624
 ```
 
 ### Response
@@ -190,23 +190,27 @@ Status: 200 OK
   page: "1",
   total_count: "24",
   txs: [
-    {
-      args: "0xffffff504f4c59000000000100000000010000000000000000000000000000000000000000000000000000000000000044000000a9059cbb000000000000000000000000a6d4349cf0c08032e4d59cc945776348036ddded0000000000000000000000000000000000000000000000000000000c748b65d7",
-      block_number: "64447",
-      from: "0x085a61d7164735fc5378e590b5ed1448561e1a48",
-      gas_limit: 16777216,
-      gas_price: "1",
-      gas_used: 5405,
-      hash: "0x0980fd9da7d465cfa0cf68f85925ac5c2fc4f5c388b7dd30f1f042cef229b3cc",
-      input: "0xa9059cbb000000000000000000000000a6d4349cf0c08032e4d59cc945776348036ddded0000000000000000000000000000000000000000000000000000000c748b65d7",
-      nonce: "88",
-      receive_eth_address: "0xb4c02bb98f54e96cf50c77801440bb062871a4eb",
-      timestamp: 1640525770,
-      to: "0x9d9599c41383d7009c2093319d576aa6f89a4449",
-      transfer_count: "53494900183",
-      type: "polyjuice",
-      value: "0"
-    }
+{
+block_hash: "0x88d0b2c105a7a17ab958f421ba71acc5aee475dfd11d0d33ff20b2544d7b5ab1",
+block_number: 231666,
+fee: "0",
+from: "0xf7f6e5f6f0c905cbd385060a8b05d9d5ade91b07",
+gas_limit: 12500000,
+gas_price: "0",
+gas_used: 44483,
+hash: "0xc30d26c095b8cc27643ccf2ca8ba5d5c7fd5c11625510ae8a5ea0d104121e797",
+method: "Transfer",
+nonce: 66,
+receive_eth_address: "0x72f411d54643619fb855983383d88a0c7661c3ac",
+status: "committed",
+timestamp: 1641414025,
+to: "0xc5e133e6b01b2c335055576c51a53647b1b9b624",
+to_alias: "YOKAI",
+transfer_value: "1",
+type: "polyjuice",
+udt_id: 3014,
+value: "0"
+},
   ]
 }
 ```
@@ -226,7 +230,7 @@ GET /txs
 ### Code samples
 
 ```console
-curl https://api.godwoken.nervina.cn/api/txs?block_hash=0xdb4322eaee5f198afd33e64688c81f6aeadd1d853169c90824a1d09253b26036
+https://api.godwoken.staging.nervina.cn/api/txs?block_hash=0x88d0b2c105a7a17ab958f421ba71acc5aee475dfd11d0d33ff20b2544d7b5ab1
 ```
 
 ### Response
@@ -240,23 +244,27 @@ Status: 200 OK
   page: "1",
   total_count: "24",
   txs: [
-    {
-      args: "0xffffff504f4c59000000000100000000010000000000000000000000000000000000000000000000000000000000000044000000a9059cbb000000000000000000000000a6d4349cf0c08032e4d59cc945776348036ddded0000000000000000000000000000000000000000000000000000000c748b65d7",
-      block_number: "64447",
-      from: "0x085a61d7164735fc5378e590b5ed1448561e1a48",
-      gas_limit: 16777216,
-      gas_price: "1",
-      gas_used: 5405,
-      hash: "0x0980fd9da7d465cfa0cf68f85925ac5c2fc4f5c388b7dd30f1f042cef229b3cc",
-      input: "0xa9059cbb000000000000000000000000a6d4349cf0c08032e4d59cc945776348036ddded0000000000000000000000000000000000000000000000000000000c748b65d7",
-      nonce: "88",
-      receive_eth_address: "0xb4c02bb98f54e96cf50c77801440bb062871a4eb",
-      timestamp: 1640525770,
-      to: "0x9d9599c41383d7009c2093319d576aa6f89a4449",
-      transfer_count: "53494900183",
-      type: "polyjuice",
-      value: "0"
-    }
+{
+block_hash: "0x88d0b2c105a7a17ab958f421ba71acc5aee475dfd11d0d33ff20b2544d7b5ab1",
+block_number: 231666,
+fee: "0",
+from: "0xf7f6e5f6f0c905cbd385060a8b05d9d5ade91b07",
+gas_limit: 12500000,
+gas_price: "0",
+gas_used: 44409,
+hash: "0x348fa4c9e166caf12abbb74cecc45abcddddf9d11d0fee56969ec3d39ed897d9",
+method: null,
+nonce: 62,
+receive_eth_address: null,
+status: "committed",
+timestamp: 1641414025,
+to: "0x1a0e713d9c91e23c891bdd9e59db2f1a307417fb",
+to_alias: "0x1a0e713d9c91e23c891bdd9e59db2f1a307417fb",
+transfer_value: "",
+type: "polyjuice",
+udt_id: null,
+value: "0"
+},
   ]
 }
 ```
