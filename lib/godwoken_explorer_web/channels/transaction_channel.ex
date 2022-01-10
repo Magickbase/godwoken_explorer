@@ -4,8 +4,6 @@ defmodule GodwokenExplorerWeb.TransactionChannel do
   """
   use GodwokenExplorerWeb, :channel
 
-  import GodwokenRPC.Util, only: [stringify_and_unix_maps: 1]
-
   alias GodwokenExplorer.Transaction
 
   intercept(["refresh"])
@@ -16,12 +14,7 @@ defmodule GodwokenExplorerWeb.TransactionChannel do
     if tx == %{} do
       {:error, %{reason: "may be a pending tx"}}
     else
-      result =
-        tx
-        |> stringify_and_unix_maps
-        |> Map.drop([:input, :to_account_id])
-
-      {:ok, result, assign(socket, :tx_hash, tx_hash)}
+      {:ok, tx, assign(socket, :tx_hash, tx_hash)}
     end
   end
 
