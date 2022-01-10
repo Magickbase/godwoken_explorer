@@ -164,7 +164,10 @@ defmodule GodwokenExplorer.Transaction do
 
   def list_by_account(%{udt_account_id: udt_account_id}) do
     list_by_account_transaction_query(
-      dynamic([t, p], t.to_account_id == ^udt_account_id and not is_nil(p.transfer_count))
+      dynamic(
+        [t, b1, a2, a3, s4, p5],
+        t.to_account_id == ^udt_account_id and not is_nil(p5.transfer_count)
+      )
     )
     |> order_by([t], desc: t.inserted_at)
   end
