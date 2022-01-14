@@ -17,7 +17,9 @@ config :godwoken_explorer, GodwokenExplorerWeb.Endpoint,
     "https://www.layerview.io",
     "//layerview.io",
     "https://api.godwoken.nervina.cn",
-    "//nervina.cn"
+    "//nervina.cn",
+    "https://www.gwscan.com",
+    "//gwscan.com"
   ],
   server: true,
   root: ".",
