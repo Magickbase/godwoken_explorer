@@ -123,7 +123,8 @@ defmodule GodwokenExplorer.Account do
       type: account.type,
       ckb: ckb_balance,
       eth: eth_balance,
-      tx_count: tx_count |> Integer.to_string()
+      tx_count: tx_count |> Integer.to_string(),
+      eth_addr: elem(display_id(id), 0)
     }
 
     case account do
@@ -143,7 +144,6 @@ defmodule GodwokenExplorer.Account do
 
         %{
           user: %{
-            eth_addr: account.eth_address,
             nonce: account.nonce |> Integer.to_string(),
             ckb_lock_script: account.ckb_lock_script,
             udt_list: udt_list
@@ -153,8 +153,7 @@ defmodule GodwokenExplorer.Account do
       %Account{type: :polyjuice_root} ->
         %{
           polyjuice: %{
-            script: account.script,
-            eth_addr: account.short_address
+            script: account.script
           }
         }
 
@@ -162,8 +161,7 @@ defmodule GodwokenExplorer.Account do
         %{
           smart_contract: %{
             # create account's tx_hash needs godwoken api support
-            tx_hash: "",
-            eth_addr: account.short_address
+            tx_hash: ""
           }
         }
 
@@ -177,8 +175,7 @@ defmodule GodwokenExplorer.Account do
             symbol: udt.symbol,
             decimal: (udt.decimal || 8) |> Integer.to_string(),
             supply: (udt.supply || Decimal.new(0)) |> Decimal.to_string(),
-            holders: (holders || 0) |> Integer.to_string(),
-            eth_addr: account.eth_addr
+            holders: (holders || 0) |> Integer.to_string()
           }
         }
 
@@ -193,8 +190,7 @@ defmodule GodwokenExplorer.Account do
             decimal: (udt.decimal || 8) |> Integer.to_string(),
             supply: (udt.supply || Decimal.new(0)) |> Decimal.to_string(),
             holders: (holders || 0) |> Integer.to_string(),
-            type_script: udt.type_script,
-            eth_addr: account.short_address
+            type_script: udt.type_script
           }
         }
     end
@@ -367,6 +363,7 @@ defmodule GodwokenExplorer.Account do
           type == :user -> {eth_address, eth_address}
           type in [:udt, :polyjuice_contract] -> {short_address, contract_name || short_address}
           type == :polyjuice_root -> {short_address, "Deploy Contract"}
+          type == :meta_contract -> {short_address, "Meta Contract"}
           true -> {id, id}
         end
 
