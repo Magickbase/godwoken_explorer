@@ -156,7 +156,7 @@ defmodule GodwokenExplorer.Account do
         %{
           polyjuice: %{
             script: account.script,
-            script_hash: account.script_hash
+            eth_addr: account.short_address
           }
         }
 
@@ -180,7 +180,7 @@ defmodule GodwokenExplorer.Account do
             decimal: (udt.decimal || 8) |> Integer.to_string(),
             supply: (udt.supply || Decimal.new(0)) |> Decimal.to_string(),
             holders: (holders || 0) |> Integer.to_string(),
-            script_hash: account.script_hash
+            eth_addr: account.eth_addr
           }
         }
 
@@ -196,7 +196,7 @@ defmodule GodwokenExplorer.Account do
             supply: (udt.supply || Decimal.new(0)) |> Decimal.to_string(),
             holders: (holders || 0) |> Integer.to_string(),
             type_script: udt.type_script,
-            script_hash: account.script_hash
+            eth_addr: account.short_address
           }
         }
     end
