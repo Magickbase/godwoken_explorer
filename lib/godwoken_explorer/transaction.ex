@@ -285,6 +285,8 @@ defmodule GodwokenExplorer.Transaction do
       on: s4.account_id == t.to_account_id,
       left_join: p in Polyjuice,
       on: p.tx_hash == t.hash,
+      left_join: u6 in UDT,
+      on: u6.id == s4.account_id,
       where: ^condition,
       select: %{
         hash: t.hash,
@@ -329,6 +331,8 @@ defmodule GodwokenExplorer.Transaction do
         receive_eth_address: p.receive_eth_address,
         transfer_value: p.transfer_count,
         udt_id: s4.account_id,
+        udt_symbol: u6.symbol,
+        udt_icon: u6.icon,
         input: p.input,
         to_account_id: t.to_account_id
       }
@@ -347,6 +351,8 @@ defmodule GodwokenExplorer.Transaction do
       on: a4.id == t.to_account_id,
       left_join: s5 in SmartContract,
       on: s5.account_id == t.to_account_id,
+      left_join: u6 in UDT,
+      on: u6.id == s5.account_id,
       where: ^condition,
       select: %{
         hash: p.tx_hash,
@@ -376,6 +382,8 @@ defmodule GodwokenExplorer.Transaction do
         receive_eth_address: p.receive_eth_address,
         transfer_value: p.transfer_count,
         udt_id: s5.account_id,
+        udt_symbol: u6.symbol,
+        udt_icon: u6.icon,
         input: p.input,
         to_account_id: t.to_account_id
       }

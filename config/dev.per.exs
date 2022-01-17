@@ -31,7 +31,6 @@ config :godwoken_explorer, :basic_auth, username: "hello", password: "secret"
 
 config :godwoken_explorer, GodwokenExplorer.Repo,
   username: "postgres",
-  username: "user",
   password: "password",
   database: "godwoken_explorer_dev",
   hostname: "localhost",
