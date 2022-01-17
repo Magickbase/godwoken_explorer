@@ -128,56 +128,6 @@ defmodule GodwokenExplorer.Transaction do
     end
   end
 
-  def list_by_account(%{
-        type: type,
-        account_id: account_id,
-        eth_address: eth_address,
-        contract_id: contract_id
-      })
-      when type == :user do
-    query_a =
-      list_by_account_transaction_query(
-        dynamic([t], t.from_account_id == ^account_id and t.to_account_id == ^contract_id)
-      )
-
-    query_b =
-      list_by_account_polyjuice_query(
-        dynamic([p, t], p.receive_eth_address == ^eth_address and t.to_account_id == ^contract_id)
-      )
-
-    from(q in subquery(query_a |> union(^query_b)), order_by: [desc: q.inserted_at])
-  end
-
-  def list_by_account(%{type: type, account_id: account_id, eth_address: eth_address})
-      when type == :user do
-    query_a = list_by_account_transaction_query(dynamic([t], t.from_account_id == ^account_id))
-    query_b = list_by_account_polyjuice_query(dynamic([p], p.receive_eth_address == ^eth_address))
-
-    from(q in subquery(query_a |> union(^query_b)), order_by: [desc: q.inserted_at])
-  end
-
-  def list_by_account(%{type: type, account_id: account_id, eth_address: _eth_address})
-      when type in [:meta_contract, :udt, :polyjuice_root, :polyjuice_contract] do
-    list_by_account_transaction_query(dynamic([t], t.to_account_id == ^account_id))
-    |> order_by([t], desc: t.inserted_at)
-  end
-
-  def list_by_account(%{udt_account_id: udt_account_id}) do
-    list_by_account_transaction_query(
-      dynamic(
-        [t, b1, a2, a3, s4, p5],
-        t.to_account_id == ^udt_account_id and not is_nil(p5.transfer_count)
-      )
-    )
-    |> order_by([t], desc: t.inserted_at)
-  end
-
-  def list_by_block(%{block_hash: block_hash}) do
-    list_by_account_transaction_query(dynamic([t], t.block_hash == ^block_hash))
-    |> order_by([t], desc: t.inserted_at)
-  end
-
-  # TODO: maybe can refactor
   def count_of_account(%{
         type: type,
         account_id: account_id,
@@ -210,9 +160,13 @@ defmodule GodwokenExplorer.Transaction do
         page
       ) do
     txs =
-      list_by_account(%{
-        udt_account_id: udt_account_id
-      })
+      list_by_account_transaction_query(
+        dynamic(
+          [t, b1, a2, a3, s4, p5],
+          t.to_account_id == ^udt_account_id and not is_nil(p5.transfer_count)
+        )
+      )
+      |> order_by([t], desc: t.inserted_at)
 
     parse_result(txs, page)
   end
@@ -221,21 +175,59 @@ defmodule GodwokenExplorer.Transaction do
         %{block_hash: block_hash},
         page
       ) do
-    txs = list_by_block(%{block_hash: block_hash})
+    txs =
+      list_by_account_transaction_query(dynamic([t], t.block_hash == ^block_hash))
+      |> order_by([t], desc: t.inserted_at)
+
     parse_result(txs, page)
   end
 
   def account_transactions_data(
-        %{type: type, account_id: account_id, eth_address: eth_address, contract_id: contract_id},
+      %{account_id: account_id, eth_address: eth_address, udt_account_id: udt_account_id},
         page
       ) do
+    query_a =
+      list_by_account_transaction_query(
+        dynamic([t], t.from_account_id == ^account_id and t.to_account_id == ^udt_account_id )
+      )
+
+    query_b =
+      list_by_account_polyjuice_query(
+        dynamic([p, t], p.receive_eth_address == ^eth_address and t.to_account_id == ^udt_account_id and not is_nil(p.transfer_count))
+      )
+
+    txs = from(q in subquery(query_a |> union(^query_b)), order_by: [desc: q.inserted_at])
+
+    parse_result(txs, page)
+  end
+
+  def account_transactions_data(
+        %{account_id: account_id, eth_address: eth_address, contract_id: contract_id},
+        page
+      ) do
+    query_a =
+      list_by_account_transaction_query(
+        dynamic([t], t.from_account_id == ^account_id and t.to_account_id == ^contract_id)
+      )
+
+    query_b =
+      list_by_account_polyjuice_query(
+        dynamic([p, t], p.receive_eth_address == ^eth_address and t.to_account_id == ^contract_id)
+      )
+
+    txs = from(q in subquery(query_a |> union(^query_b)), order_by: [desc: q.inserted_at])
+
+    parse_result(txs, page)
+  end
+
+  def account_transactions_data(
+        %{type: type, account_id: account_id, eth_address: _eth_address},
+        page
+      )
+      when type in [:meta_contract, :udt, :polyjuice_root, :polyjuice_contract] do
     txs =
-      list_by_account(%{
-        type: type,
-        account_id: account_id,
-        eth_address: eth_address,
-        contract_id: contract_id
-      })
+      list_by_account_transaction_query(dynamic([t], t.to_account_id == ^account_id))
+      |> order_by([t], desc: t.inserted_at)
 
     parse_result(txs, page)
   end
@@ -243,8 +235,13 @@ defmodule GodwokenExplorer.Transaction do
   def account_transactions_data(
         %{type: type, account_id: account_id, eth_address: eth_address},
         page
-      ) do
-    txs = list_by_account(%{type: type, account_id: account_id, eth_address: eth_address})
+      )
+      when type == :user do
+    query_a = list_by_account_transaction_query(dynamic([t], t.from_account_id == ^account_id))
+    query_b = list_by_account_polyjuice_query(dynamic([p], p.receive_eth_address == ^eth_address))
+
+    txs = from(q in subquery(query_a |> union(^query_b)), order_by: [desc: q.inserted_at])
+
     parse_result(txs, page)
   end
 
