@@ -156,7 +156,7 @@ defmodule GodwokenExplorer.Account do
         %{
           polyjuice: %{
             script: account.script,
-            script_hash: account.script_hash
+            eth_addr: account.short_address
           }
         }
 
