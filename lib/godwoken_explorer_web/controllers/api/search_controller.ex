@@ -18,7 +18,7 @@ defmodule GodwokenExplorerWeb.API.SearchController do
           %{type: "transaction", id: pending_tx.hash}
 
         (account = Account.search(downcase_keyword)) != nil ->
-          %{type: "account", id: account.id}
+          %{type: "account", id: account.id |> Account.display_id() |> elem(0)}
 
         true ->
           %{
