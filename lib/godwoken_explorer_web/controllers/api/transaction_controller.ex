@@ -13,7 +13,6 @@ defmodule GodwokenExplorerWeb.API.TransactionController do
              Repo.get_by(Account, short_address: params["contract_address"]) do
         Transaction.account_transactions_data(
           %{
-            type: :user,
             account_id: account_id,
             eth_address: eth_address,
             contract_id: contract_id
@@ -31,13 +30,15 @@ defmodule GodwokenExplorerWeb.API.TransactionController do
     json(conn, results)
   end
 
-  def index(conn, %{"eth_address" => "0x" <> _} = params) do
-    %Account{id: account_id, type: type, eth_address: eth_address} =
-      Account.search(String.downcase(params["eth_address"]))
+  def index(conn, %{"eth_address" => "0x" <> _, "udt_address" => "0x" <> _} = params) do
+    %Account{id: account_id, eth_address: eth_address} = Repo.get_by(Account, eth_address: String.downcase(params["eth_address"]))
+
+    %Account{id: udt_account_id} =
+      Repo.get_by(Account, short_address: String.downcase(params["udt_address"]))
 
     results =
       Transaction.account_transactions_data(
-        %{type: type, account_id: account_id, eth_address: eth_address},
+        %{account_id: account_id, eth_address: eth_address, udt_account_id: udt_account_id},
         conn.params["page"] || 1
       )
 
@@ -57,23 +58,23 @@ defmodule GodwokenExplorerWeb.API.TransactionController do
     json(conn, results)
   end
 
-  def index(conn, %{"block_hash" => "0x" <> _} = params) do
+  def index(conn, %{"eth_address" => "0x" <> _} = params) do
+    %Account{id: account_id, type: type, eth_address: eth_address} =
+      Account.search(String.downcase(params["eth_address"]))
+
     results =
       Transaction.account_transactions_data(
-        %{block_hash: params["block_hash"]},
+        %{type: type, account_id: account_id, eth_address: eth_address},
         conn.params["page"] || 1
       )
 
     json(conn, results)
   end
 
-  # Compatible with old api
-  def index(conn, %{"account_id" => _, "tx_type" => _tx_type} = params) do
-    %Account{id: account_id} = Repo.get(Account, params["account_id"])
-
+  def index(conn, %{"block_hash" => "0x" <> _} = params) do
     results =
       Transaction.account_transactions_data(
-        %{udt_account_id: account_id},
+        %{block_hash: params["block_hash"]},
         conn.params["page"] || 1
       )
 
@@ -125,8 +126,7 @@ defmodule GodwokenExplorerWeb.API.TransactionController do
                   balance_to_view(
                     tx.parsed_args["transfer_count"],
                     UDT.get_decimal(tx.to_account_id)
-                  ),
-
+                  )
               })
             else
               base_struct

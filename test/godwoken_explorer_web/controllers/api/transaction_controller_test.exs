@@ -159,6 +159,51 @@ defmodule GodwokenExplorerWeb.API.TransactionControllerTest do
   end
 
   describe "index" do
+    test "lists user txs of erc20 transfer", %{conn: conn} do
+      conn =
+        get(
+          conn,
+          Routes.transaction_path(conn, :index,
+            eth_address: "0x085a61d7164735FC5378E590b5ED1448561e1a48",
+            udt_address: "0xb02c930c2825a960a50ba4ab005e8264498b64a0"
+          )
+        )
+
+      assert json_response(conn, 200) ==
+               %{
+                 "page" => "1",
+                 "total_count" => "1",
+                 "txs" => [
+                   %{
+                     "block_number" => 14,
+                     "l1_block_number" => nil,
+                     "block_hash" =>
+                       "0x9e449451846827df40c9a8bcb2809256011afbbf394de676d52535c3ca32a518",
+                     "fee" => "0.00044483",
+                     "from" => "0x085a61d7164735fc5378e590b5ed1448561e1a48",
+                     "to" => "0xb02c930c2825a960a50ba4ab005e8264498b64a0",
+                     "to_alias" => "Yokai",
+                     "gas_limit" => 16_777_216,
+                     "gas_price" => D.new(1) |> D.div(Integer.pow(10, 8)) |> D.to_string(),
+                     "gas_used" => 44483,
+                     "hash" =>
+                       "0x5d71c8a372aab6a326c31e02a50829b65be278913cb0d0eb990e5714a1b38ff5",
+                     "nonce" => 78,
+                     "receive_eth_address" => "0x085a61d7164735fc5378e590b5ed1448561e1a48",
+                     "timestamp" => 1_635_658_778,
+                     "transfer_value" => "1.549337056272630883",
+                     "udt_id" => 12119,
+                     "udt_symbol" => "YOK",
+                     "udt_icon" => nil,
+                     "type" => "polyjuice",
+                     "value" => "0",
+                     "method" => "Transfer",
+                     "status" => "finalized"
+                   }
+                 ]
+               }
+    end
+
     test "lists user txs of contract", %{conn: conn} do
       conn =
         get(
