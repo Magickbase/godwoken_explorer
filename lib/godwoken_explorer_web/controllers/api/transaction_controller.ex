@@ -120,11 +120,13 @@ defmodule GodwokenExplorerWeb.API.TransactionController do
                 gas_limit: tx.parsed_args["gas_limit"],
                 value: balance_to_view(tx.parsed_args["value"], 8),
                 receive_eth_address: tx.parsed_args["receive_eth_address"],
+                input: tx.parsed_args["input"],
                 transfer_count:
                   balance_to_view(
                     tx.parsed_args["transfer_count"],
                     UDT.get_decimal(tx.to_account_id)
-                  )
+                  ),
+
               })
             else
               base_struct

@@ -193,9 +193,8 @@ defmodule GodwokenExplorerWeb.API.TransactionControllerTest do
                      "timestamp" => 1_635_658_778,
                      "transfer_value" => "1.549337056272630883",
                      "udt_id" => 12119,
-                 "udt_symbol" => "YOK",
-                 "udt_icon" => nil,
-
+                     "udt_symbol" => "YOK",
+                     "udt_icon" => nil,
                      "type" => "polyjuice",
                      "value" => "0",
                      "method" => "Transfer",
@@ -238,9 +237,8 @@ defmodule GodwokenExplorerWeb.API.TransactionControllerTest do
                      "timestamp" => 1_635_658_778,
                      "transfer_value" => "1.549337056272630883",
                      "udt_id" => 12119,
-                 "udt_symbol" => "YOK",
-                 "udt_icon" => nil,
-
+                     "udt_symbol" => "YOK",
+                     "udt_icon" => nil,
                      "type" => "polyjuice",
                      "value" => "0",
                      "method" => "Transfer",
@@ -265,9 +263,8 @@ defmodule GodwokenExplorerWeb.API.TransactionControllerTest do
                      "timestamp" => 1_635_658_778,
                      "transfer_value" => "",
                      "udt_id" => nil,
-                 "udt_symbol" => nil,
-                 "udt_icon" => nil,
-
+                     "udt_symbol" => nil,
+                     "udt_icon" => nil,
                      "type" => "polyjuice_creator",
                      "value" => "",
                      "method" => nil,
@@ -309,8 +306,7 @@ defmodule GodwokenExplorerWeb.API.TransactionControllerTest do
                      "transfer_value" => "1.549337056272630883",
                      "udt_id" => 12119,
                      "udt_symbol" => "YOK",
-                    "udt_icon" => nil,
-
+                     "udt_icon" => nil,
                      "type" => "polyjuice",
                      "value" => "0",
                      "method" => "Transfer",
@@ -335,9 +331,8 @@ defmodule GodwokenExplorerWeb.API.TransactionControllerTest do
                      "timestamp" => 1_635_658_778,
                      "transfer_value" => "",
                      "udt_id" => nil,
-                 "udt_symbol" => nil,
-                 "udt_icon" => nil,
-
+                     "udt_symbol" => nil,
+                     "udt_icon" => nil,
                      "type" => "polyjuice_creator",
                      "value" => "",
                      "method" => nil,
@@ -385,7 +380,9 @@ defmodule GodwokenExplorerWeb.API.TransactionControllerTest do
                  "value" => "0",
                  "status" => "finalized",
                  "contract_abi" =>
-                   Jason.decode!(File.read!(Path.join(["test/support", "erc20_abi.json"])))
+                   Jason.decode!(File.read!(Path.join(["test/support", "erc20_abi.json"]))),
+                 "input" =>
+                   "0xa9059cbb000000000000000000000000fa2ae9de22bbca35fc44f20efe7a3d2789556d4c000000000000000000000000000000000000000000000000158059d80c7ac463"
                }
     end
 
@@ -430,7 +427,8 @@ defmodule GodwokenExplorerWeb.API.TransactionControllerTest do
                  "fee_udt" => "CKB",
                  "hash_type" => "type",
                  "script_args" =>
-                   "40d73f0d3c561fcaae330eabc030d8d96a9d0af36d0c5114883658a350cb9e3b01000000"
+                   "40d73f0d3c561fcaae330eabc030d8d96a9d0af36d0c5114883658a350cb9e3b01000000",
+                 "input" => nil
                }
     end
   end
