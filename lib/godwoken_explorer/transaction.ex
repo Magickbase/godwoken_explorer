@@ -245,6 +245,19 @@ defmodule GodwokenExplorer.Transaction do
     parse_result(txs, page)
   end
 
+  def account_transactions_data(
+        %{account_id: account_id, eth_address: eth_address, erc20: true},
+        page
+      ) do
+    udt_ids = from(u in UDT, select: u.id) |> Repo.all()
+    query_a = list_by_account_transaction_query(dynamic([t], t.from_account_id == ^account_id and t.to_account_id in ^udt_ids))
+    query_b = list_by_account_polyjuice_query(dynamic([p, t], p.receive_eth_address == ^eth_address and not(is_nil(p.transfer_count)) and t.to_account_id in ^udt_ids))
+
+    txs = from(q in subquery(query_a |> union(^query_b)), order_by: [desc: q.inserted_at])
+
+    parse_result(txs, page)
+  end
+
   def account_transactions_data(page) do
     txs =
       list_by_account_transaction_query(true)
