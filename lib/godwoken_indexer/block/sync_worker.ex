@@ -77,18 +77,20 @@ defmodule GodwokenIndexer.Block.SyncWorker do
 
           tx
           |> Map.merge(%{
-            from: Account.display_id(tx.from_account_id),
-            to: Account.display_id(tx.to_account_id)
+            from: elem(Account.display_id(tx.from_account_id), 0),
+            to: elem(Account.display_id(tx.to_account_id), 0),
+            to_alias: elem(Account.display_id(tx.to_account_id), 1)
           })
         end)
 
       update_transactions_cache(inserted_transactions)
 
-      Repo.insert_all(WithdrawalRequest, withdrawal_params, [on_conflict: :nothing])
+      Repo.insert_all(WithdrawalRequest, withdrawal_params, on_conflict: :nothing)
 
       broadcast_block_and_tx(inserted_blocks, inserted_transactions)
 
       trigger_sudt_account_worker(transactions_params)
+      trigger_account_worker(transactions_params)
 
       {:ok, next_number + 1}
     else
@@ -105,7 +107,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
     home_transactions =
       Enum.map(inserted_transactions, fn tx ->
         tx
-        |> Map.take([:hash, :type, :from, :to])
+        |> Map.take([:hash, :type, :from, :to, :to_alias])
         |> Map.merge(%{
           timestamp: home_blocks |> List.first() |> Map.get(:inserted_at)
         })
@@ -139,6 +141,17 @@ defmodule GodwokenIndexer.Block.SyncWorker do
     end
   end
 
+  defp trigger_account_worker(transactions_params) do
+    account_ids = extract_account_ids(transactions_params)
+
+    if length(account_ids) > 0 do
+      account_ids
+      |> Enum.each(fn account_id ->
+        Account.manual_create_account(account_id)
+      end)
+    end
+  end
+
   defp update_block_cache([]), do: :ok
 
   defp update_block_cache(blocks) when is_list(blocks) do
@@ -158,6 +171,14 @@ defmodule GodwokenIndexer.Block.SyncWorker do
       else
         acc
       end
+    end)
+    |> Enum.uniq()
+  end
+
+  defp extract_account_ids(transactions_params) do
+    transactions_params
+    |> Enum.reduce([], fn transaction, acc ->
+        acc ++ transaction[:account_ids]
     end)
     |> Enum.uniq()
   end

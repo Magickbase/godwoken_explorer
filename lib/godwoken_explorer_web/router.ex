@@ -22,6 +22,7 @@ defmodule GodwokenExplorerWeb.Router do
     get("/blocks/:id", BlockController, :show)
     get("/txs/:hash", TransactionController, :show)
     get("/txs", TransactionController, :index)
+    get("/transfers", TransferController, :index)
     get("/accounts/:id", AccountController, :show)
     get("/search", SearchController, :index)
     get("/withdrawal_histories", WithdrawalHistoryController, :index)
