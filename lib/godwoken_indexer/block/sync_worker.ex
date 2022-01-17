@@ -90,6 +90,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
       broadcast_block_and_tx(inserted_blocks, inserted_transactions)
 
       trigger_sudt_account_worker(transactions_params)
+      trigger_account_worker(transactions_params)
 
       {:ok, next_number + 1}
     else
@@ -140,6 +141,17 @@ defmodule GodwokenIndexer.Block.SyncWorker do
     end
   end
 
+  defp trigger_account_worker(transactions_params) do
+    account_ids = extract_account_ids(transactions_params)
+
+    if length(account_ids) > 0 do
+      account_ids
+      |> Enum.each(fn account_id ->
+        Account.manual_create_account(account_id)
+      end)
+    end
+  end
+
   defp update_block_cache([]), do: :ok
 
   defp update_block_cache(blocks) when is_list(blocks) do
@@ -159,6 +171,14 @@ defmodule GodwokenIndexer.Block.SyncWorker do
       else
         acc
       end
+    end)
+    |> Enum.uniq()
+  end
+
+  defp extract_account_ids(transactions_params) do
+    transactions_params
+    |> Enum.reduce([], fn transaction, acc ->
+        acc ++ transaction[:account_ids]
     end)
     |> Enum.uniq()
   end
