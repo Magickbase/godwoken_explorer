@@ -271,8 +271,6 @@ defmodule GodwokenExplorer.Transaction do
   def count_of_account(%{type: type, account_id: account_id, eth_address: _eth_address})
       when type in [:meta_contract, :udt, :polyjuice_root, :polyjuice_contract] do
     from(t in Transaction,
-      left_join: p in Polyjuice,
-      on: p.tx_hash == t.hash,
       where: t.to_account_id == ^account_id
       ) |> Repo.aggregate(:count)
   end
