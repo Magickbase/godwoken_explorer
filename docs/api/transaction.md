@@ -46,6 +46,8 @@ to_alias: "YOKAI",
 transfer_value: "1",
 type: "polyjuice",
 udt_id: 3014,
+udt_symobl: null,
+udt_icon: null,
 value: "0"
 }
 ]
@@ -101,6 +103,8 @@ Status: 200 OK
     transfer_value: "133",
     type: "polyjuice",
     udt_id: 3014,
+    udt_symobl: null,
+    udt_icon: null,
     value: "0"
     },
   ]
@@ -155,6 +159,8 @@ Status: 200 OK
     transfer_value: "133",
     type: "polyjuice",
     udt_id: 3014,
+    udt_symobl: null,
+    udt_icon: null,
     value: "0"
     },
   ]
@@ -209,6 +215,8 @@ to_alias: "YOKAI",
 transfer_value: "1",
 type: "polyjuice",
 udt_id: 3014,
+udt_symobl: null,
+udt_icon: null,
 value: "0"
 },
   ]
@@ -263,6 +271,8 @@ to_alias: "0x1a0e713d9c91e23c891bdd9e59db2f1a307417fb",
 transfer_value: "",
 type: "polyjuice",
 udt_id: null,
+udt_symobl: null,
+udt_icon: null,
 value: "0"
 },
   ]
@@ -312,7 +322,10 @@ Status: 200 OK
   transfer_value: "1",
   type: "polyjuice",
   udt_id: 3014,
-  value: "0"
+  udt_symobl: null,
+  udt_icon: null,
+  value: "0",
+  input: ""
 }
 ```
 
@@ -364,7 +377,10 @@ Status: 200 OK
   transfer_value: "",
   type: "polyjuice_creator",
   udt_id: null,
-  value: ""
+  udt_symobl: null,
+  udt_icon: null,
+  value: "",
+  input: ""
 }
 
 ```

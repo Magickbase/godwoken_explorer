@@ -124,7 +124,7 @@ defmodule GodwokenExplorer.Transaction do
             })
         end
         |> stringify_and_unix_maps()
-        |> Map.drop([:input, :to_account_id])
+        |> Map.drop([:to_account_id])
     end
   end
 
