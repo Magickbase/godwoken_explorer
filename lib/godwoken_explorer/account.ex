@@ -377,8 +377,7 @@ defmodule GodwokenExplorer.Account do
     type = switch_account_type(script["code_hash"], script["args"])
     eth_address = script_to_eth_adress(type, script["args"])
     parsed_script = add_name_to_polyjuice_script(type, script)
-
-    create_or_update_account!(%{
+    attrs = %{
       id: id,
       script: parsed_script,
       script_hash: script_hash,
@@ -386,7 +385,14 @@ defmodule GodwokenExplorer.Account do
       type: type,
       nonce: nonce,
       eth_address: eth_address
-    })
+    }
+
+    case Repo.get_by(__MODULE__, script_hash: attrs[:script_hash]) do
+      nil -> %__MODULE__{}
+      account -> account
+    end
+    |> changeset(attrs)
+    |> Repo.insert_or_update!()
   end
 
   def sync_special_udt_balance(id) do
