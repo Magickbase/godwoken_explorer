@@ -1,7 +1,7 @@
 defmodule GodwokenRPC.WithdrawalRequest do
   import GodwokenRPC.Util, only: [hex_to_number: 1]
 
-  alias GodwokenExplorer.{Account, Repo}
+  alias GodwokenExplorer.{UDT, Repo}
 
   def elixir_to_params(%{
         "block_hash" => block_hash,
@@ -25,8 +25,8 @@ defmodule GodwokenRPC.WithdrawalRequest do
       }) do
 
     udt_id =
-      case Repo.get_by(Account, script_hash: sudt_script_hash) do
-        %Account{id: udt_id} -> udt_id
+      case Repo.get_by(UDT, script_hash: sudt_script_hash) do
+        %UDT{id: udt_id} -> udt_id
         _ -> nil
       end
 
