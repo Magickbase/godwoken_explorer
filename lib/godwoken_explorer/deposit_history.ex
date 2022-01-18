@@ -11,6 +11,8 @@ defmodule GodwokenExplorer.DepositHistory do
     field :ckb_lock_hash, :binary
     field :timestamp, :utc_datetime_usec
 
+    belongs_to(:udt, UDT, foreign_key: :udt_id, references: :id, define_field: false)
+
     timestamps()
   end
 
