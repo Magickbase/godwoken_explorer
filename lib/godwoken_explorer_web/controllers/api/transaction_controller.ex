@@ -81,7 +81,9 @@ defmodule GodwokenExplorerWeb.API.TransactionController do
             end
           end
       else
-        stringify_and_unix_maps(tx)
+        tx
+        |> Map.from_struct()
+        |> stringify_and_unix_maps()
       end
 
     json(
