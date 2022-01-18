@@ -292,7 +292,7 @@ defmodule GodwokenExplorer.Transaction do
         %UDT{decimal: decimal} ->
           decimal
         _ ->
-          8
+          18
       end
 
     parsed_result =
