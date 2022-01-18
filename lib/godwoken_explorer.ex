@@ -13,6 +13,7 @@ defmodule GodwokenExplorer do
 
       import Ecto.{Query, Queryable, Changeset}
 
+      alias Decimal, as: D
       alias Ecto.Multi
       alias GodwokenExplorer.{
         Account,
