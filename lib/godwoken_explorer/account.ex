@@ -182,8 +182,7 @@ defmodule GodwokenExplorer.Account do
               supply: (udt.supply || Decimal.new(0)) |> Decimal.to_string(),
               holders: (holders || 0) |> Integer.to_string(),
               type_script: udt.type_script,
-              script_hash: account.script_hash,
-              layer1_script_hash: udt.script_hash
+              script_hash: account.script_hash
             }
           }
         end
