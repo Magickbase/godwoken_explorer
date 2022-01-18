@@ -185,19 +185,27 @@ defmodule GodwokenExplorer.Account do
 
       %Account{type: :udt, id: id} ->
         udt = Repo.get(UDT, id)
-        holders = UDT.count_holder(id)
-
-        %{
-          sudt: %{
-            name: udt.name || "Unkown##{id}",
-            symbol: udt.symbol,
-            decimal: (udt.decimal || 8) |> Integer.to_string(),
-            supply: (udt.supply || Decimal.new(0)) |> Decimal.to_string(),
-            holders: (holders || 0) |> Integer.to_string(),
-            type_script: udt.type_script,
-            script_hash: account.script_hash
+        if is_nil(udt) do
+          %{
+            sudt: %{
+              name: "Unkown##{id}"
+            }
           }
-        }
+        else
+          holders = UDT.count_holder(id)
+
+          %{
+            sudt: %{
+              name: udt.name || "Unkown##{id}",
+              symbol: udt.symbol,
+              decimal: (udt.decimal || 8) |> Integer.to_string(),
+              supply: (udt.supply || Decimal.new(0)) |> Decimal.to_string(),
+              holders: (holders || 0) |> Integer.to_string(),
+              type_script: udt.type_script,
+              script_hash: account.script_hash
+            }
+          }
+        end
     end
     |> Map.merge(base_map)
   end
