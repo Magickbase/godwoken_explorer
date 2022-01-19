@@ -56,6 +56,7 @@ defmodule GodwokenExplorer.MixProject do
       {:rustler, "~> 0.22.0"},
       {:con_cache, "~> 0.13"},
       {:scrivener_ecto, "~> 2.0"},
+      {:scrivener_list, "~> 2.0"},
       {:decimal, "~> 2.0"},
       {:logger_file_backend, "~> 0.0.10"},
       {:blake2_elixir, "~> 0.8.1"},
