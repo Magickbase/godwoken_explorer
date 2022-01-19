@@ -173,6 +173,12 @@ defmodule GodwokenExplorer.Account do
           }
         else
           holders = UDT.count_holder(id)
+          type_script =
+            if id == UDT.ckb_account_id do
+              nil
+            else
+              udt.type_script
+            end
 
           %{
             sudt: %{
@@ -181,9 +187,8 @@ defmodule GodwokenExplorer.Account do
               decimal: (udt.decimal || 8) |> Integer.to_string(),
               supply: (udt.supply || Decimal.new(0)) |> Decimal.to_string(),
               holders: (holders || 0) |> Integer.to_string(),
-              type_script: udt.type_script,
-              script_hash: account.script_hash,
-              layer1_script_hash: udt.script_hash
+              type_script: type_script,
+              script_hash: account.script_hash
             }
           }
         end
