@@ -43,7 +43,9 @@ defmodule GodwokenExplorer.WithdrawalRequest do
       :udt_id,
       :block_hash,
       :nonce,
-      :block_number
+      :block_number,
+      :fee_amount,
+      :fee_udt_id
     ])
     |> validate_required([
       :account_script_hash,
