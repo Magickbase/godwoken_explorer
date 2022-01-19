@@ -24,8 +24,8 @@ defmodule GodwokenExplorerWeb.API.TransferController do
   end
 
   def index(conn, %{"eth_address" => "0x" <> _} = params) do
-    case Repo.get_by(Account, eth_address: String.downcase(params["eth_address"])) do
-      %Account{id: account_id, eth_address: eth_address} ->
+    case Account.search(String.downcase(params["eth_address"])) do
+      %Account{type: :user, id: account_id, eth_address: eth_address} ->
         results =
           Transaction.account_transactions_data(
             %{account_id: account_id, eth_address: eth_address, erc20: true},
@@ -33,6 +33,15 @@ defmodule GodwokenExplorerWeb.API.TransferController do
           )
 
         json(conn, results)
+      %Account{id: account_id, short_address: short_address} ->
+        results =
+          Transaction.account_transactions_data(
+            %{account_id: account_id, eth_address: short_address, erc20: true},
+            conn.params["page"] || 1
+          )
+
+        json(conn, results)
+
       nil ->
         {:error, :not_found}
     end
