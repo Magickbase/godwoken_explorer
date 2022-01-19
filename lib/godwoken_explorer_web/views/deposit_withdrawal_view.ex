@@ -17,7 +17,8 @@ defmodule GodwokenExplorer.DepositWithdrawalView do
          udt_symbol: u.symbol,
          udt_name: u.name,
          udt_icon: u.icon,
-         inserted_at: u.inserted_at
+         inserted_at: u.inserted_at,
+         type: "deposit"
       }
       ) |> Repo.all()
     withdrawals = from(w in WithdrawalRequest,
@@ -45,7 +46,8 @@ defmodule GodwokenExplorer.DepositWithdrawalView do
         block_hash: w.block_hash,
         nonce: w.nonce,
         block_number: w.block_number,
-        inserted_at: w.inserted_at
+        inserted_at: w.inserted_at,
+        type: "withdrawal"
       }
       ) |> Repo.all()
     original_struct =
