@@ -48,8 +48,15 @@ defmodule GodwokenExplorer.DepositWithdrawalView do
         inserted_at: w.inserted_at
       }
       ) |> Repo.all()
-    (deposits ++ withdrawals)
-    |> Enum.sort(&(&1.inserted_at > &2.inserted_at))
-    |> Scrivener.paginate(%{page: page, page_size: 10})
+    original_struct =
+      (deposits ++ withdrawals)
+      |> Enum.sort(&(&1.inserted_at > &2.inserted_at))
+      |> Scrivener.paginate(%{page: page, page_size: 10})
+
+    %{
+      page: Integer.to_string(original_struct.page_number),
+      total_count: Integer.to_string(original_struct.total_entries),
+      txs: original_struct.entries
+    }
   end
 end
