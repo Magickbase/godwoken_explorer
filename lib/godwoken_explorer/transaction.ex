@@ -250,7 +250,7 @@ defmodule GodwokenExplorer.Transaction do
         page
       ) do
     udt_ids = from(u in UDT, select: u.id) |> Repo.all()
-    query_a = list_by_account_transaction_query(dynamic([t, p], t.from_account_id == ^account_id and not(is_nil(p.transfer_count)) and t.to_account_id in ^udt_ids))
+    query_a = list_by_account_transaction_query(dynamic([t, b, a2, a3, s4, p], t.from_account_id == ^account_id and not(is_nil(p.transfer_count)) and t.to_account_id in ^udt_ids))
     query_b = list_by_account_polyjuice_query(dynamic([p, t], p.receive_eth_address == ^eth_address and not(is_nil(p.transfer_count)) and t.to_account_id in ^udt_ids))
 
     txs = from(q in subquery(query_a |> union(^query_b)), order_by: [desc: q.inserted_at])
