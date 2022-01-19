@@ -98,11 +98,9 @@ defmodule GodwokenExplorer.Account do
 
   def find_by_id(id) do
     account = Repo.get(Account, id)
-    ckb_udt_id = UDT.ckb_account_id()
-
     ckb_balance =
-      with udt_id when is_integer(udt_id) <- ckb_udt_id,
-           {:ok, balance} <- GodwokenRPC.fetch_balance(account.short_address, ckb_udt_id) do
+      with udt_id when is_integer(udt_id) <- UDT.ckb_account_id(),
+           {:ok, balance} <- GodwokenRPC.fetch_balance(account.short_address, udt_id) do
         balance
       else
         _ -> ""
@@ -165,20 +163,6 @@ defmodule GodwokenExplorer.Account do
           }
         }
 
-      %Account{type: :udt, id: ^ckb_udt_id} ->
-        udt = Repo.get(UDT, id)
-        holders = UDT.count_holder(id)
-
-        %{
-          sudt: %{
-            name: udt.name || "Unkown##{id}",
-            symbol: udt.symbol,
-            decimal: (udt.decimal || 8) |> Integer.to_string(),
-            supply: (udt.supply || Decimal.new(0)) |> Decimal.to_string(),
-            holders: (holders || 0) |> Integer.to_string()
-          }
-        }
-
       %Account{type: :udt, id: id} ->
         udt = Repo.get(UDT, id)
         if is_nil(udt) do
@@ -198,7 +182,8 @@ defmodule GodwokenExplorer.Account do
               supply: (udt.supply || Decimal.new(0)) |> Decimal.to_string(),
               holders: (holders || 0) |> Integer.to_string(),
               type_script: udt.type_script,
-              script_hash: account.script_hash
+              script_hash: account.script_hash,
+              layer1_script_hash: udt.script_hash
             }
           }
         end
