@@ -25,6 +25,7 @@ defmodule GodwokenExplorer.DepositWithdrawalView do
       where: w.account_script_hash == ^script_hash,
       join: u in UDT, on: u.id == w.udt_id,
       join: u2 in UDT, on: u2.id == w.fee_udt_id,
+      join: b3 in Block, on: b3.number == w.block_number,
       select: %{
         account_script_hash: w.account_script_hash,
         value: fragment("? / power(10, ?)::decimal", w.amount, u.decimal),
@@ -47,7 +48,8 @@ defmodule GodwokenExplorer.DepositWithdrawalView do
         nonce: w.nonce,
         block_number: w.block_number,
         inserted_at: w.inserted_at,
-        type: "withdrawal"
+        type: "withdrawal",
+        timestamp: b3.timestamp
       }
       ) |> Repo.all()
     original_struct =
