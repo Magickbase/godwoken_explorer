@@ -12,12 +12,13 @@ import Config
 config :godwoken_explorer, GodwokenExplorerWeb.Endpoint,
   http: [port: 4001],
   # This is critical for ensuring web-sockets properly authorize.
-  url: [host: "https://www.layerview.io"],
+  url: [host: "www.layerview.io"],
   check_origin: [
     "https://www.layerview.io",
     "//layerview.io",
     "https://api.godwoken.nervina.cn",
     "//nervina.cn",
+    "https://api.godwoken.staging.nervina.cn",
     "https://www.gwscan.com",
     "//gwscan.com"
   ],
