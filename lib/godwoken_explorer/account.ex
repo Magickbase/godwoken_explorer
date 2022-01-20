@@ -184,9 +184,10 @@ defmodule GodwokenExplorer.Account do
             sudt: %{
               name: udt.name || "Unkown##{id}",
               symbol: udt.symbol,
-              decimal: (udt.decimal || 8) |> Integer.to_string(),
+              icon: udt.icon,
+              decimal: udt.decimal,
               supply: (udt.supply || Decimal.new(0)) |> Decimal.to_string(),
-              holders: (holders || 0) |> Integer.to_string(),
+              holders: holders || 0,
               type_script: type_script,
               script_hash: account.script_hash
             }
