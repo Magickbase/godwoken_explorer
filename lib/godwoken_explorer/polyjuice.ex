@@ -89,7 +89,7 @@ defmodule GodwokenExplorer.Polyjuice do
     |> Ecto.Changeset.put_change(:receive_address, short_address)
     |> Ecto.Changeset.put_change(:receive_eth_address, eth_address)
     |> Ecto.Changeset.put_change(:transfer_count, transfer_count)
-    |> Repo.insert()
+    |> Repo.insert(on_conflict: :nothing)
   end
 
   def get_method_name(to_account_id, input, hash \\ "")
