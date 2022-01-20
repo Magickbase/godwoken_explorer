@@ -33,7 +33,7 @@ defmodule GodwokenExplorer.UDTView do
     if is_nil(udt.supply) do
       ""
     else
-      Decimal.to_string(udt.supply)
+      Decimal.to_string(udt.supply, :normal)
     end
   end
 
