@@ -15,23 +15,24 @@ defmodule GodwokenExplorer.DepositWithdrawalView do
   end
 
   def list_by_udt_id(udt_id, page) do
-    deposits = deposit_base_query(dynamic([d], d.udt_id == ^udt_id)) |> Repo.all()
-    withdrawals = withdrawal_base_query(dynamic([w], w.udt_id == ^udt_id)) |> Repo.all()
+    deposits = GodwokenExplorer.DepositWithdrawalView.deposit_base_query(dynamic([d], d.udt_id == ^udt_id))
+    withdrawals = GodwokenExplorer.DepositWithdrawalView.withdrawal_base_query(dynamic([w], w.udt_id == ^udt_id))
+    original_struct = from(q in subquery(deposits |> union_all(^withdrawals)), order_by: [desc: q.timestamp])
 
-    parse_struct(deposits ++ withdrawals, page)
+    parse_struct(original_struct, page)
   end
 
   def list_by_script_hash(script_hash, page) do
-    deposits = deposit_base_query(dynamic([d], d.script_hash == ^script_hash)) |> Repo.all()
-    withdrawals = withdrawal_base_query(dynamic([w], w.account_script_hash == ^script_hash)) |> Repo.all()
-    parse_struct(deposits ++ withdrawals, page)
+    deposits = deposit_base_query(dynamic([d], d.script_hash == ^script_hash))
+    withdrawals = withdrawal_base_query(dynamic([w], w.account_script_hash == ^script_hash))
+    original_struct = from(q in subquery(deposits |> union_all(^withdrawals)), order_by: [desc: q.timestamp])
+
+    parse_struct(original_struct, page)
   end
 
+  @spec parse_struct(any, any) :: %{data: any, page: binary, total_count: binary}
   def parse_struct(original_struct, page) do
-    parsed_struct =
-      original_struct
-      |> Enum.sort(&(&1.timestamp > &2.timestamp))
-      |> Scrivener.paginate(%{page: page, page_size: 10})
+    parsed_struct = Repo.paginate(original_struct, page: page)
 
     %{
       page: Integer.to_string(parsed_struct.page_number),
@@ -50,7 +51,7 @@ defmodule GodwokenExplorer.DepositWithdrawalView do
       on: b3.number == w.block_number,
       where: ^condition,
       select: %{
-        account_script_hash: w.account_script_hash,
+        script_hash: w.account_script_hash,
         value: fragment("? / power(10, ?)::decimal", w.amount, u.decimal),
         capacity: w.capacity,
         owner_lock_hash: w.owner_lock_hash,
@@ -71,7 +72,11 @@ defmodule GodwokenExplorer.DepositWithdrawalView do
         nonce: w.nonce,
         block_number: w.block_number,
         type: "withdrawal",
-        timestamp: b3.timestamp
+        timestamp: b3.timestamp,
+        layer1_block_number: nil,
+        layer1_tx_hash: nil,
+        layer1_output_index: nil,
+        ckb_lock_hash: nil
       }
     )
   end
@@ -84,16 +89,30 @@ defmodule GodwokenExplorer.DepositWithdrawalView do
       select: %{
         script_hash: d.script_hash,
         value: fragment("? / power(10, ?)::decimal", d.amount, u.decimal),
+        capacity: nil,
+        owner_lock_hash: nil,
+        payment_lock_hash: nil,
+        sell_value: nil,
+        sell_capacity: nil,
+        fee_value: nil,
+        fee_udt_id: nil,
+        fee_udt_name: nil,
+        fee_udt_symbol: nil,
+        fee_udt_icon: nil,
+        sudt_script_hash: nil,
         udt_id: d.udt_id,
+        udt_name: u.name,
+        udt_symbol: u.symbol,
+        udt_icon: u.icon,
+        block_hash: nil,
+        nonce: nil,
+        block_number: nil,
+        type: "deposit",
+        timestamp: d.timestamp,
         layer1_block_number: d.layer1_block_number,
         layer1_tx_hash: d.layer1_tx_hash,
         layer1_output_index: d.layer1_output_index,
-        ckb_lock_hash: d.ckb_lock_hash,
-        timestamp: d.timestamp,
-        udt_symbol: u.symbol,
-        udt_name: u.name,
-        udt_icon: u.icon,
-        type: "deposit"
+        ckb_lock_hash: d.ckb_lock_hash
       }
     )
   end
