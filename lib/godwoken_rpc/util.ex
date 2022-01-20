@@ -147,7 +147,7 @@ defmodule GodwokenRPC.Util do
     if balance == "" or is_nil(balance) do
       ""
     else
-      balance |> Decimal.div(Integer.pow(10, decimal)) |> Decimal.to_string()
+      balance |> Decimal.div(Integer.pow(10, decimal)) |> Decimal.to_string(:normal)
     end
   end
 
