@@ -2,10 +2,31 @@ defmodule GodwokenExplorer.UDTView do
   use JSONAPI.View, type: "udt"
 
   import Ecto.Query, only: [from: 2]
-  alias GodwokenExplorer.{UDT, Repo, Account, AccountUDT, Transaction}
+  alias GodwokenExplorer.{UDT, Repo, AccountUDT, Transaction}
 
   def fields do
-    [:id, :script_hash, :symbol, :decimal, :name, :supply, :holder_count, :type, :short_address, :type_script, :script_hash, :official_site, :description, :value, :transfer_count, :icon]
+    [
+      :id,
+      :script_hash,
+      :symbol,
+      :decimal,
+      :name,
+      :supply,
+      :holder_count,
+      :type,
+      :short_address,
+      :type_script,
+      :script_hash,
+      :official_site,
+      :description,
+      :value,
+      :transfer_count,
+      :icon
+    ]
+  end
+
+  def short_address(udt, _conn) do
+    udt.account.short_address
   end
 
   def supply(udt, _conn) do
@@ -20,7 +41,8 @@ defmodule GodwokenExplorer.UDTView do
     from(
       au in AccountUDT,
       where: au.udt_id == ^udt.id and au.balance > 0
-      ) |> Repo.aggregate(:count)
+    )
+    |> Repo.aggregate(:count)
   end
 
   def transfer_count(udt, _conn) do
@@ -28,11 +50,13 @@ defmodule GodwokenExplorer.UDTView do
   end
 
   def get_udt(id) do
-    from(u in UDT,
-      join: a in Account, on: a.id == u.id,
+    from(
+      u in UDT,
+      preload: :account,
       where: u.id == ^id,
-      select: %{id: u.id, short_address: a.short_address, script_hash: u.script_hash, symbol: u.symbol, decimal: u.decimal, name: u.name, supply: u.supply, type: u.type, icon: u.icon, type_script: u.type_script}
-   ) |> Repo.one()
+      select: map(u, ^select_fields())
+    )
+    |> Repo.one()
   end
 
   def list(type, page) do
@@ -40,24 +64,45 @@ defmodule GodwokenExplorer.UDTView do
       type == "bridge" ->
         from(
           u in UDT,
-          join: a in Account, on: a.id == u.id,
+          preload: :account,
           where: u.type == :bridge,
-          select: %{id: u.id, short_address: a.short_address, script_hash: u.script_hash, symbol: u.symbol, decimal: u.decimal, name: u.name, supply: u.supply, type: u.type, icon: u.icon, type_script: u.type_script}
+          select: map(u, ^select_fields())
         )
+
       type == "native" ->
         from(
           u in UDT,
-          join: a in Account, on: a.id == u.id,
+          preload: :account,
           where: u.type == :native,
-          select: %{id: u.id, short_address: a.short_address, script_hash: u.script_hash, symbol: u.symbol, decimal: u.decimal, name: u.name, supply: u.supply, type: u.type, icon: u.icon, type_script: u.type_script}
+          select: map(u, ^select_fields())
         )
+
       true ->
         from(
           u in UDT,
-          join: a in Account, on: a.id == u.id,
-          select: %{id: u.id, short_address: a.short_address, script_hash: u.script_hash, symbol: u.symbol, decimal: u.decimal, name: u.name, supply: u.supply, type: u.type, icon: u.icon, type_script: u.type_script}
+          preload: :account,
+          select: map(u, ^select_fields())
         )
     end
     |> Repo.paginate(page: page)
+  end
+
+  def select_fields do
+    udt_fields = [
+      :id,
+      :script_hash,
+      :symbol,
+      :decimal,
+      :name,
+      :supply,
+      :type,
+      :official_site,
+      :description,
+      :icon
+    ]
+
+    account_fields = [:short_address]
+
+    udt_fields ++ [account: account_fields]
   end
 end
