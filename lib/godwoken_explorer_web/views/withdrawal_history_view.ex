@@ -61,7 +61,7 @@ defmodule GodwokenExplorer.WithdrawalHistoryView do
 
   defp base_query(condition, page) do
     from(h in WithdrawalHistory,
-      preload: [:udt],
+      preload: [:udt, [udt: :account]],
       where: ^condition,
       order_by: [desc: :id]
     )
