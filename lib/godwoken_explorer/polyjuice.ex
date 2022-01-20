@@ -46,6 +46,7 @@ defmodule GodwokenExplorer.Polyjuice do
       :receive_eth_address
     ])
     |> validate_required([:is_create, :gas_limit, :gas_price, :value, :input_size, :input])
+    |> unique_constraint(:tx_hash)
   end
 
   def create_polyjuice(attrs) do

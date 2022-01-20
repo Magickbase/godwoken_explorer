@@ -58,6 +58,7 @@ defmodule GodwokenExplorer.WithdrawalRequest do
       :block_hash,
       :block_number
     ])
+    |> unique_constraint([:account_script_hash, :nonce])
   end
 
   def create_withdrawal_request(attrs) do
