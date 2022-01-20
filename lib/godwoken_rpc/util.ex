@@ -1,10 +1,10 @@
 defmodule GodwokenRPC.Util do
   alias Blake2.Blake2b
+  alias GodwokenExplorer.UDT
 
   @type decimal() :: Decimal.t()
-
-  @stringify_integer_keys ~w(block_number number tx_count l2_block nonce aggregator)a
-  @stringify_decimal_keys ~w(gas_price fee value)a
+  @stringify_ckb_decimal_keys ~w(gas_price fee value)a
+  @utc_unix_keys ~w(timestamp inserted_at)a
   @full_length_size 4
   @offset_size 4
 
@@ -40,17 +40,17 @@ defmodule GodwokenRPC.Util do
 
       parsed_value =
         case parsed_key do
-          n when n in @stringify_integer_keys -> Integer.to_string(v)
-          d when d in @stringify_decimal_keys ->
-            if is_nil(v) do
-              "0"
-            else
-              Decimal.to_string(v)
-            end
-          :l1_block when not is_nil(v) -> Integer.to_string(v)
-          :timestamp -> utc_to_unix(v)
-          :inserted_at -> utc_to_unix(v)
-          _ -> v
+          d when d in @stringify_ckb_decimal_keys ->
+            balance_to_view(v, 8)
+
+          u when u in @utc_unix_keys ->
+            utc_to_unix(v)
+
+          :transfer_value ->
+            balance_to_view(v, UDT.get_decimal(original_map.to_account_id))
+
+          _ ->
+            v
         end
 
       {parsed_key, parsed_value}
@@ -104,8 +104,8 @@ defmodule GodwokenRPC.Util do
   end
 
   def timestamp_to_datetime(timestamp) do
-      timestamp
-      |> DateTime.from_unix!(:millisecond)
+    timestamp
+    |> DateTime.from_unix!(:millisecond)
   end
 
   def parse_polyjuice_args(hex_string) do
@@ -142,10 +142,9 @@ defmodule GodwokenRPC.Util do
     end
   end
 
-
-  @spec balance_to_view(decimal, integer) :: String.t
+  @spec balance_to_view(decimal, integer) :: String.t()
   def balance_to_view(balance, decimal) do
-    if balance == "" do
+    if balance == "" or is_nil(balance) do
       ""
     else
       balance |> Decimal.div(Integer.pow(10, decimal)) |> Decimal.to_string()

@@ -33,7 +33,18 @@ defmodule GodwokenExplorer.Polyjuice do
   @doc false
   def changeset(polyjuice, attrs) do
     polyjuice
-    |> cast(attrs, [:is_create, :gas_limit, :gas_price, :value, :input_size, :input, :gas_used, :receive_address, :transfer_count, :receive_eth_address])
+    |> cast(attrs, [
+      :is_create,
+      :gas_limit,
+      :gas_price,
+      :value,
+      :input_size,
+      :input,
+      :gas_used,
+      :receive_address,
+      :transfer_count,
+      :receive_eth_address
+    ])
     |> validate_required([:is_create, :gas_limit, :gas_price, :value, :input_size, :input])
   end
 
@@ -53,14 +64,17 @@ defmodule GodwokenExplorer.Polyjuice do
         _error -> nil
       end
 
-    {short_address, transfer_count} = decode_transfer_args(attrs[:to_account_id], attrs[:input], attrs[:hash])
+    {short_address, transfer_count} =
+      decode_transfer_args(attrs[:to_account_id], attrs[:input], attrs[:hash])
 
     eth_address =
       if short_address do
         AccountUDT.update_erc20_balance!(attrs[:from_account_id], attrs[:to_account_id])
 
         case Account |> Repo.get_by(short_address: short_address) do
-          nil -> nil
+          nil ->
+            nil
+
           %Account{id: id, eth_address: eth_address} ->
             AccountUDT.update_erc20_balance!(id, attrs[:to_account_id])
             eth_address
@@ -77,10 +91,15 @@ defmodule GodwokenExplorer.Polyjuice do
     |> Repo.insert()
   end
 
-  def get_method_name(to_account_id, input, hash \\ "") do
+  def get_method_name(to_account_id, input, hash \\ "")
+
+  def get_method_name(_to_account_id, nil, _hash), do: nil
+
+  def get_method_name(to_account_id, input, hash) do
     case decode_input(to_account_id, input, hash) do
       {:ok, _, decoded_func, _} ->
         parse_method_name(decoded_func)
+
       nil ->
         nil
     end
@@ -90,18 +109,20 @@ defmodule GodwokenExplorer.Polyjuice do
     case decode_input(to_account_id, input, hash) do
       {:ok, _method_sign, method_desc, args} ->
         method_name = parse_method_name(method_desc)
+
         if method_name == "Transfer" do
           Polyjuice.parse_transfer_args(args)
         else
           {nil, nil}
         end
+
       _ ->
         {nil, nil}
     end
   end
 
   defp decode_input(to_account_id, input, hash) do
-      with  %SmartContract{abi: full_abi} <- Repo.get_by(SmartContract, account_id: to_account_id) do
+    with %SmartContract{abi: full_abi} <- Repo.get_by(SmartContract, account_id: to_account_id) do
       do_decoded_input_data(
         Base.decode16!(String.slice(input, 2..-1), case: :lower),
         full_abi,
@@ -114,7 +135,8 @@ defmodule GodwokenExplorer.Polyjuice do
   end
 
   def parse_transfer_args(args) do
-    {"0x" <> (args |> List.first() |> elem(2) |> Base.encode16(case: :lower)), args |> List.last() |> elem(2)}
+    {"0x" <> (args |> List.first() |> elem(2) |> Base.encode16(case: :lower)),
+     args |> List.last() |> elem(2)}
   end
 
   #  {:ok, "a9059cbb", "transfer(address _to, uint256 _value)",
