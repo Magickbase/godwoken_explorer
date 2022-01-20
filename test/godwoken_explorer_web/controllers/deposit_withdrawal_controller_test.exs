@@ -79,33 +79,37 @@ defmodule GodwokenExplorerWeb.DepositWithdrawalControllerTest do
                %{
                  "data" => [
                    %{
-                     "account_script_hash" =>
-                       "0xfa2ae9de22bbca35fc44f20efe7a3d2789556d4c50a7c2b4e460269f13b77c58",
                      "block_hash" =>
                        "0x07aafde68ea70169bb54cf76b44496d8f5deba5ac89cb1ddc20d10646ddfc09f",
                      "block_number" => 68738,
+                     "capacity" => "383220966182",
+                     "fee_udt_icon" => nil,
+                     "fee_udt_id" => 1,
+                     "fee_udt_name" => "CKB",
+                     "fee_udt_symbol" => nil,
+                     "fee_value" => "0.0000000000000000000000000000",
                      "nonce" => 59,
                      "owner_lock_hash" =>
                        "0x66db0f8f6b0ac8b4e92fdfcef8d04a3251a118ccae0ff436957e2c646f083ebd",
                      "payment_lock_hash" =>
                        "0x0000000000000000000000000000000000000000000000000000000000000000",
+                     "sell_capacity" => "0",
+                     "sell_value" => "0.0000000000000000000000000000",
                      "sudt_script_hash" =>
                        "0x0000000000000000000000000000000000000000000000000000000000000000",
-                     "udt_id" => 1,
-                     "value" => "0.0000000000000000000000000000",
-                     "capacity" => "383220966182",
-                     "fee_value" => "0.0000000000000000000000000000",
-                     "fee_udt_icon" => nil,
-                     "fee_udt_id" => 1,
-                     "fee_udt_name" => "CKB",
-                     "fee_udt_symbol" => nil,
-                     "sell_value" => "0.0000000000000000000000000000",
-                     "sell_capacity" => "0",
                      "timestamp" => "2021-10-31T05:39:38.000000Z",
                      "type" => "withdrawal",
                      "udt_icon" => nil,
+                     "udt_id" => 1,
                      "udt_name" => "CKB",
-                     "udt_symbol" => nil
+                     "udt_symbol" => nil,
+                     "value" => "0.0000000000000000000000000000",
+                     "ckb_lock_hash" => nil,
+                     "layer1_block_number" => nil,
+                     "layer1_output_index" => nil,
+                     "layer1_tx_hash" => nil,
+                     "script_hash" =>
+                       "0xfa2ae9de22bbca35fc44f20efe7a3d2789556d4c50a7c2b4e460269f13b77c58"
                    }
                  ],
                  "page" => "1",
@@ -124,8 +128,50 @@ defmodule GodwokenExplorerWeb.DepositWithdrawalControllerTest do
                %{
                  "data" => [
                    %{
-                     "account_script_hash" =>
+                     "block_hash" => nil,
+                     "block_number" => nil,
+                     "capacity" => nil,
+                     "fee_udt_icon" => nil,
+                     "fee_udt_id" => nil,
+                     "fee_udt_name" => nil,
+                     "fee_udt_symbol" => nil,
+                     "fee_value" => nil,
+                     "nonce" => nil,
+                     "owner_lock_hash" => nil,
+                     "payment_lock_hash" => nil,
+                     "sell_capacity" => nil,
+                     "sell_value" => nil,
+                     "sudt_script_hash" => nil,
+                     "timestamp" => "2021-12-02T22:39:39.585000Z",
+                     "type" => "deposit",
+                     "udt_icon" => nil,
+                     "udt_id" => 1,
+                     "udt_name" => "CKB",
+                     "udt_symbol" => nil,
+                     "value" => "400.0000000000000000",
+                     "ckb_lock_hash" =>
+                       "0xe6c7befcbf4697f1a7f8f04ffb8de71f5304826af7bfce3e4d396483e935820a",
+                     "layer1_block_number" => 5_744_914,
+                     "layer1_output_index" => 0,
+                     "layer1_tx_hash" =>
+                       "0x41876f5c3ea0d96219c42ea5b4e6cedba61c59fa39bf163765a302f6e43c3847",
+                     "script_hash" =>
+                       "0xfa2ae9de22bbca35fc44f20efe7a3d2789556d4c50a7c2b4e460269f13b77c58"
+                   },
+                   %{
+                     "ckb_lock_hash" => nil,
+                     "layer1_block_number" => nil,
+                     "layer1_output_index" => nil,
+                     "layer1_tx_hash" => nil,
+                     "script_hash" =>
                        "0xfa2ae9de22bbca35fc44f20efe7a3d2789556d4c50a7c2b4e460269f13b77c58",
+                     "timestamp" => "2021-10-31T05:39:38.000000Z",
+                     "type" => "withdrawal",
+                     "udt_icon" => nil,
+                     "udt_id" => 1,
+                     "udt_name" => "CKB",
+                     "udt_symbol" => nil,
+                     "value" => "0.0000000000000000000000000000",
                      "block_hash" =>
                        "0x07aafde68ea70169bb54cf76b44496d8f5deba5ac89cb1ddc20d10646ddfc09f",
                      "block_number" => 68738,
@@ -143,31 +189,7 @@ defmodule GodwokenExplorerWeb.DepositWithdrawalControllerTest do
                      "sell_capacity" => "0",
                      "sell_value" => "0.0000000000000000000000000000",
                      "sudt_script_hash" =>
-                       "0x0000000000000000000000000000000000000000000000000000000000000000",
-                     "timestamp" => "2021-10-31T05:39:38.000000Z",
-                     "type" => "withdrawal",
-                     "udt_icon" => nil,
-                     "udt_id" => 1,
-                     "udt_name" => "CKB",
-                     "udt_symbol" => nil,
-                     "value" => "0.0000000000000000000000000000"
-                   },
-                   %{
-                     "ckb_lock_hash" =>
-                       "0xe6c7befcbf4697f1a7f8f04ffb8de71f5304826af7bfce3e4d396483e935820a",
-                     "layer1_block_number" => 5_744_914,
-                     "layer1_output_index" => 0,
-                     "layer1_tx_hash" =>
-                       "0x41876f5c3ea0d96219c42ea5b4e6cedba61c59fa39bf163765a302f6e43c3847",
-                     "script_hash" =>
-                       "0xfa2ae9de22bbca35fc44f20efe7a3d2789556d4c50a7c2b4e460269f13b77c58",
-                     "timestamp" => "2021-12-02T22:39:39.585000Z",
-                     "type" => "deposit",
-                     "udt_icon" => nil,
-                     "udt_id" => 1,
-                     "udt_name" => "CKB",
-                     "udt_symbol" => nil,
-                     "value" => "400.0000000000000000"
+                       "0x0000000000000000000000000000000000000000000000000000000000000000"
                    }
                  ],
                  "page" => "1",
