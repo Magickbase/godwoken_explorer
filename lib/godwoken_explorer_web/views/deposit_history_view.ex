@@ -23,7 +23,7 @@ defmodule GodwokenExplorer.DepositHistoryView do
 
   def list_by_script_hash(script_hash, page) do
     from(d in DepositHistory,
-      preload: [:udt],
+      preload: [:udt, [udt: :account]],
       where: d.script_hash == ^script_hash,
       order_by: [desc: :id])
     |> Repo.paginate(page: page)

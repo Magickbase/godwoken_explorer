@@ -1,4 +1,4 @@
-defmodule GodwokenExplorerWeb.DepositWithdrawalControllerTest do
+defmodule GodwokenExplorerWeb.API.DepositWithdrawalControllerTest do
   use GodwokenExplorerWeb.ConnCase
   use GodwokenExplorer, :schema
 

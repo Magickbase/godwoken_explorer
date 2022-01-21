@@ -1,4 +1,4 @@
-defmodule GodwokenExplorerWeb.WithdrawalRequestControllerTest do
+defmodule GodwokenExplorerWeb.API.DepositHistoryControllerTest do
   use GodwokenExplorerWeb.ConnCase
   use GodwokenExplorer, :schema
 
@@ -9,6 +9,12 @@ defmodule GodwokenExplorerWeb.WithdrawalRequestControllerTest do
       decimal: 8,
       script_hash: "0x0000000000000000000000000000000000000000000000000000000000000000",
       type: :bridge
+    })
+    Account.create_or_update_account!(%{
+      id: 1,
+      type: :udt,
+      short_address: "0x9e9c54293c3211259de788e97a31b5b3a66cd535",
+      script_hash: "0x9e9c54293c3211259de788e97a31b5b3a66cd53564f8d39dfabdc8e96cdf5ea4"
     })
 
     Repo.insert(%Account{
@@ -26,34 +32,27 @@ defmodule GodwokenExplorerWeb.WithdrawalRequestControllerTest do
       type: :user
     })
 
-    {:ok, withdrawal} =
-      WithdrawalRequest.create_withdrawal_request(%{
-        account_script_hash: "0xfa2ae9de22bbca35fc44f20efe7a3d2789556d4c50a7c2b4e460269f13b77c58",
-        amount: D.new(0),
-        block_hash: "0x07aafde68ea70169bb54cf76b44496d8f5deba5ac89cb1ddc20d10646ddfc09f",
-        block_number: 68738,
-        capacity: D.new(383_220_966_182),
-        fee_amount: D.new(0),
-        fee_udt_id: 1,
-        nonce: 59,
-        owner_lock_hash: "0x66db0f8f6b0ac8b4e92fdfcef8d04a3251a118ccae0ff436957e2c646f083ebd",
-        payment_lock_hash: "0x0000000000000000000000000000000000000000000000000000000000000000",
-        sell_amount: D.new(0),
-        sell_capacity: D.new(0),
-        sudt_script_hash: "0x0000000000000000000000000000000000000000000000000000000000000000",
-        udt_id: 1
-      })
+    deposit = DepositHistory.create_or_update_history!(%{
+      amount: D.new(40_000_000_000),
+      ckb_lock_hash: "0xe6c7befcbf4697f1a7f8f04ffb8de71f5304826af7bfce3e4d396483e935820a",
+      layer1_block_number: 5_744_914,
+      layer1_output_index: 0,
+      layer1_tx_hash: "0x41876f5c3ea0d96219c42ea5b4e6cedba61c59fa39bf163765a302f6e43c3847",
+      script_hash: "0xfa2ae9de22bbca35fc44f20efe7a3d2789556d4c50a7c2b4e460269f13b77c58",
+      timestamp: ~U[2021-12-02 22:39:39.585000Z],
+      udt_id: 1
+    })
 
-    %{withdrawal: withdrawal}
+    %{deposit: deposit}
   end
 
   describe "index" do
-    test "lists eth address withdrawal", %{conn: conn, withdrawal: withdrawal} do
+    test "lists eth address deposit", %{conn: conn, deposit: deposit} do
       conn =
         get(
           conn,
-          Routes.withdrawal_request_path(conn, :index,
-            eth_address: "0x085a61d7164735FC5378E590b5ED1448561e1a48"
+          Routes.deposit_history_path(conn, :index,
+            eth_address: "0x085a61d7164735FC5378E590b5ED1448561e1a48",
           )
         )
 
@@ -62,27 +61,19 @@ defmodule GodwokenExplorerWeb.WithdrawalRequestControllerTest do
                  "data" => [
                    %{
                      "attributes" => %{
-                       "account_script_hash" =>
-                         "0xfa2ae9de22bbca35fc44f20efe7a3d2789556d4c50a7c2b4e460269f13b77c58",
-                       "block_hash" =>
-                         "0x07aafde68ea70169bb54cf76b44496d8f5deba5ac89cb1ddc20d10646ddfc09f",
-                       "block_number" => 68738,
-                       "ckb" => "3832.20966182",
-                       "nonce" => 59,
-                       "owner_lock_hash" =>
-                         "0x66db0f8f6b0ac8b4e92fdfcef8d04a3251a118ccae0ff436957e2c646f083ebd",
-                       "payment_lock_hash" =>
-                         "0x0000000000000000000000000000000000000000000000000000000000000000",
-                       "sell_ckb" => "0",
-                       "sell_value" => "0",
-                       "sudt_script_hash" =>
-                         "0x0000000000000000000000000000000000000000000000000000000000000000",
+                       "ckb_lock_hash" =>
+                         "0xe6c7befcbf4697f1a7f8f04ffb8de71f5304826af7bfce3e4d396483e935820a",
+                       "layer1_block_number" => 5_744_914,
+                       "layer1_output_index" => 0,
+                       "layer1_tx_hash" =>
+                         "0x41876f5c3ea0d96219c42ea5b4e6cedba61c59fa39bf163765a302f6e43c3847",
+                       "timestamp" => "2021-12-02T22:39:39.585000Z",
                        "udt_id" => 1,
-                       "value" => "0"
+                       "value" => "400"
                      },
-                     "id" => "#{withdrawal.id}",
+                     "id" => "#{deposit.id}",
                      "relationships" => %{"udt" => %{"data" => %{"id" => "1", "type" => "udt"}}},
-                     "type" => "withdrawal_request"
+                     "type" => "deposit_history"
                    }
                  ],
                  "included" => [
@@ -97,7 +88,7 @@ defmodule GodwokenExplorerWeb.WithdrawalRequestControllerTest do
                        "official_site" => nil,
                        "script_hash" =>
                          "0x0000000000000000000000000000000000000000000000000000000000000000",
-                       "short_address" => nil,
+                       "short_address" => "0x9e9c54293c3211259de788e97a31b5b3a66cd535",
                        "supply" => "",
                        "symbol" => nil,
                        "transfer_count" => 0,
