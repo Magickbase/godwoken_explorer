@@ -227,8 +227,7 @@ defmodule GodwokenExplorer.Transaction do
       when type in [:meta_contract, :udt, :polyjuice_root, :polyjuice_contract] do
     txs =
       list_by_account_transaction_query(dynamic([t], t.to_account_id == ^account_id))
-      |> limit(100_000)
-      |> order_by([t], desc: t.inserted_at)
+      |> order_by([t], [desc: t.block_number, desc: t.inserted_at])
 
     parse_result(txs, page)
   end
