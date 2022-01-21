@@ -109,7 +109,8 @@ defmodule GodwokenExplorerWeb.DepositWithdrawalControllerTest do
                      "layer1_output_index" => nil,
                      "layer1_tx_hash" => nil,
                      "script_hash" =>
-                       "0xfa2ae9de22bbca35fc44f20efe7a3d2789556d4c50a7c2b4e460269f13b77c58"
+                       "0xfa2ae9de22bbca35fc44f20efe7a3d2789556d4c50a7c2b4e460269f13b77c58",
+                     "eth_address" => "0x085a61d7164735fc5378e590b5ed1448561e1a48"
                    }
                  ],
                  "page" => "1",
@@ -156,7 +157,8 @@ defmodule GodwokenExplorerWeb.DepositWithdrawalControllerTest do
                      "layer1_tx_hash" =>
                        "0x41876f5c3ea0d96219c42ea5b4e6cedba61c59fa39bf163765a302f6e43c3847",
                      "script_hash" =>
-                       "0xfa2ae9de22bbca35fc44f20efe7a3d2789556d4c50a7c2b4e460269f13b77c58"
+                       "0xfa2ae9de22bbca35fc44f20efe7a3d2789556d4c50a7c2b4e460269f13b77c58",
+                     "eth_address" => "0x085a61d7164735fc5378e590b5ed1448561e1a48"
                    },
                    %{
                      "ckb_lock_hash" => nil,
@@ -165,6 +167,7 @@ defmodule GodwokenExplorerWeb.DepositWithdrawalControllerTest do
                      "layer1_tx_hash" => nil,
                      "script_hash" =>
                        "0xfa2ae9de22bbca35fc44f20efe7a3d2789556d4c50a7c2b4e460269f13b77c58",
+                     "eth_address" => "0x085a61d7164735fc5378e590b5ed1448561e1a48",
                      "timestamp" => "2021-10-31T05:39:38.000000Z",
                      "type" => "withdrawal",
                      "udt_icon" => nil,
