@@ -90,7 +90,7 @@ defmodule GodwokenExplorer.Transaction do
 
       _ ->
         list_by_account_transaction_query(true)
-        |> order_by([t], desc: t.block_number, desc: t.inserted_at)
+        |> order_by([t], [desc: t.block_number, desc: t.inserted_at])
         |> limit(10)
         |> Repo.all()
     end
@@ -166,7 +166,7 @@ defmodule GodwokenExplorer.Transaction do
           t.to_account_id == ^udt_account_id and not is_nil(p5.transfer_count)
         )
       )
-      |> order_by([t], desc: t.inserted_at)
+      |> order_by([t], [desc: t.block_number, desc: t.inserted_at])
 
     parse_result(txs, page)
   end
@@ -177,7 +177,7 @@ defmodule GodwokenExplorer.Transaction do
       ) do
     txs =
       list_by_account_transaction_query(dynamic([t], t.block_hash == ^block_hash))
-      |> order_by([t], desc: t.inserted_at)
+      |> order_by([t], [desc: t.block_number, desc: t.inserted_at])
 
     parse_result(txs, page)
   end
@@ -196,7 +196,7 @@ defmodule GodwokenExplorer.Transaction do
         dynamic([p, t], p.receive_eth_address == ^eth_address and t.to_account_id == ^udt_account_id and not is_nil(p.transfer_count))
       )
 
-    txs = from(q in subquery(query_a |> union(^query_b)), order_by: [desc: q.inserted_at])
+    txs = from(q in subquery(query_a |> union(^query_b)), order_by: [desc: q.block_number, desc: q.inserted_at])
 
     parse_result(txs, page)
   end
@@ -215,7 +215,7 @@ defmodule GodwokenExplorer.Transaction do
         dynamic([p, t], p.receive_eth_address == ^eth_address and t.to_account_id == ^contract_id)
       )
 
-    txs = from(q in subquery(query_a |> union(^query_b)), order_by: [desc: q.inserted_at])
+    txs = from(q in subquery(query_a |> union(^query_b)), order_by: [desc: q.block_number, desc: q.inserted_at])
 
     parse_result(txs, page)
   end
@@ -240,7 +240,7 @@ defmodule GodwokenExplorer.Transaction do
     query_a = list_by_account_transaction_query(dynamic([t], t.from_account_id == ^account_id))
     query_b = list_by_account_polyjuice_query(dynamic([p], p.receive_eth_address == ^eth_address))
 
-    txs = from(q in subquery(query_a |> union(^query_b)), order_by: [desc: q.inserted_at])
+    txs = from(q in subquery(query_a |> union(^query_b)), order_by: [desc: q.block_number, desc: q.inserted_at])
 
     parse_result(txs, page)
   end
@@ -253,7 +253,7 @@ defmodule GodwokenExplorer.Transaction do
     query_a = list_by_account_transaction_query(dynamic([t, b, a2, a3, s4, p], t.from_account_id == ^account_id and not(is_nil(p.transfer_count)) and t.to_account_id in ^udt_ids))
     query_b = list_by_account_polyjuice_query(dynamic([p, t], p.receive_eth_address == ^eth_address and not(is_nil(p.transfer_count)) and t.to_account_id in ^udt_ids))
 
-    txs = from(q in subquery(query_a |> union(^query_b)), order_by: [desc: q.inserted_at])
+    txs = from(q in subquery(query_a |> union(^query_b)), order_by: [desc: q.block_number, desc: q.inserted_at])
 
     parse_result(txs, page)
   end
@@ -261,7 +261,7 @@ defmodule GodwokenExplorer.Transaction do
   def account_transactions_data(page) do
     txs =
       list_by_account_transaction_query(true)
-      |> order_by([t], desc: t.inserted_at)
+      |> order_by([t], [desc: t.block_number, desc: t.inserted_at])
 
     parse_result(txs, page)
   end
