@@ -53,7 +53,7 @@ defmodule GodwokenExplorer.WithdrawalRequestView do
 
   def list_by_script_hash(l2_script_hash, page) do
     from(wr in WithdrawalRequest,
-      preload: [:udt],
+      preload: [:udt, [udt: :account]],
       where: wr.account_script_hash == ^l2_script_hash,
       order_by: [desc: :id]
     )

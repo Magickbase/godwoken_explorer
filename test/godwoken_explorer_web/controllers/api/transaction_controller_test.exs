@@ -16,6 +16,7 @@ defmodule GodwokenExplorerWeb.API.TransactionControllerTest do
     Account.create_or_update_account!(%{
       id: 1,
       type: :udt,
+      short_address: "0x9e9c54293c3211259de788e97a31b5b3a66cd535",
       script_hash: "0x9e9c54293c3211259de788e97a31b5b3a66cd53564f8d39dfabdc8e96cdf5ea4"
     })
 
@@ -184,7 +185,7 @@ defmodule GodwokenExplorerWeb.API.TransactionControllerTest do
                      "to" => "0xb02c930c2825a960a50ba4ab005e8264498b64a0",
                      "to_alias" => "Yokai",
                      "gas_limit" => 16_777_216,
-                     "gas_price" => D.new(1) |> D.div(Integer.pow(10, 8)) |> D.to_string(),
+                     "gas_price" => D.new(1) |> D.div(Integer.pow(10, 8)) |> D.to_string(:normal),
                      "gas_used" => 44483,
                      "hash" =>
                        "0x5d71c8a372aab6a326c31e02a50829b65be278913cb0d0eb990e5714a1b38ff5",
@@ -230,7 +231,7 @@ defmodule GodwokenExplorerWeb.API.TransactionControllerTest do
                      "to" => "0xb02c930c2825a960a50ba4ab005e8264498b64a0",
                      "to_alias" => "Yokai",
                      "gas_limit" => 16_777_216,
-                     "gas_price" => D.new(1) |> D.div(Integer.pow(10, 8)) |> D.to_string(),
+                     "gas_price" => D.new(1) |> D.div(Integer.pow(10, 8)) |> D.to_string(:normal),
                      "gas_used" => 44483,
                      "hash" =>
                        "0x5d71c8a372aab6a326c31e02a50829b65be278913cb0d0eb990e5714a1b38ff5",
@@ -275,7 +276,7 @@ defmodule GodwokenExplorerWeb.API.TransactionControllerTest do
                      "to" => "0xb02c930c2825a960a50ba4ab005e8264498b64a0",
                      "to_alias" => "Yokai",
                      "gas_limit" => 16_777_216,
-                     "gas_price" => D.new(1) |> D.div(Integer.pow(10, 8)) |> D.to_string(),
+                     "gas_price" => D.new(1) |> D.div(Integer.pow(10, 8)) |> D.to_string(:normal),
                      "gas_used" => 44483,
                      "hash" =>
                        "0x5d71c8a372aab6a326c31e02a50829b65be278913cb0d0eb990e5714a1b38ff5",
@@ -345,7 +346,7 @@ defmodule GodwokenExplorerWeb.API.TransactionControllerTest do
                      "to" => "0xb02c930c2825a960a50ba4ab005e8264498b64a0",
                      "to_alias" => "Yokai",
                      "gas_limit" => 16_777_216,
-                     "gas_price" => D.new(1) |> D.div(Integer.pow(10, 8)) |> D.to_string(),
+                     "gas_price" => D.new(1) |> D.div(Integer.pow(10, 8)) |> D.to_string(:normal),
                      "gas_used" => 44483,
                      "hash" =>
                        "0x5d71c8a372aab6a326c31e02a50829b65be278913cb0d0eb990e5714a1b38ff5",
@@ -417,7 +418,7 @@ defmodule GodwokenExplorerWeb.API.TransactionControllerTest do
                  "to" => "0xb02c930c2825a960a50ba4ab005e8264498b64a0",
                  "to_alias" => "Yokai",
                  "gas_limit" => 16_777_216,
-                 "gas_price" => D.new(1) |> D.div(Integer.pow(10, 8)) |> D.to_string(),
+                 "gas_price" => D.new(1) |> D.div(Integer.pow(10, 8)) |> D.to_string(:normal),
                  "gas_used" => 44483,
                  "hash" => "0x5d71c8a372aab6a326c31e02a50829b65be278913cb0d0eb990e5714a1b38ff5",
                  "nonce" => 78,
