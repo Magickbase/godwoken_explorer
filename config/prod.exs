@@ -16,11 +16,12 @@ config :godwoken_explorer, GodwokenExplorerWeb.Endpoint,
   check_origin: [
     "https://www.layerview.io",
     "//layerview.io",
-    "https://api.godwoken.nervina.cn",
-    "//nervina.cn",
-    "https://api.godwoken.staging.nervina.cn",
     "https://www.gwscan.com",
-    "//gwscan.com"
+    "//gwscan.com",
+    "https://api.godwoken.nervina.cn",
+    "https://api.godwoken.staging.nervina.cn",
+    "https://api.gwscan.com",
+    "https://api.aggron.gwscan.com"
   ],
   server: true,
   root: ".",
