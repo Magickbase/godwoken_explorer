@@ -96,11 +96,24 @@ defmodule GodwokenExplorer.UDT do
   def get_decimal(id) do
     case Repo.get(UDT, id) do
       nil ->
-        8
+        0
 
       %UDT{decimal: decimal} ->
         decimal
     end
+  end
+
+  def get_udt_contract_ids do
+    bridge_query =
+      from(u in UDT,
+        where: u.type == :bridge and not is_nil(u.name),
+        select: %{id: u.bridge_account_id}
+      )
+
+    native_query =
+      from(u in UDT, where: u.type == :native and not is_nil(u.name), select: %{id: u.id})
+
+    from(q in subquery(union_all(bridge_query, ^native_query))) |> Repo.all() |> Enum.map(& &1.id)
   end
 
   defp do_paginate_udts(filter, params) do
