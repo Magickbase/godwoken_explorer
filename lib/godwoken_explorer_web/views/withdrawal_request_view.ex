@@ -30,21 +30,12 @@ defmodule GodwokenExplorer.WithdrawalRequestView do
   end
 
   def value(withdrawal_request, _connn) do
-    case Repo.get(UDT, withdrawal_request.udt_id) do
-      %UDT{decimal: decimal} ->
-        balance_to_view(withdrawal_request.amount, decimal)
-      nil ->
-        balance_to_view(withdrawal_request.amount, 18)
-    end
+     balance_to_view(withdrawal_request.amount, UDT.get_decimal(withdrawal_request.udt_id))
+
   end
 
   def sell_value(withdrawal_request, _connn) do
-    case Repo.get(UDT, withdrawal_request.udt_id) do
-      %UDT{decimal: decimal} ->
-        balance_to_view(withdrawal_request.sell_amount, decimal)
-      nil ->
-        balance_to_view(withdrawal_request.sell_amount, 18)
-    end
+     balance_to_view(withdrawal_request.sell_amount, UDT.get_decimal(withdrawal_request.udt_id))
   end
 
   def relationships do

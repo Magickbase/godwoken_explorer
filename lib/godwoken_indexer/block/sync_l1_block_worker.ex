@@ -192,7 +192,7 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
           raise "account #{script_hash} may not created now at #{l1_block_number} #{tx_hash} #{index}"
         end
 
-      {:error, nil} ->
+      {:error, :network_error} ->
         {:error, nil}
 
       {:ok, account_id} ->
