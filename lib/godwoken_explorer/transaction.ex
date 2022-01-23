@@ -96,6 +96,7 @@ defmodule GodwokenExplorer.Transaction do
         |> order_by([t], desc: t.block_number, desc: t.inserted_at)
         |> limit(10)
         |> Repo.all()
+        |> Enum.map(fn %{tx_hash: tx_hash} -> tx_hash end)
         |> list_transaction_by_tx_hash()
         |> Repo.all()
     end
