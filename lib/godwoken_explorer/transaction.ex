@@ -152,7 +152,7 @@ defmodule GodwokenExplorer.Transaction do
         select: p.tx_hash
       )
 
-    query_a |> union(^query_b) |> Repo.all() |> Enum.count()
+    query_a |> union_all(^query_b) |> Repo.all() |> Enum.count()
   end
 
   def count_of_account(%{type: type, account_id: account_id, eth_address: _eth_address})
@@ -217,7 +217,7 @@ defmodule GodwokenExplorer.Transaction do
       )
 
     tx_hashes =
-      from(q in subquery(query_a |> union(^query_b)),
+      from(q in subquery(query_a |> union_all(^query_b)),
         limit: @account_tx_limit,
         order_by: [desc: q.block_number, desc: q.inserted_at]
       )
@@ -240,7 +240,7 @@ defmodule GodwokenExplorer.Transaction do
       )
 
     tx_hashes =
-      from(q in subquery(query_a |> union(^query_b)),
+      from(q in subquery(query_a |> union_all(^query_b)),
         limit: @account_tx_limit,
         order_by: [desc: q.block_number, desc: q.inserted_at]
       )
@@ -270,7 +270,7 @@ defmodule GodwokenExplorer.Transaction do
     query_b = list_tx_hash_by_polyjuice_query(dynamic([p], p.receive_eth_address == ^eth_address))
 
     tx_hashes =
-      from(q in subquery(query_a |> union(^query_b)),
+      from(q in subquery(query_a |> union_all(^query_b)),
         limit: @account_tx_limit,
         order_by: [desc: q.block_number, desc: q.inserted_at]
       )
@@ -303,7 +303,7 @@ defmodule GodwokenExplorer.Transaction do
       )
 
     tx_hashes =
-      from(q in subquery(query_a |> union(^query_b)),
+      from(q in subquery(query_a |> union_all(^query_b)),
         limit: @account_tx_limit,
         order_by: [desc: q.block_number, desc: q.inserted_at]
       )
@@ -361,7 +361,7 @@ defmodule GodwokenExplorer.Transaction do
     )
   end
 
-  defp list_transaction_by_tx_hash(hashes) do
+  def list_transaction_by_tx_hash(hashes) do
     from(t in Transaction,
       join: b in Block,
       on: [hash: t.block_hash],
