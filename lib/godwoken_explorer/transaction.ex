@@ -167,14 +167,11 @@ defmodule GodwokenExplorer.Transaction do
       ) do
     udt_id =
       case Repo.get(UDT, udt_account_id) do
-        %UDT{type: :bridge, bridge_account_id: bridge_account_id} ->
+        %UDT{type: :bridge, bridge_account_id: bridge_account_id} when not(is_nil(bridge_account_id)) ->
           bridge_account_id
 
-        %UDT{type: :native} ->
-          udt_account_id
-
         _ ->
-          nil
+          udt_account_id
       end
 
     tx_hashes =
