@@ -172,8 +172,8 @@ defmodule GodwokenExplorerWeb.API.TransactionControllerTest do
 
       assert json_response(conn, 200) ==
                %{
-                 "page" => "1",
-                 "total_count" => "1",
+                 "page" => 1,
+                 "total_count" => 1,
                  "txs" => [
                    %{
                      "block_number" => 14,
@@ -218,8 +218,8 @@ defmodule GodwokenExplorerWeb.API.TransactionControllerTest do
 
       assert json_response(conn, 200) ==
                %{
-                 "page" => "1",
-                 "total_count" => "1",
+                 "page" => 1,
+                 "total_count" => 1,
                  "txs" => [
                    %{
                      "block_number" => 14,
@@ -263,8 +263,8 @@ defmodule GodwokenExplorerWeb.API.TransactionControllerTest do
 
       assert json_response(conn, 200) ==
                %{
-                 "page" => "1",
-                 "total_count" => "2",
+                 "page" => 1,
+                 "total_count" => 2,
                  "txs" => [
                    %{
                      "block_number" => 14,
@@ -333,8 +333,8 @@ defmodule GodwokenExplorerWeb.API.TransactionControllerTest do
 
       assert json_response(conn, 200) ==
                %{
-                 "page" => "1",
-                 "total_count" => "2",
+                 "page" => 1,
+                 "total_count" => 2,
                  "txs" => [
                    %{
                      "block_number" => 14,

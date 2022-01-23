@@ -13,12 +13,7 @@ defmodule GodwokenExplorer.DepositHistoryView do
   end
 
   def value(deposit_history, _conn) do
-    case Repo.get(UDT, deposit_history.udt_id) do
-      %UDT{decimal: decimal} ->
-        balance_to_view(deposit_history.amount, decimal)
-      nil ->
-        balance_to_view(deposit_history.amount, 18)
-    end
+    balance_to_view(deposit_history.amount, UDT.get_decimal(deposit_history.udt_id))
   end
 
   def list_by_script_hash(script_hash, page) do

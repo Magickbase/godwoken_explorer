@@ -211,7 +211,7 @@ defmodule GodwokenExplorer.Account do
           [:user, :udt_list],
           udt_list
           |> Enum.map(fn udt ->
-            %{udt | balance: balance_to_view(udt.balance, udt.decimal || 18)}
+            %{udt | balance: balance_to_view(udt.balance, UDT.get_decimal(udt.id))}
           end)
         )
 
@@ -267,7 +267,7 @@ defmodule GodwokenExplorer.Account do
               raise "account may not created now at #{l1_block_number}"
             end
 
-          {:error, nil} ->
+          {:error, :network_error} ->
             {:error, nil}
 
           {:ok, udt_account_id} ->

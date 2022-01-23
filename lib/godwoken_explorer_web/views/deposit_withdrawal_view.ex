@@ -8,8 +8,8 @@ defmodule GodwokenExplorer.DepositWithdrawalView do
       |> Repo.paginate(page: page)
 
     %{
-      page: Integer.to_string(parsed_struct.page_number),
-      total_count: Integer.to_string(parsed_struct.total_entries),
+      page: parsed_struct.page_number,
+      total_count: parsed_struct.total_entries,
       data: parsed_struct.entries
     }
   end

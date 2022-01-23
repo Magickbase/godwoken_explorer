@@ -5,6 +5,9 @@ defmodule GodwokenExplorer.Transaction do
 
   alias GodwokenExplorer.Chain.Cache.Transactions
 
+  @tx_limit 500_000
+  @account_tx_limit 100_000
+
   @primary_key {:hash, :binary, autogenerate: false}
   schema "transactions" do
     field(:args, :binary)
@@ -89,15 +92,18 @@ defmodule GodwokenExplorer.Transaction do
         end)
 
       _ ->
-        list_by_account_transaction_query(true)
-        |> order_by([t], [desc: t.block_number, desc: t.inserted_at])
+        list_tx_hash_by_transaction_query(true)
+        |> order_by([t], desc: t.block_number, desc: t.inserted_at)
         |> limit(10)
+        |> Repo.all()
+        |> Enum.map(fn %{tx_hash: tx_hash} -> tx_hash end)
+        |> list_transaction_by_tx_hash()
         |> Repo.all()
     end
   end
 
   def find_by_hash(hash) do
-    case list_by_account_transaction_query(dynamic([t], t.hash == ^hash)) |> Repo.one() do
+    case list_transaction_by_tx_hash([hash]) |> Repo.one() do
       nil ->
         nil
 
@@ -159,46 +165,67 @@ defmodule GodwokenExplorer.Transaction do
         %{udt_account_id: udt_account_id},
         page
       ) do
-    txs =
-      list_by_account_transaction_query(
+    udt_id =
+      case Repo.get(UDT, udt_account_id) do
+        %UDT{type: :bridge, bridge_account_id: bridge_account_id} ->
+          bridge_account_id
+
+        %UDT{type: :native} ->
+          udt_account_id
+
+        _ ->
+          nil
+      end
+
+    tx_hashes =
+      list_tx_hash_by_transaction_query(
         dynamic(
-          [t, b1, a2, a3, s4, p5],
-          t.to_account_id == ^udt_account_id and not is_nil(p5.transfer_count)
+          [t, p],
+          t.to_account_id == ^udt_id and not is_nil(p.transfer_count)
         )
       )
-      |> order_by([t], [desc: t.block_number, desc: t.inserted_at])
+      |> order_by([t], desc: t.block_number, desc: t.inserted_at)
+      |> limit(@account_tx_limit)
 
-    parse_result(txs, page)
+    parse_result(tx_hashes, page)
   end
 
   def account_transactions_data(
         %{block_hash: block_hash},
         page
       ) do
-    txs =
-      list_by_account_transaction_query(dynamic([t], t.block_hash == ^block_hash))
-      |> order_by([t], [desc: t.block_number, desc: t.inserted_at])
+    tx_hashes =
+      list_tx_hash_by_transaction_query(dynamic([t], t.block_hash == ^block_hash))
+      |> order_by([t], desc: t.block_number, desc: t.inserted_at)
 
-    parse_result(txs, page)
+    parse_result(tx_hashes, page)
   end
 
   def account_transactions_data(
-      %{account_id: account_id, eth_address: eth_address, udt_account_id: udt_account_id},
+        %{account_id: account_id, eth_address: eth_address, udt_account_id: udt_account_id},
         page
       ) do
     query_a =
-      list_by_account_transaction_query(
-        dynamic([t], t.from_account_id == ^account_id and t.to_account_id == ^udt_account_id )
+      list_tx_hash_by_transaction_query(
+        dynamic([t], t.from_account_id == ^account_id and t.to_account_id == ^udt_account_id)
       )
 
     query_b =
-      list_by_account_polyjuice_query(
-        dynamic([p, t], p.receive_eth_address == ^eth_address and t.to_account_id == ^udt_account_id and not is_nil(p.transfer_count))
+      list_tx_hash_by_polyjuice_query(
+        dynamic(
+          [p, t],
+          p.receive_eth_address == ^eth_address and t.to_account_id == ^udt_account_id and
+            not is_nil(p.transfer_count)
+        )
       )
 
-    txs = from(q in subquery(query_a |> union(^query_b)), order_by: [desc: q.block_number, desc: q.inserted_at])
+    tx_hashes =
+      from(q in subquery(query_a |> union(^query_b)),
+        limit: @account_tx_limit,
+        order_by: [desc: q.block_number, desc: q.inserted_at]
+      )
 
-    parse_result(txs, page)
+    parse_result(tx_hashes, page)
   end
 
   def account_transactions_data(
@@ -206,18 +233,22 @@ defmodule GodwokenExplorer.Transaction do
         page
       ) do
     query_a =
-      list_by_account_transaction_query(
+      list_tx_hash_by_transaction_query(
         dynamic([t], t.from_account_id == ^account_id and t.to_account_id == ^contract_id)
       )
 
     query_b =
-      list_by_account_polyjuice_query(
+      list_tx_hash_by_polyjuice_query(
         dynamic([p, t], p.receive_eth_address == ^eth_address and t.to_account_id == ^contract_id)
       )
 
-    txs = from(q in subquery(query_a |> union(^query_b)), order_by: [desc: q.block_number, desc: q.inserted_at])
+    tx_hashes =
+      from(q in subquery(query_a |> union(^query_b)),
+        limit: @account_tx_limit,
+        order_by: [desc: q.block_number, desc: q.inserted_at]
+      )
 
-    parse_result(txs, page)
+    parse_result(tx_hashes, page)
   end
 
   def account_transactions_data(
@@ -225,11 +256,12 @@ defmodule GodwokenExplorer.Transaction do
         page
       )
       when type in [:meta_contract, :udt, :polyjuice_root, :polyjuice_contract] do
-    txs =
-      list_by_account_transaction_query(dynamic([t], t.to_account_id == ^account_id))
-      |> order_by([t], [desc: t.block_number, desc: t.inserted_at])
+    tx_hashes =
+      list_tx_hash_by_transaction_query(dynamic([t], t.to_account_id == ^account_id))
+      |> order_by([t], desc: t.block_number, desc: t.inserted_at)
+      |> limit(@account_tx_limit)
 
-    parse_result(txs, page)
+    parse_result(tx_hashes, page)
   end
 
   def account_transactions_data(
@@ -237,53 +269,102 @@ defmodule GodwokenExplorer.Transaction do
         page
       )
       when type == :user do
-    query_a = list_by_account_transaction_query(dynamic([t], t.from_account_id == ^account_id))
-    query_b = list_by_account_polyjuice_query(dynamic([p], p.receive_eth_address == ^eth_address))
+    query_a = list_tx_hash_by_transaction_query(dynamic([t], t.from_account_id == ^account_id))
+    query_b = list_tx_hash_by_polyjuice_query(dynamic([p], p.receive_eth_address == ^eth_address))
 
-    txs = from(q in subquery(query_a |> union(^query_b)), order_by: [desc: q.block_number, desc: q.inserted_at])
+    tx_hashes =
+      from(q in subquery(query_a |> union(^query_b)),
+        limit: @account_tx_limit,
+        order_by: [desc: q.block_number, desc: q.inserted_at]
+      )
 
-    parse_result(txs, page)
+    parse_result(tx_hashes, page)
   end
 
   def account_transactions_data(
         %{account_id: account_id, eth_address: eth_address, erc20: true},
         page
       ) do
-    udt_ids = from(u in UDT, select: u.id) |> Repo.all()
-    query_a = list_by_account_transaction_query(dynamic([t, b, a2, a3, s4, p], t.from_account_id == ^account_id and not(is_nil(p.transfer_count)) and t.to_account_id in ^udt_ids))
-    query_b = list_by_account_polyjuice_query(dynamic([p, t], p.receive_eth_address == ^eth_address and not(is_nil(p.transfer_count)) and t.to_account_id in ^udt_ids))
+    udt_ids = UDT.get_udt_contract_ids()
 
-    txs = from(q in subquery(query_a |> union(^query_b)), order_by: [desc: q.block_number, desc: q.inserted_at])
+    query_a =
+      list_tx_hash_by_transaction_query(
+        dynamic(
+          [t, p],
+          t.from_account_id == ^account_id and not is_nil(p.transfer_count) and
+            t.to_account_id in ^udt_ids
+        )
+      )
 
-    parse_result(txs, page)
+    query_b =
+      list_tx_hash_by_polyjuice_query(
+        dynamic(
+          [p, t],
+          p.receive_eth_address == ^eth_address and not is_nil(p.transfer_count) and
+            t.to_account_id in ^udt_ids
+        )
+      )
+
+    tx_hashes =
+      from(q in subquery(query_a |> union(^query_b)),
+        limit: @account_tx_limit,
+        order_by: [desc: q.block_number, desc: q.inserted_at]
+      )
+
+    parse_result(tx_hashes, page)
   end
 
   def account_transactions_data(page) do
-    txs =
-      list_by_account_transaction_query(true)
-      |> order_by([t], [desc: t.block_number, desc: t.inserted_at])
+    tx_hashes =
+      list_tx_hash_by_transaction_query(true)
+      |> order_by([t], desc: t.block_number, desc: t.inserted_at)
+      |> limit(@tx_limit)
 
-    parse_result(txs, page)
+    parse_result(tx_hashes, page)
   end
 
-  defp parse_result(txs, page) do
-    original_struct = Repo.paginate(txs, page: page)
+  defp parse_result(tx_hashes, page) do
+    tx_hashes_struct = Repo.paginate(tx_hashes, page: page)
+
+    results =
+      list_transaction_by_tx_hash(
+        Enum.map(tx_hashes_struct.entries, fn %{tx_hash: tx_hash} -> tx_hash end)
+      )
+      |> Repo.all()
 
     parsed_result =
-      Enum.map(original_struct.entries, fn record ->
+      Enum.map(results, fn record ->
         stringify_and_unix_maps(record)
         |> Map.merge(%{method: Polyjuice.get_method_name(record.to_account_id, record.input)})
         |> Map.drop([:input, :to_account_id])
       end)
 
     %{
-      page: Integer.to_string(original_struct.page_number),
-      total_count: Integer.to_string(original_struct.total_entries),
+      page: page,
+      total_count: tx_hashes_struct.total_entries,
       txs: parsed_result
     }
   end
 
-  defp list_by_account_transaction_query(condition) do
+  def list_tx_hash_by_transaction_query(condition) do
+    from(t in Transaction,
+      left_join: p in Polyjuice,
+      on: p.tx_hash == t.hash,
+      select: %{tx_hash: t.hash, block_number: t.block_number, inserted_at: t.inserted_at},
+      where: ^condition
+    )
+  end
+
+  def list_tx_hash_by_polyjuice_query(condition) do
+    from(p in Polyjuice,
+      join: t in Transaction,
+      on: t.hash == p.tx_hash,
+      select: %{tx_hash: p.tx_hash, block_number: t.block_number, inserted_at: t.inserted_at},
+      where: ^condition
+    )
+  end
+
+  defp list_transaction_by_tx_hash(hashes) do
     from(t in Transaction,
       join: b in Block,
       on: [hash: t.block_hash],
@@ -297,7 +378,7 @@ defmodule GodwokenExplorer.Transaction do
       on: p.tx_hash == t.hash,
       left_join: u6 in UDT,
       on: u6.id == s4.account_id,
-      where: ^condition,
+      where: t.hash in ^hashes,
       select: %{
         hash: t.hash,
         block_hash: b.hash,
@@ -342,58 +423,6 @@ defmodule GodwokenExplorer.Transaction do
         transfer_value: p.transfer_count,
         transfer_count: p.transfer_count,
         udt_id: s4.account_id,
-        udt_symbol: u6.symbol,
-        udt_icon: u6.icon,
-        input: p.input,
-        to_account_id: t.to_account_id
-      }
-    )
-  end
-
-  defp list_by_account_polyjuice_query(condition) do
-    from(p in Polyjuice,
-      join: t in Transaction,
-      on: t.hash == p.tx_hash,
-      join: b in Block,
-      on: b.hash == t.block_hash,
-      join: a3 in Account,
-      on: a3.id == t.from_account_id,
-      join: a4 in Account,
-      on: a4.id == t.to_account_id,
-      left_join: s5 in SmartContract,
-      on: s5.account_id == t.to_account_id,
-      left_join: u6 in UDT,
-      on: u6.id == s5.account_id,
-      where: ^condition,
-      select: %{
-        hash: p.tx_hash,
-        block_hash: b.hash,
-        block_number: b.number,
-        l1_block_number: b.layer1_block_number,
-        timestamp: b.timestamp,
-        from: a3.eth_address,
-        to: fragment("
-          CASE WHEN a4.type = 'user' THEN encode(a4.eth_address, 'escape')
-           ELSE encode(a4.short_address, 'escape') END"),
-        to_alias: fragment("
-          CASE WHEN a4.type = 'user' THEN encode(a4.eth_address, 'escape')
-          WHEN a4.type = 'udt' THEN (CASE WHEN s5.name IS NOT NULL THEN s5.name ELSE encode(a4.short_address, 'escape') END)
-          WHEN a4.type = 'polyjuice_contract' THEN (CASE WHEN s5.name IS NOT NULL THEN s5.name ELSE encode(a4.short_address, 'escape') END)
-          WHEN a4.type = 'polyjuice_creator' THEN 'Deploy Contract'
-          ELSE encode(a4.short_address, 'escape') END"),
-        status: t.status,
-        type: t.type,
-        nonce: t.nonce,
-        insertetd_at: t.inserted_at,
-        fee: p.gas_price * p.gas_used,
-        gas_price: p.gas_price,
-        gas_used: p.gas_used,
-        gas_limit: p.gas_limit,
-        value: p.value,
-        receive_eth_address: p.receive_eth_address,
-        transfer_value: p.transfer_count,
-        transfer_count: p.transfer_count,
-        udt_id: s5.account_id,
         udt_symbol: u6.symbol,
         udt_icon: u6.icon,
         input: p.input,

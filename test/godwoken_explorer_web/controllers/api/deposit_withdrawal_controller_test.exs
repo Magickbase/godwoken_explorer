@@ -122,8 +122,8 @@ defmodule GodwokenExplorerWeb.API.DepositWithdrawalControllerTest do
                      "state" => "pending"
                    }
                  ],
-                 "page" => "1",
-                 "total_count" => "1"
+                 "page" => 1,
+                 "total_count" => 1
                }
     end
 
