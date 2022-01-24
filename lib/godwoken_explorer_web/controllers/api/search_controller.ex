@@ -1,68 +1,55 @@
 defmodule GodwokenExplorerWeb.API.SearchController do
   use GodwokenExplorerWeb, :controller
+  action_fallback GodwokenExplorerWeb.API.FallbackController
 
   alias GodwokenExplorer.{Repo, Account, Block, Transaction, PendingTransaction, UDT}
+
+  @max_integer 2_147_483_647
 
   def index(conn, %{"keyword" => "0x" <> _} = params) do
     downcase_keyword = String.downcase(params["keyword"])
 
-    result =
-      cond do
-        (block = Repo.get_by(Block, hash: downcase_keyword)) != nil ->
-          %{type: "block", id: block.number}
+    cond do
+      (block = Repo.get_by(Block, hash: downcase_keyword)) != nil ->
+        json(conn, %{type: "block", id: block.number})
 
-        (transaction = Repo.get_by(Transaction, hash: downcase_keyword)) != nil ->
-          %{type: "transaction", id: transaction.hash}
+      (transaction = Repo.get_by(Transaction, hash: downcase_keyword)) != nil ->
+        json(conn, %{type: "transaction", id: transaction.hash})
 
-        (pending_tx = PendingTransaction.find_by_hash(downcase_keyword)) != nil ->
-          %{type: "transaction", id: pending_tx.hash}
+      (pending_tx = PendingTransaction.find_by_hash(downcase_keyword)) != nil ->
+        json(conn, %{type: "transaction", id: pending_tx.hash})
 
-        (account = Account.search(downcase_keyword)) != nil ->
-          %{type: "account", id: account.id |> Account.display_id() |> elem(0)}
+      (account = Account.search(downcase_keyword)) != nil ->
+        json(conn, %{type: "account", id: account.id |> Account.display_id() |> elem(0)})
 
-        true ->
-          %{
-            error_code: 404,
-            message: "not found"
-          }
-      end
-
-    json(
-      conn,
-      result
-    )
+      true ->
+        {:error, :not_found}
+    end
   end
 
   def index(conn, %{"keyword" => keyword}) do
-    result =
-      case keyword |> String.replace(",", "") |> Integer.parse() do
-        {num, ""} ->
+    case keyword |> String.replace(",", "") |> Integer.parse() do
+      {num, ""} ->
+        if num > @max_integer || num < 0 do
+          {:error, :not_found}
+        else
           case Repo.get_by(Block, number: num) do
-            %Block{number: number} ->
-              %{type: "block", id: number}
+            %Account{id: id} ->
+              json(conn, %{type: "account", id: id})
 
             nil ->
-              %{
-                error_code: 404,
-                message: "not found"
-              }
+              {:error, :not_found}
           end
+        end
 
-        _ ->
-          cond do
-            (udt = UDT.find_by_name_or_token(String.downcase(keyword))) != nil ->
-              %{type: "udt", id: udt.id}
-            true ->
-              %{
-                error_code: 404,
-                message: "not found"
-              }
-          end
-      end
+      _ ->
+        cond do
+          (udt = UDT.find_by_name_or_token(String.downcase(keyword))) != nil ->
+            json(conn, %{type: "udt", id: udt.id})
 
-    json(
-      conn,
-      result
-    )
+          true ->
+            {:error, :not_found}
+        end
+    end
   end
 end
