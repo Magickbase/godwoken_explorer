@@ -327,6 +327,7 @@ defmodule GodwokenExplorer.Transaction do
       list_transaction_by_tx_hash(
         Enum.map(tx_hashes_struct.entries, fn %{tx_hash: tx_hash} -> tx_hash end)
       )
+      |> order_by([t], [desc: t.block_number, desc: t.inserted_at])
       |> Repo.all()
 
     parsed_result =
