@@ -101,7 +101,7 @@ defmodule GodwokenExplorer.Polyjuice do
       {:ok, _, decoded_func, _} ->
         parse_method_name(decoded_func)
 
-      nil ->
+      _ ->
         nil
     end
   end
@@ -124,14 +124,19 @@ defmodule GodwokenExplorer.Polyjuice do
 
   defp decode_input(to_account_id, input, hash) do
     with %SmartContract{abi: full_abi} <- Repo.get_by(SmartContract, account_id: to_account_id) do
-      do_decoded_input_data(
+      case do_decoded_input_data(
         Base.decode16!(String.slice(input, 2..-1), case: :lower),
         full_abi,
         hash
-      )
+      ) do
+        {:ok, identifier, text, mapping} ->
+          {:ok, identifier, text, mapping}
+        _ ->
+          {:error, :decode_error}
+        end
     else
-      _ ->
-        nil
+      nil ->
+        {:error, :contract_not_exist}
     end
   end
 
