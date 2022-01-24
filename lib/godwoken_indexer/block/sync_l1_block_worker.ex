@@ -193,7 +193,7 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
         end
 
       {:error, :network_error} ->
-        {:error, nil}
+        raise "account #{script_hash} fetch account_id network error"
 
       {:ok, account_id} ->
         nonce = GodwokenRPC.fetch_nonce(account_id)
