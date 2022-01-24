@@ -124,15 +124,19 @@ defmodule GodwokenExplorer.AccountUDT do
   end
 
   def sync_balance!(account_id, udt_id) do
-    account = Repo.get(Account, account_id)
-    {:ok, balance} = GodwokenRPC.fetch_balance(account.short_address, udt_id)
+    case Repo.get(Account, account_id) do
+      %Account{short_address: short_address} ->
+        {:ok, balance} = GodwokenRPC.fetch_balance(short_address, udt_id)
 
-    AccountUDT.create_or_update_account_udt!(%{
-      account_id: account.id,
-      udt_id: udt_id,
-      balance: balance
-    })
-    balance
+        AccountUDT.create_or_update_account_udt!(%{
+          account_id: account_id,
+          udt_id: udt_id,
+          balance: balance
+        })
+        balance
+      nil ->
+       {:error, :account_not_exist}
+    end
   end
 
   def fetch_erc20_balance(account_id, contract_account_id) do
