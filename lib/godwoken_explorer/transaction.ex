@@ -156,8 +156,14 @@ defmodule GodwokenExplorer.Transaction do
   end
 
   def count_of_account(%{type: type, account_id: account_id, eth_address: _eth_address})
-      when type in [:meta_contract, :udt, :polyjuice_root, :polyjuice_contract] do
+      when type in [:meta_contract, :polyjuice_root, :polyjuice_contract] do
     from(t in Transaction, where: t.to_account_id == ^account_id) |> Repo.aggregate(:count)
+  end
+
+  def count_of_account(%{type: type, account_id: account_id, eth_address: _eth_address})
+      when type == :udt do
+    udt_id = UDT.get_contract_id(account_id)
+    from(t in Transaction, where: t.to_account_id == ^udt_id) |> Repo.aggregate(:count)
   end
 
   @doc "udt transfer tx"
@@ -165,15 +171,7 @@ defmodule GodwokenExplorer.Transaction do
         %{udt_account_id: udt_account_id},
         page
       ) do
-    udt_id =
-      case Repo.get(UDT, udt_account_id) do
-        %UDT{type: :bridge, bridge_account_id: bridge_account_id} when not(is_nil(bridge_account_id)) ->
-          bridge_account_id
-
-        _ ->
-          udt_account_id
-      end
-
+    udt_id = UDT.get_contract_id(udt_account_id)
     tx_hashes =
       list_tx_hash_by_transaction_query(
         dynamic(

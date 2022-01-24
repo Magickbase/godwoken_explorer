@@ -116,6 +116,16 @@ defmodule GodwokenExplorer.UDT do
     from(q in subquery(union_all(bridge_query, ^native_query))) |> Repo.all() |> Enum.map(& &1.id)
   end
 
+  def get_contract_id(udt_account_id) do
+    case Repo.get(UDT, udt_account_id) do
+      %UDT{type: :bridge, bridge_account_id: bridge_account_id} when not(is_nil(bridge_account_id)) ->
+        bridge_account_id
+
+      _ ->
+        udt_account_id
+    end
+  end
+
   defp do_paginate_udts(filter, params) do
     UDT
     |> Filtrex.query(filter)
