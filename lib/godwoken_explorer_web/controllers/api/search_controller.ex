@@ -37,9 +37,9 @@ defmodule GodwokenExplorerWeb.API.SearchController do
     result =
       case keyword |> String.replace(",", "") |> Integer.parse() do
         {num, ""} ->
-          case Repo.get_by(Account, id: num) do
-            %Account{id: id} ->
-              %{type: "account", id: id}
+          case Repo.get_by(Block, number: num) do
+            %Block{number: number} ->
+              %{type: "block", id: number}
 
             nil ->
               %{
