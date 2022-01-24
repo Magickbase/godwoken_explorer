@@ -26,19 +26,24 @@ defmodule GodwokenExplorerWeb.API.AccountController do
   end
 
   def show(conn, %{"id" => id}) do
-    case Repo.get(Account, id) do
-      %Account{} ->
-        result =
-          id
-          |> Account.find_by_id()
-          |> Account.account_to_view()
+    case id |> Integer.parse() do
+      {num, ""} ->
+        case Repo.get(Account, num) do
+          %Account{} ->
+            result =
+              id
+              |> Account.find_by_id()
+              |> Account.account_to_view()
 
-        json(
-          conn,
-          result
-        )
+            json(
+              conn,
+              result
+            )
 
-      nil ->
+          nil ->
+            {:error, :not_found}
+        end
+      _ ->
         {:error, :not_found}
     end
   end
