@@ -193,12 +193,12 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
         end
 
       {:error, :network_error} ->
-        {:error, nil}
+        raise "account #{script_hash} fetch account_id network error"
 
       {:ok, account_id} ->
         nonce = GodwokenRPC.fetch_nonce(account_id)
         short_address = String.slice(script_hash, 0, 42)
-        script = GodwokenRPC.fetch_script(script_hash)
+        {:ok, script} = GodwokenRPC.fetch_script(script_hash)
         type = Account.switch_account_type(script["code_hash"], script["args"])
         eth_address = Account.script_to_eth_adress(type, script["args"])
         parsed_script = Account.add_name_to_polyjuice_script(type, script)
