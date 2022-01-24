@@ -1,49 +1,45 @@
 defmodule GodwokenExplorerWeb.API.AccountController do
   use GodwokenExplorerWeb, :controller
 
+  action_fallback GodwokenExplorerWeb.API.FallbackController
+
   alias GodwokenExplorer.{Repo, Account}
 
   def show(conn, %{"id" => "0x" <> _} = params) do
     downcase_id = params["id"] |> String.downcase()
 
-    result =
-      case Account.search(downcase_id) do
-        %Account{id: id} ->
+    case Account.search(downcase_id) do
+      %Account{id: id} ->
+        result =
           id
           |> Account.find_by_id()
           |> Account.account_to_view()
 
-        nil ->
-          %{
-            error_code: 404,
-            message: "not found"
-          }
-      end
+        json(
+          conn,
+          result
+        )
 
-    json(
-      conn,
-      result
-    )
+      nil ->
+        {:error, :not_found}
+    end
   end
 
   def show(conn, %{"id" => id}) do
-    result =
-      case Repo.get(Account, id) do
-        %Account{} ->
+    case Repo.get(Account, id) do
+      %Account{} ->
+        result =
           id
           |> Account.find_by_id()
           |> Account.account_to_view()
 
-        nil ->
-          %{
-            error_code: 404,
-            message: "not found"
-          }
-      end
+        json(
+          conn,
+          result
+        )
 
-    json(
-      conn,
-      result
-    )
+      nil ->
+        {:error, :not_found}
+    end
   end
 end
