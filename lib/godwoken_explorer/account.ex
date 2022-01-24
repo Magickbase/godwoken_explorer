@@ -368,23 +368,26 @@ defmodule GodwokenExplorer.Account do
         end
 
       nil ->
-        {:ok, script_hash} = GodwokenRPC.fetch_script_hash(%{account_id: id})
-        script = GodwokenRPC.fetch_script(script_hash)
-        type = switch_account_type(script["code_hash"], script["args"])
+        with {:ok, script_hash} <- GodwokenRPC.fetch_script_hash(%{account_id: id}),
+            {:ok, script} <- GodwokenRPC.fetch_script(script_hash) do
+          type = switch_account_type(script["code_hash"], script["args"])
 
-        cond do
-          type == :user ->
-            {Account.script_to_eth_adress(type, script["args"]),
-             Account.script_to_eth_adress(type, script["args"])}
+          cond do
+            type == :user ->
+              {Account.script_to_eth_adress(type, script["args"]),
+              Account.script_to_eth_adress(type, script["args"])}
 
-          type == :polyjuice_contract ->
-            {script_hash |> String.slice(0, 42), script_hash |> String.slice(0, 42)}
+            type == :polyjuice_contract ->
+              {script_hash |> String.slice(0, 42), script_hash |> String.slice(0, 42)}
 
-          type == :polyjuice_root ->
-            {script_hash |> String.slice(0, 42), "Deploy Contract"}
+            type == :polyjuice_root ->
+              {script_hash |> String.slice(0, 42), "Deploy Contract"}
 
-          true ->
-            {id, id}
+            true ->
+              {id, id}
+          end
+        else
+          {:error, :network_error} -> {id, id}
         end
     end
   end
@@ -393,7 +396,7 @@ defmodule GodwokenExplorer.Account do
     nonce = GodwokenRPC.fetch_nonce(id)
     {:ok, script_hash} = GodwokenRPC.fetch_script_hash(%{account_id: id})
     short_address = String.slice(script_hash, 0, 42)
-    script = GodwokenRPC.fetch_script(script_hash)
+    {:ok, script} = GodwokenRPC.fetch_script(script_hash)
     type = switch_account_type(script["code_hash"], script["args"])
     eth_address = script_to_eth_adress(type, script["args"])
     parsed_script = add_name_to_polyjuice_script(type, script)

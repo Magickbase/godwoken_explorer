@@ -155,8 +155,10 @@ defmodule GodwokenRPC do
 
     case FetchedScript.request(%{script_hash: script_hash})
          |> HTTP.json_rpc(options) do
-      {:ok, script} -> script
-      {:error, _error} -> nil
+      {:ok, script} -> {:ok, script}
+      {:error, msg} ->
+        Logger.error("Failed to fetch script #{script_hash} : #{inspect(msg)}")
+        {:error, :network_error}
     end
   end
 
