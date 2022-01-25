@@ -31,12 +31,13 @@ defmodule GodwokenExplorer.PolyjuiceCreator do
     polyjuice_creator
     |> cast(attrs, [:code_hash, :hash_type, :script_args, :fee_amount, :fee_udt_id])
     |> validate_required([:code_hash, :hash_type, :script_args, :fee_amount, :fee_udt_id])
+    |> unique_constraint(:tx_hash)
   end
 
   def create_polyjuice_creator(attrs) do
     %PolyjuiceCreator{}
     |> PolyjuiceCreator.changeset(attrs)
     |> Ecto.Changeset.put_change(:tx_hash, attrs[:hash])
-    |> Repo.insert()
+    |> Repo.insert(on_conflict: :nothing)
   end
 end
