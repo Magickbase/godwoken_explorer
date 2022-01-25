@@ -128,7 +128,7 @@ defmodule GodwokenExplorerWeb.API.TransactionControllerTest do
       type: "function"
     })
 
-    Repo.insert(%Transaction{
+    {:ok, tx} =Repo.insert(%Transaction{
       block_hash: block.hash,
       block_number: block.number,
       from_account_id: 468,
@@ -156,11 +156,11 @@ defmodule GodwokenExplorerWeb.API.TransactionControllerTest do
       transfer_count: D.new(1_549_337_056_272_630_883)
     })
 
-    :ok
+    %{tx: tx}
   end
 
   describe "index" do
-    test "lists user txs of erc20 transfer", %{conn: conn} do
+    test "lists user txs of erc20 transfer", %{conn: conn, tx: tx} do
       conn =
         get(
           conn,
@@ -191,7 +191,7 @@ defmodule GodwokenExplorerWeb.API.TransactionControllerTest do
                        "0x5d71c8a372aab6a326c31e02a50829b65be278913cb0d0eb990e5714a1b38ff5",
                      "nonce" => 78,
                      "receive_eth_address" => "0x085a61d7164735fc5378e590b5ed1448561e1a48",
-                     "timestamp" => 1_635_658_778,
+                     "timestamp" => tx.inserted_at |> DateTime.from_naive!("Etc/UTC") |> DateTime.to_unix(),
                      "transfer_value" => "1.549337056272630883",
                      "transfer_count" => "1549337056272630883",
                      "udt_id" => 12119,
@@ -206,7 +206,7 @@ defmodule GodwokenExplorerWeb.API.TransactionControllerTest do
                }
     end
 
-    test "lists user txs of contract", %{conn: conn} do
+    test "lists user txs of contract", %{conn: conn, tx: tx} do
       conn =
         get(
           conn,
@@ -237,7 +237,7 @@ defmodule GodwokenExplorerWeb.API.TransactionControllerTest do
                        "0x5d71c8a372aab6a326c31e02a50829b65be278913cb0d0eb990e5714a1b38ff5",
                      "nonce" => 78,
                      "receive_eth_address" => "0x085a61d7164735fc5378e590b5ed1448561e1a48",
-                     "timestamp" => 1_635_658_778,
+                     "timestamp" => tx.inserted_at |> DateTime.from_naive!("Etc/UTC") |> DateTime.to_unix(),
                      "transfer_value" => "1.549337056272630883",
                      "transfer_count" => "1549337056272630883",
                      "udt_id" => 12119,
@@ -252,7 +252,7 @@ defmodule GodwokenExplorerWeb.API.TransactionControllerTest do
                }
     end
 
-    test "lists txs of block", %{conn: conn} do
+    test "lists txs of block", %{conn: conn, tx: tx} do
       conn =
         get(
           conn,
@@ -282,7 +282,7 @@ defmodule GodwokenExplorerWeb.API.TransactionControllerTest do
                        "0x5d71c8a372aab6a326c31e02a50829b65be278913cb0d0eb990e5714a1b38ff5",
                      "nonce" => 78,
                      "receive_eth_address" => "0x085a61d7164735fc5378e590b5ed1448561e1a48",
-                     "timestamp" => 1_635_658_778,
+                     "timestamp" => tx.inserted_at |> DateTime.from_naive!("Etc/UTC") |> DateTime.to_unix(),
                      "transfer_value" => "1.549337056272630883",
                      "transfer_count" => "1549337056272630883",
                      "udt_id" => 12119,
@@ -324,7 +324,7 @@ defmodule GodwokenExplorerWeb.API.TransactionControllerTest do
                }
     end
 
-    test "lists all txs", %{conn: conn} do
+    test "lists all txs", %{conn: conn, tx: tx} do
       conn =
         get(
           conn,
@@ -352,7 +352,7 @@ defmodule GodwokenExplorerWeb.API.TransactionControllerTest do
                        "0x5d71c8a372aab6a326c31e02a50829b65be278913cb0d0eb990e5714a1b38ff5",
                      "nonce" => 78,
                      "receive_eth_address" => "0x085a61d7164735fc5378e590b5ed1448561e1a48",
-                     "timestamp" => 1_635_658_778,
+                     "timestamp" => tx.inserted_at |> DateTime.from_naive!("Etc/UTC") |> DateTime.to_unix(),
                      "transfer_value" => "1.549337056272630883",
                      "transfer_count" => "1549337056272630883",
                      "udt_id" => 12119,
@@ -396,7 +396,7 @@ defmodule GodwokenExplorerWeb.API.TransactionControllerTest do
   end
 
   describe "GET #show" do
-    test "show polyjuice tx by hash", %{conn: conn} do
+    test "show polyjuice tx by hash", %{conn: conn, tx: tx} do
       conn =
         get(
           conn,
@@ -423,7 +423,7 @@ defmodule GodwokenExplorerWeb.API.TransactionControllerTest do
                  "hash" => "0x5d71c8a372aab6a326c31e02a50829b65be278913cb0d0eb990e5714a1b38ff5",
                  "nonce" => 78,
                  "receive_eth_address" => "0x085a61d7164735fc5378e590b5ed1448561e1a48",
-                 "timestamp" => 1_635_658_778,
+                 "timestamp" => tx.inserted_at |> DateTime.from_naive!("Etc/UTC") |> DateTime.to_unix(),
                  "transfer_value" => "1.549337056272630883",
                  "transfer_count" => "1549337056272630883",
                  "udt_id" => 12119,
