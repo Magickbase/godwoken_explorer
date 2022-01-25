@@ -187,7 +187,7 @@ defmodule GodwokenRPC do
 
     case FetchedTransactionReceipt.request(tx_hash) |> HTTP.json_rpc(options) do
       {:ok, %{"gasUsed" => gas_used}} ->
-        {:ok, gas_used}
+        {:ok, gas_used |> hex_to_number()}
 
       _ ->
         Logger.error("Failed to fetch tx receipt: #{tx_hash}")
