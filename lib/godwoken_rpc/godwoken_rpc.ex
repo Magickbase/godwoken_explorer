@@ -183,7 +183,9 @@ defmodule GodwokenRPC do
   end
 
   def fetch_receipt(tx_hash) do
-    case FetchedReceipt.request(tx_hash) do
+    options = Application.get_env(:godwoken_explorer, :json_rpc_named_arguments)
+
+    case FetchedReceipt.request(tx_hash) |> HTTP.json_rpc(options) do
       {:ok, %{"gasUsed" => gas_used}} ->
         {:ok, gas_used}
 
