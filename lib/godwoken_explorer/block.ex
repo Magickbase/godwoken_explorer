@@ -17,8 +17,14 @@ defmodule GodwokenExplorer.Block do
     :layer1_tx_hash,
     :layer1_block_number,
     :size,
-    :tx_fees,
-    :average_gas_price
+    :difficulty,
+    :total_difficulty,
+    :gas_limit,
+    :gas_used,
+    :nonce,
+    :sha3_uncles,
+    :state_root,
+    :extra_data
   ]
   @required_fields [
     :hash,
@@ -41,8 +47,14 @@ defmodule GodwokenExplorer.Block do
     field :layer1_tx_hash, :binary
     field :layer1_block_number, :integer
     field :size, :integer
-    field :tx_fees, :integer
-    field :average_gas_price, :decimal
+    field :difficulty, :decimal
+    field :total_difficulty, :decimal
+    field :gas_limit, :decimal
+    field :gas_used, :decimal
+    field :nonce, :binary
+    field :sha3_uncles, :binary
+    field :state_root, :binary
+    field :extra_data, :binary
 
     has_many :transactions, GodwokenExplorer.Transaction, foreign_key: :block_hash
 
@@ -54,12 +66,13 @@ defmodule GodwokenExplorer.Block do
     block
     |> cast(attrs, @fields)
     |> validate_required(@required_fields)
+    |> unique_constraint(:hash, name: :blocks_pkey)
   end
 
   def create_block(attrs \\ %{}) do
     %Block{}
     |> changeset(attrs)
-    |> Repo.insert([on_conflict: :nothing])
+    |> Repo.insert(on_conflict: :nothing)
   end
 
   def find_by_number_or_hash("0x" <> _ = param) do
