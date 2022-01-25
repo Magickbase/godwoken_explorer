@@ -172,6 +172,7 @@ defmodule GodwokenExplorer.Transaction do
         page
       ) do
     udt_id = UDT.get_contract_id(udt_account_id)
+
     tx_hashes =
       list_tx_hash_by_transaction_query(
         dynamic(
@@ -325,7 +326,7 @@ defmodule GodwokenExplorer.Transaction do
       list_transaction_by_tx_hash(
         Enum.map(tx_hashes_struct.entries, fn %{tx_hash: tx_hash} -> tx_hash end)
       )
-      |> order_by([t], [desc: t.block_number, desc: t.inserted_at])
+      |> order_by([t], desc: t.block_number, desc: t.inserted_at)
       |> Repo.all()
 
     parsed_result =
@@ -380,7 +381,6 @@ defmodule GodwokenExplorer.Transaction do
         block_hash: b.hash,
         block_number: b.number,
         l1_block_number: b.layer1_block_number,
-        timestamp: b.timestamp,
         from: a2.eth_address,
         to: fragment("
           CASE WHEN ? = 'user' THEN encode(?, 'escape')
