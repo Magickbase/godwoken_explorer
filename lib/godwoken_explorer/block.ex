@@ -56,6 +56,7 @@ defmodule GodwokenExplorer.Block do
     field :state_root, :binary
     field :extra_data, :binary
 
+    has_one :account, Account, foreign_key: :id, references: :aggregator_id
     has_many :transactions, GodwokenExplorer.Transaction, foreign_key: :block_hash
 
     timestamps()
@@ -77,11 +78,11 @@ defmodule GodwokenExplorer.Block do
 
   def find_by_number_or_hash("0x" <> _ = param) do
     downcase_param = String.downcase(param)
-    from(b in Block, where: b.hash == ^downcase_param) |> Repo.one()
+    from(b in Block, join: a in assoc(b, :account), preload: [account: a], where: b.hash == ^downcase_param) |> Repo.one()
   end
 
   def find_by_number_or_hash(number) when is_binary(number) or is_integer(number) do
-    from(b in Block, where: b.number == ^number) |> Repo.one()
+    from(b in Block, join: a in assoc(b, :account), preload: [account: a], where: b.number == ^number) |> Repo.one()
   end
 
   def latest_10_records do
