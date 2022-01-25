@@ -94,7 +94,7 @@ defmodule GodwokenExplorer.UDT do
   end
 
   def get_decimal(id) do
-    case Repo.get(UDT, id) do
+    case from(u in UDT, where: u.id == ^id or u.bridge_account_id == ^id) |> Repo.one() do
       nil ->
         0
 
