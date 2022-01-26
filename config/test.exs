@@ -18,9 +18,5 @@ config :godwoken_explorer, GodwokenExplorerWeb.Endpoint,
   http: [port: 4002],
   server: false
 
-config :ethereumex,
-  client_type: :http,
-  url: "http://localhost:8119"
-
 # Print only warnings and errors during test
 config :logger, level: :warn

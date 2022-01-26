@@ -405,8 +405,8 @@ defmodule GodwokenExplorer.Transaction do
             a3.type,
             a3.short_address
           ),
-        block_status: b.status,
-        status: p.status,
+        status: b.status,
+        polyjuice_status: p.status,
         type: t.type,
         nonce: t.nonce,
         inserted_at: t.inserted_at,

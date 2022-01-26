@@ -9,7 +9,6 @@ defmodule GodwokenExplorer.Factory do
   def block_factory do
     %Block{
       aggregator_id: 0,
-      average_gas_price: nil,
       hash:
         sequence(:hash, &"0x#{&1}47c3a847ede67fdad6357e7bf0a017fdb1be3e437a675a742e268af39bc3d",
           start_at: 100
@@ -27,8 +26,7 @@ defmodule GodwokenExplorer.Factory do
           start_at: 60
         ),
       transaction_count: 1,
-      transactions: build_list(1, :transaction),
-      tx_fees: nil
+      transactions: build_list(1, :transaction)
     }
   end
 
@@ -42,7 +40,6 @@ defmodule GodwokenExplorer.Factory do
         ),
       block_number: sequence(:block_number, & &1, start_at: 100),
       nonce: sequence(:nonce, &(&1), start_at: 0),
-      status: :committed,
       to_account_id: 6,
       type: :sudt
     }

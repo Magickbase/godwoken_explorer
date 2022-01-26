@@ -48,7 +48,6 @@ defmodule GodwokenExplorerWeb.API.TransactionControllerTest do
         from_account_id: 468,
         hash: "0xfedbbb474af0e0c93026946a6cfb44cd221ac97d7159600db51a59367f2a8ee0",
         nonce: 0,
-        status: :finalized,
         to_account_id: 0,
         type: :polyjuice_creator,
         code_hash: "0x636b89329db092883883ab5256e435ccabeee07b52091a78be22179636affce8",
@@ -134,7 +133,6 @@ defmodule GodwokenExplorerWeb.API.TransactionControllerTest do
       from_account_id: 468,
       hash: "0x5d71c8a372aab6a326c31e02a50829b65be278913cb0d0eb990e5714a1b38ff5",
       nonce: 78,
-      status: :finalized,
       args:
         "0xffffff504f4c59000000000100000000010000000000000000000000000000000000000000000000000000000000000044000000a9059cbb000000000000000000000000fa2ae9de22bbca35fc44f20efe7a3d2789556d4c000000000000000000000000000000000000000000000000158059d80c7ac463",
       to_account_id: 12119,
@@ -153,7 +151,8 @@ defmodule GodwokenExplorerWeb.API.TransactionControllerTest do
         "0xa9059cbb000000000000000000000000fa2ae9de22bbca35fc44f20efe7a3d2789556d4c000000000000000000000000000000000000000000000000158059d80c7ac463",
       receive_address: "0xfa2ae9de22bbca35fc44f20efe7a3d2789556d4c",
       receive_eth_address: "0x085a61d7164735fc5378e590b5ed1448561e1a48",
-      transfer_count: D.new(1_549_337_056_272_630_883)
+      transfer_count: D.new(1_549_337_056_272_630_883),
+      status: :succeed
     })
 
     %{tx: tx}
@@ -200,7 +199,8 @@ defmodule GodwokenExplorerWeb.API.TransactionControllerTest do
                      "type" => "polyjuice",
                      "value" => "0",
                      "method" => "Transfer",
-                     "status" => "finalized"
+                     "status" => "finalized",
+                     "polyjuice_status" => "succeed"
                    }
                  ]
                }
@@ -246,7 +246,8 @@ defmodule GodwokenExplorerWeb.API.TransactionControllerTest do
                      "type" => "polyjuice",
                      "value" => "0",
                      "method" => "Transfer",
-                     "status" => "finalized"
+                     "status" => "finalized",
+                     "polyjuice_status" => "succeed"
                    }
                  ]
                }
@@ -291,7 +292,8 @@ defmodule GodwokenExplorerWeb.API.TransactionControllerTest do
                      "type" => "polyjuice",
                      "value" => "0",
                      "method" => "Transfer",
-                     "status" => "finalized"
+                     "status" => "finalized",
+                     "polyjuice_status" => "succeed"
                    },
                    %{
                      "block_number" => 14,
@@ -318,7 +320,8 @@ defmodule GodwokenExplorerWeb.API.TransactionControllerTest do
                      "type" => "polyjuice_creator",
                      "value" => "",
                      "method" => nil,
-                     "status" => "finalized"
+                     "status" => "finalized",
+                     "polyjuice_status" => nil
                    }
                  ]
                }
@@ -361,7 +364,8 @@ defmodule GodwokenExplorerWeb.API.TransactionControllerTest do
                      "type" => "polyjuice",
                      "value" => "0",
                      "method" => "Transfer",
-                     "status" => "finalized"
+                     "status" => "finalized",
+                     "polyjuice_status" => "succeed"
                    },
                    %{
                      "block_number" => 14,
@@ -388,7 +392,8 @@ defmodule GodwokenExplorerWeb.API.TransactionControllerTest do
                      "type" => "polyjuice_creator",
                      "value" => "",
                      "method" => nil,
-                     "status" => "finalized"
+                     "status" => "finalized",
+                     "polyjuice_status" => nil
                    }
                  ]
                }
@@ -432,6 +437,7 @@ defmodule GodwokenExplorerWeb.API.TransactionControllerTest do
                  "type" => "polyjuice",
                  "value" => "0",
                  "status" => "finalized",
+                 "polyjuice_status" => "succeed",
                  "contract_abi" =>
                    Jason.decode!(File.read!(Path.join(["test/support", "erc20_abi.json"]))),
                  "input" =>
@@ -475,6 +481,7 @@ defmodule GodwokenExplorerWeb.API.TransactionControllerTest do
                  "type" => "polyjuice_creator",
                  "value" => "",
                  "status" => "finalized",
+                 "polyjuice_status" => nil,
                  "code_hash" =>
                    "0x636b89329db092883883ab5256e435ccabeee07b52091a78be22179636affce8",
                  "fee_amount" => "1",
