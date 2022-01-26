@@ -207,7 +207,7 @@ defmodule GodwokenExplorer.Block do
       from(t in Transaction,
       join: b in Block, on: b.number == t.block_number,
         where: t.block_number == ^l2_block_number,
-        select: %{hash: t.hash, block_status: b.status}
+        select: %{hash: t.hash, status: b.status}
       )
 
     Repo.all(query)
@@ -215,7 +215,7 @@ defmodule GodwokenExplorer.Block do
       Publisher.broadcast(
         [
           {:transactions,
-           %{tx_hash: tx.hash, l1_block_number: l1_block_number, block_status: tx.block_status}}
+           %{tx_hash: tx.hash, l1_block_number: l1_block_number, status: tx.status}}
         ],
         :realtime
       )
