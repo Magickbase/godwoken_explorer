@@ -34,15 +34,10 @@ defmodule GodwokenRPC.Block do
       }) do
     {:ok,
      %{
-       "difficulty" => difficulty,
-       "extraData" => extra_data,
        "gasLimit" => gas_limit,
        "gasUsed" => gas_used,
-       "nonce" => nonce,
-       "sha3Uncles" => sha3_uncles,
        "size" => size,
-       "stateRoot" => state_root,
-       "totalDifficulty" => total_difficulty
+       "logsBloom" => logs_bloom
      }} = GodwokenRPC.fetch_eth_block_by_hash(hash)
 
     %{
@@ -53,14 +48,9 @@ defmodule GodwokenRPC.Block do
       aggregator_id: hex_to_number(aggregator_id),
       transaction_count: tx_count |> hex_to_number(),
       size: size |> hex_to_number(),
-      difficulty: difficulty |> hex_to_number(),
-      total_difficulty: total_difficulty |> hex_to_number(),
+      logs_bloom: logs_bloom,
       gas_limit: gas_limit |> hex_to_number(),
-      gas_used: gas_used |> hex_to_number(),
-      nonce: nonce,
-      sha3_uncles: sha3_uncles,
-      state_root: state_root,
-      extra_data: extra_data
+      gas_used: gas_used |> hex_to_number()
     }
   end
 

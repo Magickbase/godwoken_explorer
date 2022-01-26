@@ -23,16 +23,11 @@ defmodule GodwokenExplorerWeb.BlockChannel do
         tx_count: block.transaction_count,
         miner_hash: block.account.short_address,
         timestamp: block.timestamp,
-        difficulty: block.difficulty,
-        total_difficulty: block.total_difficulty,
         gas_limit: block.gas_limit,
         gas_used: block.gas_used,
-        nonce: block.nonce,
-        sha3_uncles: block.sha3_uncles,
-        state_root: block.state_root,
-        extra_data: block.extra_data,
         size: block.size,
-        parent_hash: block.parent_hash
+        parent_hash: block.parent_hash,
+        logs_bloom: block.logs_bloom
       })
 
     {:ok, result, assign(socket, :block_number, block_number)}

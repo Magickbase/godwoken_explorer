@@ -17,14 +17,9 @@ defmodule GodwokenExplorer.Block do
     :layer1_tx_hash,
     :layer1_block_number,
     :size,
-    :difficulty,
-    :total_difficulty,
     :gas_limit,
     :gas_used,
-    :nonce,
-    :sha3_uncles,
-    :state_root,
-    :extra_data
+    :logs_bloom
   ]
   @required_fields [
     :hash,
@@ -47,10 +42,11 @@ defmodule GodwokenExplorer.Block do
     field :layer1_tx_hash, :binary
     field :layer1_block_number, :integer
     field :size, :integer
-    field :difficulty, :decimal
-    field :total_difficulty, :decimal
     field :gas_limit, :decimal
     field :gas_used, :decimal
+    field :logs_bloom, :binary
+    field :difficulty, :decimal
+    field :total_difficulty, :decimal
     field :nonce, :binary
     field :sha3_uncles, :binary
     field :state_root, :binary
