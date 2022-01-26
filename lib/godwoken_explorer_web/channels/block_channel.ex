@@ -31,7 +31,8 @@ defmodule GodwokenExplorerWeb.BlockChannel do
         sha3_uncles: block.sha3_uncles,
         state_root: block.state_root,
         extra_data: block.extra_data,
-        size: block.size
+        size: block.size,
+        parent_hash: block.parent_hash
       })
 
     {:ok, result, assign(socket, :block_number, block_number)}
