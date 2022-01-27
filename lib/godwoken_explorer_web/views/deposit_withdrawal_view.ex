@@ -15,13 +15,9 @@ defmodule GodwokenExplorer.DepositWithdrawalView do
   end
 
   def list_by_udt_id(udt_id, page) do
-    deposits =
-      deposit_base_query(dynamic([d], d.udt_id == ^udt_id))
+    deposits = deposit_base_query(dynamic([d], d.udt_id == ^udt_id))
 
-    withdrawals =
-      withdrawal_base_query(
-        dynamic([w], w.udt_id == ^udt_id)
-      )
+    withdrawals = withdrawal_base_query(dynamic([w], w.udt_id == ^udt_id))
 
     original_struct =
       from(q in subquery(deposits |> union_all(^withdrawals)), order_by: [desc: q.timestamp])
@@ -60,10 +56,16 @@ defmodule GodwokenExplorer.DepositWithdrawalView do
       select: %{
         script_hash: w.l2_script_hash,
         eth_address: a2.eth_address,
-        value: fragment("? / power(10, ?)::decimal", w.amount, u.decimal),
+        value: fragment("
+        CASE WHEN ? IS NULL THEN ?
+        ELSE ? / power(10, ?)::decimal
+        END ", u.decimal, w.amount, w.amount, u.decimal),
         owner_lock_hash: w.owner_lock_hash,
         payment_lock_hash: w.payment_lock_hash,
-        sell_value: fragment("? / power(10, ?)::decimal", w.sell_amount, u.decimal),
+        sell_value: fragment("
+        CASE WHEN ? IS NULL THEN ?
+        ELSE ? / power(10, ?)::decimal
+        END ", u.decimal, w.sell_amount, w.sell_amount, u.decimal),
         sell_capacity: w.sell_capacity,
         sudt_script_hash: w.udt_script_hash,
         udt_id: w.udt_id,
