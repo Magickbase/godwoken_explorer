@@ -93,7 +93,10 @@ defmodule GodwokenExplorer.DepositWithdrawalView do
       select: %{
         script_hash: d.script_hash,
         eth_address: a2.eth_address,
-        value: fragment("? / power(10, ?)::decimal", d.amount, u.decimal),
+        value: fragment("
+        CASE WHEN ? IS NULL THEN ?
+        ELSE ? / power(10, ?)::decimal
+        END ", u.decimal, d.amount, d.amount, u.decimal),
         owner_lock_hash: nil,
         payment_lock_hash: nil,
         sell_value: nil,
