@@ -4,7 +4,7 @@ defmodule GodwokenRPC do
   require Logger
 
   alias GodwokenRPC.{Blocks, Block, HTTP}
-  alias GodwokenRPC.Transaction.FetchedReceipt
+  alias GodwokenRPC.Web3.{FetchedTransactionReceipt, FetchedBlockByHash}
   alias GodwokenRPC.Transaction.FetchedTransaction, as: FetchedGodwokenTransaction
   alias GodwokenRPC.CKBIndexer.{FetchedTransactions, FetchedTransaction, FetchedTip, FetchedBlock, FetchedLiveCell, FetchedCells}
   alias GodwokenRPC.Web3.EthCall
@@ -183,15 +183,31 @@ defmodule GodwokenRPC do
   end
 
   def fetch_receipt(tx_hash) do
-    case FetchedReceipt.request(tx_hash) do
+    options = Application.get_env(:godwoken_explorer, :json_rpc_named_arguments)
+
+    case FetchedTransactionReceipt.request(tx_hash) |> HTTP.json_rpc(options) do
       {:ok, %{"gasUsed" => gas_used}} ->
-        {:ok, gas_used}
+        {:ok, gas_used |> hex_to_number()}
 
       _ ->
         Logger.error("Failed to fetch tx receipt: #{tx_hash}")
         {:error, 0}
     end
   end
+
+  def fetch_eth_block_by_hash(block_hash) do
+    options = Application.get_env(:godwoken_explorer, :json_rpc_named_arguments)
+
+    case FetchedBlockByHash.request(block_hash) |> HTTP.json_rpc(options) do
+      {:ok, response} ->
+        {:ok, response}
+
+      _ ->
+        Logger.error("Failed to fetch eth block receipt: #{block_hash}")
+        {:error, :network_error}
+    end
+  end
+
 
   def fetch_cells(script, script_type) do
     options = Application.get_env(:godwoken_explorer, :ckb_indexer_named_arguments)

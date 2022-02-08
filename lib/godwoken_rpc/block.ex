@@ -20,49 +20,64 @@ defmodule GodwokenRPC.Block do
     {:error, annotated_error}
   end
 
-  def elixir_to_params(
-        %{
-          "hash" => hash,
-          "transactions" => transactions,
-          "raw" => %{
-            "parent_block_hash" => parent_hash,
-            "number" => number,
-            "timestamp" => timestamp,
-            "block_producer_id" => aggregator_id
+  def elixir_to_params(%{
+        "hash" => hash,
+        "raw" => %{
+          "parent_block_hash" => parent_hash,
+          "number" => number,
+          "timestamp" => timestamp,
+          "block_producer_id" => aggregator_id,
+          "submit_transactions" => %{
+            "tx_count" => tx_count
           }
         }
-      ) do
+      }) do
+    {:ok,
+     %{
+       "gasLimit" => gas_limit,
+       "gasUsed" => gas_used,
+       "size" => size,
+       "logsBloom" => logs_bloom
+     }} = GodwokenRPC.fetch_eth_block_by_hash(hash)
+
     %{
       hash: hash,
       parent_hash: parent_hash,
       number: hex_to_number(number),
       timestamp: timestamp |> hex_to_number() |> timestamp_to_datetime,
       aggregator_id: hex_to_number(aggregator_id),
-      transaction_count: transactions |> Enum.count()
+      transaction_count: tx_count |> hex_to_number(),
+      size: size |> hex_to_number(),
+      logs_bloom: logs_bloom,
+      gas_limit: gas_limit |> hex_to_number(),
+      gas_used: gas_used |> hex_to_number()
     }
   end
 
-  def elixir_to_transactions(
-      %{
+  def elixir_to_transactions(%{
         "hash" => block_hash,
-        "raw" => %{"number" => block_number },
+        "raw" => %{"number" => block_number},
         "transactions" => transactions
-        }
-    ) do
-
-    transactions |> Enum.map(fn t -> Map.merge(t, %{"block_hash" => block_hash, "block_number" => hex_to_number(block_number)}) end)
+      }) do
+    transactions
+    |> Enum.map(fn t ->
+      Map.merge(t, %{"block_hash" => block_hash, "block_number" => hex_to_number(block_number)})
+    end)
   end
 
   def elixir_to_transactions(_), do: []
 
-  def elixir_to_withdrawal_requests(
-      %{
+  def elixir_to_withdrawal_requests(%{
         "hash" => block_hash,
-        "raw" => %{"number" => block_number },
+        "raw" => %{"number" => block_number},
         "withdrawal_requests" => withdrawal_requests
-        }
-    ) when length(withdrawal_requests) != 0 do
-    withdrawal_requests |> Enum.map(fn t -> Map.merge(t, %{"block_hash" => block_hash, "block_number" => hex_to_number(block_number)}) end)
+      })
+      when length(withdrawal_requests) != 0 do
+    withdrawal_requests
+    |> Enum.map(fn t ->
+      Map.merge(t, %{"block_hash" => block_hash, "block_number" => hex_to_number(block_number)})
+    end)
   end
+
   def elixir_to_withdrawal_requests(_), do: []
 end

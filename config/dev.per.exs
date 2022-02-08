@@ -75,10 +75,6 @@ config :godwoken_explorer,
     ]
   ]
 
-config :ethereumex,
-  client_type: :http,
-  url: "http://localhost:8119"
-
 config :godwoken_explorer,
   sync_worker_interval: 1,
   global_state_worker_interval: 30,

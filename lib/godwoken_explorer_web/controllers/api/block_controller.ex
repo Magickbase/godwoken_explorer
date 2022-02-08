@@ -17,11 +17,16 @@ defmodule GodwokenExplorerWeb.API.BlockController do
           hash: block.hash,
           number: block.number,
           l1_block: block.layer1_block_number,
-          tx_hash: block.layer1_tx_hash,
+          l1_tx_hash: block.layer1_tx_hash,
           finalize_state: block.status,
           tx_count: block.transaction_count,
-          aggregator: block.aggregator_id,
-          timestamp: block.timestamp
+          miner_hash: block.account.short_address,
+          timestamp: block.inserted_at,
+          gas_limit: block.gas_limit,
+          gas_used: block.gas_used,
+          size: block.size,
+          parent_hash: block.parent_hash,
+          logs_bloom: block.logs_bloom
       } |> stringify_and_unix_maps()
     end
 
