@@ -13,7 +13,6 @@ defmodule GodwokenExplorer.Transaction do
     field(:args, :binary)
     field(:from_account_id, :integer)
     field(:nonce, :integer)
-    field(:status, Ecto.Enum, values: [:committed, :finalized], default: :committed)
     field(:to_account_id, :integer)
     field(:type, Ecto.Enum, values: [:sudt, :polyjuice_creator, :polyjuice])
     field(:block_number, :integer)
@@ -34,7 +33,6 @@ defmodule GodwokenExplorer.Transaction do
       :to_account_id,
       :nonce,
       :args,
-      :status,
       :block_number
     ])
     |> validate_required([
@@ -43,7 +41,6 @@ defmodule GodwokenExplorer.Transaction do
       :to_account_id,
       :nonce,
       :args,
-      :status,
       :block_number
     ])
   end
@@ -408,7 +405,8 @@ defmodule GodwokenExplorer.Transaction do
             a3.type,
             a3.short_address
           ),
-        status: t.status,
+        status: b.status,
+        polyjuice_status: p.status,
         type: t.type,
         nonce: t.nonce,
         inserted_at: t.inserted_at,

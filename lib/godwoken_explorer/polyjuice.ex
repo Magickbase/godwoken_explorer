@@ -1,6 +1,5 @@
 defmodule GodwokenExplorer.Polyjuice do
   use GodwokenExplorer, :schema
-  use Retry
 
   import Ecto.Changeset
 
@@ -20,6 +19,7 @@ defmodule GodwokenExplorer.Polyjuice do
     field :receive_address, :binary
     field :receive_eth_address, :binary
     field :transfer_count, :decimal
+    field(:status, Ecto.Enum, values: [:succeed, :failed])
 
     belongs_to(:transaction, GodwokenExplorer.Transaction,
       foreign_key: :tx_hash,
@@ -43,52 +43,17 @@ defmodule GodwokenExplorer.Polyjuice do
       :gas_used,
       :receive_address,
       :transfer_count,
-      :receive_eth_address
+      :receive_eth_address,
+      :status
     ])
     |> validate_required([:is_create, :gas_limit, :gas_price, :value, :input_size, :input])
     |> unique_constraint(:tx_hash)
   end
 
   def create_polyjuice(attrs) do
-    gas_used =
-      retry with: constant_backoff(500) |> Stream.take(3) do
-        case GodwokenRPC.fetch_receipt(attrs[:hash]) do
-          {:ok, gas_used} ->
-            gas_used
-
-          {:error, _} ->
-            {:error, :node_error}
-        end
-      after
-        result -> result
-      else
-        _error -> nil
-      end
-
-    {short_address, transfer_count} =
-      decode_transfer_args(attrs[:to_account_id], attrs[:input], attrs[:hash])
-
-    eth_address =
-      if short_address do
-        AccountUDT.update_erc20_balance!(attrs[:from_account_id], attrs[:to_account_id])
-
-        case Account |> Repo.get_by(short_address: short_address) do
-          nil ->
-            nil
-
-          %Account{id: id, eth_address: eth_address} ->
-            AccountUDT.update_erc20_balance!(id, attrs[:to_account_id])
-            eth_address
-        end
-      end
-
     %Polyjuice{}
     |> Polyjuice.changeset(attrs)
     |> Ecto.Changeset.put_change(:tx_hash, attrs[:hash])
-    |> Ecto.Changeset.put_change(:gas_used, gas_used)
-    |> Ecto.Changeset.put_change(:receive_address, short_address)
-    |> Ecto.Changeset.put_change(:receive_eth_address, eth_address)
-    |> Ecto.Changeset.put_change(:transfer_count, transfer_count)
     |> Repo.insert(on_conflict: :nothing)
   end
 
