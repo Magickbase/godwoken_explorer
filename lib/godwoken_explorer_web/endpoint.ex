@@ -64,7 +64,7 @@ defmodule GodwokenExplorerWeb.Endpoint do
   plug Plug.Head
   plug Plug.Session, @session_options
 
-  if Mix.env() in [:staging, :prod] do
+  if Mix.env() in [:stg, :prod] do
     plug CORSPlug
   end
 

@@ -22,7 +22,7 @@ use Distillery.Releases.Config,
 # when building in that environment, this combination of release
 # and environment configuration is called a profile
 
-environment :staging do
+environment :stg do
 end
 
 environment :prod do
