@@ -21,7 +21,7 @@ defmodule GodwokenExplorerWeb.BlockChannel do
         tx_hash: block.layer1_tx_hash,
         finalize_state: block.status,
         tx_count: block.transaction_count,
-        miner_hash: block.account.short_address,
+        miner_hash: Block.miner_hash(block),
         timestamp: block.timestamp,
         gas_limit: block.gas_limit,
         gas_used: block.gas_used,

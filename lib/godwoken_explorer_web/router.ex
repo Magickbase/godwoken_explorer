@@ -19,6 +19,7 @@ defmodule GodwokenExplorerWeb.Router do
 
   scope "/api", GodwokenExplorerWeb.API do
     get("/home", HomeController, :index)
+    get("/blocks", BlockController, :index)
     get("/blocks/:id", BlockController, :show)
     get("/txs/:hash", TransactionController, :show)
     get("/txs", TransactionController, :index)
@@ -43,7 +44,6 @@ defmodule GodwokenExplorerWeb.Router do
     get "/", UDTController, :index
     resources "/udts", UDTController
     resources "/smart_contracts", SmartContractController
-
   end
 
   # Other scopes may use custom stacks.

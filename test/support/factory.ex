@@ -1,32 +1,41 @@
 defmodule GodwokenExplorer.Factory do
   use ExMachina.Ecto, repo: GodwokenExplorer.Repo
 
+  alias Decimal, as: D
+
   alias GodwokenExplorer.{
     Block,
-    Transaction
+    Transaction,
+    Account,
+    Repo
   }
 
   def block_factory do
     %Block{
+      hash: "0x9e449451846827df40c9a8bcb2809256011afbbf394de676d52535c3ca32a518",
+      parent_hash: "0xa04ecc2bb1bc634848535b60b3223c1cd5278aa93abb2c138687da8ffa9ffd48",
+      number: 14,
+      timestamp: ~U[2021-10-31 05:39:38.000000Z],
+      status: :finalized,
       aggregator_id: 0,
-      hash:
-        sequence(:hash, &"0x#{&1}47c3a847ede67fdad6357e7bf0a017fdb1be3e437a675a742e268af39bc3d",
-          start_at: 100
-        ),
-      layer1_block_number: sequence(:layer1_block_number, & &1, start_at: 3100),
-      layer1_tx_hash: "0x9d551b30032f9c4f30a931e431cc7bf91afc0d912880b90371f0a668c7af9489",
-      number: sequence(:number, & &1, start_at: 100),
-      parent_hash: "0xa3c7622d9016ce604fdcda94885923fcb576927667bfe915125d190db4b2b1d2",
-      size: nil,
-      status: :committed,
-      timestamp:
-        sequence(
-          :timestamp,
-          &"#{NaiveDateTime.utc_now() |> DateTime.from_naive!("Etc/UTC") |> DateTime.add(&1)}",
-          start_at: 60
-        ),
       transaction_count: 1,
-      transactions: build_list(1, :transaction)
+      gas_limit: D.new(12_500_000),
+      gas_used: D.new(0),
+      size: 156,
+      logs_bloom:
+        "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+      layer1_block_number: 2_345_241,
+      layer1_tx_hash: "0xae12080b62ec17acc092b341a6ca17da0708e7a6d77e8033c785ea48cdbdbeef"
+    }
+  end
+
+  def meta_contract_factory do
+    %Account{
+      id: 0,
+      nonce: 0,
+      script_hash: "0x5c84fc6078725df72052cc858dffc6f352a069706c9023a82eeff3b2a1a9ccd1",
+      short_address: "0x5c84fc6078725df72052cc858dffc6f352a06970",
+      type: :meta_contract
     }
   end
 
@@ -39,9 +48,13 @@ defmodule GodwokenExplorer.Factory do
           start_at: 100
         ),
       block_number: sequence(:block_number, & &1, start_at: 100),
-      nonce: sequence(:nonce, &(&1), start_at: 0),
+      nonce: sequence(:nonce, & &1, start_at: 0),
       to_account_id: 6,
       type: :sudt
     }
+  end
+
+  def insert!(factory_name, attributes \\ []) do
+    factory_name |> build(attributes) |> Repo.insert!()
   end
 end
