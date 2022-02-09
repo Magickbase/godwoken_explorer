@@ -201,7 +201,8 @@ defmodule GodwokenExplorer.Block do
   defp broadcast_tx_of_block(l2_block_number, l1_block_number) do
     query =
       from(t in Transaction,
-      join: b in Block, on: b.number == t.block_number,
+        join: b in Block,
+        on: b.number == t.block_number,
         where: t.block_number == ^l2_block_number,
         select: %{hash: t.hash, status: b.status}
       )
@@ -243,5 +244,13 @@ defmodule GodwokenExplorer.Block do
   def rollback!(hash) do
     Repo.get(__MODULE__, hash) |> Repo.delete!()
     from(t in Transaction, where: t.block_hash == ^hash) |> Repo.delete_all()
+  end
+
+  def miner_hash(block) do
+    if block.account.type == :user do
+      block.account.eth_address
+    else
+      block.account.short_address
+    end
   end
 end
