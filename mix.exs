@@ -73,6 +73,8 @@ defmodule GodwokenExplorer.MixProject do
       # monitor
       {:observer_cli, "~> 1.6"},
       {:sentry, "~> 8.0"},
+      {:appsignal_phoenix, "~> 2.0"},
+      {:appsignal, "~> 2.0"},
 
       # static code analysis tool
       {:credo, "~> 1.5", only: [:dev, :test], runtime: false},
@@ -88,9 +90,12 @@ defmodule GodwokenExplorer.MixProject do
       # jsonapi
       {:jsonapi, "~> 1.3.0"},
 
-      {:appsignal_phoenix, "~> 2.0"},
-      {:appsignal, "~> 2.0"},
+      # tool
+      {:timex, "~> 3.0"},
       {:retry, "~> 0.15"},
+
+      # cron
+      {:quantum, "~> 3.0"},
 
       # test
       {:ex_machina, "~> 2.7.0", only: :test},

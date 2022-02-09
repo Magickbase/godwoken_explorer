@@ -49,6 +49,13 @@ config :ex_audit,
 
 config :jsonapi,
   remove_links: true
+
+# UTC
+config :godwoken_explorer, GodwokenExplorer.Scheduler,
+  jobs: [
+    {"01 00 * * *", {GodwokenExplorer.UDT, :refresh_supply, []}}
+  ]
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{Mix.env()}.exs"

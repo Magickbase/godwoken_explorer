@@ -118,7 +118,8 @@ defmodule GodwokenExplorer.UDT do
 
   def get_contract_id(udt_account_id) do
     case Repo.get(UDT, udt_account_id) do
-      %UDT{type: :bridge, bridge_account_id: bridge_account_id} when not(is_nil(bridge_account_id)) ->
+      %UDT{type: :bridge, bridge_account_id: bridge_account_id}
+      when not is_nil(bridge_account_id) ->
         bridge_account_id
 
       _ ->
@@ -289,5 +290,27 @@ defmodule GodwokenExplorer.UDT do
       # TODO add config for type_script of type map
       # TODO add config for script_hash of type binary
     end
+  end
+
+  # TODO: current will calculate all deposits and withdrawals, after can calculate by incrementation
+  def refresh_supply do
+    start_time = nil
+    end_time = Timex.beginning_of_day(Timex.now)
+
+    deposits = DepositHistory.group_udt_amount(start_time, end_time) |> Map.new()
+    withdrawals = WithdrawalHistory.group_udt_amount(start_time, end_time) |> Map.new()
+    udt_amounts = Map.merge(deposits, withdrawals, fn _k, v1, v2 -> D.add(v1, v2) end)
+    udt_ids = udt_amounts |> Map.keys()
+
+    Repo.transaction(fn ->
+      from(u in UDT, where: u.id in ^udt_ids)
+      |> Repo.all()
+      |> Enum.each(fn u ->
+        UDT.changeset(u, %{
+          supply: udt_amounts |> Map.fetch!(u.id)
+        })
+        |> Repo.update!()
+      end)
+    end)
   end
 end
