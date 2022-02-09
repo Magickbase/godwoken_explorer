@@ -34,10 +34,7 @@ npm-debug.log
 /priv/static/
 
 /config/*.secret.exs
-/config/deploy/production_mainnet.rb
-/config/deploy/production_testnet.rb
-/config/deploy/staging_testnet.rb
-
+/config/deploy/*
 
 # rustler compiled
 /priv/native
