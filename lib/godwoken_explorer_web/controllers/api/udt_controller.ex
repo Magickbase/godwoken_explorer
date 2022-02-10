@@ -1,9 +1,10 @@
 defmodule GodwokenExplorerWeb.API.UDTController do
   use GodwokenExplorerWeb, :controller
 
-  alias GodwokenExplorer.UDTView
+  alias GodwokenExplorer.{UDTView, Account}
 
   plug JSONAPI.QueryParser, view: UDTView
+  action_fallback GodwokenExplorerWeb.API.FallbackController
 
   # fields[udt]=id,name,symbol,supply,holders,type,short_address
   def index(conn, _params) do
@@ -18,15 +19,30 @@ defmodule GodwokenExplorerWeb.API.UDTController do
     json(conn, data)
   end
 
+  def show(conn, %{"id" => "0x" <> _} = params) do
+    downcase_id = params["id"] |> String.downcase()
+
+    case Account.search(downcase_id) do
+      %Account{id: id} ->
+        case UDTView.get_udt(id) do
+          nil ->
+            {:error, :not_found}
+          udt = %{name: _name} ->
+            JSONAPI.Serializer.serialize(UDTView, udt, conn)
+        end
+
+      nil ->
+        {:error, :not_found}
+    end
+
+    json(conn, result)
+  end
+
   def show(conn, %{"id" => id} = _params) do
     result =
       case UDTView.get_udt(id) do
         nil ->
-          %{
-            error_code: 404,
-            message: "not found"
-          }
-
+          {:error, :not_found}
         udt = %{name: _name} ->
           JSONAPI.Serializer.serialize(UDTView, udt, conn)
       end
