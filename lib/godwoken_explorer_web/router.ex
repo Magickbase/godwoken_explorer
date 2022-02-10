@@ -15,9 +15,12 @@ defmodule GodwokenExplorerWeb.Router do
 
   pipeline :api do
     plug :accepts, ["json"]
+    plug GodwokenExplorerWeb.Plugs.PageSize
   end
 
   scope "/api", GodwokenExplorerWeb.API do
+    pipe_through :api
+
     get("/home", HomeController, :index)
     get("/blocks", BlockController, :index)
     get("/blocks/:id", BlockController, :show)

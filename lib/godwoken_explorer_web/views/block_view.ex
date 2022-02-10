@@ -37,13 +37,13 @@ defmodule GodwokenExplorer.BlockView do
     utc_to_unix(block.inserted_at)
   end
 
-  def list(page) do
+  def list(page, page_size) do
     from(
       b in Block,
       join: a in assoc(b, :account),
       preload: [account: a],
       order_by: [desc: :number]
     )
-    |> Repo.paginate(page: page)
+    |> Repo.paginate(page: page, page_size: page_size)
   end
 end

@@ -9,7 +9,7 @@ defmodule GodwokenExplorerWeb.API.BlockController do
   plug JSONAPI.QueryParser, view: BlockView
 
   def index(conn, _params) do
-    results = BlockView.list(conn.params["page"] || 1)
+    results = BlockView.list(conn.params["page"] || 1, conn.assigns.page_size)
 
     data =
       JSONAPI.Serializer.serialize(BlockView, results.entries, conn, %{
