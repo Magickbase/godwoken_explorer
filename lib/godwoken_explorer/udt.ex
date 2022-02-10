@@ -307,7 +307,7 @@ defmodule GodwokenExplorer.UDT do
       |> Repo.all()
       |> Enum.each(fn u ->
         UDT.changeset(u, %{
-          supply: udt_amounts |> Map.fetch!(u.id)
+          supply: udt_amounts |> Map.fetch!(u.id) |> Decimal.div(Integer.pow(10, u.decimal || 0))
         })
         |> Repo.update!()
       end)
