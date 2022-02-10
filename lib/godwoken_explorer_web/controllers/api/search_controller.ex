@@ -34,8 +34,8 @@ defmodule GodwokenExplorerWeb.API.SearchController do
           {:error, :not_found}
         else
           case Repo.get_by(Block, number: num) do
-            %Account{id: id} ->
-              json(conn, %{type: "account", id: id})
+            %Block{number: number} ->
+              json(conn, %{type: "block", id: number})
 
             nil ->
               {:error, :not_found}
