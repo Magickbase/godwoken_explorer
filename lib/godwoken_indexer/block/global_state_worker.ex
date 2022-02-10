@@ -3,7 +3,7 @@ defmodule GodwokenIndexer.Block.GlobalStateWorker do
 
   import Godwoken.MoleculeParser, only: [parse_global_state: 1]
 
-  alias GodwokenExplorer.{Block, Account, WithdrawalHistory}
+  alias GodwokenExplorer.{Block, Account, WithdrawalHistory, Repo}
 
   @default_worker_interval 40
 
@@ -13,6 +13,7 @@ defmodule GodwokenIndexer.Block.GlobalStateWorker do
 
   @impl true
   def init(state) do
+    create_meta_contract()
     # Schedule work to be performed on start
     schedule_work()
 
@@ -75,6 +76,12 @@ defmodule GodwokenIndexer.Block.GlobalStateWorker do
           status: parsed_status
         }
       }
+    end
+  end
+
+  defp create_meta_contract do
+    unless Repo.get(Account, 0) do
+      Account.manual_create_account(0)
     end
   end
 

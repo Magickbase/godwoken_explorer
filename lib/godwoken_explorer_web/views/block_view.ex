@@ -40,8 +40,7 @@ defmodule GodwokenExplorer.BlockView do
   def list(page) do
     from(
       b in Block,
-      join: a in assoc(b, :account),
-      preload: [account: a],
+      preload: :account,
       order_by: [desc: :number]
     )
     |> Repo.paginate(page: page)
