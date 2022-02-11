@@ -30,8 +30,8 @@ defmodule GodwokenExplorer.PolyjuiceCreator do
   @doc false
   def changeset(polyjuice_creator, attrs) do
     polyjuice_creator
-    |> cast(attrs, [:code_hash, :hash_type, :script_args, :fee_amount, :fee_udt_id])
-    |> validate_required([:code_hash, :hash_type, :script_args, :fee_amount, :fee_udt_id])
+    |> cast(attrs, [:code_hash, :hash_type, :script_args, :fee_amount])
+    |> validate_required([:code_hash, :hash_type, :script_args, :fee_amount])
     |> unique_constraint(:tx_hash)
   end
 

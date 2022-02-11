@@ -18,23 +18,21 @@ mod atoms {
 
 // table CreateAccount {
 //     script: Script,
-//     fee: Fee,
+//     fee: Uint64,
 // }
 #[rustler::nif]
-fn parse_meta_contract_args(arg: String) -> ((String, String, String), (u32, String))  {
-    let sudt_transfer_args = hex::decode(arg).unwrap();
-    let meta_contract_args = MetaContractArgs::from_slice(&sudt_transfer_args).unwrap().to_enum();
+fn parse_meta_contract_args(arg: String) -> ((String, String, String), String)  {
+    let decoded_meat_contract = hex::decode(arg).unwrap();
+    let meta_contract_args = MetaContractArgs::from_slice(&decoded_meat_contract).unwrap().to_enum();
     let script = CreateAccount::from_slice(meta_contract_args.as_slice()).unwrap().script();
-    let fee = CreateAccount::from_slice(meta_contract_args.as_slice()).unwrap().fee();
-    let mut sudt_id = [0u8; 4];
-    sudt_id.copy_from_slice(fee.sudt_id().as_slice());
-    let amount = hex::encode(fee.amount().as_slice());
     let code_hash = hex::encode(script.as_reader().code_hash().raw_data());
     let hash_type = hex::encode(script.as_reader().hash_type().as_slice());
     let args = hex::encode(script.as_reader().args().raw_data());
+    let fee = CreateAccount::from_slice(meta_contract_args.as_slice()).unwrap().fee();
+    let amount = hex::encode(fee.as_slice());
     (
         (code_hash, hash_type, args),
-        (u32::from_le_bytes(sudt_id), amount)
+        amount
     )
 }
 
@@ -88,21 +86,15 @@ fn parse_deposition_lock_args(arg: String) -> (String, String) {
 }
 
 #[rustler::nif]
-fn parse_withdrawal_lock_args(arg: String) -> (String, (String, u64), (String, String, u64), String, String) {
+fn parse_withdrawal_lock_args(arg: String) -> (String, (String, u64), String) {
     let args = hex::decode(arg).unwrap();
     let withdrawal_args = WithdrawalLockArgs::from_slice(&args[32..]).unwrap();
     let l2_script_hash = withdrawal_args.account_script_hash();
     let withdrawal_block_hash = withdrawal_args.withdrawal_block_hash();
     let block_number = withdrawal_args.withdrawal_block_number();
+    let owner_lock_hash = withdrawal_args.owner_lock_hash();
     let mut block_buf = [0u8; 8];
     block_buf.copy_from_slice(block_number.as_slice());
-    let sudt_script_hash = withdrawal_args.sudt_script_hash();
-    let sell_amount = withdrawal_args.sell_amount();
-    let sell_capacity = withdrawal_args.sell_capacity();
-    let mut sell_capacity_buf = [0u8; 8];
-    sell_capacity_buf.copy_from_slice(sell_capacity.as_slice());
-    let owner_lock_hash = withdrawal_args.owner_lock_hash();
-    let payment_lock_hash = withdrawal_args.payment_lock_hash();
 
     (
       hex::encode(l2_script_hash.as_slice()),
@@ -110,13 +102,7 @@ fn parse_withdrawal_lock_args(arg: String) -> (String, (String, u64), (String, S
         hex::encode(withdrawal_block_hash.as_slice()),
         u64::from_le_bytes(block_buf)
       ),
-      (
-        hex::encode(sudt_script_hash.as_slice()),
-        hex::encode(sell_amount.as_slice()),
-        u64::from_le_bytes(sell_capacity_buf)
-      ),
-      hex::encode(owner_lock_hash.as_slice()),
-      hex::encode(payment_lock_hash.as_slice()),
+      hex::encode(owner_lock_hash.as_slice())
     )
 }
 
