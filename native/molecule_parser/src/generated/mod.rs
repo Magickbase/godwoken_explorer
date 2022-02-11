@@ -8,10 +8,11 @@ mod godwoken;
 
 #[cfg(feature = "std")]
 #[allow(clippy::all)]
-mod poa;
+mod store;
+
 #[cfg(feature = "std")]
 #[allow(clippy::all)]
-mod store;
+mod mem_block;
 
 pub mod packed {
     pub use molecule::prelude::{Byte, ByteReader};
@@ -19,7 +20,7 @@ pub mod packed {
     pub use super::blockchain::*;
     pub use super::godwoken::*;
     #[cfg(feature = "std")]
-    pub use super::poa::*;
+    pub use super::mem_block::*;
     #[cfg(feature = "std")]
     pub use super::store::*;
 }
