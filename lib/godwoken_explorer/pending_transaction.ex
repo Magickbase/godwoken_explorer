@@ -65,7 +65,7 @@ defmodule GodwokenExplorer.PendingTransaction do
       "nonce" => nonce,
       "args" => "0x" <> args
     }) when to_account_id == "0x0" do
-      {{code_hash, hash_type, script_args}, {fee_sudt_id, fee_amount_hex_string}} =
+      {{code_hash, hash_type, script_args}, fee_amount_hex_string} =
         parse_meta_contract_args(args)
 
       fee_amount = fee_amount_hex_string |> parse_le_number()
@@ -79,7 +79,6 @@ defmodule GodwokenExplorer.PendingTransaction do
       parsed_args: %{
         code_hash: "0x" <> code_hash,
         hash_type: transform_hash_type(hash_type),
-        fee_udt_id: fee_sudt_id,
         fee_amount: fee_amount,
         script_args: script_args
       }

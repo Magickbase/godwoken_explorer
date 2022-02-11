@@ -147,9 +147,7 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
     {
       l2_script_hash,
       {l2_block_hash, l2_block_number},
-      {sudt_script_hash, sell_amount, sell_capacity},
       owner_lock_hash,
-      payment_lock_hash
     } = parse_withdrawal_lock_args(args)
 
     {udt_script, udt_script_hash, amount} = parse_udt_script(output, output_data)
@@ -162,11 +160,8 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
         l2_script_hash: "0x" <> l2_script_hash,
         block_hash: "0x" <> l2_block_hash,
         block_number: l2_block_number,
-        udt_script_hash: "0x" <> sudt_script_hash,
-        sell_amount: sell_amount |> parse_le_number,
-        sell_capacity: sell_capacity,
+        udt_script_hash: "0x" <> udt_script_hash,
         owner_lock_hash: "0x" <> owner_lock_hash,
-        payment_lock_hash: "0x" <> payment_lock_hash,
         timestamp: timestamp,
         udt_id: udt_id,
         amount: amount
