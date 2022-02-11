@@ -156,7 +156,7 @@ defmodule GodwokenRPC.Util do
     "0x" <> header <> args
   end
 
-  defp utc_to_unix(iso_datetime) do
+  def utc_to_unix(iso_datetime) do
     iso_datetime |> DateTime.from_naive!("Etc/UTC") |> DateTime.to_unix()
   end
 end
