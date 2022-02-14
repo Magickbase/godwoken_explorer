@@ -7,7 +7,8 @@ defmodule GodwokenExplorer.Factory do
     Block,
     Transaction,
     Account,
-    Repo
+    Repo,
+    UDT
   }
 
   def block_factory do
@@ -56,5 +57,24 @@ defmodule GodwokenExplorer.Factory do
 
   def insert!(factory_name, attributes \\ []) do
     factory_name |> build(attributes) |> Repo.insert!()
+  end
+
+  def ckb_udt_factory do
+    %UDT{
+      id: 1,
+      name: "CKB",
+      decimal: 8,
+      script_hash: "0x0000000000000000000000000000000000000000000000000000000000000000",
+      type: :bridge
+    }
+  end
+
+  def ckb_account_factory do
+    %{
+      id: 1,
+      type: :udt,
+      short_address: "0x9e9c54293c3211259de788e97a31b5b3a66cd535",
+      script_hash: "0x9e9c54293c3211259de788e97a31b5b3a66cd53564f8d39dfabdc8e96cdf5ea4"
+    }
   end
 end
