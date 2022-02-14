@@ -22,32 +22,28 @@ defmodule GodwokenExplorerWeb.API.UDTController do
   def show(conn, %{"id" => "0x" <> _} = params) do
     downcase_id = params["id"] |> String.downcase()
 
-    result =
-      case Account.search(downcase_id) do
-        %Account{id: id} ->
-          case UDTView.get_udt(id) do
-            nil ->
-              {:error, :not_found}
-            udt = %{name: _name} ->
-              JSONAPI.Serializer.serialize(UDTView, udt, conn)
-          end
+    case Account.search(downcase_id) do
+      %Account{id: id} ->
+        case UDTView.get_udt(id) do
+          nil ->
+            {:error, :not_found}
+          udt = %{name: _name} ->
+            result = JSONAPI.Serializer.serialize(UDTView, udt, conn)
+            json(conn, result)
+        end
 
-        nil ->
-          {:error, :not_found}
-      end
-
-    json(conn, result)
+      nil ->
+        {:error, :not_found}
+    end
   end
 
   def show(conn, %{"id" => id} = _params) do
-    result =
-      case UDTView.get_udt(id) do
-        nil ->
-          {:error, :not_found}
-        udt = %{name: _name} ->
-          JSONAPI.Serializer.serialize(UDTView, udt, conn)
-      end
-
-    json(conn, result)
+    case UDTView.get_udt(id) do
+      nil ->
+        {:error, :not_found}
+      udt = %{name: _name} ->
+        result = JSONAPI.Serializer.serialize(UDTView, udt, conn)
+        json(conn, result)
+    end
   end
 end
