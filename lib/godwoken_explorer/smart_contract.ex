@@ -40,6 +40,16 @@ defmodule GodwokenExplorer.SmartContract do
     end
   end
 
+  def cache_abi(account_id) do
+    if FastGlobal.get("contract_abi_#{account_id}") do
+      FastGlobal.get("contract_abi_#{account_id}")
+    else
+     abi = from(sc in SmartContract, where: sc.account_id == ^account_id, select: sc.abi) |> Repo.one()
+     FastGlobal.put("contract_abi_#{account_id}", abi)
+     abi
+    end
+  end
+
   defp map_abi(x) do
     case {x["name"], x["type"]} do
       {nil, "constructor"} -> {:constructor, x}
