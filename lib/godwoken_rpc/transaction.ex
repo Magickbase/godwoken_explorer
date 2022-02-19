@@ -63,14 +63,14 @@ defmodule GodwokenRPC.Transaction do
 
       eth_address =
         if short_address do
-          AccountUDT.update_erc20_balance!(from_account_id, to_account_id)
+          # AccountUDT.update_erc20_balance!(from_account_id, to_account_id)
 
           case Account |> Repo.get_by(short_address: short_address) do
             nil ->
               nil
 
-            %Account{id: id, eth_address: eth_address} ->
-              AccountUDT.update_erc20_balance!(id, to_account_id)
+            %Account{id: _id, eth_address: eth_address} ->
+              # AccountUDT.update_erc20_balance!(id, to_account_id)
               eth_address
           end
         end
