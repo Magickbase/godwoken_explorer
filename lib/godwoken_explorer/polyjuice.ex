@@ -88,20 +88,24 @@ defmodule GodwokenExplorer.Polyjuice do
   end
 
   defp decode_input(to_account_id, input, hash) do
-    with %SmartContract{abi: full_abi} <- Repo.get_by(SmartContract, account_id: to_account_id) do
-      case do_decoded_input_data(
-        Base.decode16!(String.slice(input, 2..-1), case: :lower),
-        full_abi,
-        hash
-      ) do
-        {:ok, identifier, text, mapping} ->
-          {:ok, identifier, text, mapping}
-        _ ->
-          {:error, :decode_error}
-        end
+    if to_account_id in SmartContract.account_ids do
+      with %SmartContract{abi: full_abi} <- Repo.get_by(SmartContract, account_id: to_account_id) do
+        case do_decoded_input_data(
+          Base.decode16!(String.slice(input, 2..-1), case: :lower),
+          full_abi,
+          hash
+        ) do
+          {:ok, identifier, text, mapping} ->
+            {:ok, identifier, text, mapping}
+          _ ->
+            {:error, :decode_error}
+          end
+      else
+        nil ->
+          {:error, :contract_not_exist}
+      end
     else
-      nil ->
-        {:error, :contract_not_exist}
+      {:error, :decode_error}
     end
   end
 

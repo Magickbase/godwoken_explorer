@@ -30,6 +30,16 @@ defmodule GodwokenExplorer.SmartContract do
     |> Map.new()
   end
 
+  def account_ids do
+    if FastGlobal.get(:contract_account_ids) do
+      FastGlobal.get(:contract_account_ids)
+    else
+     account_ids = SmartContract |> select([sc], sc.account_id) |> Repo.all()
+     FastGlobal.put(:contract_account_ids, account_ids)
+     account_ids
+    end
+  end
+
   defp map_abi(x) do
     case {x["name"], x["type"]} do
       {nil, "constructor"} -> {:constructor, x}
