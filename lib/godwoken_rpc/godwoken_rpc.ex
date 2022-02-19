@@ -46,6 +46,26 @@ defmodule GodwokenRPC do
     end
   end
 
+  def fetch_nonce_by_ids(ids) do
+    ids
+    |> fetch_nonce_by_params(&GodwokenRPC.Account.FetchedNonce.request/1)
+  end
+
+  defp fetch_nonce_by_params(params, request)
+       when is_list(params) and is_function(request, 1) do
+    id_to_params =
+      params
+      |> Enum.into(%{}, fn params -> {params[:account_id], params} end)
+    options = Application.get_env(:godwoken_explorer, :json_rpc_named_arguments)
+
+    with {:ok, responses} <-
+           id_to_params
+           |> Blocks.requests(request)
+           |> HTTP.json_rpc(options) do
+      {:ok, responses |> Enum.map(fn response -> %{id: response[:id], nonce: hex_to_number(response[:result])} end)}
+    end
+  end
+
   def fetch_l1_tip_block_nubmer do
     indexer_options = Application.get_env(:godwoken_explorer, :ckb_indexer_named_arguments)
 

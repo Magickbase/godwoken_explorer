@@ -98,6 +98,7 @@ defmodule GodwokenExplorer.Account do
 
   def find_by_id(id) do
     account = Repo.get(Account, id)
+
     ckb_balance =
       with udt_id when is_integer(udt_id) <- UDT.ckb_account_id(),
            {:ok, balance} <- GodwokenRPC.fetch_balance(account.short_address, udt_id) do
@@ -165,6 +166,7 @@ defmodule GodwokenExplorer.Account do
 
       %Account{type: :udt, id: id} ->
         udt = Repo.get(UDT, id)
+
         if is_nil(udt) do
           %{
             sudt: %{
@@ -173,8 +175,9 @@ defmodule GodwokenExplorer.Account do
           }
         else
           holders = UDT.count_holder(id)
+
           type_script =
-            if id == UDT.ckb_account_id do
+            if id == UDT.ckb_account_id() do
               nil
             else
               udt.type_script
@@ -369,13 +372,13 @@ defmodule GodwokenExplorer.Account do
 
       nil ->
         with {:ok, script_hash} <- GodwokenRPC.fetch_script_hash(%{account_id: id}),
-            {:ok, script} <- GodwokenRPC.fetch_script(script_hash) do
+             {:ok, script} <- GodwokenRPC.fetch_script(script_hash) do
           type = switch_account_type(script["code_hash"], script["args"])
 
           cond do
             type == :user ->
               {Account.script_to_eth_adress(type, script["args"]),
-              Account.script_to_eth_adress(type, script["args"])}
+               Account.script_to_eth_adress(type, script["args"])}
 
             type == :polyjuice_contract ->
               {script_hash |> String.slice(0, 42), script_hash |> String.slice(0, 42)}
@@ -400,6 +403,7 @@ defmodule GodwokenExplorer.Account do
     type = switch_account_type(script["code_hash"], script["args"])
     eth_address = script_to_eth_adress(type, script["args"])
     parsed_script = add_name_to_polyjuice_script(type, script)
+
     attrs = %{
       id: id,
       script: parsed_script,
@@ -433,7 +437,26 @@ defmodule GodwokenExplorer.Account do
   end
 
   def update_nonce!(id) do
-     nonce = GodwokenRPC.fetch_nonce(id)
-     Repo.get(Account, id) |> changeset(%{nonce: nonce}) |> Repo.update!()
+    nonce = GodwokenRPC.fetch_nonce(id)
+    Repo.get(Account, id) |> changeset(%{nonce: nonce}) |> Repo.update!()
+  end
+
+  def update_all_nonce!(ids) do
+    params = ids |> Enum.map(fn id -> %{account_id: id} end)
+    {:ok, responses} = GodwokenRPC.fetch_nonce_by_ids(params)
+
+    changes =
+      responses
+      |> Enum.map(fn m ->
+        Map.merge(m, %{
+          inserted_at: NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second),
+          updated_at: NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
+        })
+      end)
+
+    Repo.insert_all(Account, changes,
+      on_conflict: {:replace, [:nonce, :updated_at]},
+      conflict_target: :id
+    )
   end
 end

@@ -38,7 +38,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
     {:noreply, state}
   end
 
-  defp fetch_and_import(next_number) do
+  def fetch_and_import(next_number) do
     with {:ok, tip_number} <- fetch_tip_number(),
          true <- next_number <= tip_number do
       Logger.info("=====================TIP NUMBER:#{tip_number}")
@@ -53,6 +53,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
          withdrawal_params: withdrawal_params,
          errors: _
        }} = GodwokenRPC.fetch_blocks_by_range(range)
+
       Logger.info("=====================FETCHED DATA")
 
       parent_hash =
@@ -155,7 +156,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
 
     if length(account_ids) > 0 do
       exist_ids = from(a in Account, where: a.id in ^account_ids, select: a.id) |> Repo.all()
-      exist_ids |> Enum.each(fn account_id -> Account.update_nonce!(account_id) end)
+      if length(exist_ids) > 0, do: Account.update_all_nonce!(exist_ids)
 
       (account_ids -- exist_ids)
       |> Enum.each(fn account_id ->
@@ -190,7 +191,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
   defp extract_account_ids(transactions_params) do
     transactions_params
     |> Enum.reduce([], fn transaction, acc ->
-        acc ++ transaction[:account_ids]
+      acc ++ transaction[:account_ids]
     end)
     |> Enum.uniq()
   end
