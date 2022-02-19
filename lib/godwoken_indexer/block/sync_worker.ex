@@ -41,6 +41,9 @@ defmodule GodwokenIndexer.Block.SyncWorker do
   defp fetch_and_import(next_number) do
     with {:ok, tip_number} <- fetch_tip_number(),
          true <- next_number <= tip_number do
+      Logger.info("=====================TIP NUMBER:#{tip_number}")
+      Logger.info("=====================NEXT NUMBER:#{next_number}")
+
       range = next_number..next_number
 
       {:ok,
@@ -50,6 +53,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
          withdrawal_params: withdrawal_params,
          errors: _
        }} = GodwokenRPC.fetch_blocks_by_range(range)
+      Logger.info("=====================FETCHED DATA")
 
       parent_hash =
         blocks_params
@@ -70,6 +74,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
         end)
 
       update_block_cache(inserted_blocks)
+      Logger.info("=====================UPDATED BLOCKS")
 
       inserted_transactions =
         transactions_params
@@ -85,13 +90,16 @@ defmodule GodwokenIndexer.Block.SyncWorker do
         end)
 
       update_transactions_cache(inserted_transactions)
+      Logger.info("=====================UPDATED TRANSACTIONS")
 
       Repo.insert_all(WithdrawalRequest, withdrawal_params, on_conflict: :nothing)
 
       broadcast_block_and_tx(inserted_blocks, inserted_transactions)
+      Logger.info("=====================BORADCAST")
 
       trigger_sudt_account_worker(transactions_params)
       trigger_account_worker(transactions_params)
+      Logger.info("=====================UPDATE ACCOUNT")
 
       {:ok, next_number + 1}
     else
