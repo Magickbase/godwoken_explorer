@@ -31,6 +31,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
   def handle_info({:work, next_number}, state) do
     {:ok, block_number} = fetch_and_import(next_number)
 
+    Logger.info("=====================SYNC NUMBER:#{block_number}")
     # Reschedule once more
     schedule_work(block_number)
 
