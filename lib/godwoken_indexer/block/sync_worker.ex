@@ -97,7 +97,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
       broadcast_block_and_tx(inserted_blocks, inserted_transactions)
       Logger.info("=====================BORADCAST")
 
-      trigger_sudt_account_worker(transactions_params)
+      # trigger_sudt_account_worker(transactions_params)
       trigger_account_worker(transactions_params)
       Logger.info("=====================UPDATE ACCOUNT")
 
@@ -154,7 +154,10 @@ defmodule GodwokenIndexer.Block.SyncWorker do
     account_ids = extract_account_ids(transactions_params)
 
     if length(account_ids) > 0 do
-      account_ids
+      exist_ids = from(a in Account, where: a.id in ^account_ids, select: a.id) |> Repo.all()
+      exist_ids |> Enum.each(fn account_id -> Account.update_nonce!(account_id) end)
+
+      (account_ids -- exist_ids)
       |> Enum.each(fn account_id ->
         Account.manual_create_account(account_id)
       end)

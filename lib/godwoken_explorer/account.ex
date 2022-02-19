@@ -431,4 +431,9 @@ defmodule GodwokenExplorer.Account do
       AccountUDT.update_erc20_balance!(id, udt_id)
     end
   end
+
+  def update_nonce!(id) do
+     nonce = GodwokenRPC.fetch_nonce(id)
+     Repo.get(Account, id) |> changeset(%{nonce: nonce}) |> Repo.update!()
+  end
 end
