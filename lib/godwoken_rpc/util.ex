@@ -159,4 +159,9 @@ defmodule GodwokenRPC.Util do
   def utc_to_unix(iso_datetime) do
     iso_datetime |> DateTime.from_naive!("Etc/UTC") |> DateTime.to_unix()
   end
+
+  def timestamps do
+    now = NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
+    %{inserted_at: now, updated_at: now}
+  end
 end

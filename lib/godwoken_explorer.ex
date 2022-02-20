@@ -28,6 +28,7 @@ defmodule GodwokenExplorer do
         Repo,
         SmartContract,
         Transaction,
+        TokenTransfer,
         UDT,
         UDTTransfer,
         Version,

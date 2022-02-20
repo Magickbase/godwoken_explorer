@@ -1,14 +1,29 @@
 defmodule GodwokenIndexer.Block.SyncWorker do
   use GenServer
 
-  import GodwokenRPC.Util, only: [hex_to_number: 1]
+  import GodwokenRPC.Util, only: [hex_to_number: 1, timestamps: 0]
   import Ecto.Query, only: [from: 2]
 
   require Logger
+  require IEx
 
+  alias GodwokenIndexer.Transform.TokenTransfers
   alias GodwokenRPC.Block.{FetchedTipBlockHash, ByHash}
-  alias GodwokenRPC.{Blocks, HTTP}
-  alias GodwokenExplorer.{Block, Transaction, Chain, AccountUDT, Repo, Account, WithdrawalRequest}
+  alias GodwokenRPC.{Blocks, HTTP, Receipts}
+
+  alias GodwokenExplorer.{
+    Block,
+    Transaction,
+    Chain,
+    Repo,
+    Account,
+    WithdrawalRequest,
+    Log,
+    TokenTransfer,
+    Polyjuice,
+    PolyjuiceCreator
+  }
+
   alias GodwokenExplorer.Chain.Events.Publisher
   alias GodwokenExplorer.Chain.Cache.Blocks, as: BlocksCache
   alias GodwokenExplorer.Chain.Cache.Transactions
@@ -49,7 +64,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
       {:ok,
        %Blocks{
          blocks_params: blocks_params,
-         transactions_params: transactions_params,
+         transactions_params: transactions_params_without_receipts,
          withdrawal_params: withdrawal_params,
          errors: _
        }} = GodwokenRPC.fetch_blocks_by_range(range)
@@ -77,31 +92,62 @@ defmodule GodwokenIndexer.Block.SyncWorker do
       update_block_cache(inserted_blocks)
       Logger.info("=====================UPDATED BLOCKS")
 
-      inserted_transactions =
-        transactions_params
-        |> Enum.map(fn transaction_params ->
-          {:ok, %Transaction{} = tx} = Transaction.create_transaction(transaction_params)
+      {polyjuice_without_receipts, polyjuice_creator_params} =
+        transactions_params_without_receipts
+        |> Enum.split_with(fn %{type: type} -> type == :polyjuice end)
 
+      {:ok, %{logs: logs, receipts: receipts}} =
+        GodwokenRPC.fetch_transaction_receipts(polyjuice_without_receipts)
+
+      polyjuice_with_receipts = Receipts.put(polyjuice_without_receipts, receipts)
+      %{token_transfers: token_transfers, tokens: _tokens} = TokenTransfers.parse(logs)
+
+      inserted_transaction_params =
+        filter_transaction_columns(polyjuice_with_receipts ++ polyjuice_creator_params)
+
+      {_count, returned_values} =
+        Repo.insert_all(Transaction, inserted_transaction_params,
+          on_conflict: :nothing,
+          returning: [:from_account_id, :to_account_id, :hash, :type]
+        )
+
+      inserted_polyjuice_params = filter_polyjuice_columns(polyjuice_with_receipts)
+      Repo.insert_all(Polyjuice, inserted_polyjuice_params, on_conflict: :nothing)
+
+      inserted_polyjuice_creator_params =
+        filter_polyjuice_creator_columns(polyjuice_creator_params)
+
+      Repo.insert_all(PolyjuiceCreator, inserted_polyjuice_creator_params, on_conflict: :nothing)
+
+      display_ids =
+        (polyjuice_with_receipts ++ polyjuice_creator_params)
+        |> extract_account_ids()
+        |> Account.display_ids()
+
+      inserted_transactions =
+        returned_values
+        |> Enum.map(fn tx ->
           tx
           |> Map.merge(%{
-            from: elem(Account.display_id(tx.from_account_id), 0),
-            to: elem(Account.display_id(tx.to_account_id), 0),
-            to_alias: elem(Account.display_id(tx.to_account_id), 1)
+            from: display_ids |> Map.get(tx.from_account_id, {tx.from_account_id}) |> elem(0),
+            to: display_ids |> Map.get(tx.to_account_id, {tx.to_account_id}) |> elem(0),
+            to_alias: display_ids |> Map.get(tx.to_account_id, {tx.to_account_id, tx.to_account_id}) |> elem(1)
           })
         end)
 
       update_transactions_cache(inserted_transactions)
+
       Logger.info("=====================UPDATED TRANSACTIONS")
+      Repo.insert_all(Log, logs |> Enum.map(fn log -> Map.merge(log, timestamps()) end), on_conflict: :nothing)
+      Logger.info("=====================UPDATED LOG")
+      Repo.insert_all(TokenTransfer, token_transfers |> Enum.map(fn log -> Map.merge(log, timestamps()) end), on_conflict: :nothing)
+      Logger.info("=====================UPDATED TOKENTRANSFER")
 
       Repo.insert_all(WithdrawalRequest, withdrawal_params, on_conflict: :nothing)
 
+      #trigger_account_worker(polyjuice_with_receipts)
+      Logger.info("=====================UPDATED ACCOUNT")
       broadcast_block_and_tx(inserted_blocks, inserted_transactions)
-      Logger.info("=====================BORADCAST")
-
-      # trigger_sudt_account_worker(transactions_params)
-      trigger_account_worker(transactions_params)
-      Logger.info("=====================UPDATE ACCOUNT")
-
       {:ok, next_number + 1}
     else
       _ -> {:ok, next_number}
@@ -137,20 +183,6 @@ defmodule GodwokenIndexer.Block.SyncWorker do
     end)
   end
 
-  defp trigger_sudt_account_worker(transactions_params) do
-    udt_account_ids = extract_sudt_account_ids(transactions_params)
-
-    if length(udt_account_ids) > 0 do
-      udt_account_ids
-      |> Enum.each(fn {udt_id, account_ids} ->
-        account_ids
-        |> Enum.each(fn account_id ->
-          AccountUDT.sync_balance!(account_id, udt_id)
-        end)
-      end)
-    end
-  end
-
   defp trigger_account_worker(transactions_params) do
     account_ids = extract_account_ids(transactions_params)
 
@@ -175,25 +207,91 @@ defmodule GodwokenIndexer.Block.SyncWorker do
     Transactions.update(transactions)
   end
 
-  # 0: meta_contract 1: ckb
-  defp extract_sudt_account_ids(transactions_params) do
-    transactions_params
-    |> Enum.reduce([], fn transaction, acc ->
-      if transaction |> Map.has_key?(:udt_id) do
-        acc ++ [{transaction[:udt_id], transaction[:account_ids]}]
-      else
-        acc
-      end
-    end)
-    |> Enum.uniq()
-  end
-
   defp extract_account_ids(transactions_params) do
     transactions_params
     |> Enum.reduce([], fn transaction, acc ->
       acc ++ transaction[:account_ids]
     end)
     |> Enum.uniq()
+  end
+
+  defp filter_transaction_columns(params) do
+    params
+    |> Enum.map(fn %{
+                     hash: hash,
+                     from_account_id: from_account_id,
+                     to_account_id: to_account_id,
+                     args: args,
+                     type: type,
+                     nonce: nonce,
+                     block_number: block_number,
+                     block_hash: block_hash
+                   } ->
+      %{
+        hash: hash,
+        from_account_id: from_account_id,
+        to_account_id: to_account_id,
+        args: args,
+        type: type,
+        nonce: nonce,
+        block_number: block_number,
+        block_hash: block_hash
+      } |> Map.merge(timestamps())
+    end)
+  end
+
+  defp filter_polyjuice_columns(params) do
+    params
+    |> Enum.map(fn %{
+                     is_create: is_create,
+                     gas_limit: gas_limit,
+                     gas_price: gas_price,
+                     value: value,
+                     input_size: input_size,
+                     input: input,
+                     gas_used: gas_used,
+                     status: status,
+                     receive_address: short_address,
+                     receive_eth_address: eth_address,
+                     transfer_count: transfer_count,
+                     hash: hash
+                   } ->
+      %{
+        is_create: is_create,
+        gas_limit: gas_limit,
+        gas_price: gas_price,
+        value: value,
+        input_size: input_size,
+        input: input,
+        gas_used: gas_used,
+        status: status,
+        receive_address: short_address,
+        receive_eth_address: eth_address,
+        transfer_count: transfer_count,
+        tx_hash: hash
+      } |> Map.merge(timestamps())
+    end)
+  end
+
+  defp filter_polyjuice_creator_columns(params) do
+    params
+    |> Enum.map(fn %{
+                     code_hash: code_hash,
+                     hash_type: hash_type,
+                     script_args: script_args,
+                     fee_amount: fee_amount,
+                     fee_udt_id: fee_udt_id,
+                     hash: hash
+                   } ->
+      %{
+        code_hash: code_hash,
+        hash_type: hash_type,
+        script_args: script_args,
+        fee_amount: fee_amount,
+        fee_udt_id: fee_udt_id,
+        tx_hash: hash
+      } |> Map.merge(timestamps())
+    end)
   end
 
   defp fetch_tip_number do
