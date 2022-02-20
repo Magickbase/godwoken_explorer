@@ -22,6 +22,7 @@ defmodule GodwokenExplorer do
         CheckInfo,
         ContractMethod,
         DepositHistory,
+        Log,
         PendingTransaction,
         PolyjuiceCreator,
         Polyjuice,
