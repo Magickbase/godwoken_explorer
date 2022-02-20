@@ -142,10 +142,9 @@ defmodule GodwokenIndexer.Block.SyncWorker do
       Logger.info("=====================UPDATED LOG")
       Repo.insert_all(TokenTransfer, token_transfers |> Enum.map(fn log -> Map.merge(log, timestamps()) end), on_conflict: :nothing)
       Logger.info("=====================UPDATED TOKENTRANSFER")
-
       Repo.insert_all(WithdrawalRequest, withdrawal_params, on_conflict: :nothing)
 
-      #trigger_account_worker(polyjuice_with_receipts)
+      trigger_account_worker(polyjuice_with_receipts)
       Logger.info("=====================UPDATED ACCOUNT")
       broadcast_block_and_tx(inserted_blocks, inserted_transactions)
       {:ok, next_number + 1}
