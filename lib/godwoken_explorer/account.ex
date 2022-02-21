@@ -395,6 +395,41 @@ defmodule GodwokenExplorer.Account do
     end
   end
 
+  def display_ids(ids) do
+    results =
+      from(a in Account,
+        left_join: s in SmartContract,
+        on: s.account_id == a.id,
+        where: a.id in ^ids,
+        select: %{
+          id: a.id,
+          type: a.type,
+          eth_address: a.eth_address,
+          short_address: a.short_address,
+          contract_name: s.name
+        }
+      )
+      |> Repo.all()
+
+    results
+    |> Enum.into(%{}, fn %{
+                           id: id,
+                           type: type,
+                           eth_address: eth_address,
+                           short_address: short_address,
+                           contract_name: contract_name
+                         } ->
+      {id,
+       cond do
+         type == :user -> {eth_address, eth_address}
+         type in [:udt, :polyjuice_contract] -> {short_address, contract_name || short_address}
+         type == :polyjuice_root -> {short_address, "Deploy Contract"}
+         type == :meta_contract -> {short_address, "Meta Contract"}
+         true -> {id, id}
+       end}
+    end)
+  end
+
   def manual_create_account(id) do
     nonce = GodwokenRPC.fetch_nonce(id)
     {:ok, script_hash} = GodwokenRPC.fetch_script_hash(%{account_id: id})
