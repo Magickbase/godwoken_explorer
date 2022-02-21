@@ -108,7 +108,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
       {_count, returned_values} =
         Repo.insert_all(Transaction, inserted_transaction_params,
           on_conflict: :nothing,
-          returning: [:from_account_id, :to_account_id, :hash, :type, :inserted_at]
+          returning: [:from_account_id, :to_account_id, :hash, :type, :block_hash]
         )
 
       inserted_polyjuice_params = filter_polyjuice_columns(polyjuice_with_receipts)
