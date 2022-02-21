@@ -253,6 +253,8 @@ defmodule GodwokenIndexer.Block.SyncWorker do
                      receive_address: short_address,
                      receive_eth_address: eth_address,
                      transfer_count: transfer_count,
+                     block_number: block_number,
+                     block_hash: block_hash,
                      hash: hash
                    } ->
       %{
@@ -264,10 +266,12 @@ defmodule GodwokenIndexer.Block.SyncWorker do
         input: input,
         gas_used: gas_used,
         status: status,
+        block_number: block_number,
+        block_hash: block_hash,
+        tx_hash: hash,
         receive_address: short_address,
         receive_eth_address: eth_address,
-        transfer_count: transfer_count,
-        tx_hash: hash
+        transfer_count: transfer_count
       } |> Map.merge(timestamps())
     end)
   end
@@ -280,6 +284,8 @@ defmodule GodwokenIndexer.Block.SyncWorker do
                      script_args: script_args,
                      fee_amount: fee_amount,
                      fee_udt_id: fee_udt_id,
+                     block_number: block_number,
+                     block_hash: block_hash,
                      hash: hash
                    } ->
       %{
@@ -288,6 +294,8 @@ defmodule GodwokenIndexer.Block.SyncWorker do
         script_args: script_args,
         fee_amount: fee_amount,
         fee_udt_id: fee_udt_id,
+        block_number: block_number,
+        block_hash: block_hash,
         tx_hash: hash
       } |> Map.merge(timestamps())
     end)
