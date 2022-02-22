@@ -1,6 +1,8 @@
 defmodule GodwokenExplorer.TokenTransfer do
   use GodwokenExplorer, :schema
 
+  import GodwokenRPC.Util, only: [utc_to_unix: 1]
+
   @constant "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
   @erc1155_single_transfer_signature "0xc3d58168c5ae7397731d063d5bbf3d657854427343f4c083240f7aacaa2d0f62"
   @erc1155_batch_transfer_signature "0x4a39dc06d4c0dbc64b70af90fd698a233a518aa5d07e595d983b8c0526c8f7fb"
@@ -57,6 +59,8 @@ defmodule GodwokenExplorer.TokenTransfer do
       on: a2.short_address == tt.to_address_hash,
       join: b in Block,
       on: b.hash == tt.block_hash,
+      join: t in Transaction,
+      on: t.hash == tt.transaction_hash,
       where:
         tt.token_contract_address_hash == ^udt_address and
           (tt.from_address_hash == ^eth_address or tt.to_address_hash == ^eth_address),
@@ -71,7 +75,8 @@ defmodule GodwokenExplorer.TokenTransfer do
         udt_symbol: ^udt.symbol,
         transfer_value: fragment("
         ? / power(10, ?)::decimal
-        ", tt.amount, ^udt.decimal)
+        ", tt.amount, ^udt.decimal),
+        status: t.status
       },
       order_by: [desc: tt.block_number]
     )
@@ -89,10 +94,13 @@ defmodule GodwokenExplorer.TokenTransfer do
       on: b.hash == tt.block_hash,
       join: a4 in Account,
       on: a4.short_address == tt.token_contract_address_hash,
-      left_join: u5 in UDT, on: u5.id == a4.id,
-      left_join: u6 in UDT, on: u6.bridge_account_id == a4.id,
-      where:
-          tt.from_address_hash == ^eth_address or tt.to_address_hash == ^eth_address,
+      left_join: u5 in UDT,
+      on: u5.id == a4.id,
+      left_join: u6 in UDT,
+      on: u6.bridge_account_id == a4.id,
+      join: t in Transaction,
+      on: t.hash == tt.transaction_hash,
+      where: tt.from_address_hash == ^eth_address or tt.to_address_hash == ^eth_address,
       select: %{
         hash: tt.transaction_hash,
         block_number: tt.block_number,
@@ -101,8 +109,17 @@ defmodule GodwokenExplorer.TokenTransfer do
         ELSE encode(?, 'escape') END", a1.type, a1.eth_address, a1.short_address),
         to: fragment("CASE WHEN ? = 'user' THEN encode(?, 'escape')
         ELSE encode(?, 'escape') END", a2.type, a2.eth_address, a2.short_address),
-        udt_symbol:  fragment("CASE WHEN ? IS NULL THEN ? ELSE ? END", u5, u6.symbol, u5.symbol),
-        transfer_value: fragment("CASE WHEN ? IS NULL THEN ? / power(10, ?)::decimal ELSE ? / power(10, ?)::decimal END", u5, tt.amount, u6.decimal, tt.amount, u5.decimal)
+        udt_symbol: fragment("CASE WHEN ? IS NULL THEN ? ELSE ? END", u5, u6.symbol, u5.symbol),
+        transfer_value:
+          fragment(
+            "CASE WHEN ? IS NULL THEN ? / power(10, ?)::decimal ELSE ? / power(10, ?)::decimal END",
+            u5,
+            tt.amount,
+            u6.decimal,
+            tt.amount,
+            u5.decimal
+          ),
+        status: t.status
       },
       order_by: [desc: tt.block_number]
     )
@@ -120,8 +137,9 @@ defmodule GodwokenExplorer.TokenTransfer do
       on: a2.short_address == tt.to_address_hash,
       join: b in Block,
       on: b.hash == tt.block_hash,
-      where:
-        tt.token_contract_address_hash == ^udt_address,
+      join: t in Transaction,
+      on: t.hash == tt.transaction_hash,
+      where: tt.token_contract_address_hash == ^udt_address,
       select: %{
         hash: tt.transaction_hash,
         block_number: tt.block_number,
@@ -133,7 +151,8 @@ defmodule GodwokenExplorer.TokenTransfer do
         udt_symbol: ^udt.symbol,
         transfer_value: fragment("
         ? / power(10, ?)::decimal
-        ", tt.amount, ^udt.decimal)
+        ", tt.amount, ^udt.decimal),
+        status: t.status
       },
       order_by: [desc: tt.block_number]
     )
@@ -142,10 +161,16 @@ defmodule GodwokenExplorer.TokenTransfer do
   end
 
   defp parse_json_result(results) do
+    parsed_results =
+      results.entries
+      |> Enum.map(fn transfer ->
+        transfer |> Map.put(:timestamp, utc_to_unix(transfer[:inserted_at])) |> Map.delete(:inserted_at)
+      end)
+
     %{
       page: results.page_number,
       total_count: results.total_entries,
-      txs: results.entries
+      txs: parsed_results
     }
   end
 end
