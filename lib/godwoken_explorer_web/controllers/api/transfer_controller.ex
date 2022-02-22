@@ -11,7 +11,7 @@ defmodule GodwokenExplorerWeb.API.TransferController do
          %Account{short_address: udt_address} =
            Repo.get_by(Account, short_address: String.downcase(params["udt_address"])) do
       results =
-        TokenTransfer.list(%{"eth_address" => short_address, "udt_address" => udt_address}, %{
+        TokenTransfer.list(%{eth_address: short_address, udt_address: udt_address}, %{
           page: conn.params["page"] || 1,
           page_size: conn.assigns.page_size
         })
@@ -27,7 +27,7 @@ defmodule GodwokenExplorerWeb.API.TransferController do
     with %Account{short_address: short_address} <-
            Repo.get_by(Account, eth_address: String.downcase(params["eth_address"])) do
       results =
-        TokenTransfer.list(%{"eth_address" => short_address}, %{
+        TokenTransfer.list(%{eth_address: short_address}, %{
           page: conn.params["page"] || 1,
           page_size: conn.assigns.page_size
         })
@@ -43,7 +43,7 @@ defmodule GodwokenExplorerWeb.API.TransferController do
     case Repo.get_by(Account, short_address: String.downcase(params["udt_address"])) do
       %Account{short_address: udt_address} ->
         results =
-          TokenTransfer.list(%{"udt_address" => udt_address}, %{
+          TokenTransfer.list(%{udt_address: udt_address}, %{
             page: conn.params["page"] || 1,
             page_size: conn.assigns.page_size
           })
