@@ -78,6 +78,7 @@ defmodule GodwokenExplorer.TokenTransfer do
         transfer_value: fragment("
         ? / power(10, ?)::decimal
         ", tt.amount, ^udt.decimal),
+        status: b.status,
         polyjuice_status: p.status
       },
       order_by: [desc: tt.block_number]
@@ -123,6 +124,7 @@ defmodule GodwokenExplorer.TokenTransfer do
             tt.amount,
             u5.decimal
           ),
+          status: b.status,
           polyjuice_status: p.status
       },
       order_by: [desc: tt.block_number]
@@ -158,6 +160,7 @@ defmodule GodwokenExplorer.TokenTransfer do
         transfer_value: fragment("
         ? / power(10, ?)::decimal
         ", tt.amount, ^udt.decimal),
+        status: b.status,
         polyjuice_status: p.status
       },
       order_by: [desc: tt.block_number]
