@@ -76,6 +76,7 @@ defmodule GodwokenExplorer.TokenTransfer do
       order_by: [desc: tt.block_number]
     )
     |> Repo.paginate(page: paging_options[:page], page_size: paging_options[:page_size])
+    |> parse_json_result()
   end
 
   def list(%{eth_address: eth_address}, paging_options) do
@@ -106,6 +107,7 @@ defmodule GodwokenExplorer.TokenTransfer do
       order_by: [desc: tt.block_number]
     )
     |> Repo.paginate(page: paging_options[:page], page_size: paging_options[:page_size])
+    |> parse_json_result()
   end
 
   def list(%{udt_address: udt_address}, paging_options) do
@@ -136,5 +138,14 @@ defmodule GodwokenExplorer.TokenTransfer do
       order_by: [desc: tt.block_number]
     )
     |> Repo.paginate(page: paging_options[:page], page_size: paging_options[:page_size])
+    |> parse_json_result()
+  end
+
+  defp parse_json_result(results) do
+    %{
+      page: results.page_number,
+      total_count: results.total_entries,
+      txs: results.entries
+    }
   end
 end
