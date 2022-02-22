@@ -46,4 +46,95 @@ defmodule GodwokenExplorer.TokenTransfer do
   ERC 20's transfer(address,uint256) function signature
   """
   def transfer_function_signature, do: @transfer_function_signature
+
+  def list(%{eth_address: eth_address, udt_address: udt_address}, paging_options) do
+    udt = UDT.get_by_contract_address(udt_address)
+
+    from(tt in TokenTransfer,
+      join: a1 in Account,
+      on: a1.short_address == tt.from_address_hash,
+      join: a2 in Account,
+      on: a2.short_address == tt.to_address_hash,
+      join: b in Block,
+      on: b.hash == tt.block_hash,
+      where:
+        tt.token_contract_address_hash == ^udt_address and
+          (tt.from_address_hash == ^eth_address or tt.to_address_hash == ^eth_address),
+      select: %{
+        hash: tt.transaction_hash,
+        block_number: tt.block_number,
+        inserted_at: b.inserted_at,
+        from: fragment("CASE WHEN ? = 'user' THEN encode(?, 'escape')
+        ELSE encode(?, 'escape') END", a1.type, a1.eth_address, a1.short_address),
+        to: fragment("CASE WHEN ? = 'user' THEN encode(?, 'escape')
+        ELSE encode(?, 'escape') END", a2.type, a2.eth_address, a2.short_address),
+        udt_symbol: ^udt.symbol,
+        transfer_value: fragment("
+        ? / power(10, ?)::decimal
+        ", tt.amount, ^udt.decimal)
+      },
+      order_by: [desc: tt.block_number]
+    )
+    |> Repo.paginate(page: paging_options[:page], page_size: paging_options[:page_size])
+  end
+
+  def list(%{eth_address: eth_address}, paging_options) do
+    from(tt in TokenTransfer,
+      join: a1 in Account,
+      on: a1.short_address == tt.from_address_hash,
+      join: a2 in Account,
+      on: a2.short_address == tt.to_address_hash,
+      join: b in Block,
+      on: b.hash == tt.block_hash,
+      join: a4 in Account,
+      on: a4.short_address == tt.token_contract_address_hash,
+      left_join: u5 in UDT, on: u5.id == a4.id,
+      left_join: u6 in UDT, on: u6.bridge_account_id == a4.id,
+      where:
+          tt.from_address_hash == ^eth_address or tt.to_address_hash == ^eth_address,
+      select: %{
+        hash: tt.transaction_hash,
+        block_number: tt.block_number,
+        inserted_at: b.inserted_at,
+        from: fragment("CASE WHEN ? = 'user' THEN encode(?, 'escape')
+        ELSE encode(?, 'escape') END", a1.type, a1.eth_address, a1.short_address),
+        to: fragment("CASE WHEN ? = 'user' THEN encode(?, 'escape')
+        ELSE encode(?, 'escape') END", a2.type, a2.eth_address, a2.short_address),
+        udt_symbol:  fragment("CASE WHEN ? IS NULL THEN ? ELSE ? END", u5, u6.symbol, u5.symbol),
+        transfer_value: fragment("CASE WHEN ? IS NULL THEN ? / power(10, ?)::decimal ELSE ? / power(10, ?)::decimal END", u5, tt.amount, u6.decimal, tt.amount, u5.decimal)
+      },
+      order_by: [desc: tt.block_number]
+    )
+    |> Repo.paginate(page: paging_options[:page], page_size: paging_options[:page_size])
+  end
+
+  def list(%{udt_address: udt_address}, paging_options) do
+    udt = UDT.get_by_contract_address(udt_address)
+
+    from(tt in TokenTransfer,
+      join: a1 in Account,
+      on: a1.short_address == tt.from_address_hash,
+      join: a2 in Account,
+      on: a2.short_address == tt.to_address_hash,
+      join: b in Block,
+      on: b.hash == tt.block_hash,
+      where:
+        tt.token_contract_address_hash == ^udt_address,
+      select: %{
+        hash: tt.transaction_hash,
+        block_number: tt.block_number,
+        inserted_at: b.inserted_at,
+        from: fragment("CASE WHEN ? = 'user' THEN encode(?, 'escape')
+        ELSE encode(?, 'escape') END", a1.type, a1.eth_address, a1.short_address),
+        to: fragment("CASE WHEN ? = 'user' THEN encode(?, 'escape')
+        ELSE encode(?, 'escape') END", a2.type, a2.eth_address, a2.short_address),
+        udt_symbol: ^udt.symbol,
+        transfer_value: fragment("
+        ? / power(10, ?)::decimal
+        ", tt.amount, ^udt.decimal)
+      },
+      order_by: [desc: tt.block_number]
+    )
+    |> Repo.paginate(page: paging_options[:page], page_size: paging_options[:page_size])
+  end
 end

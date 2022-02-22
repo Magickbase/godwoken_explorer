@@ -295,7 +295,7 @@ defmodule GodwokenExplorer.UDT do
   # TODO: current will calculate all deposits and withdrawals, after can calculate by incrementation
   def refresh_supply do
     start_time = nil
-    end_time = Timex.beginning_of_day(Timex.now)
+    end_time = Timex.beginning_of_day(Timex.now())
 
     deposits = DepositHistory.group_udt_amount(start_time, end_time) |> Map.new()
     withdrawals = WithdrawalHistory.group_udt_amount(start_time, end_time) |> Map.new()
@@ -312,5 +312,16 @@ defmodule GodwokenExplorer.UDT do
         |> Repo.update!()
       end)
     end)
+  end
+
+  def get_by_contract_address(contract_address) do
+    with %Account{id: id} <- Account |> Repo.get_by(short_address: contract_address),
+         %UDT{} = udt <-
+           from(u in UDT, where: u.id == ^id or u.bridge_account_id == ^id) |> Repo.one() do
+      udt
+    else
+      _ ->
+        %{decimal: 0, symbol: ""}
+    end
   end
 end

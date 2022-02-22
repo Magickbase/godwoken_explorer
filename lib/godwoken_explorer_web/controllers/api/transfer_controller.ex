@@ -1,60 +1,52 @@
 defmodule GodwokenExplorerWeb.API.TransferController do
   use GodwokenExplorerWeb, :controller
 
-  alias GodwokenExplorer.{Transaction, Account, Repo}
+  alias GodwokenExplorer.{Account, Repo, TokenTransfer}
 
   action_fallback GodwokenExplorerWeb.API.FallbackController
 
   def index(conn, %{"eth_address" => "0x" <> _, "udt_address" => "0x" <> _} = params) do
-      with %Account{id: account_id, eth_address: eth_address} <-
-             Repo.get_by(Account, eth_address: String.downcase(params["eth_address"])),
-           %Account{id: udt_account_id} =
-             Repo.get_by(Account, short_address: String.downcase(params["udt_address"])) do
-        results =
-          Transaction.account_transactions_data(
-            %{account_id: account_id, eth_address: eth_address, udt_account_id: udt_account_id},
-            conn.params["page"] || 1
-          )
+    with %Account{short_address: short_address} <-
+           Repo.get_by(Account, eth_address: String.downcase(params["eth_address"])),
+         %Account{short_address: udt_address} =
+           Repo.get_by(Account, short_address: String.downcase(params["udt_address"])) do
+      results =
+        TokenTransfer.list(%{"eth_address" => short_address, "udt_address" => udt_address}, %{
+          page: conn.params["page"] || 1,
+          page_size: conn.assigns.page_size
+        })
 
-        json(conn, results)
-      else
-        _ ->
-          raise {:error, :not_found}
-      end
+      json(conn, results)
+    else
+      _ ->
+        {:error, :not_found}
+    end
   end
 
   def index(conn, %{"eth_address" => "0x" <> _} = params) do
-    case Account.search(String.downcase(params["eth_address"])) do
-      %Account{type: :user, id: account_id, eth_address: eth_address} ->
-        results =
-          Transaction.account_transactions_data(
-            %{account_id: account_id, eth_address: eth_address, erc20: true},
-            conn.params["page"] || 1
-          )
+    with %Account{short_address: short_address} <-
+           Repo.get_by(Account, eth_address: String.downcase(params["eth_address"])) do
+      results =
+        TokenTransfer.list(%{"eth_address" => short_address}, %{
+          page: conn.params["page"] || 1,
+          page_size: conn.assigns.page_size
+        })
 
-        json(conn, results)
-      %Account{id: account_id, short_address: short_address} ->
-        results =
-          Transaction.account_transactions_data(
-            %{account_id: account_id, eth_address: short_address, erc20: true},
-            conn.params["page"] || 1
-          )
-
-        json(conn, results)
-
-      nil ->
+      json(conn, results)
+    else
+      _ ->
         {:error, :not_found}
     end
   end
 
   def index(conn, %{"udt_address" => "0x" <> _} = params) do
     case Repo.get_by(Account, short_address: String.downcase(params["udt_address"])) do
-      %Account{id: account_id} ->
+      %Account{short_address: udt_address} ->
         results =
-          Transaction.account_transactions_data(
-            %{udt_account_id: account_id},
-            conn.params["page"] || 1
-          )
+          TokenTransfer.list(%{"udt_address" => udt_address}, %{
+            page: conn.params["page"] || 1,
+            page_size: conn.assigns.page_size
+          })
 
         json(conn, results)
 
