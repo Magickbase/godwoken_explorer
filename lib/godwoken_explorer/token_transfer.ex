@@ -59,8 +59,8 @@ defmodule GodwokenExplorer.TokenTransfer do
       on: a2.short_address == tt.to_address_hash,
       join: b in Block,
       on: b.hash == tt.block_hash,
-      join: t in Transaction,
-      on: t.hash == tt.transaction_hash,
+      join: p in Polyjuice,
+      on: p.tx_hash == tt.transaction_hash,
       where:
         tt.token_contract_address_hash == ^udt_address and
           (tt.from_address_hash == ^eth_address or tt.to_address_hash == ^eth_address),
@@ -72,11 +72,13 @@ defmodule GodwokenExplorer.TokenTransfer do
         ELSE encode(?, 'escape') END", a1.type, a1.eth_address, a1.short_address),
         to: fragment("CASE WHEN ? = 'user' THEN encode(?, 'escape')
         ELSE encode(?, 'escape') END", a2.type, a2.eth_address, a2.short_address),
+        udt_id: ^udt.id,
+        udt_name: ^udt.name,
         udt_symbol: ^udt.symbol,
         transfer_value: fragment("
         ? / power(10, ?)::decimal
         ", tt.amount, ^udt.decimal),
-        status: t.status
+        polyjuice_status: p.status
       },
       order_by: [desc: tt.block_number]
     )
@@ -98,8 +100,8 @@ defmodule GodwokenExplorer.TokenTransfer do
       on: u5.id == a4.id,
       left_join: u6 in UDT,
       on: u6.bridge_account_id == a4.id,
-      join: t in Transaction,
-      on: t.hash == tt.transaction_hash,
+      join: p in Polyjuice,
+      on: p.tx_hash == tt.transaction_hash,
       where: tt.from_address_hash == ^eth_address or tt.to_address_hash == ^eth_address,
       select: %{
         hash: tt.transaction_hash,
@@ -109,6 +111,8 @@ defmodule GodwokenExplorer.TokenTransfer do
         ELSE encode(?, 'escape') END", a1.type, a1.eth_address, a1.short_address),
         to: fragment("CASE WHEN ? = 'user' THEN encode(?, 'escape')
         ELSE encode(?, 'escape') END", a2.type, a2.eth_address, a2.short_address),
+        udt_id: fragment("CASE WHEN ? IS NULL THEN ? ELSE ? END", u5, u6.id, u5.id),
+        udt_name: fragment("CASE WHEN ? IS NULL THEN ? ELSE ? END", u5, u6.name, u5.name),
         udt_symbol: fragment("CASE WHEN ? IS NULL THEN ? ELSE ? END", u5, u6.symbol, u5.symbol),
         transfer_value:
           fragment(
@@ -119,7 +123,7 @@ defmodule GodwokenExplorer.TokenTransfer do
             tt.amount,
             u5.decimal
           ),
-        status: t.status
+          polyjuice_status: p.status
       },
       order_by: [desc: tt.block_number]
     )
@@ -137,8 +141,8 @@ defmodule GodwokenExplorer.TokenTransfer do
       on: a2.short_address == tt.to_address_hash,
       join: b in Block,
       on: b.hash == tt.block_hash,
-      join: t in Transaction,
-      on: t.hash == tt.transaction_hash,
+      join: p in Polyjuice,
+      on: p.tx_hash == tt.transaction_hash,
       where: tt.token_contract_address_hash == ^udt_address,
       select: %{
         hash: tt.transaction_hash,
@@ -148,11 +152,13 @@ defmodule GodwokenExplorer.TokenTransfer do
         ELSE encode(?, 'escape') END", a1.type, a1.eth_address, a1.short_address),
         to: fragment("CASE WHEN ? = 'user' THEN encode(?, 'escape')
         ELSE encode(?, 'escape') END", a2.type, a2.eth_address, a2.short_address),
+        udt_id: ^udt.id,
+        udt_name: ^udt.name,
         udt_symbol: ^udt.symbol,
         transfer_value: fragment("
         ? / power(10, ?)::decimal
         ", tt.amount, ^udt.decimal),
-        status: t.status
+        polyjuice_status: p.status
       },
       order_by: [desc: tt.block_number]
     )
@@ -164,7 +170,9 @@ defmodule GodwokenExplorer.TokenTransfer do
     parsed_results =
       results.entries
       |> Enum.map(fn transfer ->
-        transfer |> Map.put(:timestamp, utc_to_unix(transfer[:inserted_at])) |> Map.delete(:inserted_at)
+        transfer
+        |> Map.put(:timestamp, utc_to_unix(transfer[:inserted_at]))
+        |> Map.delete(:inserted_at)
       end)
 
     %{

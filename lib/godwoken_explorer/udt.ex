@@ -321,7 +321,7 @@ defmodule GodwokenExplorer.UDT do
       udt
     else
       _ ->
-        %{decimal: 0, symbol: ""}
+        %{id: nil, name: "", decimal: 0, symbol: ""}
     end
   end
 end
