@@ -117,12 +117,16 @@ defmodule GodwokenExplorer.TokenTransfer do
         udt_symbol: fragment("CASE WHEN ? IS NULL THEN ? ELSE ? END", u5, u6.symbol, u5.symbol),
         transfer_value:
           fragment(
-            "CASE WHEN ? IS NULL THEN ? / power(10, ?)::decimal ELSE ? / power(10, ?)::decimal END",
+            "CASE WHEN ? IS NOT NULL THEN ? / power(10, ?)::decimal
+            WHEN ? IS NOT NULL THEN ? / power(10, ?)::decimal
+            ELSE ? END",
             u5,
             tt.amount,
-            u6.decimal,
+            u5.decimal,
+            u6,
             tt.amount,
-            u5.decimal
+            u6.decimal,
+            tt.amount
           ),
           status: b.status,
           polyjuice_status: p.status
