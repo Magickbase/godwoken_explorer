@@ -3,12 +3,11 @@ defmodule GodwokenRPC do
 
   require Logger
 
-  alias GodwokenRPC.{Blocks, Block, HTTP, Receipts}
+  alias GodwokenRPC.{Blocks, Block, HTTP, Receipts, Contract}
   alias GodwokenRPC.Web3.{FetchedTransactionReceipt, FetchedBlockByHash}
   alias GodwokenRPC.Transaction.FetchedTransaction, as: FetchedGodwokenTransaction
   alias GodwokenRPC.CKBIndexer.{FetchedTransactions, FetchedTransaction, FetchedTip, FetchedBlock, FetchedLiveCell, FetchedCells}
   alias GodwokenRPC.Web3.EthCall
-
   alias GodwokenRPC.Account.{
     FetchedAccountID,
     FetchedScriptHash,
@@ -192,10 +191,19 @@ defmodule GodwokenRPC do
     end
   end
 
+  def execute_contract_functions(functions, abi, json_rpc_named_arguments, leave_error_as_map \\ false) do
+    if Enum.count(functions) > 0 do
+      Contract.execute_contract_functions(functions, abi, json_rpc_named_arguments, leave_error_as_map)
+    else
+      []
+    end
+  end
+
+  @spec fetch_balance(any, integer) :: {:error, 0} | {:ok, integer}
   def fetch_balance(short_address, udt_id) do
     options = Application.get_env(:godwoken_explorer, :json_rpc_named_arguments)
 
-    case FetchedBalance.request(%{short_address: short_address, udt_id: udt_id})
+    case FetchedBalance.request(%{id: 0, short_address: short_address, udt_id: udt_id})
          |> HTTP.json_rpc(options) do
       {:ok, balance} -> {:ok, balance |> hex_to_number()}
       {:error, _error} -> {:error, 0}
@@ -289,6 +297,9 @@ defmodule GodwokenRPC do
     |> Enum.into(%{}, fn {params, id} -> {id, params} end)
   end
 
+  def integer_to_quantity(integer) when is_integer(integer) and integer >= 0 do
+    "0x" <> Integer.to_string(integer, 16)
+  end
 
   def quantity_to_integer("0x" <> hexadecimal_digits) do
     String.to_integer(hexadecimal_digits, 16)
