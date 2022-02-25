@@ -139,8 +139,8 @@ defmodule GodwokenExplorer.Account do
           }
         }
 
-      %Account{type: :user} ->
-        udt_list = AccountUDT.fetch_realtime_udt_blance(id)
+      %Account{type: :user, short_address: short_address} ->
+        udt_list = AccountUDT.list_udt_by_eth_address(short_address)
 
         %{
           user: %{
