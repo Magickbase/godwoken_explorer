@@ -138,8 +138,8 @@ defmodule GodwokenExplorer.Account do
           }
         }
 
-      %Account{type: :user} ->
-        udt_list = AccountUDT.fetch_realtime_udt_blance(id)
+      %Account{type: :user, short_address: short_address} ->
+        udt_list = AccountUDT.list_udt_by_eth_address(short_address)
 
         %{
           user: %{
@@ -156,11 +156,14 @@ defmodule GodwokenExplorer.Account do
           }
         }
 
-      %Account{type: :polyjuice_contract} ->
+      %Account{type: :polyjuice_contract, short_address: short_address} ->
+        udt_list = AccountUDT.list_udt_by_eth_address(short_address)
+
         %{
           smart_contract: %{
             # create account's tx_hash needs godwoken api support
-            tx_hash: ""
+            tx_hash: "",
+            udt_list: udt_list
           }
         }
 
