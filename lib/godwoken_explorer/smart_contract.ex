@@ -26,7 +26,7 @@ defmodule GodwokenExplorer.SmartContract do
   end
 
   defp base_fields() do
-    GodwokenExploree.SchemeUtils.base_fields_without_id(__MODULE__)
+    GodwokenExplorer.SchemeUtils.base_fields_without_id(__MODULE__)
   end
 
   @doc false
