@@ -11,6 +11,8 @@ defmodule GodwokenExplorer.AccountUDT do
   @derive {Jason.Encoder, except: [:__meta__]}
   schema "account_udts" do
     field :balance, :decimal
+    field :address_hash, :binary
+    field :token_contract_address_hash, :binary
     belongs_to(:account, GodwokenExplorer.Account, foreign_key: :account_id, references: :id)
     belongs_to(:udt, GodwokenExplorer.UDT, foreign_key: :udt_id, references: :id)
 
@@ -20,8 +22,9 @@ defmodule GodwokenExplorer.AccountUDT do
   @doc false
   def changeset(account_udt, attrs) do
     account_udt
-    |> cast(attrs, [:account_id, :udt_id, :balance])
-    |> validate_required([:account_id, :udt_id])
+    |> cast(attrs, [:account_id, :udt_id, :balance, :address_hash, :token_contract_address_hash])
+    |> validate_required([ :address_hash, :token_contract_address_hash])
+    |> unique_constraint([:address_hash, :token_contract_address_hash], name: :account_udts_address_hash_token_contract_address_hash_index)
   end
 
   def create_or_update_account_udt!(attrs) do
