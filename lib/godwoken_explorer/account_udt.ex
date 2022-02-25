@@ -1,8 +1,6 @@
 defmodule GodwokenExplorer.AccountUDT do
   use GodwokenExplorer, :schema
 
-  import GodwokenRPC.Util, only: [hex_to_number: 1]
-
   require Logger
 
   alias GodwokenRPC
@@ -83,142 +81,43 @@ defmodule GodwokenExplorer.AccountUDT do
         icon: u.icon,
         balance: fragment("CASE WHEN ? IS NOT NULL THEN ? / power(10, ?) ELSE ? END", u.decimal, au.balance, u.decimal, au.balance)
       }
-    )
+    ) |> Repo.all()
   end
 
-  # TODO: Deprecated method
-  def fetch_realtime_udt_blance(account_id) do
-    reserve_account_ids = Enum.reject([UDT.ckb_account_id()] ++ [UDT.eth_account_id()], &is_nil/1)
-
-    from(u in UDT,
-      where: u.id not in ^reserve_account_ids and not is_nil(u.symbol),
-      select: %{id: u.id, name: u.name, icon: u.icon, decimal: u.decimal, type: u.type}
-    )
-    |> Repo.all()
-    |> Enum.map(fn u ->
-      account = Repo.get(Account, account_id)
-
-      case u.type do
-        :native ->
-          balance =
-            case fetch_erc20_balance(account_id, u.id) do
-              {:ok, balance} ->
-                balance |> hex_to_number |> Decimal.new()
-
-              {:error, _} ->
-                ""
-            end
-
-          Map.merge(u, %{balance: balance})
-
-        :bridge ->
-          balance =
-            with {:ok, balance} <- GodwokenRPC.fetch_balance(account.short_address, u.id) do
-              balance |> Decimal.new()
-            else
-              _ -> ""
-            end
-
-          Map.merge(u, %{balance: balance})
-      end
-    end)
-    |> Enum.reject(fn u ->
-      u.balance != "" && Decimal.compare(u.balance, Decimal.new(0)) == :eq
-    end)
-  end
-
-  def realtime_update_balance(account_id, udt_id) do
-    result =
-      from(au in AccountUDT,
-        join: a in Account,
-        on: a.id == au.account_id,
-        where: au.account_id == ^account_id and au.udt_id == ^udt_id,
-        select: %{short_address: a.short_address, balance: au.balance, updated_at: au.updated_at}
-      )
-      |> Repo.one()
-
-    case result do
-      %{balance: balance, short_address: short_address, updated_at: updated_at} ->
-        with second when second > 60 <-
-               NaiveDateTime.diff(
-                 NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second),
-                 updated_at
-               ),
-             {:ok, on_chain_balance} <- GodwokenRPC.fetch_balance(short_address, udt_id),
-             compare when compare != :eq <-
-               Decimal.compare(Decimal.new(balance), Decimal.new(on_chain_balance)) do
-          AccountUDT.create_or_update_account_udt!(%{
-            account_id: account_id,
-            udt_id: udt_id,
-            balance: on_chain_balance
-          })
-
-          Decimal.new(on_chain_balance)
-        else
-          _ -> balance
-        end
-
-      nil ->
-        Decimal.new(0)
-    end
-  end
-
-  def sync_balance!(account_id, udt_id) do
-    case Repo.get(Account, account_id) do
-      %Account{short_address: short_address} ->
+  def sync_balance!(%{script_hash: script_hash, udt_id: udt_id}) do
+    with %Account{id: account_id, short_address: short_address} <- Repo.get_by(Account, script_hash: script_hash),
+        %Account{short_address: udt_short_address} <- Repo.get(Account, udt_id) do
         {:ok, balance} = GodwokenRPC.fetch_balance(short_address, udt_id)
 
         AccountUDT.create_or_update_account_udt!(%{
           account_id: account_id,
+          address_hash: short_address,
           udt_id: udt_id,
+          token_contract_addresss_hash: udt_short_address,
           balance: balance
         })
-
-        balance
-
-      nil ->
-        {:error, :account_not_exist}
-    end
-  end
-
-  def fetch_erc20_balance(account_id, contract_account_id) do
-    balance_of_method = "0x70a08231"
-
-    with %Account{short_address: contract_address} <- Repo.get(Account, contract_account_id),
-         %Account{short_address: user_address} <- Repo.get(Account, account_id) do
-      GodwokenRPC.eth_call(%{
-        to: contract_address,
-        data: balance_of_method <> String.duplicate("0", 24) <> String.slice(user_address, 2..-1)
-      })
     else
       _ ->
         {:error, :account_not_exist}
     end
   end
 
-  def update_erc20_balance!(account_id, contract_account_id) do
-    case UDT |> Repo.get_by(bridge_account_id: contract_account_id) do
-      nil ->
-        case fetch_erc20_balance(account_id, contract_account_id) do
-          {:ok, balance} ->
-            number = balance |> hex_to_number
+  def sync_balance!(%{account_id: account_id, udt_id: udt_id}) do
+    with %Account{short_address: short_address} <- Repo.get(Account, account_id),
+        %Account{short_address: udt_short_address} <- Repo.get(Account, udt_id) do
+        {:ok, balance} = GodwokenRPC.fetch_balance(short_address, udt_id)
 
-            AccountUDT.create_or_update_account_udt!(%{
-              account_id: account_id,
-              udt_id: contract_account_id,
-              balance: number
-            })
-
-          {:error, _} ->
-            nil
-        end
-
-      %UDT{id: udt_id, type: :bridge} ->
-        sync_balance!(account_id, udt_id)
-
+        AccountUDT.create_or_update_account_udt!(%{
+          account_id: account_id,
+          address_hash: short_address,
+          udt_id: udt_id,
+          token_contract_addresss_hash: udt_short_address,
+          balance: balance
+        })
+    else
       _ ->
-        Logger.error("may be type is not right #{contract_account_id}")
-        nil
+        {:error, :account_not_exist}
     end
   end
+
 end

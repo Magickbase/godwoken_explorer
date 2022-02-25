@@ -264,7 +264,7 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
               script_hash: script_hash
             })
 
-            AccountUDT.sync_balance!(account_id, udt_id)
+            AccountUDT.sync_balance!(%{account_id: account_id, udt_id: udt_id})
           end
         end)
     end
