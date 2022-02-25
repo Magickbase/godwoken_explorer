@@ -51,6 +51,7 @@ defmodule GodwokenExplorer.TokenTransfer do
 
   def list(%{eth_address: eth_address, udt_address: udt_address}, paging_options) do
     udt = UDT.get_by_contract_address(udt_address)
+    udt_id = Integer.to_string(udt.id)
 
     from(tt in TokenTransfer,
       join: a1 in Account,
@@ -72,7 +73,7 @@ defmodule GodwokenExplorer.TokenTransfer do
         ELSE encode(?, 'escape') END", a1.type, a1.eth_address, a1.short_address),
         to: fragment("CASE WHEN ? = 'user' THEN encode(?, 'escape')
         ELSE encode(?, 'escape') END", a2.type, a2.eth_address, a2.short_address),
-        udt_id: ^udt.id,
+        udt_id: ^udt_id,
         udt_name: ^udt.name,
         udt_symbol: ^udt.symbol,
         transfer_value: fragment("
@@ -139,6 +140,7 @@ defmodule GodwokenExplorer.TokenTransfer do
 
   def list(%{udt_address: udt_address}, paging_options) do
     udt = UDT.get_by_contract_address(udt_address)
+    udt_id = Integer.to_string(udt.id)
 
     from(tt in TokenTransfer,
       join: a1 in Account,
@@ -158,7 +160,7 @@ defmodule GodwokenExplorer.TokenTransfer do
         ELSE encode(?, 'escape') END", a1.type, a1.eth_address, a1.short_address),
         to: fragment("CASE WHEN ? = 'user' THEN encode(?, 'escape')
         ELSE encode(?, 'escape') END", a2.type, a2.eth_address, a2.short_address),
-        udt_id: ^udt.id,
+        udt_id: ^udt_id,
         udt_name: ^udt.name,
         udt_symbol: ^udt.symbol,
         transfer_value: fragment("
