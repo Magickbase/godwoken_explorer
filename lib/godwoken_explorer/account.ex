@@ -460,20 +460,6 @@ defmodule GodwokenExplorer.Account do
     |> Repo.insert_or_update!()
   end
 
-  def sync_special_udt_balance(id) do
-    with udt_id when is_integer(udt_id) <- UDT.ckb_account_id() do
-      AccountUDT.realtime_update_balance(id, udt_id)
-    end
-
-    with udt_id when is_integer(udt_id) <- UDT.eth_account_id() do
-      AccountUDT.realtime_update_balance(id, udt_id)
-    end
-
-    with udt_id when is_integer(udt_id) <- UDT.yok_account_id() do
-      AccountUDT.update_erc20_balance!(id, udt_id)
-    end
-  end
-
   def update_nonce!(id) do
     nonce = GodwokenRPC.fetch_nonce(id)
     Repo.get(Account, id) |> changeset(%{nonce: nonce}) |> Repo.update!()

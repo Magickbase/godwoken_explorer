@@ -2,7 +2,7 @@ defmodule GodwokenRPC.Transaction do
   import GodwokenRPC.Util, only: [hex_to_number: 1, parse_le_number: 1, transform_hash_type: 1, parse_polyjuice_args: 1]
   import Godwoken.MoleculeParser, only: [parse_meta_contract_args: 1, parse_sudt_transfer_args: 1]
 
-  alias GodwokenExplorer.{Account, Polyjuice, Repo, AccountUDT}
+  alias GodwokenExplorer.{Account, Polyjuice, Repo}
 
   def elixir_to_params(%{
         "block_hash" => block_hash,
@@ -61,14 +61,11 @@ defmodule GodwokenRPC.Transaction do
 
       eth_address =
         if short_address do
-          AccountUDT.update_erc20_balance!(from_account_id, to_account_id)
-
           case Account |> Repo.get_by(short_address: short_address) do
             nil ->
               nil
 
-            %Account{id: id, eth_address: eth_address} ->
-              AccountUDT.update_erc20_balance!(id, to_account_id)
+            %Account{eth_address: eth_address} ->
               eth_address
           end
         end
