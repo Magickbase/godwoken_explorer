@@ -121,10 +121,10 @@ defmodule GodwokenExplorer.TokenTransfer do
             "CASE WHEN ? IS NOT NULL THEN ? / power(10, ?)::decimal
             WHEN ? IS NOT NULL THEN ? / power(10, ?)::decimal
             ELSE ? END",
-            u5,
+            u5.decimal,
             tt.amount,
             u5.decimal,
-            u6,
+            u6.decimal,
             tt.amount,
             u6.decimal,
             tt.amount
