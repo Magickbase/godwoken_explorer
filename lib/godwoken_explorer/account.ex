@@ -98,6 +98,7 @@ defmodule GodwokenExplorer.Account do
 
   def find_by_id(id) do
     account = Repo.get(Account, id)
+
     ckb_balance =
       with udt_id when is_integer(udt_id) <- UDT.ckb_account_id(),
            {:ok, balance} <- GodwokenRPC.fetch_balance(account.short_address, udt_id) do
@@ -165,6 +166,7 @@ defmodule GodwokenExplorer.Account do
 
       %Account{type: :udt, id: id} ->
         udt = Repo.get(UDT, id)
+
         if is_nil(udt) do
           %{
             sudt: %{
@@ -173,8 +175,9 @@ defmodule GodwokenExplorer.Account do
           }
         else
           holders = UDT.count_holder(id)
+
           type_script =
-            if id == UDT.ckb_account_id do
+            if id == UDT.ckb_account_id() do
               nil
             else
               udt.type_script
@@ -369,13 +372,13 @@ defmodule GodwokenExplorer.Account do
 
       nil ->
         with {:ok, script_hash} <- GodwokenRPC.fetch_script_hash(%{account_id: id}),
-            {:ok, script} <- GodwokenRPC.fetch_script(script_hash) do
+             {:ok, script} <- GodwokenRPC.fetch_script(script_hash) do
           type = switch_account_type(script["code_hash"], script["args"])
 
           cond do
             type == :user ->
               {Account.script_to_eth_adress(type, script["args"]),
-              Account.script_to_eth_adress(type, script["args"])}
+               Account.script_to_eth_adress(type, script["args"])}
 
             type == :polyjuice_contract ->
               {script_hash |> String.slice(0, 42), script_hash |> String.slice(0, 42)}
@@ -392,6 +395,41 @@ defmodule GodwokenExplorer.Account do
     end
   end
 
+  def display_ids(ids) do
+    results =
+      from(a in Account,
+        left_join: s in SmartContract,
+        on: s.account_id == a.id,
+        where: a.id in ^ids,
+        select: %{
+          id: a.id,
+          type: a.type,
+          eth_address: a.eth_address,
+          short_address: a.short_address,
+          contract_name: s.name
+        }
+      )
+      |> Repo.all()
+
+    results
+    |> Enum.into(%{}, fn %{
+                           id: id,
+                           type: type,
+                           eth_address: eth_address,
+                           short_address: short_address,
+                           contract_name: contract_name
+                         } ->
+      {id,
+       cond do
+         type == :user -> {eth_address, eth_address}
+         type in [:udt, :polyjuice_contract] -> {short_address, contract_name || short_address}
+         type == :polyjuice_root -> {short_address, "Deploy Contract"}
+         type == :meta_contract -> {short_address, "Meta Contract"}
+         true -> {id, id}
+       end}
+    end)
+  end
+
   def manual_create_account(id) do
     nonce = GodwokenRPC.fetch_nonce(id)
     {:ok, script_hash} = GodwokenRPC.fetch_script_hash(%{account_id: id})
@@ -400,6 +438,7 @@ defmodule GodwokenExplorer.Account do
     type = switch_account_type(script["code_hash"], script["args"])
     eth_address = script_to_eth_adress(type, script["args"])
     parsed_script = add_name_to_polyjuice_script(type, script)
+
     attrs = %{
       id: id,
       script: parsed_script,
@@ -430,5 +469,29 @@ defmodule GodwokenExplorer.Account do
     with udt_id when is_integer(udt_id) <- UDT.yok_account_id() do
       AccountUDT.update_erc20_balance!(id, udt_id)
     end
+  end
+
+  def update_nonce!(id) do
+    nonce = GodwokenRPC.fetch_nonce(id)
+    Repo.get(Account, id) |> changeset(%{nonce: nonce}) |> Repo.update!()
+  end
+
+  def update_all_nonce!(ids) do
+    params = ids |> Enum.map(fn id -> %{account_id: id} end)
+    {:ok, responses} = GodwokenRPC.fetch_nonce_by_ids(params)
+
+    changes =
+      responses
+      |> Enum.map(fn m ->
+        Map.merge(m, %{
+          inserted_at: NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second),
+          updated_at: NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
+        })
+      end)
+
+    Repo.insert_all(Account, changes,
+      on_conflict: {:replace, [:nonce, :updated_at]},
+      conflict_target: :id
+    )
   end
 end

@@ -56,8 +56,6 @@ defmodule GodwokenRPC.Transaction do
 
       from_account_id = hex_to_number(from_account_id)
       to_account_id = hex_to_number(to_id)
-      {:ok, %{"gasUsed" => gas_used, "status" => hex_status}} = GodwokenRPC.fetch_receipt(hash)
-      status = if hex_status == "0x0", do: :failed, else: :succeed
       {short_address, transfer_count} =
         Polyjuice.decode_transfer_args(to_account_id, input, hash)
 
@@ -87,8 +85,6 @@ defmodule GodwokenRPC.Transaction do
         is_create: is_create,
         gas_limit: gas_limit,
         gas_price: gas_price,
-        gas_used: hex_to_number(gas_used),
-        status: status,
         value: value,
         input_size: input_size,
         input: input,

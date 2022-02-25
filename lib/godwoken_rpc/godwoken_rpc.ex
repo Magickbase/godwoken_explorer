@@ -3,7 +3,7 @@ defmodule GodwokenRPC do
 
   require Logger
 
-  alias GodwokenRPC.{Blocks, Block, HTTP}
+  alias GodwokenRPC.{Blocks, Block, HTTP, Receipts}
   alias GodwokenRPC.Web3.{FetchedTransactionReceipt, FetchedBlockByHash}
   alias GodwokenRPC.Transaction.FetchedTransaction, as: FetchedGodwokenTransaction
   alias GodwokenRPC.CKBIndexer.{FetchedTransactions, FetchedTransaction, FetchedTip, FetchedBlock, FetchedLiveCell, FetchedCells}
@@ -43,6 +43,26 @@ defmodule GodwokenRPC do
            |> Blocks.requests(request)
            |> HTTP.json_rpc(options) do
       {:ok, Blocks.from_responses(responses, id_to_params)}
+    end
+  end
+
+  def fetch_nonce_by_ids(ids) do
+    ids
+    |> fetch_nonce_by_params(&GodwokenRPC.Account.FetchedNonce.request/1)
+  end
+
+  defp fetch_nonce_by_params(params, request)
+       when is_list(params) and is_function(request, 1) do
+    id_to_params =
+      params
+      |> Enum.into(%{}, fn params -> {params[:account_id], params} end)
+    options = Application.get_env(:godwoken_explorer, :json_rpc_named_arguments)
+
+    with {:ok, responses} <-
+           id_to_params
+           |> Blocks.requests(request)
+           |> HTTP.json_rpc(options) do
+      {:ok, responses |> Enum.map(fn response -> %{id: response[:id], nonce: hex_to_number(response[:result])} end)}
     end
   end
 
@@ -182,6 +202,12 @@ defmodule GodwokenRPC do
     end
   end
 
+  def fetch_transaction_receipts(transactions_params) when is_list(transactions_params) do
+    options = Application.get_env(:godwoken_explorer, :json_rpc_named_arguments)
+
+    Receipts.fetch(transactions_params, options)
+  end
+
   def fetch_receipt(tx_hash) do
     options = Application.get_env(:godwoken_explorer, :json_rpc_named_arguments)
 
@@ -207,7 +233,6 @@ defmodule GodwokenRPC do
         {:error, :network_error}
     end
   end
-
 
   def fetch_cells(script, script_type) do
     options = Application.get_env(:godwoken_explorer, :ckb_indexer_named_arguments)
@@ -262,5 +287,19 @@ defmodule GodwokenRPC do
     params_list
     |> Stream.with_index()
     |> Enum.into(%{}, fn {params, id} -> {id, params} end)
+  end
+
+
+  def quantity_to_integer("0x" <> hexadecimal_digits) do
+    String.to_integer(hexadecimal_digits, 16)
+  end
+
+  def quantity_to_integer(integer) when is_integer(integer), do: integer
+
+  def quantity_to_integer(string) when is_binary(string) do
+    case Integer.parse(string) do
+      {integer, ""} -> integer
+      _ -> :error
+    end
   end
 end

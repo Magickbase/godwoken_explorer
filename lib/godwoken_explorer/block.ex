@@ -168,13 +168,13 @@ defmodule GodwokenExplorer.Block do
           :realtime
         )
 
-        broadcast_tx_of_block(b.number, b.layer1_block_number)
+        broadcast_tx_of_block(b.hash, b.layer1_block_number)
       end)
     end
   end
 
   def bind_l1_l2_block(l2_block_number, l1_block_number, l1_tx_hash) do
-    with %Block{} = block <- Repo.get_by(Block, number: l2_block_number) do
+    with %Block{hash: hash} = block <- Repo.get_by(Block, number: l2_block_number) do
       block
       |> Ecto.Changeset.change(%{layer1_block_number: l1_block_number, layer1_tx_hash: l1_tx_hash})
       |> Repo.update!()
@@ -192,18 +192,18 @@ defmodule GodwokenExplorer.Block do
         :realtime
       )
 
-      broadcast_tx_of_block(l2_block_number, l1_block_number)
+      broadcast_tx_of_block(hash, l1_block_number)
 
       l1_block_number
     end
   end
 
-  defp broadcast_tx_of_block(l2_block_number, l1_block_number) do
+  defp broadcast_tx_of_block(l2_block_hash, l1_block_number) do
     query =
       from(t in Transaction,
         join: b in Block,
         on: b.number == t.block_number,
-        where: t.block_number == ^l2_block_number,
+        where: t.block_hash == ^l2_block_hash,
         select: %{hash: t.hash, status: b.status}
       )
 

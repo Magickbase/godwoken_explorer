@@ -4,4 +4,8 @@ defmodule GodwokenRPC.Account.FetchedNonce do
   def request(%{account_id: account_id}) do
     GodwokenRPC.request(%{id: account_id, method: "gw_get_nonce", params: [number_to_hex(account_id)]})
   end
+
+  def request(%{id: id, account_id: account_id}) do
+    GodwokenRPC.request(%{id: id, method: "gw_get_nonce", params: [number_to_hex(account_id)]})
+  end
 end
