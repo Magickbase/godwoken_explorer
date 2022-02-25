@@ -2,6 +2,8 @@ defmodule GodwokenExplorer.SmartContract do
   use GodwokenExplorer, :schema
 
   @derive {Jason.Encoder, except: [:__meta__]}
+  alias GodwokenExplorer.ETS.SmartContracts, as: ETSSmartContracts
+
   schema "smart_contracts" do
     field(:abi, {:array, :map})
     field :contract_source_code, :string
@@ -42,24 +44,24 @@ defmodule GodwokenExplorer.SmartContract do
   end
 
   def account_ids do
-    if FastGlobal.get(:contract_account_ids) do
-      FastGlobal.get(:contract_account_ids)
+    if ETSSmartContracts.get(:contract_account_ids) do
+      ETSSmartContracts.get(:contract_account_ids)
     else
       account_ids = SmartContract |> select([sc], sc.account_id) |> Repo.all()
-      FastGlobal.put(:contract_account_ids, account_ids)
+      ETSSmartContracts.put(:contract_account_ids, account_ids)
       account_ids
     end
   end
 
   def cache_abi(account_id) do
-    if FastGlobal.get("contract_abi_#{account_id}") do
-      FastGlobal.get("contract_abi_#{account_id}")
+    if ETSSmartContracts.get("contract_abi_#{account_id}") do
+      ETSSmartContracts.get("contract_abi_#{account_id}")
     else
       abi =
         from(sc in SmartContract, where: sc.account_id == ^account_id, select: sc.abi)
         |> Repo.one()
 
-      FastGlobal.put("contract_abi_#{account_id}", abi)
+      ETSSmartContracts.put("contract_abi_#{account_id}", abi)
       abi
     end
   end
