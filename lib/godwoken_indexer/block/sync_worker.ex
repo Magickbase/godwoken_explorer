@@ -5,13 +5,14 @@ defmodule GodwokenIndexer.Block.SyncWorker do
   import Ecto.Query, only: [from: 2]
 
   require Logger
-  require IEx
 
-  alias GodwokenIndexer.Transform.TokenTransfers
+  alias GodwokenExplorer.Token.BalanceReader
+  alias GodwokenIndexer.Transform.{TokenTransfers, TokenBalances}
   alias GodwokenRPC.Block.{FetchedTipBlockHash, ByHash}
   alias GodwokenRPC.{Blocks, HTTP, Receipts}
 
   alias GodwokenExplorer.{
+    AccountUDT,
     Block,
     Transaction,
     Chain,
@@ -102,6 +103,33 @@ defmodule GodwokenIndexer.Block.SyncWorker do
       polyjuice_with_receipts = Receipts.put(polyjuice_without_receipts, receipts)
       %{token_transfers: token_transfers, tokens: _tokens} = TokenTransfers.parse(logs)
 
+      address_token_balances =
+        TokenBalances.params_set(%{token_transfers_params: token_transfers})
+
+      balances = BalanceReader.get_balances_of(address_token_balances)
+
+      import_account_udts =
+        address_token_balances
+        |> Enum.with_index()
+        |> Enum.map(fn {%{
+                          address_hash: address_hash,
+                          token_contract_address_hash: token_contract_address_hash
+                        }, index} ->
+          {:ok, balance} = balances |> Enum.at(index)
+
+          %{
+            address_hash: address_hash,
+            token_contract_address_hash: token_contract_address_hash,
+            balance: balance
+          }
+          |> Map.merge(timestamps())
+        end)
+
+      Repo.insert_all(AccountUDT, import_account_udts,
+        on_conflict: {:replace, [:balance, :updated_at]},
+        conflict_target: [:address_hash, :token_contract_address_hash]
+      )
+
       inserted_transaction_params =
         filter_transaction_columns(polyjuice_with_receipts ++ polyjuice_creator_params)
 
@@ -131,16 +159,29 @@ defmodule GodwokenIndexer.Block.SyncWorker do
           |> Map.merge(%{
             from: display_ids |> Map.get(tx.from_account_id, {tx.from_account_id}) |> elem(0),
             to: display_ids |> Map.get(tx.to_account_id, {tx.to_account_id}) |> elem(0),
-            to_alias: display_ids |> Map.get(tx.to_account_id, {tx.to_account_id, tx.to_account_id}) |> elem(1)
+            to_alias:
+              display_ids
+              |> Map.get(tx.to_account_id, {tx.to_account_id, tx.to_account_id})
+              |> elem(1)
           })
         end)
 
       update_transactions_cache(inserted_transactions)
 
       Logger.info("=====================UPDATED TRANSACTIONS")
-      Repo.insert_all(Log, logs |> Enum.map(fn log -> Map.merge(log, timestamps()) end), on_conflict: :nothing)
+
+      Repo.insert_all(Log, logs |> Enum.map(fn log -> Map.merge(log, timestamps()) end),
+        on_conflict: :nothing
+      )
+
       Logger.info("=====================UPDATED LOG")
-      Repo.insert_all(TokenTransfer, token_transfers |> Enum.map(fn log -> Map.merge(log, timestamps()) end), on_conflict: :nothing)
+
+      Repo.insert_all(
+        TokenTransfer,
+        token_transfers |> Enum.map(fn log -> Map.merge(log, timestamps()) end),
+        on_conflict: :nothing
+      )
+
       Logger.info("=====================UPDATED TOKENTRANSFER")
       Repo.insert_all(WithdrawalRequest, withdrawal_params, on_conflict: :nothing)
 
@@ -235,7 +276,8 @@ defmodule GodwokenIndexer.Block.SyncWorker do
         nonce: nonce,
         block_number: block_number,
         block_hash: block_hash
-      } |> Map.merge(timestamps())
+      }
+      |> Map.merge(timestamps())
     end)
   end
 
@@ -268,7 +310,8 @@ defmodule GodwokenIndexer.Block.SyncWorker do
         receive_eth_address: eth_address,
         transfer_count: transfer_count,
         tx_hash: hash
-      } |> Map.merge(timestamps())
+      }
+      |> Map.merge(timestamps())
     end)
   end
 
@@ -289,7 +332,8 @@ defmodule GodwokenIndexer.Block.SyncWorker do
         fee_amount: fee_amount,
         fee_udt_id: fee_udt_id,
         tx_hash: hash
-      } |> Map.merge(timestamps())
+      }
+      |> Map.merge(timestamps())
     end)
   end
 

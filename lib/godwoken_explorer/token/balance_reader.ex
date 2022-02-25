@@ -37,7 +37,6 @@ defmodule GodwokenExplorer.Token.BalanceReader do
     |> Enum.map(&format_balance_result/1)
   end
 
-
   defp format_balance_request(%{
          address_hash: address_hash,
          block_number: block_number,
