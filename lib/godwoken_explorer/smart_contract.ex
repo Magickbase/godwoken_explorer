@@ -14,13 +14,23 @@ defmodule GodwokenExplorer.SmartContract do
       type: :integer
     )
 
+    field :constructor_arguments, :binary
+    field :deplayment_tx_hash, :binary
+    field :compiler_version, :string
+    field :compiler_file_format, :string
+    field :other_info, :string
+
     timestamps()
+  end
+
+  defp base_fields() do
+    GodwokenExplorer.SchemeUtils.base_fields_without_id(__MODULE__)
   end
 
   @doc false
   def changeset(smart_contract, attrs) do
     smart_contract
-    |> cast(attrs, [:name, :contract_source_code, :abi, :account_id])
+    |> cast(attrs, base_fields())
     |> validate_required([:name, :contract_source_code, :abi, :account_id])
   end
 
@@ -34,9 +44,9 @@ defmodule GodwokenExplorer.SmartContract do
     if FastGlobal.get(:contract_account_ids) do
       FastGlobal.get(:contract_account_ids)
     else
-     account_ids = SmartContract |> select([sc], sc.account_id) |> Repo.all()
-     FastGlobal.put(:contract_account_ids, account_ids)
-     account_ids
+      account_ids = SmartContract |> select([sc], sc.account_id) |> Repo.all()
+      FastGlobal.put(:contract_account_ids, account_ids)
+      account_ids
     end
   end
 
@@ -44,9 +54,12 @@ defmodule GodwokenExplorer.SmartContract do
     if FastGlobal.get("contract_abi_#{account_id}") do
       FastGlobal.get("contract_abi_#{account_id}")
     else
-     abi = from(sc in SmartContract, where: sc.account_id == ^account_id, select: sc.abi) |> Repo.one()
-     FastGlobal.put("contract_abi_#{account_id}", abi)
-     abi
+      abi =
+        from(sc in SmartContract, where: sc.account_id == ^account_id, select: sc.abi)
+        |> Repo.one()
+
+      FastGlobal.put("contract_abi_#{account_id}", abi)
+      abi
     end
   end
 
