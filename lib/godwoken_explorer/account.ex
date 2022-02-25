@@ -204,10 +204,26 @@ defmodule GodwokenExplorer.Account do
   end
 
   def account_to_view(account) do
-    Map.merge(account, %{
-      ckb: balance_to_view(account.ckb, 8),
-      eth: balance_to_view(account.eth, 18)
-    })
+    account =
+      Map.merge(account, %{
+        ckb: balance_to_view(account.ckb, 8),
+        eth: balance_to_view(account.eth, 18)
+      })
+
+    case Kernel.get_in(account, [:user, :udt_list]) do
+      udt_list when not is_nil(udt_list) ->
+        Kernel.put_in(
+          account,
+          [:user, :udt_list],
+          udt_list
+          |> Enum.map(fn udt ->
+            %{udt | balance: udt.balance |> D.to_string(:normal)}
+          end)
+        )
+
+      _ ->
+        account
+    end
   end
 
   def search(keyword) do
