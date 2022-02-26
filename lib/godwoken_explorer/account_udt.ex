@@ -80,7 +80,7 @@ defmodule GodwokenExplorer.AccountUDT do
         name: u.name,
         symbol: u.symbol,
         icon: u.icon,
-        balance: fragment("CASE WHEN ? IS NOT NULL THEN ? / power(10, ?) ELSE ? END", u.decimal, au.balance, u.decimal, au.balance)
+        balance: fragment("CASE WHEN ? IS NOT NULL THEN (? / power(10, ?))::decimal ELSE ? END", u.decimal, au.balance, u.decimal, au.balance)
       }
     ) |> Repo.all()
   end
