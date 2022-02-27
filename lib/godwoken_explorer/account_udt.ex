@@ -72,17 +72,47 @@ defmodule GodwokenExplorer.AccountUDT do
     from(au in AccountUDT,
       join: a in Account,
       on: a.short_address == au.token_contract_address_hash,
-      join: u in UDT,
-      on: u.bridge_account_id == a.id,
-      where: au.address_hash == ^eth_address,
+      left_join: u1 in UDT,
+      on: u1.bridge_account_id == a.id,
+      left_join: u2 in UDT,
+      on: u2.id == a.id,
+      where: au.address_hash == ^eth_address and au.balance != 0,
       select: %{
-        id: u.bridge_account_id,
-        name: u.name,
-        symbol: u.symbol,
-        icon: u.icon,
-        balance: fragment("CASE WHEN ? IS NOT NULL THEN (? / power(10, ?))::decimal ELSE ? END", u.decimal, au.balance, u.decimal, au.balance)
+        id: fragment("CASE WHEN ? IS NULL THEN ? ELSE ? END", u1, u2.id, u1.id),
+        name: fragment("CASE WHEN ? IS NULL THEN ? ELSE ? END", u1, u2.name, u1.name),
+        symbol: fragment("CASE WHEN ? IS NULL THEN ? ELSE ? END", u1, u2.symbol, u1.symbol),
+        icon: fragment("CASE WHEN ? IS NULL THEN ? ELSE ? END", u1, u2.icon, u1.icon),
+        balance:
+        fragment(
+          "CASE WHEN ? IS NOT NULL THEN ? / power(10, ?)::decimal
+          WHEN ? IS NOT NULL THEN ? / power(10, ?)::decimal
+          ELSE ? END",
+          u1.decimal,
+          au.balance,
+          u1.decimal,
+          u2.decimal,
+          au.balance,
+          u2.decimal,
+          au.balance
+        ),
+        updated_at: au.updated_at
       }
-    ) |> Repo.all()
+    )
+    |> Repo.all()
+    |> unique_account_udts()
+  end
+
+  def unique_account_udts(results) do
+    results |> Enum.group_by(fn result -> result[:id] end) |> Enum.reduce([], fn {id, account_udts}, acc ->
+      if not(is_nil(id)) and id != UDT.ckb_account_id do
+        if length(account_udts) > 1 do
+          latest_au = account_udts |> Enum.sort_by(fn au -> au[:updated_at] end) |> List.last
+          [latest_au | acc ]
+        else
+          [List.first(account_udts) | acc]
+        end
+      end
+    end)
   end
 
   def sync_balance!(%{script_hash: script_hash, udt_id: udt_id}) do
