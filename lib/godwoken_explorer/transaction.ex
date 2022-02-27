@@ -85,7 +85,7 @@ defmodule GodwokenExplorer.Transaction do
         |> Enum.map(fn t ->
           t
           |> Map.take([:hash, :from, :to, :to_alias, :type])
-          |> Map.merge(%{timestamp: t.block.inserted_at})
+          |> Map.merge(%{timestamp: t.inserted_at})
         end)
 
       _ ->
