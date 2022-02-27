@@ -22,7 +22,8 @@ defmodule GodwokenIndexer.Block.SyncWorker do
     Log,
     TokenTransfer,
     Polyjuice,
-    PolyjuiceCreator
+    PolyjuiceCreator,
+    UDT
   }
 
   alias GodwokenExplorer.Chain.Events.Publisher
@@ -100,35 +101,22 @@ defmodule GodwokenIndexer.Block.SyncWorker do
       {:ok, %{logs: logs, receipts: receipts}} =
         GodwokenRPC.fetch_transaction_receipts(polyjuice_without_receipts)
 
+      Repo.insert_all(Log, logs |> Enum.map(fn log -> Map.merge(log, timestamps()) end),
+        on_conflict: :nothing
+      )
+
+      Logger.info("=====================UPDATED LOG")
+
       polyjuice_with_receipts = Receipts.put(polyjuice_without_receipts, receipts)
       %{token_transfers: token_transfers, tokens: _tokens} = TokenTransfers.parse(logs)
 
-      address_token_balances =
-        TokenBalances.params_set(%{token_transfers_params: token_transfers})
-
-      balances = BalanceReader.get_balances_of(address_token_balances)
-
-      import_account_udts =
-        address_token_balances
-        |> Enum.with_index()
-        |> Enum.map(fn {%{
-                          address_hash: address_hash,
-                          token_contract_address_hash: token_contract_address_hash
-                        }, index} ->
-          {:ok, balance} = balances |> Enum.at(index)
-
-          %{
-            address_hash: address_hash,
-            token_contract_address_hash: token_contract_address_hash,
-            balance: balance
-          }
-          |> Map.merge(timestamps())
-        end)
-
-      Repo.insert_all(AccountUDT, import_account_udts,
-        on_conflict: {:replace, [:balance, :updated_at]},
-        conflict_target: [:address_hash, :token_contract_address_hash]
+      Repo.insert_all(
+        TokenTransfer,
+        token_transfers |> Enum.map(fn log -> Map.merge(log, timestamps()) end),
+        on_conflict: :nothing
       )
+
+      Logger.info("=====================UPDATED TOKENTRANSFER")
 
       inserted_transaction_params =
         filter_transaction_columns(polyjuice_with_receipts ++ polyjuice_creator_params)
@@ -167,29 +155,25 @@ defmodule GodwokenIndexer.Block.SyncWorker do
         end)
 
       update_transactions_cache(inserted_transactions)
-
       Logger.info("=====================UPDATED TRANSACTIONS")
 
-      Repo.insert_all(Log, logs |> Enum.map(fn log -> Map.merge(log, timestamps()) end),
-        on_conflict: :nothing
-      )
+      if length(token_transfers) > 0, do: udpate_erc20_balance(token_transfers)
 
-      Logger.info("=====================UPDATED LOG")
+      if length(polyjuice_without_receipts) > 0,
+        do: update_ckb_balance(polyjuice_without_receipts)
 
-      Repo.insert_all(
-        TokenTransfer,
-        token_transfers |> Enum.map(fn log -> Map.merge(log, timestamps()) end),
-        on_conflict: :nothing
-      )
-
-      Logger.info("=====================UPDATED TOKENTRANSFER")
       Repo.insert_all(WithdrawalRequest, withdrawal_params, on_conflict: :nothing)
-      withdrawal_params |> Enum.each(fn %{account_script_hash: account_script_hash, udt_id: udt_id} ->
+
+      withdrawal_params
+      |> Enum.each(fn %{account_script_hash: account_script_hash, udt_id: udt_id} ->
         AccountUDT.sync_balance!(%{script_hash: account_script_hash, udt_id: udt_id})
       end)
 
+      Logger.info("=====================UPDATED BALANCE")
+
       trigger_account_worker(polyjuice_with_receipts)
       Logger.info("=====================UPDATED ACCOUNT")
+
       broadcast_block_and_tx(inserted_blocks, inserted_transactions)
       {:ok, next_number + 1}
     else
@@ -297,7 +281,6 @@ defmodule GodwokenIndexer.Block.SyncWorker do
                      status: status,
                      receive_address: short_address,
                      receive_eth_address: eth_address,
-                     transfer_count: transfer_count,
                      hash: hash
                    } ->
       %{
@@ -311,7 +294,6 @@ defmodule GodwokenIndexer.Block.SyncWorker do
         status: status,
         receive_address: short_address,
         receive_eth_address: eth_address,
-        transfer_count: transfer_count,
         tx_hash: hash
       }
       |> Map.merge(timestamps())
@@ -355,6 +337,82 @@ defmodule GodwokenIndexer.Block.SyncWorker do
       %Block{number: number} -> number + 1
       nil -> 0
     end
+  end
+
+  defp udpate_erc20_balance(token_transfers) do
+    address_token_balances = TokenBalances.params_set(%{token_transfers_params: token_transfers})
+    balances = BalanceReader.get_balances_of(address_token_balances)
+
+    import_account_udts =
+      address_token_balances
+      |> Enum.with_index()
+      |> Enum.map(fn {%{
+                        address_hash: address_hash,
+                        token_contract_address_hash: token_contract_address_hash
+                      }, index} ->
+        {:ok, balance} = balances |> Enum.at(index)
+
+        %{
+          address_hash: address_hash,
+          token_contract_address_hash: token_contract_address_hash,
+          balance: balance
+        }
+        |> Map.merge(timestamps())
+      end)
+
+    Repo.insert_all(AccountUDT, import_account_udts,
+      on_conflict: {:replace, [:balance, :updated_at]},
+      conflict_target: [:address_hash, :token_contract_address_hash]
+    )
+
+    :ok
+  end
+
+  defp update_ckb_balance(polyjuice_params) do
+    ckb_id = UDT.ckb_account_id()
+
+    if not is_nil(ckb_id) do
+      ckb_contract_address =
+        with %UDT{bridge_account_id: bridge_account_id} <- UDT |> Repo.get(ckb_id),
+             %Account{short_address: short_address} <- Repo.get(Account, bridge_account_id) do
+          short_address
+        end
+
+      updated_accounts =
+        polyjuice_params
+        |> Enum.filter(fn %{value: value} -> value > 0 end)
+        |> Enum.map(fn %{from_account_id: from_account_id, receive_address: short_address} ->
+          {from_account_id, short_address}
+        end)
+
+      {account_ids, short_addresses} = updated_accounts |> Enum.unzip()
+
+      account_id_to_short_addresses =
+        from(a in Account, where: a.id in ^account_ids, select: a.short_address) |> Repo.all()
+
+      params =
+        (account_id_to_short_addresses ++ short_addresses)
+        |> Enum.map(fn address ->
+          %{
+            short_address: address,
+            udt_id: ckb_id,
+            token_contract_address_hash: ckb_contract_address
+          }
+        end)
+
+      {:ok, %GodwokenRPC.Account.FetchedBalances{params_list: import_account_udts}} =
+        GodwokenRPC.fetch_balances(params)
+
+      import_account_udts =
+        import_account_udts |> Enum.map(fn import_au -> import_au |> Map.merge(timestamps()) end)
+
+      Repo.insert_all(AccountUDT, import_account_udts,
+        on_conflict: {:replace, [:balance, :updated_at]},
+        conflict_target: [:address_hash, :token_contract_address_hash]
+      )
+    end
+
+    :ok
   end
 
   defp forked?(parent_hash, parent_block_number) do

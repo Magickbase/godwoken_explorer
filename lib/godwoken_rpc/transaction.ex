@@ -56,9 +56,14 @@ defmodule GodwokenRPC.Transaction do
 
       from_account_id = hex_to_number(from_account_id)
       to_account_id = hex_to_number(to_id)
-      {short_address, transfer_count} =
-        Polyjuice.decode_transfer_args(to_account_id, input, hash)
 
+      short_address =
+        case input do
+          "0x0x1a695230" <> "000000000000000000000000" <> hex_short_address ->
+            "0x" <> hex_short_address
+          _ ->
+            nil
+        end
       eth_address =
         if short_address do
           case Account |> Repo.get_by(short_address: short_address) do
@@ -87,7 +92,6 @@ defmodule GodwokenRPC.Transaction do
         input: input,
         receive_address: short_address,
         receive_eth_address: eth_address,
-        transfer_count: transfer_count,
         account_ids: [from_account_id, to_account_id]
       }
     else

@@ -13,7 +13,8 @@ defmodule GodwokenRPC do
     FetchedScriptHash,
     FetchedScript,
     FetchedNonce,
-    FetchedBalance
+    FetchedBalance,
+    FetchedBalances
   }
 
   def request(%{method: method, params: params} = map)
@@ -196,6 +197,18 @@ defmodule GodwokenRPC do
       Contract.execute_contract_functions(functions, abi, json_rpc_named_arguments, leave_error_as_map)
     else
       []
+    end
+  end
+
+  def fetch_balances(params) do
+    id_to_params = id_to_params(params)
+    options = Application.get_env(:godwoken_explorer, :json_rpc_named_arguments)
+
+    with {:ok, responses} <-
+         id_to_params
+         |> FetchedBalances.requests()
+         |> HTTP.json_rpc(options) do
+      {:ok, FetchedBalances.from_responses(responses, id_to_params)}
     end
   end
 
