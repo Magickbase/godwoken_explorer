@@ -166,7 +166,9 @@ defmodule GodwokenIndexer.Block.SyncWorker do
         do: update_ckb_balance(polyjuice_without_receipts)
 
       Repo.insert_all(WithdrawalRequest, withdrawal_params, on_conflict: :nothing)
-      withdrawal_params |> Enum.each(fn %{account_script_hash: account_script_hash, udt_id: udt_id} ->
+
+      withdrawal_params
+      |> Enum.each(fn %{account_script_hash: account_script_hash, udt_id: udt_id} ->
         AccountUDT.sync_balance!(%{script_hash: account_script_hash, udt_id: udt_id})
       end)
 

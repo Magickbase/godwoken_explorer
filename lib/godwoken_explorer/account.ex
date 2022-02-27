@@ -148,7 +148,6 @@ defmodule GodwokenExplorer.Account do
           }
         }
 
-<<<<<<< HEAD
       %Account{type: :polyjuice_contract} ->
         account = account |> Repo.preload(:smart_contract)
 
@@ -177,18 +176,6 @@ defmodule GodwokenExplorer.Account do
               }
             }
         end
-=======
-      %Account{type: :polyjuice_contract, short_address: short_address} ->
-        udt_list = AccountUDT.list_udt_by_eth_address(short_address)
-
-        %{
-          smart_contract: %{
-            # create account's tx_hash needs godwoken api support
-            tx_hash: "",
-            udt_list: udt_list
-          }
-        }
->>>>>>> feat: update account udt api
 
       %Account{type: :udt, id: id} ->
         udt = Repo.get(UDT, id)
