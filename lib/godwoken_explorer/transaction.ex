@@ -89,8 +89,13 @@ defmodule GodwokenExplorer.Transaction do
         end)
 
       _ ->
-        list_tx_hash_by_transaction_query(true)
-        |> order_by([t], desc: t.block_number, desc: t.inserted_at)
+        latest_block_number = Block.latest_10_records |> List.first() |> Map.get(:number)
+        condtion = dynamic(
+          [t, p],
+          t.block_number == ^latest_block_number
+        )
+
+        list_tx_hash_by_transaction_query(condtion)
         |> limit(10)
         |> Repo.all()
         |> Enum.map(fn %{tx_hash: tx_hash} -> tx_hash end)
