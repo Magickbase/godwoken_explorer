@@ -15,7 +15,7 @@ defmodule GodwokenExplorer.SmartContract do
     )
 
     field :constructor_arguments, :binary
-    field :deplayment_tx_hash, :binary
+    field :deployment_tx_hash, :binary
     field :compiler_version, :string
     field :compiler_file_format, :string
     field :other_info, :string

@@ -169,7 +169,7 @@ defmodule GodwokenExplorer.Account do
                 contract_source_code: smart_contract[:contract_source_code],
                 name: smart_contract[:name],
                 constructor_arguments: smart_contract[:constructor_arguments],
-                deplayment_tx_hash: smart_contract[:deplayment_tx_hash],
+                deployment_tx_hash: smart_contract[:deployment_tx_hash],
                 compiler_version: smart_contract[:compiler_version],
                 compiler_file_format: smart_contract[:compiler_file_format],
                 other_info: smart_contract[:other_info]
