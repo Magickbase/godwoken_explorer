@@ -2,7 +2,8 @@ defmodule GodwokenExplorerWeb.Admin.SmartContractController do
   use GodwokenExplorerWeb, :controller
 
   alias GodwokenExplorer.Admin
-  alias GodwokenExplorer.Admin.SmartContract
+  # alias GodwokenExplorer.Admin.SmartContract
+  alias GodwokenExplorer.SmartContract
 
   require IEx
 
