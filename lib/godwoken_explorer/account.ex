@@ -157,12 +157,33 @@ defmodule GodwokenExplorer.Account do
         }
 
       %Account{type: :polyjuice_contract} ->
-        %{
-          smart_contract: %{
-            # create account's tx_hash needs godwoken api support
-            tx_hash: ""
-          }
-        }
+        account = account |> Repo.preload(:smart_contract)
+
+        case account.smart_contract do
+          smart_contract = %SmartContract{} ->
+            %{
+              smart_contract: %{
+                # create account's tx_hash needs godwoken api support
+                tx_hash: "",
+                abi: smart_contract[:abi],
+                contract_source_code: smart_contract[:contract_source_code],
+                name: smart_contract[:name],
+                constructor_arguments: smart_contract[:constructor_arguments],
+                deplayment_tx_hash: smart_contract[:deplayment_tx_hash],
+                compiler_version: smart_contract[:compiler_version],
+                compiler_file_format: smart_contract[:compiler_file_format],
+                other_info: smart_contract[:other_info]
+              }
+            }
+
+          _ ->
+            %{
+              smart_contract: %{
+                # create account's tx_hash needs godwoken api support
+                tx_hash: ""
+              }
+            }
+        end
 
       %Account{type: :udt, id: id} ->
         udt = Repo.get(UDT, id)
