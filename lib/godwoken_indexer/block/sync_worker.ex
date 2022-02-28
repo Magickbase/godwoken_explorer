@@ -392,6 +392,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
 
       params =
         (account_id_to_short_addresses ++ short_addresses)
+        |> Enum.reject(&is_nil/1)
         |> Enum.map(fn address ->
           %{
             short_address: address,
