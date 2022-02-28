@@ -15,7 +15,7 @@ defmodule GodwokenRPC.Account.FetchedBalance do
        address_hash: short_address,
        udt_id: udt_id,
        token_contract_address_hash: token_contract_address_hash,
-       value: quantity_to_integer(fetched_balance_quantity)
+       balance: quantity_to_integer(fetched_balance_quantity)
      }}
   end
 
