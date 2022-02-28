@@ -59,7 +59,7 @@ defmodule GodwokenRPC.Transaction do
 
       short_address =
         case input do
-          "0x0x1a695230" <> "000000000000000000000000" <> hex_short_address ->
+          "0x1a695230" <> "000000000000000000000000" <> hex_short_address ->
             "0x" <> hex_short_address
           _ ->
             nil
