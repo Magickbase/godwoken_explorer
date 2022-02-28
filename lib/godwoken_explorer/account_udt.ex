@@ -110,6 +110,8 @@ defmodule GodwokenExplorer.AccountUDT do
         else
           [List.first(account_udts) | acc]
         end
+      else
+        acc
       end
     end)
   end
