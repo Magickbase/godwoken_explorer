@@ -4,6 +4,7 @@ defmodule GodwokenExplorer.Log do
   @required_attrs ~w(address_hash data block_hash index transaction_hash)a
   @optional_attrs ~w(first_topic second_topic third_topic fourth_topic block_number removed)a
 
+  @derive {Jason.Encoder, except: [:__meta__]}
   @primary_key false
   schema "logs" do
     field(:transaction_hash, :binary, primary_key: true)

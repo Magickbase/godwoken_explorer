@@ -7,6 +7,7 @@ defmodule GodwokenExplorer.UDT do
   @pagination [page_size: 15]
   @pagination_distance 5
 
+  @derive {Jason.Encoder, except: [:__meta__]}
   @primary_key {:id, :integer, autogenerate: false}
   schema "udts" do
     field(:decimal, :integer)

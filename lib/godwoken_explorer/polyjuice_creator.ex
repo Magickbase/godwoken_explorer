@@ -3,6 +3,7 @@ defmodule GodwokenExplorer.PolyjuiceCreator do
 
   import Ecto.Changeset
 
+  @derive {Jason.Encoder, except: [:__meta__]}
   schema "polyjuice_creators" do
     field(:code_hash, :binary)
     field(:hash_type, :string)

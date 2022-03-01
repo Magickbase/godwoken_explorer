@@ -8,6 +8,7 @@ defmodule GodwokenExplorer.Account do
   alias GodwokenRPC
   alias GodwokenExplorer.Chain.Events.Publisher
 
+  @derive {Jason.Encoder, except: [:__meta__]}
   @primary_key {:id, :integer, autogenerate: false}
   schema "accounts" do
     field :ckb_address, :binary
@@ -167,14 +168,14 @@ defmodule GodwokenExplorer.Account do
                 # create account's tx_hash needs godwoken api support
                 tx_hash: "",
                 udt_list: udt_list,
-                abi: smart_contract[:abi],
-                contract_source_code: smart_contract[:contract_source_code],
-                name: smart_contract[:name],
-                constructor_arguments: smart_contract[:constructor_arguments],
-                deployment_tx_hash: smart_contract[:deployment_tx_hash],
-                compiler_version: smart_contract[:compiler_version],
-                compiler_file_format: smart_contract[:compiler_file_format],
-                other_info: smart_contract[:other_info]
+                abi: smart_contract.abi,
+                contract_source_code: smart_contract.contract_source_code,
+                name: smart_contract.name,
+                constructor_arguments: smart_contract.constructor_arguments,
+                deployment_tx_hash: smart_contract.deployment_tx_hash,
+                compiler_version: smart_contract.compiler_version,
+                compiler_file_format: smart_contract.compiler_file_format,
+                other_info: smart_contract.other_info
               }
             }
 
