@@ -3,6 +3,7 @@ defmodule GodwokenExplorer.UDTTransfer do
 
   import Ecto.Changeset
 
+  @derive {Jason.Encoder, except: [:__meta__]}
   schema "udt_transfers" do
     field :amount, :decimal
     field :fee, :decimal

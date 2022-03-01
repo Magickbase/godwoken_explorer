@@ -1,6 +1,7 @@
 defmodule GodwokenExplorer.Version do
   use GodwokenExplorer, :schema
 
+  @derive {Jason.Encoder, except: [:__meta__]}
   schema "versions" do
     # The patch in Erlang External Term Format
     field :patch, ExAudit.Type.Patch

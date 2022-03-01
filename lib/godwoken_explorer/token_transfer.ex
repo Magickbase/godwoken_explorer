@@ -9,6 +9,7 @@ defmodule GodwokenExplorer.TokenTransfer do
 
   @transfer_function_signature "0xa9059cbb"
 
+  @derive {Jason.Encoder, except: [:__meta__]}
   @primary_key false
   schema "token_transfers" do
     field(:transaction_hash, :binary, primary_key: true)
