@@ -80,7 +80,12 @@ defmodule GodwokenExplorer.TokenTransfer do
         ? / power(10, ?)::decimal
         ", tt.amount, ^udt.decimal),
         status: b.status,
-        polyjuice_status: p.status
+        polyjuice_status: p.status,
+        gas_limit: p.gas_limit,
+        gas_price: p.gas_price,
+        gas_used: p.gas_used,
+        transfer_count: tt.amount,
+        nonce: p.nonce
       },
       order_by: [desc: tt.block_number]
     )
@@ -130,7 +135,12 @@ defmodule GodwokenExplorer.TokenTransfer do
             tt.amount
           ),
           status: b.status,
-          polyjuice_status: p.status
+          polyjuice_status: p.status,
+          gas_limit: p.gas_limit,
+          gas_price: p.gas_price,
+          gas_used: p.gas_used,
+          transfer_count: tt.amount,
+          nonce: p.nonce
       },
       order_by: [desc: tt.block_number]
     )
@@ -167,7 +177,12 @@ defmodule GodwokenExplorer.TokenTransfer do
         ? / power(10, ?)::decimal
         ", tt.amount, ^udt.decimal),
         status: b.status,
-        polyjuice_status: p.status
+        polyjuice_status: p.status,
+        gas_limit: p.gas_limit,
+        gas_price: p.gas_price,
+        gas_used: p.gas_used,
+        transfer_count: tt.amount,
+        nonce: p.nonce
       },
       order_by: [desc: tt.block_number]
     )
