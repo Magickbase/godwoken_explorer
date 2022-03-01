@@ -8,6 +8,7 @@ defmodule GodwokenExplorer.Transaction do
   @tx_limit 500_000
   @account_tx_limit 100_000
 
+  @derive {Jason.Encoder, except: [:__meta__]}
   @primary_key {:hash, :binary, autogenerate: false}
   schema "transactions" do
     field(:args, :binary)
