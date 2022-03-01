@@ -7,6 +7,5 @@ defmodule Godwoken.MoleculeParser do
   def parse_global_state(_a), do: :erlang.nif_error(:nif_not_loaded)
   def parse_witness(_a), do: :erlang.nif_error(:nif_not_loaded)
   def parse_deposition_lock_args(_a), do: :erlang.nif_error(:nif_not_loaded)
-  def parse_sudt_transfer_args(_a), do: :erlang.nif_error(:nif_not_loaded)
   def parse_withdrawal_lock_args(_a), do: :erlang.nif_error(:nif_not_loaded)
 end
