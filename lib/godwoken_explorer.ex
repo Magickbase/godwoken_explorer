@@ -31,7 +31,6 @@ defmodule GodwokenExplorer do
         Transaction,
         TokenTransfer,
         UDT,
-        UDTTransfer,
         Version,
         WithdrawalHistory,
         WithdrawalRequest
