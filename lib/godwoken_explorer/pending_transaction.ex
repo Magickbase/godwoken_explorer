@@ -110,7 +110,7 @@ defmodule GodwokenExplorer.PendingTransaction do
           gas_price: gas_price,
           value: value,
           input_size: input_size,
-          input: input,
+          input: input
         }
       }
     end
