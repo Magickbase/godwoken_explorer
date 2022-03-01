@@ -62,6 +62,8 @@ defmodule GodwokenExplorer.TokenTransfer do
       on: b.hash == tt.block_hash,
       join: p in Polyjuice,
       on: p.tx_hash == tt.transaction_hash,
+      join: t in Transaction,
+      on: t.hash == tt.transaction_hash,
       where:
         tt.token_contract_address_hash == ^udt_address and
           (tt.from_address_hash == ^eth_address or tt.to_address_hash == ^eth_address),
@@ -85,7 +87,7 @@ defmodule GodwokenExplorer.TokenTransfer do
         gas_price: p.gas_price,
         gas_used: p.gas_used,
         transfer_count: tt.amount,
-        nonce: p.nonce
+        nonce: t.nonce
       },
       order_by: [desc: tt.block_number]
     )
@@ -109,6 +111,8 @@ defmodule GodwokenExplorer.TokenTransfer do
       on: u6.bridge_account_id == a4.id,
       join: p in Polyjuice,
       on: p.tx_hash == tt.transaction_hash,
+      join: t in Transaction,
+      on: t.hash == tt.transaction_hash,
       where: tt.from_address_hash == ^eth_address or tt.to_address_hash == ^eth_address,
       select: %{
         hash: tt.transaction_hash,
@@ -140,7 +144,7 @@ defmodule GodwokenExplorer.TokenTransfer do
           gas_price: p.gas_price,
           gas_used: p.gas_used,
           transfer_count: tt.amount,
-          nonce: p.nonce
+          nonce: t.nonce
       },
       order_by: [desc: tt.block_number]
     )
@@ -161,6 +165,8 @@ defmodule GodwokenExplorer.TokenTransfer do
       on: b.hash == tt.block_hash,
       join: p in Polyjuice,
       on: p.tx_hash == tt.transaction_hash,
+      join: t in Transaction,
+      on: t.hash == tt.transaction_hash,
       where: tt.token_contract_address_hash == ^udt_address,
       select: %{
         hash: tt.transaction_hash,
@@ -182,7 +188,7 @@ defmodule GodwokenExplorer.TokenTransfer do
         gas_price: p.gas_price,
         gas_used: p.gas_used,
         transfer_count: tt.amount,
-        nonce: p.nonce
+        nonce: t.nonce
       },
       order_by: [desc: tt.block_number]
     )
