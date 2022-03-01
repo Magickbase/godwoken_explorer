@@ -197,6 +197,56 @@ defmodule GodwokenExplorer.TokenTransfer do
     |> parse_json_result()
   end
 
+  def list(%{tx_hash: tx_hash}, paging_options) do
+    from(tt in TokenTransfer,
+      join: a1 in Account,
+      on: a1.short_address == tt.from_address_hash,
+      join: a2 in Account,
+      on: a2.short_address == tt.to_address_hash,
+      join: b in Block,
+      on: b.hash == tt.block_hash,
+      join: a4 in Account,
+      on: a4.short_address == tt.token_contract_address_hash,
+      left_join: u5 in UDT,
+      on: u5.id == a4.id,
+      left_join: u6 in UDT,
+      on: u6.bridge_account_id == a4.id,
+      join: p in Polyjuice,
+      on: p.tx_hash == tt.transaction_hash,
+      where: tt.transaction_hash == ^tx_hash,
+      select: %{
+        hash: tt.transaction_hash,
+        block_number: tt.block_number,
+        inserted_at: b.inserted_at,
+        from: fragment("CASE WHEN ? = 'user' THEN encode(?, 'escape')
+        ELSE encode(?, 'escape') END", a1.type, a1.eth_address, a1.short_address),
+        to: fragment("CASE WHEN ? = 'user' THEN encode(?, 'escape')
+        ELSE encode(?, 'escape') END", a2.type, a2.eth_address, a2.short_address),
+        udt_id: fragment("CASE WHEN ? IS NULL THEN ? ELSE ? END", u5, u6.id, u5.id),
+        udt_name: fragment("CASE WHEN ? IS NULL THEN ? ELSE ? END", u5, u6.name, u5.name),
+        udt_symbol: fragment("CASE WHEN ? IS NULL THEN ? ELSE ? END", u5, u6.symbol, u5.symbol),
+        transfer_value:
+          fragment(
+            "CASE WHEN ? IS NOT NULL THEN ? / power(10, ?)::decimal
+            WHEN ? IS NOT NULL THEN ? / power(10, ?)::decimal
+            ELSE ? END",
+            u5.decimal,
+            tt.amount,
+            u5.decimal,
+            u6.decimal,
+            tt.amount,
+            u6.decimal,
+            tt.amount
+          ),
+          status: b.status,
+          polyjuice_status: p.status
+      },
+      order_by: [desc: tt.block_number]
+    )
+    |> Repo.paginate(page: paging_options[:page], page_size: paging_options[:page_size])
+    |> parse_json_result()
+  end
+
   defp parse_json_result(results) do
     parsed_results =
       results.entries

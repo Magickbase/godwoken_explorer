@@ -54,4 +54,14 @@ defmodule GodwokenExplorerWeb.API.TransferController do
         {:error, :not_found}
     end
   end
+
+  def index(conn, %{"tx_hash" => "0x" <> _} = params) do
+    results =
+      TokenTransfer.list(%{tx_hash: params["tx_hash"]}, %{
+        page: conn.params["page"] || 1,
+        page_size: conn.assigns.page_size
+      })
+
+    json(conn, results)
+  end
 end
