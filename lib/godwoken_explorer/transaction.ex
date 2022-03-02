@@ -129,7 +129,7 @@ defmodule GodwokenExplorer.Transaction do
         type: type,
         account_id: account_id
       })
-      when type == :user do
+      when type in [:eth_user, :tron_user] do
     from(t in Transaction,
       where: t.from_account_id == ^account_id,
       select: t.hash
@@ -188,7 +188,7 @@ defmodule GodwokenExplorer.Transaction do
         %{type: type, account_id: account_id},
         page
       )
-      when type == :user do
+      when type in [:eth_user, :tron_user] do
     tx_hashes =
       list_tx_hash_by_transaction_query(dynamic([t], t.from_account_id == ^account_id))
       |> limit(@account_tx_limit)
