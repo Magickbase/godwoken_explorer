@@ -10,9 +10,6 @@ defmodule GodwokenExplorer.Account do
 
   @primary_key {:id, :integer, autogenerate: false}
   schema "accounts" do
-    field :ckb_address, :binary
-    field :ckb_lock_script, :map
-    field :ckb_lock_hash, :binary
     field :eth_address, :binary
     field :script_hash, :binary
     field :short_address, :binary
@@ -22,7 +19,6 @@ defmodule GodwokenExplorer.Account do
     field :type, Ecto.Enum,
       values: [:meta_contract, :udt, :user, :polyjuice_root, :polyjuice_contract]
 
-    field :layer2_tx, :binary
     has_many :account_udts, AccountUDT
     has_one :smart_contract, SmartContract
 
@@ -34,15 +30,11 @@ defmodule GodwokenExplorer.Account do
     account
     |> cast(attrs, [
       :id,
-      :ckb_address,
-      :ckb_lock_script,
-      :ckb_lock_hash,
       :eth_address,
       :script_hash,
       :script,
       :nonce,
       :type,
-      :layer2_tx,
       :short_address
     ])
     |> validate_required([:id, :script_hash])
@@ -144,7 +136,6 @@ defmodule GodwokenExplorer.Account do
         %{
           user: %{
             nonce: account.nonce |> Integer.to_string(),
-            ckb_lock_script: account.ckb_lock_script,
             udt_list: udt_list
           }
         }
