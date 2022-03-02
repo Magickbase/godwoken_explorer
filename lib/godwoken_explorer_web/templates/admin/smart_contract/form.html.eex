@@ -46,9 +46,9 @@
     </div>
 
     <div class="torch-form-group">
-      <%= label f, :deplayment_tx_hash %>
-      <%= text_input f, :deplayment_tx_hash %>
-      <%= error_tag f, :deplayment_tx_hash %>
+      <%= label f, :deployment_tx_hash %>
+      <%= text_input f, :deployment_tx_hash %>
+      <%= error_tag f, :deployment_tx_hash %>
     </div>
 
     <div class="torch-form-group">
