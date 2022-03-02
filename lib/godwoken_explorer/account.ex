@@ -18,7 +18,7 @@ defmodule GodwokenExplorer.Account do
     field :nonce, :integer
 
     field :type, Ecto.Enum,
-      values: [:meta_contract, :udt, :user, :polyjuice_root, :polyjuice_contract]
+      values: [:meta_contract, :udt, :eth_user, :tron_user, :polyjuice_root, :polyjuice_contract]
 
     has_many :account_udts, AccountUDT
     has_one :smart_contract, SmartContract
@@ -131,7 +131,7 @@ defmodule GodwokenExplorer.Account do
           }
         }
 
-      %Account{type: :user, short_address: short_address} ->
+      %Account{type: type, short_address: short_address} when type in [:eth_user, :tron_user]->
         udt_list = AccountUDT.list_udt_by_eth_address(short_address)
 
         %{
@@ -220,11 +220,11 @@ defmodule GodwokenExplorer.Account do
         eth: balance_to_view(account.eth, 18)
       })
 
-    case Kernel.get_in(account, [:user, :udt_list]) do
+    case Kernel.get_in(account, [:eth_user, :tron_user, :udt_list]) do
       udt_list when not is_nil(udt_list) ->
         Kernel.put_in(
           account,
-          [:user, :udt_list],
+          [:eth_user, :tron_user, :udt_list],
           udt_list
           |> Enum.map(fn udt ->
             %{udt | balance: udt.balance |> D.to_string(:normal)}
@@ -321,18 +321,18 @@ defmodule GodwokenExplorer.Account do
 
   def switch_account_type(code_hash, args) do
     polyjuice_code_hash = Application.get_env(:godwoken_explorer, :polyjuice_validator_code_hash)
-    layer2_lock_code_hash = Application.get_env(:godwoken_explorer, :layer2_lock_code_hash)
+    eth_eoa_type_hash = Application.get_env(:godwoken_explorer, :eth_eoa_type_hash)
     udt_code_hash = Application.get_env(:godwoken_explorer, :udt_code_hash)
     meta_contract_code_hash = Application.get_env(:godwoken_explorer, :meta_contract_code_hash)
-    eoa_code_hash = Application.get_env(:godwoken_explorer, :eoa_code_hash)
+    tron_eoa_type_hash = Application.get_env(:godwoken_explorer, :tron_eoa_type_hash)
 
     case code_hash do
       ^meta_contract_code_hash -> :meta_contract
       ^udt_code_hash -> :udt
       ^polyjuice_code_hash when byte_size(args) == 74 -> :polyjuice_root
       ^polyjuice_code_hash -> :polyjuice_contract
-      ^layer2_lock_code_hash -> :user
-      ^eoa_code_hash -> :user
+      ^eth_eoa_type_hash -> :eth_user
+      ^tron_eoa_type_hash -> :tron_user
       _ -> :unkonw
     end
   end
@@ -340,7 +340,7 @@ defmodule GodwokenExplorer.Account do
   def script_to_eth_adress(type, args) do
     rollup_script_hash = Application.get_env(:godwoken_explorer, :rollup_script_hash)
 
-    if type in [:user, :polyjuice_contract] &&
+    if type in [:eth_user, :tron_user, :polyjuice_contract] &&
          args |> String.slice(0, 66) == rollup_script_hash do
       "0x" <> String.slice(args, -40, 40)
     else
@@ -376,7 +376,7 @@ defmodule GodwokenExplorer.Account do
         contract_name: contract_name
       } ->
         cond do
-          type == :user -> {eth_address, eth_address}
+          type in [:eth_user, :tron_user] -> {eth_address, eth_address}
           type in [:udt, :polyjuice_contract] -> {short_address, contract_name || short_address}
           type == :polyjuice_root -> {short_address, "Deploy Contract"}
           type == :meta_contract -> {short_address, "Meta Contract"}
@@ -389,7 +389,7 @@ defmodule GodwokenExplorer.Account do
           type = switch_account_type(script["code_hash"], script["args"])
 
           cond do
-            type == :user ->
+            type in [:eth_user, :tron_user] ->
               {Account.script_to_eth_adress(type, script["args"]),
                Account.script_to_eth_adress(type, script["args"])}
 
@@ -434,7 +434,7 @@ defmodule GodwokenExplorer.Account do
                          } ->
       {id,
        cond do
-         type == :user -> {eth_address, eth_address}
+         type == [:eth_user, :tron_user] -> {eth_address, eth_address}
          type in [:udt, :polyjuice_contract] -> {short_address, contract_name || short_address}
          type == :polyjuice_root -> {short_address, "Deploy Contract"}
          type == :meta_contract -> {short_address, "Meta Contract"}
