@@ -96,16 +96,6 @@ defmodule GodwokenExplorer.PendingTransaction do
 
       from_account_id = hex_to_number(from_account_id)
       to_account_id = hex_to_number(to_id)
-      {short_address, transfer_count} = Polyjuice.decode_transfer_args(to_account_id, input)
-
-      eth_address =
-        if short_address do
-          case Account |> Repo.get_by(short_address: short_address) do
-            nil -> nil
-            %Account{eth_address: eth_address} ->
-              eth_address
-          end
-        end
 
       %{
         type: :polyjuice,
@@ -120,8 +110,6 @@ defmodule GodwokenExplorer.PendingTransaction do
           value: value,
           input_size: input_size,
           input: input,
-          receive_eth_address: eth_address,
-          transfer_count: transfer_count
         }
       }
     end
