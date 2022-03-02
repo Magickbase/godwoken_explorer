@@ -7,8 +7,6 @@ use packed::L2Block;
 use packed::WitnessArgs;
 use packed::DepositLockArgs;
 use packed::WithdrawalLockArgs;
-use packed::SUDTArgs;
-use packed::SUDTArgsUnion;
 use molecule::prelude::Entity;
 use ckb_hash::blake2b_256;
 

@@ -52,7 +52,7 @@ defmodule GodwokenExplorerWeb.API.DepositHistoryControllerTest do
         get(
           conn,
           Routes.deposit_history_path(conn, :index,
-            eth_address: "0x085a61d7164735FC5378E590b5ED1448561e1a48",
+            eth_address: "0x085a61d7164735FC5378E590b5ED1448561e1a48"
           )
         )
 
