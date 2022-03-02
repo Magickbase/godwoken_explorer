@@ -30,7 +30,7 @@ defmodule GodwokenExplorerWeb.API.WithdrawalRequestControllerTest do
       script_hash: "0xfa2ae9de22bbca35fc44f20efe7a3d2789556d4c50a7c2b4e460269f13b77c58",
       short_address: "0xfa2ae9de22bbca35fc44f20efe7a3d2789556d4c",
       eth_address: "0x085a61d7164735fc5378e590b5ed1448561e1a48",
-      type: :user
+      type: :eth_user
     })
 
     {:ok, withdrawal} =
