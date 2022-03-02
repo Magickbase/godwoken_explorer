@@ -39,7 +39,7 @@
 
         <li>
           <div class="torch-show-label">Deplayment Transaction Hash:</div>
-          <div class="torch-show-data"><%= @smart_contract.deplayment_tx_hash %></div>
+          <div class="torch-show-data"><%= @smart_contract.deployment_tx_hash %></div>
         </li>
 
         <li>
