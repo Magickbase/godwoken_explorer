@@ -8,14 +8,10 @@ defmodule GodwokenExplorer.WithdrawalRequest do
     field :nonce, :integer
     field :capacity, :decimal
     field :amount, :decimal
-    field :sell_amount, :decimal
-    field :sell_capacity, :decimal
     field :sudt_script_hash, :binary
     field :account_script_hash, :binary
     field :owner_lock_hash, :binary
-    field :payment_lock_hash, :binary
     field :fee_amount, :decimal
-    field :fee_udt_id, :integer
     field :udt_id, :integer
     field :block_hash, :binary
     field :block_number, :integer
@@ -37,25 +33,18 @@ defmodule GodwokenExplorer.WithdrawalRequest do
       :amount,
       :capacity,
       :owner_lock_hash,
-      :payment_lock_hash,
-      :sell_amount,
-      :sell_capacity,
       :sudt_script_hash,
       :udt_id,
       :block_hash,
       :nonce,
       :block_number,
-      :fee_amount,
-      :fee_udt_id
+      :fee_amount
     ])
     |> validate_required([
       :account_script_hash,
       :amount,
       :capacity,
       :owner_lock_hash,
-      :payment_lock_hash,
-      :sell_amount,
-      :sell_capacity,
       :sudt_script_hash,
       :nonce,
       :block_hash,
