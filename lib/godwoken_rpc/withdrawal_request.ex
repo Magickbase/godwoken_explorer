@@ -7,19 +7,14 @@ defmodule GodwokenRPC.WithdrawalRequest do
         "block_hash" => block_hash,
         "block_number" => block_number,
         "raw" => %{
-          "nonce" => nonce,
-          "capacity" => capacity,
-          "amount" => amount,
-          "sell_amount" => sell_amount,
-          "sell_capacity" => sell_capacity,
-          "sudt_script_hash" => sudt_script_hash,
           "account_script_hash" => account_script_hash,
-          "owner_lock_hash" => owner_lock_hash,
-          "payment_lock_hash" => payment_lock_hash,
-          "fee" => %{
-            "sudt_id" => fee_sudt_id,
-            "amount" => fee_amount,
-          }
+          "amount" => amount,
+          "capacity" => capacity,
+          "chain_id" => chain_id,
+          "fee" => fee_amount,
+          "nonce" => nonce,
+          "sudt_script_hash" => sudt_script_hash,
+          "owner_lock_hash" => owner_lock_hash
         },
         "signature" => _
       }) do
@@ -34,14 +29,11 @@ defmodule GodwokenRPC.WithdrawalRequest do
       nonce: hex_to_number(nonce),
       capacity: hex_to_number(capacity),
       amount: hex_to_number(amount),
-      sell_amount: hex_to_number(sell_amount),
-      sell_capacity: hex_to_number(sell_capacity),
       sudt_script_hash: sudt_script_hash,
       account_script_hash: account_script_hash,
       owner_lock_hash: owner_lock_hash,
-      payment_lock_hash: payment_lock_hash,
-      fee_udt_id: hex_to_number(fee_sudt_id),
       fee_amount: hex_to_number(fee_amount),
+      chain_id: hex_to_number(chain_id),
       udt_id: udt_id,
       block_number: block_number,
       block_hash: block_hash,
