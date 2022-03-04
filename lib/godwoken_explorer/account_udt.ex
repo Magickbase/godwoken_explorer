@@ -28,7 +28,10 @@ defmodule GodwokenExplorer.AccountUDT do
   end
 
   def create_or_update_account_udt!(attrs) do
-    case Repo.get_by(__MODULE__, %{account_id: attrs[:account_id], udt_id: attrs[:udt_id]}) do
+    case Repo.get_by(__MODULE__, %{
+           address_hash: attrs[:address_hash],
+           token_contract_address_hash: attrs[:token_contract_address_hash]
+         }) do
       nil -> %__MODULE__{}
       account_udt -> account_udt
     end
@@ -83,18 +86,18 @@ defmodule GodwokenExplorer.AccountUDT do
         symbol: fragment("CASE WHEN ? IS NULL THEN ? ELSE ? END", u1, u2.symbol, u1.symbol),
         icon: fragment("CASE WHEN ? IS NULL THEN ? ELSE ? END", u1, u2.icon, u1.icon),
         balance:
-        fragment(
-          "CASE WHEN ? IS NOT NULL THEN ? / power(10, ?)::decimal
+          fragment(
+            "CASE WHEN ? IS NOT NULL THEN ? / power(10, ?)::decimal
           WHEN ? IS NOT NULL THEN ? / power(10, ?)::decimal
           ELSE ? END",
-          u1.decimal,
-          au.balance,
-          u1.decimal,
-          u2.decimal,
-          au.balance,
-          u2.decimal,
-          au.balance
-        ),
+            u1.decimal,
+            au.balance,
+            u1.decimal,
+            u2.decimal,
+            au.balance,
+            u2.decimal,
+            au.balance
+          ),
         updated_at: au.updated_at
       }
     )
@@ -103,11 +106,13 @@ defmodule GodwokenExplorer.AccountUDT do
   end
 
   def unique_account_udts(results) do
-    results |> Enum.group_by(fn result -> result[:id] end) |> Enum.reduce([], fn {id, account_udts}, acc ->
-      if not(is_nil(id)) and id != UDT.ckb_account_id do
+    results
+    |> Enum.group_by(fn result -> result[:id] end)
+    |> Enum.reduce([], fn {id, account_udts}, acc ->
+      if not is_nil(id) and id != UDT.ckb_account_id() do
         if length(account_udts) > 1 do
-          latest_au = account_udts |> Enum.sort_by(fn au -> au[:updated_at] end) |> List.last
-          [latest_au | acc ]
+          latest_au = account_udts |> Enum.sort_by(fn au -> au[:updated_at] end) |> List.last()
+          [latest_au | acc]
         else
           [List.first(account_udts) | acc]
         end
@@ -118,17 +123,18 @@ defmodule GodwokenExplorer.AccountUDT do
   end
 
   def sync_balance!(%{script_hash: script_hash, udt_id: udt_id}) do
-    with %Account{id: account_id, short_address: short_address} <- Repo.get_by(Account, script_hash: script_hash),
-        %Account{short_address: udt_short_address} <- Repo.get(Account, udt_id) do
-        {:ok, balance} = GodwokenRPC.fetch_balance(short_address, udt_id)
+    with %Account{id: account_id, short_address: short_address} <-
+           Repo.get_by(Account, script_hash: script_hash),
+         %Account{short_address: udt_short_address} <- Repo.get(Account, udt_id) do
+      {:ok, balance} = GodwokenRPC.fetch_balance(short_address, udt_id)
 
-        AccountUDT.create_or_update_account_udt!(%{
-          account_id: account_id,
-          address_hash: short_address,
-          udt_id: udt_id,
-          token_contract_address_hash: udt_short_address,
-          balance: balance
-        })
+      AccountUDT.create_or_update_account_udt!(%{
+        account_id: account_id,
+        address_hash: short_address,
+        udt_id: udt_id,
+        token_contract_address_hash: udt_short_address,
+        balance: balance
+      })
     else
       _ ->
         {:error, :account_not_exist}
@@ -137,20 +143,19 @@ defmodule GodwokenExplorer.AccountUDT do
 
   def sync_balance!(%{account_id: account_id, udt_id: udt_id}) do
     with %Account{short_address: short_address} <- Repo.get(Account, account_id),
-        %Account{short_address: udt_short_address} <- Repo.get(Account, udt_id) do
-        {:ok, balance} = GodwokenRPC.fetch_balance(short_address, udt_id)
+         %Account{short_address: udt_short_address} <- Repo.get(Account, udt_id) do
+      {:ok, balance} = GodwokenRPC.fetch_balance(short_address, udt_id)
 
-        AccountUDT.create_or_update_account_udt!(%{
-          account_id: account_id,
-          address_hash: short_address,
-          udt_id: udt_id,
-          token_contract_address_hash: udt_short_address,
-          balance: balance
-        })
+      AccountUDT.create_or_update_account_udt!(%{
+        account_id: account_id,
+        address_hash: short_address,
+        udt_id: udt_id,
+        token_contract_address_hash: udt_short_address,
+        balance: balance
+      })
     else
       _ ->
         {:error, :account_not_exist}
     end
   end
-
 end
