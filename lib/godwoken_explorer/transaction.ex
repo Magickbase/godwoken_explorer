@@ -128,7 +128,8 @@ defmodule GodwokenExplorer.Transaction do
     from(t in Transaction,
       where: t.from_account_id == ^account_id,
       select: t.hash
-    ) |> Repo.aggregate(:count)
+    )
+    |> Repo.aggregate(:count)
   end
 
   def count_of_account(%{type: type, account_id: account_id})
@@ -222,8 +223,6 @@ defmodule GodwokenExplorer.Transaction do
 
   def list_tx_hash_by_transaction_query(condition) do
     from(t in Transaction,
-      left_join: p in Polyjuice,
-      on: p.tx_hash == t.hash,
       select: %{tx_hash: t.hash, block_number: t.block_number, inserted_at: t.inserted_at},
       where: ^condition
     )
