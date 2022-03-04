@@ -3,10 +3,10 @@ pub use generated::packed;
 use packed::MetaContractArgs;
 use packed::CreateAccount;
 use packed::GlobalState;
-use packed::L2Block;
-use packed::WitnessArgs;
 use packed::DepositLockArgs;
 use packed::WithdrawalLockArgs;
+use packed::ETHAddrRegArgs;
+use packed::ETHAddrRegArgsUnion;
 use molecule::prelude::Entity;
 use ckb_hash::blake2b_256;
 
@@ -65,17 +65,6 @@ fn parse_global_state(arg: String) -> (u64, String, (u64, String), (u32, String)
 }
 
 #[rustler::nif]
-fn parse_witness(arg: String) -> u64 {
-    let witness = hex::decode(arg).unwrap();
-    let l2_block_data = WitnessArgs::from_slice(&witness).unwrap().output_type().as_bytes();
-    let l2_block_number = L2Block::from_slice(&l2_block_data[4..]).unwrap().raw().number();
-    let mut buf = [0u8; 8];
-    buf.copy_from_slice(l2_block_number.as_slice());
-
-    u64::from_le_bytes(buf)
-}
-
-#[rustler::nif]
 fn parse_deposition_lock_args(arg: String) -> (String, String) {
     let args = hex::decode(arg).unwrap();
     let deposition_args = DepositLockArgs::from_slice(&args[32..]).unwrap();
@@ -106,13 +95,42 @@ fn parse_withdrawal_lock_args(arg: String) -> (String, (String, u64), String) {
     )
 }
 
+#[rustler::nif]
+fn parse_eth_address_registry_args(arg: String) -> (String, String, u64) {
+    let args = hex::decode(arg).unwrap();
+    let eth_addr_reg = ETHAddrRegArgs::from_slice(&args).unwrap();
+    match eth_addr_reg.to_enum() {
+        ETHAddrRegArgsUnion::EthToGw(eth_to_gw) => {
+            (String::from("EthToGw"), hex::encode(eth_to_gw.as_slice()), 0)
+        }
+        ETHAddrRegArgsUnion::GwToEth(gw_to_eth) => {
+            (String::from("GwToEth"), hex::encode(gw_to_eth.as_slice()), 0)
+        }
+        ETHAddrRegArgsUnion::SetMapping(set_mapping) => { 
+          let gw_script_hash = set_mapping.gw_script_hash();
+          let mut fee_buf = [0u8; 8];
+          let fee = set_mapping.fee();
+          fee_buf.copy_from_slice(fee.as_slice());
+
+          (String::from("SetMapping"), hex::encode(gw_script_hash.as_slice()), u64::from_le_bytes(fee_buf))
+        }
+        ETHAddrRegArgsUnion::BatchSetMapping(batch_set_mapping) => { 
+            let mut fee_buf = [0u8; 8];
+            let gw_script_hashes = batch_set_mapping.gw_script_hashes();
+            let fee = batch_set_mapping.fee();
+            fee_buf.copy_from_slice(fee.as_slice());
+
+            (String::from("BatchSetMapping"), hex::encode(gw_script_hashes.as_slice()), u64::from_le_bytes(fee_buf))
+        }
+    }
+}
 rustler::init!(
     "Elixir.Godwoken.MoleculeParser",
     [
         parse_meta_contract_args,
         parse_global_state,
-        parse_witness,
         parse_deposition_lock_args,
-        parse_withdrawal_lock_args
+        parse_withdrawal_lock_args,
+        parse_eth_address_registry_args
     ]
 );

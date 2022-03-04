@@ -15,6 +15,7 @@ defmodule GodwokenExplorer.WithdrawalRequest do
     field :udt_id, :integer
     field :block_hash, :binary
     field :block_number, :integer
+    field :chain_id, :integer
 
     belongs_to(:udt, GodwokenExplorer.UDT,
       foreign_key: :udt_id,
@@ -38,7 +39,8 @@ defmodule GodwokenExplorer.WithdrawalRequest do
       :block_hash,
       :nonce,
       :block_number,
-      :fee_amount
+      :fee_amount,
+      :chain_id
     ])
     |> validate_required([
       :account_script_hash,
