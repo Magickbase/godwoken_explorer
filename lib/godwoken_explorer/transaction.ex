@@ -17,7 +17,7 @@ defmodule GodwokenExplorer.Transaction do
     field(:from_account_id, :integer)
     field(:nonce, :integer)
     field(:to_account_id, :integer)
-    field(:type, Ecto.Enum, values: [:polyjuice_creator, :polyjuice])
+    field(:type, Ecto.Enum, values: [:polyjuice_creator, :polyjuice, :eth_address_registry])
     field(:block_number, :integer)
     field(:block_hash, :binary)
 
