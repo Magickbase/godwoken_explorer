@@ -279,8 +279,6 @@ defmodule GodwokenIndexer.Block.SyncWorker do
                      input: input,
                      gas_used: gas_used,
                      status: status,
-                     receive_address: short_address,
-                     receive_eth_address: eth_address,
                      hash: hash
                    } ->
       %{
@@ -292,8 +290,6 @@ defmodule GodwokenIndexer.Block.SyncWorker do
         input: input,
         gas_used: gas_used,
         status: status,
-        receive_address: short_address,
-        receive_eth_address: eth_address,
         tx_hash: hash
       }
       |> Map.merge(timestamps())
