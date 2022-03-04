@@ -243,7 +243,7 @@ defmodule GodwokenExplorer.Account do
     results =
       from(a in Account,
         where:
-          a.eth_address == ^keyword or a.ckb_lock_hash == ^keyword or a.script_hash == ^keyword or
+          a.eth_address == ^keyword or a.script_hash == ^keyword or
             a.short_address == ^keyword,
         order_by: a.id
       )
