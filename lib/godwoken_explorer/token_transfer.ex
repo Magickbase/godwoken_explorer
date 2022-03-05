@@ -50,6 +50,16 @@ defmodule GodwokenExplorer.TokenTransfer do
   def transfer_function_signature, do: @transfer_function_signature
 
   def list(%{eth_address: eth_address, udt_address: udt_address}, paging_options) do
+    condition = dynamic([tt], tt.token_contract_address_hash == ^udt_address and
+          (tt.from_address_hash == ^eth_address or tt.to_address_hash == ^eth_address)
+    unique_keys = base_query_by(^condition)
+
+
+    query = from(t0 in TokenTransfer)
+    query = Enum.reduce(unique_keys, query , fn %{transaction_hash: transaction_hash, log_index: log_index}, query ->
+      query |> or_where([tt], tt.transaction_hash == ^transaction_hash and tt.log_index == ^log_index)
+    end)
+
     udt = UDT.get_by_contract_address(udt_address)
     udt_id = Integer.to_string(udt.id)
 
@@ -65,8 +75,6 @@ defmodule GodwokenExplorer.TokenTransfer do
       join: t in Transaction,
       on: t.hash == tt.transaction_hash,
       where:
-        tt.token_contract_address_hash == ^udt_address and
-          (tt.from_address_hash == ^eth_address or tt.to_address_hash == ^eth_address),
       select: %{
         hash: tt.transaction_hash,
         block_number: tt.block_number,
@@ -138,13 +146,13 @@ defmodule GodwokenExplorer.TokenTransfer do
             u6.decimal,
             tt.amount
           ),
-          status: b.status,
-          polyjuice_status: p.status,
-          gas_limit: p.gas_limit,
-          gas_price: p.gas_price,
-          gas_used: p.gas_used,
-          transfer_count: tt.amount,
-          nonce: t.nonce
+        status: b.status,
+        polyjuice_status: p.status,
+        gas_limit: p.gas_limit,
+        gas_price: p.gas_price,
+        gas_used: p.gas_used,
+        transfer_count: tt.amount,
+        nonce: t.nonce
       },
       order_by: [desc: tt.block_number]
     )
@@ -260,5 +268,16 @@ defmodule GodwokenExplorer.TokenTransfer do
       total_count: results.total_entries,
       txs: parsed_results
     }
+  end
+
+  def base_query_by(condition) do
+    from(tt in TokenTransfer,
+      where: ^condition,
+      select: %{
+        transaction_hash: tt.transaction_hash,
+        log_index: tt.log_index
+      },
+      order_by: [desc: tt.block_number]
+    )
   end
 end
