@@ -276,13 +276,13 @@ defmodule GodwokenExplorer.TokenTransfer do
 
   defp parse_json_result(paginate_result, init_query) do
     if paginate_result.total_entries != 0 do
-      transfers =
+      query =
         Enum.reduce(paginate_result.entries, init_query, fn %{
                                                               transaction_hash: transaction_hash,
                                                               log_index: log_index
                                                             },
-                                                            query ->
-          query
+                                                            query_acc ->
+          query_acc
           |> or_where(
             [tt],
             tt.transaction_hash == ^transaction_hash and tt.log_index == ^log_index
@@ -290,7 +290,8 @@ defmodule GodwokenExplorer.TokenTransfer do
         end)
 
       parsed_results =
-        transfers
+        query
+        |> Repo.all()
         |> Enum.map(fn transfer ->
           transfer
           |> Map.put(:timestamp, utc_to_unix(transfer[:inserted_at]))
