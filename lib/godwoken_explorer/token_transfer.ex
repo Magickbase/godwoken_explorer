@@ -51,94 +51,44 @@ defmodule GodwokenExplorer.TokenTransfer do
   def transfer_function_signature, do: @transfer_function_signature
 
   def list(%{eth_address: eth_address, udt_address: udt_address}, paging_options) do
+    condition =
+      dynamic(
+        [tt],
+        tt.token_contract_address_hash == ^udt_address and
+          (tt.from_address_hash == ^eth_address or tt.to_address_hash == ^eth_address)
+      )
+
+    paginate_result = base_query_by(condition, paging_options)
+
     udt = UDT.get_by_contract_address(udt_address)
     udt_id = Integer.to_string(udt.id)
 
-    from(tt in TokenTransfer,
-      join: a1 in Account,
-      on: a1.short_address == tt.from_address_hash,
-      join: a2 in Account,
-      on: a2.short_address == tt.to_address_hash,
-      join: b in Block,
-      on: b.hash == tt.block_hash,
-      join: p in Polyjuice,
-      on: p.tx_hash == tt.transaction_hash,
-      join: t in Transaction,
-      on: t.hash == tt.transaction_hash,
-      where:
-        tt.token_contract_address_hash == ^udt_address and
-          (tt.from_address_hash == ^eth_address or tt.to_address_hash == ^eth_address),
-      select: %{
-        hash: tt.transaction_hash,
-        block_number: tt.block_number,
-        inserted_at: b.inserted_at,
-        from: fragment("CASE WHEN ? = 'user' THEN encode(?, 'escape')
+    init_query =
+      from(tt in TokenTransfer,
+        join: a1 in Account,
+        on: a1.short_address == tt.from_address_hash,
+        join: a2 in Account,
+        on: a2.short_address == tt.to_address_hash,
+        join: b in Block,
+        on: b.hash == tt.block_hash,
+        join: p in Polyjuice,
+        on: p.tx_hash == tt.transaction_hash,
+        join: t in Transaction,
+        on: t.hash == tt.transaction_hash,
+        select: %{
+          hash: tt.transaction_hash,
+          block_number: tt.block_number,
+          inserted_at: b.inserted_at,
+          from: fragment("CASE WHEN ? = 'user' THEN encode(?, 'escape')
         ELSE encode(?, 'escape') END", a1.type, a1.eth_address, a1.short_address),
-        to: fragment("CASE WHEN ? = 'user' THEN encode(?, 'escape')
+          to: fragment("CASE WHEN ? = 'user' THEN encode(?, 'escape')
         ELSE encode(?, 'escape') END", a2.type, a2.eth_address, a2.short_address),
-        udt_id: ^udt_id,
-        udt_name: ^udt.name,
-        udt_symbol: ^udt.symbol,
-        transfer_value: fragment("
+          udt_id: ^udt_id,
+          udt_name: ^udt.name,
+          udt_symbol: ^udt.symbol,
+          transfer_value: fragment("
         ? / power(10, ?)::decimal
         ", tt.amount, ^udt.decimal),
-        status: b.status,
-        polyjuice_status: p.status,
-        gas_limit: p.gas_limit,
-        gas_price: p.gas_price,
-        gas_used: p.gas_used,
-        transfer_count: tt.amount,
-        nonce: t.nonce
-      },
-      order_by: [desc: tt.block_number]
-    )
-    |> Repo.paginate(page: paging_options[:page], page_size: paging_options[:page_size])
-    |> parse_json_result()
-  end
-
-  def list(%{eth_address: eth_address}, paging_options) do
-    from(tt in TokenTransfer,
-      join: a1 in Account,
-      on: a1.short_address == tt.from_address_hash,
-      join: a2 in Account,
-      on: a2.short_address == tt.to_address_hash,
-      join: b in Block,
-      on: b.hash == tt.block_hash,
-      join: a4 in Account,
-      on: a4.short_address == tt.token_contract_address_hash,
-      left_join: u5 in UDT,
-      on: u5.id == a4.id,
-      left_join: u6 in UDT,
-      on: u6.bridge_account_id == a4.id,
-      join: p in Polyjuice,
-      on: p.tx_hash == tt.transaction_hash,
-      join: t in Transaction,
-      on: t.hash == tt.transaction_hash,
-      where: tt.from_address_hash == ^eth_address or tt.to_address_hash == ^eth_address,
-      select: %{
-        hash: tt.transaction_hash,
-        block_number: tt.block_number,
-        inserted_at: b.inserted_at,
-        from: fragment("CASE WHEN ? = 'user' THEN encode(?, 'escape')
-        ELSE encode(?, 'escape') END", a1.type, a1.eth_address, a1.short_address),
-        to: fragment("CASE WHEN ? = 'user' THEN encode(?, 'escape')
-        ELSE encode(?, 'escape') END", a2.type, a2.eth_address, a2.short_address),
-        udt_id: fragment("CASE WHEN ? IS NULL THEN ? ELSE ? END", u5, u6.id, u5.id),
-        udt_name: fragment("CASE WHEN ? IS NULL THEN ? ELSE ? END", u5, u6.name, u5.name),
-        udt_symbol: fragment("CASE WHEN ? IS NULL THEN ? ELSE ? END", u5, u6.symbol, u5.symbol),
-        transfer_value:
-          fragment(
-            "CASE WHEN ? IS NOT NULL THEN ? / power(10, ?)::decimal
-            WHEN ? IS NOT NULL THEN ? / power(10, ?)::decimal
-            ELSE ? END",
-            u5.decimal,
-            tt.amount,
-            u5.decimal,
-            u6.decimal,
-            tt.amount,
-            u6.decimal,
-            tt.amount
-          ),
           status: b.status,
           polyjuice_status: p.status,
           gas_limit: p.gas_limit,
@@ -146,120 +96,230 @@ defmodule GodwokenExplorer.TokenTransfer do
           gas_used: p.gas_used,
           transfer_count: tt.amount,
           nonce: t.nonce
-      },
-      order_by: [desc: tt.block_number]
-    )
-    |> Repo.paginate(page: paging_options[:page], page_size: paging_options[:page_size])
-    |> parse_json_result()
+        }
+      )
+
+    parse_json_result(paginate_result, init_query)
+  end
+
+  def list(%{eth_address: eth_address}, paging_options) do
+    condition =
+      dynamic(
+        [tt],
+        tt.from_address_hash == ^eth_address or tt.to_address_hash == ^eth_address
+      )
+
+    paginate_result = base_query_by(condition, paging_options)
+
+    init_query =
+      from(tt in TokenTransfer,
+        join: a1 in Account,
+        on: a1.short_address == tt.from_address_hash,
+        join: a2 in Account,
+        on: a2.short_address == tt.to_address_hash,
+        join: b in Block,
+        on: b.hash == tt.block_hash,
+        join: a4 in Account,
+        on: a4.short_address == tt.token_contract_address_hash,
+        left_join: u5 in UDT,
+        on: u5.id == a4.id,
+        left_join: u6 in UDT,
+        on: u6.bridge_account_id == a4.id,
+        join: p in Polyjuice,
+        on: p.tx_hash == tt.transaction_hash,
+        join: t in Transaction,
+        on: t.hash == tt.transaction_hash,
+        select: %{
+          hash: tt.transaction_hash,
+          block_number: tt.block_number,
+          inserted_at: b.inserted_at,
+          from: fragment("CASE WHEN ? = 'user' THEN encode(?, 'escape')
+        ELSE encode(?, 'escape') END", a1.type, a1.eth_address, a1.short_address),
+          to: fragment("CASE WHEN ? = 'user' THEN encode(?, 'escape')
+        ELSE encode(?, 'escape') END", a2.type, a2.eth_address, a2.short_address),
+          udt_id: fragment("CASE WHEN ? IS NULL THEN ? ELSE ? END", u5, u6.id, u5.id),
+          udt_name: fragment("CASE WHEN ? IS NULL THEN ? ELSE ? END", u5, u6.name, u5.name),
+          udt_symbol: fragment("CASE WHEN ? IS NULL THEN ? ELSE ? END", u5, u6.symbol, u5.symbol),
+          transfer_value:
+            fragment(
+              "CASE WHEN ? IS NOT NULL THEN ? / power(10, ?)::decimal
+            WHEN ? IS NOT NULL THEN ? / power(10, ?)::decimal
+            ELSE ? END",
+              u5.decimal,
+              tt.amount,
+              u5.decimal,
+              u6.decimal,
+              tt.amount,
+              u6.decimal,
+              tt.amount
+            ),
+          status: b.status,
+          polyjuice_status: p.status,
+          gas_limit: p.gas_limit,
+          gas_price: p.gas_price,
+          gas_used: p.gas_used,
+          transfer_count: tt.amount,
+          nonce: t.nonce
+        }
+      )
+
+    parse_json_result(paginate_result, init_query)
   end
 
   def list(%{udt_address: udt_address}, paging_options) do
+    condition =
+      dynamic(
+        [tt],
+        tt.token_contract_address_hash == ^udt_address
+      )
+
+    paginate_result = base_query_by(condition, paging_options)
+
     udt = UDT.get_by_contract_address(udt_address)
     udt_id = Integer.to_string(udt.id)
 
-    from(tt in TokenTransfer,
-      join: a1 in Account,
-      on: a1.short_address == tt.from_address_hash,
-      join: a2 in Account,
-      on: a2.short_address == tt.to_address_hash,
-      join: b in Block,
-      on: b.hash == tt.block_hash,
-      join: p in Polyjuice,
-      on: p.tx_hash == tt.transaction_hash,
-      join: t in Transaction,
-      on: t.hash == tt.transaction_hash,
-      where: tt.token_contract_address_hash == ^udt_address,
-      select: %{
-        hash: tt.transaction_hash,
-        block_number: tt.block_number,
-        inserted_at: b.inserted_at,
-        from: fragment("CASE WHEN ? = 'user' THEN encode(?, 'escape')
+    init_query =
+      from(tt in TokenTransfer,
+        join: a1 in Account,
+        on: a1.short_address == tt.from_address_hash,
+        join: a2 in Account,
+        on: a2.short_address == tt.to_address_hash,
+        join: b in Block,
+        on: b.hash == tt.block_hash,
+        join: p in Polyjuice,
+        on: p.tx_hash == tt.transaction_hash,
+        join: t in Transaction,
+        on: t.hash == tt.transaction_hash,
+        select: %{
+          hash: tt.transaction_hash,
+          block_number: tt.block_number,
+          inserted_at: b.inserted_at,
+          from: fragment("CASE WHEN ? = 'user' THEN encode(?, 'escape')
         ELSE encode(?, 'escape') END", a1.type, a1.eth_address, a1.short_address),
-        to: fragment("CASE WHEN ? = 'user' THEN encode(?, 'escape')
+          to: fragment("CASE WHEN ? = 'user' THEN encode(?, 'escape')
         ELSE encode(?, 'escape') END", a2.type, a2.eth_address, a2.short_address),
-        udt_id: ^udt_id,
-        udt_name: ^udt.name,
-        udt_symbol: ^udt.symbol,
-        transfer_value: fragment("
+          udt_id: ^udt_id,
+          udt_name: ^udt.name,
+          udt_symbol: ^udt.symbol,
+          transfer_value: fragment("
         ? / power(10, ?)::decimal
         ", tt.amount, ^udt.decimal),
-        status: b.status,
-        polyjuice_status: p.status,
-        gas_limit: p.gas_limit,
-        gas_price: p.gas_price,
-        gas_used: p.gas_used,
-        transfer_count: tt.amount,
-        nonce: t.nonce
-      },
-      order_by: [desc: tt.block_number]
-    )
-    |> Repo.paginate(page: paging_options[:page], page_size: paging_options[:page_size])
-    |> parse_json_result()
+          status: b.status,
+          polyjuice_status: p.status,
+          gas_limit: p.gas_limit,
+          gas_price: p.gas_price,
+          gas_used: p.gas_used,
+          transfer_count: tt.amount,
+          nonce: t.nonce
+        }
+      )
+
+    parse_json_result(paginate_result, init_query)
   end
 
   def list(%{tx_hash: tx_hash}, paging_options) do
-    from(tt in TokenTransfer,
-      join: a1 in Account,
-      on: a1.short_address == tt.from_address_hash,
-      join: a2 in Account,
-      on: a2.short_address == tt.to_address_hash,
-      join: b in Block,
-      on: b.hash == tt.block_hash,
-      join: a4 in Account,
-      on: a4.short_address == tt.token_contract_address_hash,
-      left_join: u5 in UDT,
-      on: u5.id == a4.id,
-      left_join: u6 in UDT,
-      on: u6.bridge_account_id == a4.id,
-      join: p in Polyjuice,
-      on: p.tx_hash == tt.transaction_hash,
-      where: tt.transaction_hash == ^tx_hash,
-      select: %{
-        hash: tt.transaction_hash,
-        block_number: tt.block_number,
-        inserted_at: b.inserted_at,
-        from: fragment("CASE WHEN ? = 'user' THEN encode(?, 'escape')
+    condition =
+      dynamic(
+        [tt],
+        tt.transaction_hash == ^tx_hash
+      )
+
+    paginate_result = base_query_by(condition, paging_options)
+
+    init_query =
+      from(tt in TokenTransfer,
+        join: a1 in Account,
+        on: a1.short_address == tt.from_address_hash,
+        join: a2 in Account,
+        on: a2.short_address == tt.to_address_hash,
+        join: b in Block,
+        on: b.hash == tt.block_hash,
+        join: a4 in Account,
+        on: a4.short_address == tt.token_contract_address_hash,
+        left_join: u5 in UDT,
+        on: u5.id == a4.id,
+        left_join: u6 in UDT,
+        on: u6.bridge_account_id == a4.id,
+        join: p in Polyjuice,
+        on: p.tx_hash == tt.transaction_hash,
+        select: %{
+          hash: tt.transaction_hash,
+          block_number: tt.block_number,
+          inserted_at: b.inserted_at,
+          from: fragment("CASE WHEN ? = 'user' THEN encode(?, 'escape')
         ELSE encode(?, 'escape') END", a1.type, a1.eth_address, a1.short_address),
-        to: fragment("CASE WHEN ? = 'user' THEN encode(?, 'escape')
+          to: fragment("CASE WHEN ? = 'user' THEN encode(?, 'escape')
         ELSE encode(?, 'escape') END", a2.type, a2.eth_address, a2.short_address),
-        udt_id: fragment("CASE WHEN ? IS NULL THEN ? ELSE ? END", u5, u6.id, u5.id),
-        udt_name: fragment("CASE WHEN ? IS NULL THEN ? ELSE ? END", u5, u6.name, u5.name),
-        udt_symbol: fragment("CASE WHEN ? IS NULL THEN ? ELSE ? END", u5, u6.symbol, u5.symbol),
-        transfer_value:
-          fragment(
-            "CASE WHEN ? IS NOT NULL THEN ? / power(10, ?)::decimal
+          udt_id: fragment("CASE WHEN ? IS NULL THEN ? ELSE ? END", u5, u6.id, u5.id),
+          udt_name: fragment("CASE WHEN ? IS NULL THEN ? ELSE ? END", u5, u6.name, u5.name),
+          udt_symbol: fragment("CASE WHEN ? IS NULL THEN ? ELSE ? END", u5, u6.symbol, u5.symbol),
+          transfer_value:
+            fragment(
+              "CASE WHEN ? IS NOT NULL THEN ? / power(10, ?)::decimal
             WHEN ? IS NOT NULL THEN ? / power(10, ?)::decimal
             ELSE ? END",
-            u5.decimal,
-            tt.amount,
-            u5.decimal,
-            u6.decimal,
-            tt.amount,
-            u6.decimal,
-            tt.amount
-          ),
+              u5.decimal,
+              tt.amount,
+              u5.decimal,
+              u6.decimal,
+              tt.amount,
+              u6.decimal,
+              tt.amount
+            ),
           status: b.status,
           polyjuice_status: p.status
+        }
+      )
+
+    parse_json_result(paginate_result, init_query)
+  end
+
+  defp parse_json_result(paginate_result, init_query) do
+    if paginate_result.total_entries != 0 do
+      transfers =
+        Enum.reduce(paginate_result.entries, init_query, fn %{
+                                                              transaction_hash: transaction_hash,
+                                                              log_index: log_index
+                                                            },
+                                                            query ->
+          query
+          |> or_where(
+            [tt],
+            tt.transaction_hash == ^transaction_hash and tt.log_index == ^log_index
+          )
+        end)
+
+      parsed_results =
+        transfers
+        |> Enum.map(fn transfer ->
+          transfer
+          |> Map.put(:timestamp, utc_to_unix(transfer[:inserted_at]))
+          |> Map.delete(:inserted_at)
+        end)
+
+      %{
+        page: paginate_result.page_number,
+        total_count: paginate_result.total_entries,
+        txs: parsed_results
+      }
+    else
+      %{
+        page: paginate_result.page_number,
+        total_count: paginate_result.total_entries,
+        txs: []
+      }
+    end
+  end
+
+  defp base_query_by(condition, paging_options) do
+    from(tt in TokenTransfer,
+      where: ^condition,
+      select: %{
+        transaction_hash: tt.transaction_hash,
+        log_index: tt.log_index
       },
       order_by: [desc: tt.block_number]
     )
     |> Repo.paginate(page: paging_options[:page], page_size: paging_options[:page_size])
-    |> parse_json_result()
-  end
-
-  defp parse_json_result(results) do
-    parsed_results =
-      results.entries
-      |> Enum.map(fn transfer ->
-        transfer
-        |> Map.put(:timestamp, utc_to_unix(transfer[:inserted_at]))
-        |> Map.delete(:inserted_at)
-      end)
-
-    %{
-      page: results.page_number,
-      total_count: results.total_entries,
-      txs: parsed_results
-    }
   end
 end
