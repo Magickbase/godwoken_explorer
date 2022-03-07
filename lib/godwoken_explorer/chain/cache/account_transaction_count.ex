@@ -8,7 +8,7 @@ defmodule GodwokenExplorer.Chain.Cache.AccountTransactionCount do
 
   defp handle_fallback(account_id) do
     account = Repo.get(Account, account_id)
-    tx_count = Transaction.count_of_account(%{type: account.type, account_id: account.id, eth_address: account.eth_address})
+    tx_count = Transaction.count_of_account(%{type: account.type, account_id: account.id})
     set(account_id, tx_count)
 
     {:update, tx_count}

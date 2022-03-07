@@ -3,7 +3,7 @@ defmodule GodwokenExplorer.PendingTransaction do
   use Retry
 
   import GodwokenRPC.Util, only: [hex_to_number: 1, parse_le_number: 1, transform_hash_type: 1, parse_polyjuice_args: 1]
-  import Godwoken.MoleculeParser, only: [parse_meta_contract_args: 1, parse_sudt_transfer_args: 1]
+  import Godwoken.MoleculeParser, only: [parse_meta_contract_args: 1]
 
   @derive {Jason.Encoder, except: [:__meta__]}
   @primary_key {:hash, :binary, autogenerate: false}
@@ -97,16 +97,6 @@ defmodule GodwokenExplorer.PendingTransaction do
 
       from_account_id = hex_to_number(from_account_id)
       to_account_id = hex_to_number(to_id)
-      {short_address, transfer_count} = Polyjuice.decode_transfer_args(to_account_id, input)
-
-      eth_address =
-        if short_address do
-          case Account |> Repo.get_by(short_address: short_address) do
-            nil -> nil
-            %Account{eth_address: eth_address} ->
-              eth_address
-          end
-        end
 
       %{
         type: :polyjuice,
@@ -121,25 +111,6 @@ defmodule GodwokenExplorer.PendingTransaction do
           value: value,
           input_size: input_size,
           input: input,
-          receive_eth_address: eth_address,
-          transfer_count: transfer_count
-        }
-      }
-    else
-      {short_address, amount, fee} = parse_sudt_transfer_args(args)
-      {:ok, to_account_id} = Account.find_by_short_address("0x" <> short_address)
-      from_account_id = hex_to_number(from_account_id)
-
-      %{
-        type: :sudt,
-        nonce: hex_to_number(nonce),
-        args: "0x" <> args,
-        from_account_id: from_account_id,
-        to_account_id: to_account_id,
-        parsed_args: %{
-          udt_id: hex_to_number(to_id),
-          amount: amount,
-          fee: fee
         }
       }
     end
