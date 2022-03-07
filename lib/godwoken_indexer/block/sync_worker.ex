@@ -374,20 +374,18 @@ defmodule GodwokenIndexer.Block.SyncWorker do
           short_address
         end
 
-      updated_accounts =
+      account_ids =
         polyjuice_params
         |> Enum.filter(fn %{value: value} -> value > 0 end)
-        |> Enum.map(fn %{from_account_id: from_account_id, receive_address: short_address} ->
-          {from_account_id, short_address}
+        |> Enum.map(fn %{from_account_id: from_account_id} ->
+          from_account_id
         end)
-
-      {account_ids, short_addresses} = updated_accounts |> Enum.unzip()
 
       account_id_to_short_addresses =
         from(a in Account, where: a.id in ^account_ids, select: a.short_address) |> Repo.all()
 
       params =
-        (account_id_to_short_addresses ++ short_addresses)
+        account_id_to_short_addresses
         |> Enum.reject(&is_nil/1)
         |> Enum.map(fn address ->
           %{
