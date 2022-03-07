@@ -2,7 +2,7 @@ defmodule GodwokenExplorer.UDTView do
   use JSONAPI.View, type: "udt"
 
   import Ecto.Query, only: [from: 2]
-  alias GodwokenExplorer.{UDT, Repo, AccountUDT, Transaction}
+  alias GodwokenExplorer.{UDT, Repo, AccountUDT, Transaction, Account}
 
   def fields do
     [
@@ -38,9 +38,10 @@ defmodule GodwokenExplorer.UDTView do
   end
 
   def holder_count(udt, _conn) do
+    token_contract_address_hashes = from(a in Account, where: a.id in [^udt.id, ^udt.bridge_account_id], select: a.short_address) |> Repo.all()
     from(
       au in AccountUDT,
-      where: au.udt_id == ^udt.id and au.balance > 0
+      where: au.token_contract_address_hash in ^token_contract_address_hashes and au.balance > 0
     )
     |> Repo.aggregate(:count)
   end
