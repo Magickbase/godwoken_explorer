@@ -234,8 +234,7 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
                     short_address: short_address,
                     type: type,
                     nonce: nonce,
-                    eth_address: eth_address,
-                    ckb_lock_hash: l1_lock_hash
+                    eth_address: eth_address
                   })
 
                 nil ->
@@ -246,8 +245,7 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
                     short_address: short_address,
                     type: type,
                     nonce: nonce,
-                    eth_address: eth_address,
-                    ckb_lock_hash: l1_lock_hash
+                    eth_address: eth_address
                   })
               end
           end
