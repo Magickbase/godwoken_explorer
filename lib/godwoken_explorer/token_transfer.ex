@@ -291,6 +291,7 @@ defmodule GodwokenExplorer.TokenTransfer do
 
       parsed_results =
         query
+        |> order_by([tt], desc: tt.block_number, desc: tt.inserted_at)
         |> Repo.all()
         |> Enum.map(fn transfer ->
           transfer
@@ -319,7 +320,7 @@ defmodule GodwokenExplorer.TokenTransfer do
         transaction_hash: tt.transaction_hash,
         log_index: tt.log_index
       },
-      order_by: [desc: tt.block_number]
+      order_by: [desc: tt.block_number, desc: tt.inserted_at]
     )
     |> Repo.paginate(page: paging_options[:page], page_size: paging_options[:page_size])
   end
