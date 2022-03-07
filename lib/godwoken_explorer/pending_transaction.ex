@@ -5,6 +5,7 @@ defmodule GodwokenExplorer.PendingTransaction do
   import GodwokenRPC.Util, only: [hex_to_number: 1, parse_le_number: 1, transform_hash_type: 1, parse_polyjuice_args: 1]
   import Godwoken.MoleculeParser, only: [parse_meta_contract_args: 1, parse_sudt_transfer_args: 1]
 
+  @derive {Jason.Encoder, except: [:__meta__]}
   @primary_key {:hash, :binary, autogenerate: false}
   schema "pending_transactions" do
     field :args, :binary

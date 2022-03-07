@@ -8,6 +8,7 @@ defmodule GodwokenExplorer.Transaction do
   @tx_limit 500_000
   @account_tx_limit 100_000
 
+  @derive {Jason.Encoder, except: [:__meta__]}
   @primary_key {:hash, :binary, autogenerate: false}
   schema "transactions" do
     field(:args, :binary)
@@ -85,7 +86,7 @@ defmodule GodwokenExplorer.Transaction do
         |> Enum.map(fn t ->
           t
           |> Map.take([:hash, :from, :to, :to_alias, :type])
-          |> Map.merge(%{timestamp: t.block.inserted_at})
+          |> Map.merge(%{timestamp: t.inserted_at})
         end)
 
       _ ->

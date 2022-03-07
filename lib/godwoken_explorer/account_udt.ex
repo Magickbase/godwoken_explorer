@@ -8,6 +8,7 @@ defmodule GodwokenExplorer.AccountUDT do
   alias GodwokenRPC
   alias GodwokenExplorer.Chain.Events.Publisher
 
+  @derive {Jason.Encoder, except: [:__meta__]}
   schema "account_udts" do
     field :balance, :decimal
     belongs_to(:account, GodwokenExplorer.Account, foreign_key: :account_id, references: :id)

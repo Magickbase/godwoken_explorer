@@ -3,6 +3,7 @@ defmodule GodwokenExplorer.WithdrawalRequest do
 
   import Ecto.Changeset
 
+  @derive {Jason.Encoder, except: [:__meta__]}
   schema "withdrawal_requests" do
     field :nonce, :integer
     field :capacity, :decimal

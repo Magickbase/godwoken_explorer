@@ -31,6 +31,7 @@ defmodule GodwokenExplorer.Block do
     :transaction_count
   ]
 
+  @derive {Jason.Encoder, except: [:__meta__]}
   @primary_key {:hash, :binary, autogenerate: false}
   schema "blocks" do
     field :number, :integer

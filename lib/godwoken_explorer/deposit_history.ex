@@ -1,6 +1,7 @@
 defmodule GodwokenExplorer.DepositHistory do
   use GodwokenExplorer, :schema
 
+  @derive {Jason.Encoder, except: [:__meta__]}
   schema "deposit_histories" do
     field :script_hash, :binary
     field :amount, :decimal
