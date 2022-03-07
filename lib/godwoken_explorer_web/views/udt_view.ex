@@ -100,7 +100,8 @@ defmodule GodwokenExplorer.UDTView do
       :official_site,
       :description,
       :icon,
-      :type_script
+      :type_script,
+      :bridge_account_id
     ]
 
     account_fields = [:short_address]
