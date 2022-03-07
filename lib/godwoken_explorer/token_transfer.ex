@@ -6,8 +6,9 @@ defmodule GodwokenExplorer.TokenTransfer do
   @constant "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
   @erc1155_single_transfer_signature "0xc3d58168c5ae7397731d063d5bbf3d657854427343f4c083240f7aacaa2d0f62"
   @erc1155_batch_transfer_signature "0x4a39dc06d4c0dbc64b70af90fd698a233a518aa5d07e595d983b8c0526c8f7fb"
-
   @transfer_function_signature "0xa9059cbb"
+
+  @yok_token_address_hash "0xb02c930c2825a960a50ba4ab005e8264498b64a0"
 
   @derive {Jason.Encoder, except: [:__meta__]}
   @primary_key false
@@ -168,10 +169,18 @@ defmodule GodwokenExplorer.TokenTransfer do
 
   def list(%{udt_address: udt_address}, paging_options) do
     condition =
-      dynamic(
-        [tt],
-        tt.token_contract_address_hash == ^udt_address
-      )
+      if udt_address == @yok_token_address_hash do
+        latest_3_days = NaiveDateTime.utc_now() |> NaiveDateTime.add(-60 * 60 * 24 * 3)
+        dynamic(
+          [tt],
+          tt.token_contract_address_hash == ^udt_address and tt.inserted_at > ^latest_3_days
+        )
+      else
+        dynamic(
+          [tt],
+          tt.token_contract_address_hash == ^udt_address
+        )
+      end
 
     paginate_result = base_query_by(condition, paging_options)
 
@@ -322,6 +331,6 @@ defmodule GodwokenExplorer.TokenTransfer do
       },
       order_by: [desc: tt.block_number, desc: tt.inserted_at]
     )
-    |> Repo.paginate(page: paging_options[:page], page_size: paging_options[:page_size])
+    |> Repo.paginate(page: paging_options[:page], page_size: paging_options[:page_size], timeout: :infinity)
   end
 end
