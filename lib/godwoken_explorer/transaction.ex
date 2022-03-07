@@ -223,8 +223,6 @@ defmodule GodwokenExplorer.Transaction do
 
   def list_tx_hash_by_transaction_query(condition) do
     from(t in Transaction,
-      left_join: p in Polyjuice,
-      on: p.tx_hash == t.hash,
       select: %{tx_hash: t.hash, block_number: t.block_number, inserted_at: t.inserted_at},
       where: ^condition
     )
