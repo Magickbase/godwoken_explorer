@@ -1,0 +1,1 @@
+call "%~dp0\godwoken_explorer" eval GodwokenExplorer.Release.migrate
