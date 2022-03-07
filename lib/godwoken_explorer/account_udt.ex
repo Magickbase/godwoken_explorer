@@ -28,7 +28,7 @@ defmodule GodwokenExplorer.AccountUDT do
   end
 
   def create_or_update_account_udt!(attrs) do
-    case Repo.get_by(__MODULE__, %{account_id: attrs[:account_id], udt_id: attrs[:udt_id]}) do
+    case Repo.get_by(__MODULE__, %{address_hash: attrs[:address_hash], token_contract_address_hash: attrs[:token_contract_address_hash]}) do
       nil -> %__MODULE__{}
       account_udt -> account_udt
     end
