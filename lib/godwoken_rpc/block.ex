@@ -32,26 +32,37 @@ defmodule GodwokenRPC.Block do
           }
         }
       }) do
-    {:ok,
-     %{
-       "gasLimit" => gas_limit,
-       "gasUsed" => gas_used,
-       "size" => size,
-       "logsBloom" => logs_bloom
-     }} = GodwokenRPC.fetch_eth_block_by_hash(hash)
+    case GodwokenRPC.fetch_eth_block_by_hash(hash) do
+      {:ok,
+       %{
+         "gasLimit" => gas_limit,
+         "gasUsed" => gas_used,
+         "size" => size,
+         "logsBloom" => logs_bloom
+       }} ->
+        %{
+          hash: hash,
+          parent_hash: parent_hash,
+          number: hex_to_number(number),
+          timestamp: timestamp |> hex_to_number() |> timestamp_to_datetime,
+          aggregator_id: hex_to_number(aggregator_id),
+          transaction_count: tx_count |> hex_to_number(),
+          size: size |> hex_to_number(),
+          logs_bloom: logs_bloom,
+          gas_limit: gas_limit |> hex_to_number(),
+          gas_used: gas_used |> hex_to_number()
+        }
 
-    %{
-      hash: hash,
-      parent_hash: parent_hash,
-      number: hex_to_number(number),
-      timestamp: timestamp |> hex_to_number() |> timestamp_to_datetime,
-      aggregator_id: hex_to_number(aggregator_id),
-      transaction_count: tx_count |> hex_to_number(),
-      size: size |> hex_to_number(),
-      logs_bloom: logs_bloom,
-      gas_limit: gas_limit |> hex_to_number(),
-      gas_used: gas_used |> hex_to_number()
-    }
+      {:ok, nil} ->
+        %{
+          hash: hash,
+          parent_hash: parent_hash,
+          number: hex_to_number(number),
+          timestamp: timestamp |> hex_to_number() |> timestamp_to_datetime,
+          aggregator_id: hex_to_number(aggregator_id),
+          transaction_count: tx_count |> hex_to_number()
+        }
+    end
   end
 
   def elixir_to_transactions(%{
