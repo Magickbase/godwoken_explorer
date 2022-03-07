@@ -4,6 +4,7 @@ defmodule GodwokenExplorer.SmartContract do
   @derive {Jason.Encoder, except: [:__meta__]}
   alias GodwokenExplorer.ETS.SmartContracts, as: ETSSmartContracts
 
+  @derive {Jason.Encoder, except: [:__meta__]}
   schema "smart_contracts" do
     field(:abi, {:array, :map})
     field :contract_source_code, :string
