@@ -7,6 +7,7 @@ defmodule GodwokenExplorer.Polyjuice do
 
   alias ABI.FunctionSelector
 
+  @derive {Jason.Encoder, except: [:__meta__]}
   schema "polyjuice" do
     field :is_create, :boolean, default: false
     field :gas_limit, :integer

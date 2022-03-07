@@ -39,6 +39,36 @@
       <%= error_tag f, :account_id %>
     </div>
 
+    <div class="torch-form-group">
+      <%= label f, :constructor_arguments %>
+      <%= text_input f, :constructor_arguments %>
+      <%= error_tag f, :constructor_arguments %>
+    </div>
+
+    <div class="torch-form-group">
+      <%= label f, :deployment_tx_hash %>
+      <%= text_input f, :deployment_tx_hash %>
+      <%= error_tag f, :deployment_tx_hash %>
+    </div>
+
+    <div class="torch-form-group">
+      <%= label f, :compiler_version %>
+      <%= text_input f, :compiler_version %>
+      <%= error_tag f, :compiler_version %>
+    </div>
+
+    <div class="torch-form-group">
+      <%= label f, :compiler_file_format %>
+      <%= text_input f, :compiler_file_format %>
+      <%= error_tag f, :compiler_file_format %>
+    </div>
+
+    <div class="torch-form-group">
+      <%= label f, :other_info %>
+      <%= text_input f, :other_info %>
+      <%= error_tag f, :other_info %>
+    </div>
+
     <div class="torch-submit-form">
       <%= submit "Submit", class: "torch-submit-button" %>
     </div>

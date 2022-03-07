@@ -32,6 +32,31 @@
           <div class="torch-show-data"><%= @smart_contract.account_id %></div>
         </li>
 
+        <li>
+          <div class="torch-show-label">Constructor Arguments:</div>
+          <div class="torch-show-data"><%= @smart_contract.constructor_arguments %></div>
+        </li>
+
+        <li>
+          <div class="torch-show-label">Deplayment Transaction Hash:</div>
+          <div class="torch-show-data"><%= @smart_contract.deployment_tx_hash %></div>
+        </li>
+
+        <li>
+          <div class="torch-show-label">Compiler Version:</div>
+          <div class="torch-show-data"><%= @smart_contract.compiler_version %></div>
+        </li>
+
+        <li>
+          <div class="torch-show-label">Compiler File Format:</div>
+          <div class="torch-show-data"><%= @smart_contract.compiler_file_format %></div>
+        </li>
+
+        <li>
+          <div class="torch-show-label">Orther Info:</div>
+          <div class="torch-show-data"><%= @smart_contract.other_info %></div>
+        </li>
+
     </ul>
   </div>
 </section>

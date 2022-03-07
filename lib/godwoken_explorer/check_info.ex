@@ -1,6 +1,7 @@
 defmodule GodwokenExplorer.CheckInfo do
   use GodwokenExplorer, :schema
 
+  @derive {Jason.Encoder, except: [:__meta__]}
   schema "check_infos" do
     field :block_hash, :string
     field :tip_block_number, :integer

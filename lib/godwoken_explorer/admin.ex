@@ -8,7 +8,8 @@ defmodule GodwokenExplorer.Admin do
   import Torch.Helpers, only: [sort: 1, paginate: 4]
   import Filtrex.Type.Config
 
-  alias GodwokenExplorer.Admin.SmartContract
+  # alias GodwokenExplorer.Admin.SmartContract
+  alias GodwokenExplorer.SmartContract
 
   @pagination [page_size: 15]
   @pagination_distance 5

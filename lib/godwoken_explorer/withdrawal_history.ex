@@ -1,6 +1,7 @@
 defmodule GodwokenExplorer.WithdrawalHistory do
   use GodwokenExplorer, :schema
 
+  @derive {Jason.Encoder, except: [:__meta__]}
   schema "withdrawal_histories" do
     field :block_hash, :binary
     field :block_number, :integer

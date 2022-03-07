@@ -5,6 +5,7 @@ defmodule GodwokenExplorer.ContractMethod do
 
   alias GodwokenExplorer.Chain.MethodIdentifier
 
+  @derive {Jason.Encoder, except: [:__meta__]}
   schema "contract_methods" do
     field :abi, :map
     field :identifier, MethodIdentifier
