@@ -139,8 +139,8 @@ defmodule GodwokenExplorer.Account do
           }
         }
 
-      %Account{type: :user} ->
-        udt_list = AccountUDT.fetch_realtime_udt_blance(id)
+      %Account{type: :user, short_address: short_address} ->
+        udt_list = AccountUDT.list_udt_by_eth_address(short_address)
 
         %{
           user: %{
@@ -236,7 +236,7 @@ defmodule GodwokenExplorer.Account do
           [:user, :udt_list],
           udt_list
           |> Enum.map(fn udt ->
-            %{udt | balance: balance_to_view(udt.balance, UDT.get_decimal(udt.id))}
+            %{udt | balance: udt.balance |> D.to_string(:normal)}
           end)
         )
 
@@ -477,20 +477,6 @@ defmodule GodwokenExplorer.Account do
     end
     |> changeset(attrs)
     |> Repo.insert_or_update!()
-  end
-
-  def sync_special_udt_balance(id) do
-    with udt_id when is_integer(udt_id) <- UDT.ckb_account_id() do
-      AccountUDT.realtime_update_balance(id, udt_id)
-    end
-
-    with udt_id when is_integer(udt_id) <- UDT.eth_account_id() do
-      AccountUDT.realtime_update_balance(id, udt_id)
-    end
-
-    with udt_id when is_integer(udt_id) <- UDT.yok_account_id() do
-      AccountUDT.update_erc20_balance!(id, udt_id)
-    end
   end
 
   def update_nonce!(id) do

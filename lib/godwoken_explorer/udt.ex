@@ -259,19 +259,6 @@ defmodule GodwokenExplorer.UDT do
     end
   end
 
-  def yok_account_id do
-    if FastGlobal.get(:yok_account_id) do
-      FastGlobal.get(:yok_account_id)
-    else
-      with %__MODULE__{id: id} <- Repo.get_by(__MODULE__, symbol: "YOK") do
-        FastGlobal.put(:yok_account_id, id)
-        id
-      else
-        _ -> nil
-      end
-    end
-  end
-
   def find_by_name_or_token(keyword) do
     from(u in UDT,
       where:

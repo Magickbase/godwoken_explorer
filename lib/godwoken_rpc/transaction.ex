@@ -2,7 +2,7 @@ defmodule GodwokenRPC.Transaction do
   import GodwokenRPC.Util, only: [hex_to_number: 1, parse_le_number: 1, transform_hash_type: 1, parse_polyjuice_args: 1]
   import Godwoken.MoleculeParser, only: [parse_meta_contract_args: 1, parse_sudt_transfer_args: 1]
 
-  alias GodwokenExplorer.{Account, Polyjuice, Repo, AccountUDT}
+  alias GodwokenExplorer.{Account, Repo}
 
   def elixir_to_params(%{
         "block_hash" => block_hash,
@@ -56,19 +56,21 @@ defmodule GodwokenRPC.Transaction do
 
       from_account_id = hex_to_number(from_account_id)
       to_account_id = hex_to_number(to_id)
-      {short_address, transfer_count} =
-        Polyjuice.decode_transfer_args(to_account_id, input, hash)
 
+      short_address =
+        case input do
+          "0x1a695230" <> "000000000000000000000000" <> hex_short_address ->
+            "0x" <> hex_short_address
+          _ ->
+            nil
+        end
       eth_address =
         if short_address do
-          AccountUDT.update_erc20_balance!(from_account_id, to_account_id)
-
           case Account |> Repo.get_by(short_address: short_address) do
             nil ->
               nil
 
-            %Account{id: id, eth_address: eth_address} ->
-              AccountUDT.update_erc20_balance!(id, to_account_id)
+            %Account{eth_address: eth_address} ->
               eth_address
           end
         end
@@ -90,7 +92,6 @@ defmodule GodwokenRPC.Transaction do
         input: input,
         receive_address: short_address,
         receive_eth_address: eth_address,
-        transfer_count: transfer_count,
         account_ids: [from_account_id, to_account_id]
       }
     else
