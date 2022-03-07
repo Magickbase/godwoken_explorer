@@ -67,6 +67,8 @@ defmodule GodwokenRPC.Transaction do
 
       {"BatchSetMapping", gw_script_hashes, fee} ->
         Logger.info("===========BatchSetMapping#{gw_script_hashes}#{fee}")
+        {hashes_count, str_hashes} = gw_script_hashes |> String.split_at(8)
+        hashes = for <<x::binary-64 <- str_hashes>>, do: x
     end
 
     %{

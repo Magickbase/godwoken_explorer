@@ -68,7 +68,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
          blocks_params: blocks_params,
          transactions_params: transactions_params_without_receipts,
          withdrawal_params: withdrawal_params,
-         errors: _
+         errors: []
        }} = GodwokenRPC.fetch_blocks_by_range(range)
 
       Logger.info("=====================FETCHED DATA")
@@ -94,76 +94,95 @@ defmodule GodwokenIndexer.Block.SyncWorker do
       update_block_cache(inserted_blocks)
       Logger.info("=====================UPDATED BLOCKS")
 
-      {polyjuice_without_receipts, polyjuice_creator_params} =
-        transactions_params_without_receipts
-        |> Enum.split_with(fn %{type: type} -> type == :polyjuice end)
-
-      trigger_account_worker(polyjuice_without_receipts)
-      Logger.info("=====================UPDATED ACCOUNT")
-
-      {:ok, %{logs: logs, receipts: receipts}} =
-        GodwokenRPC.fetch_transaction_receipts(polyjuice_without_receipts)
-
-      Repo.insert_all(Log, logs |> Enum.map(fn log -> Map.merge(log, timestamps()) end),
-        on_conflict: :nothing
-      )
-
-      Logger.info("=====================UPDATED LOG")
-
-      polyjuice_with_receipts = Receipts.put(polyjuice_without_receipts, receipts)
-      %{token_transfers: token_transfers, tokens: _tokens} = TokenTransfers.parse(logs)
-
-      Repo.insert_all(
-        TokenTransfer,
-        token_transfers |> Enum.map(fn log -> Map.merge(log, timestamps()) end),
-        on_conflict: :nothing
-      )
-
-      Logger.info("=====================UPDATED TOKENTRANSFER")
-
-      inserted_transaction_params =
-        filter_transaction_columns(polyjuice_with_receipts ++ polyjuice_creator_params)
-
-      {_count, returned_values} =
-        Repo.insert_all(Transaction, inserted_transaction_params,
-          on_conflict: :nothing,
-          returning: [:from_account_id, :to_account_id, :hash, :type, :block_number, :inserted_at]
-        )
-
-      inserted_polyjuice_params = filter_polyjuice_columns(polyjuice_with_receipts)
-      Repo.insert_all(Polyjuice, inserted_polyjuice_params, on_conflict: :nothing)
-
-      inserted_polyjuice_creator_params =
-        filter_polyjuice_creator_columns(polyjuice_creator_params)
-
-      Repo.insert_all(PolyjuiceCreator, inserted_polyjuice_creator_params, on_conflict: :nothing)
-
-      display_ids =
-        (polyjuice_with_receipts ++ polyjuice_creator_params)
-        |> extract_account_ids()
-        |> Account.display_ids()
-
       inserted_transactions =
-        returned_values
-        |> Enum.map(fn tx ->
-          tx
-          |> Map.merge(%{
-            from: display_ids |> Map.get(tx.from_account_id, {tx.from_account_id}) |> elem(0),
-            to: display_ids |> Map.get(tx.to_account_id, {tx.to_account_id}) |> elem(0),
-            to_alias:
-              display_ids
-              |> Map.get(tx.to_account_id, {tx.to_account_id, tx.to_account_id})
-              |> elem(1)
-          })
-        end)
+        if length(transactions_params_without_receipts) > 0 do
+          grouped_transactions_params =
+            transactions_params_without_receipts |> Enum.group_by(fn tx -> tx[:type] end)
 
-      update_transactions_cache(inserted_transactions)
-      Logger.info("=====================UPDATED TRANSACTIONS")
+          polyjuice_without_receipts = grouped_transactions_params[:polyjuice] || []
+          polyjuice_creator_params = grouped_transactions_params[:polyjuice_creator] || []
+          eth_address_registry_params = grouped_transactions_params[:eth_address_registry] || []
 
-      if length(token_transfers) > 0, do: udpate_erc20_balance(token_transfers)
+          {:ok, %{logs: logs, receipts: receipts}} =
+            GodwokenRPC.fetch_transaction_receipts(polyjuice_without_receipts)
 
-      if length(polyjuice_without_receipts) > 0,
-        do: update_ckb_balance(polyjuice_without_receipts)
+          Repo.insert_all(Log, logs |> Enum.map(fn log -> Map.merge(log, timestamps()) end),
+            on_conflict: :nothing
+          )
+
+          Logger.info("=====================UPDATED LOG")
+
+          polyjuice_with_receipts = Receipts.put(polyjuice_without_receipts, receipts)
+          %{token_transfers: token_transfers, tokens: _tokens} = TokenTransfers.parse(logs)
+
+          Repo.insert_all(
+            TokenTransfer,
+            token_transfers |> Enum.map(fn log -> Map.merge(log, timestamps()) end),
+            on_conflict: :nothing
+          )
+
+          Logger.info("=====================UPDATED TOKENTRANSFER")
+
+          inserted_transaction_params =
+            filter_transaction_columns(polyjuice_with_receipts ++ polyjuice_creator_params ++ eth_address_registry_params)
+
+          {_count, returned_values} =
+            Repo.insert_all(Transaction, inserted_transaction_params,
+              on_conflict: :nothing,
+              returning: [
+                :from_account_id,
+                :to_account_id,
+                :hash,
+                :type,
+                :block_number,
+                :inserted_at
+              ]
+            )
+
+          inserted_polyjuice_params = filter_polyjuice_columns(polyjuice_with_receipts)
+          Repo.insert_all(Polyjuice, inserted_polyjuice_params, on_conflict: :nothing)
+
+          inserted_polyjuice_creator_params =
+            filter_polyjuice_creator_columns(polyjuice_creator_params)
+
+          Repo.insert_all(PolyjuiceCreator, inserted_polyjuice_creator_params,
+            on_conflict: :nothing
+          )
+
+          display_ids =
+            (polyjuice_with_receipts ++ polyjuice_creator_params)
+            |> extract_account_ids()
+            |> Account.display_ids()
+
+          inserted_transactions =
+            returned_values
+            |> Enum.map(fn tx ->
+              tx
+              |> Map.merge(%{
+                from: display_ids |> Map.get(tx.from_account_id, {tx.from_account_id}) |> elem(0),
+                to: display_ids |> Map.get(tx.to_account_id, {tx.to_account_id}) |> elem(0),
+                to_alias:
+                  display_ids
+                  |> Map.get(tx.to_account_id, {tx.to_account_id, tx.to_account_id})
+                  |> elem(1)
+              })
+            end)
+
+          update_transactions_cache(inserted_transactions)
+          Logger.info("=====================UPDATED TRANSACTIONS")
+
+          if length(token_transfers) > 0, do: udpate_erc20_balance(token_transfers)
+
+          if length(polyjuice_without_receipts) > 0,
+            do: update_ckb_balance(polyjuice_without_receipts)
+
+          trigger_account_worker(transactions_params_without_receipts)
+          Logger.info("=====================UPDATED ACCOUNT")
+
+          inserted_transactions
+        else
+          []
+        end
 
       Repo.insert_all(WithdrawalRequest, withdrawal_params, on_conflict: :nothing)
 
@@ -180,6 +199,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
       Logger.info("=====================UPDATED BALANCE")
 
       broadcast_block_and_tx(inserted_blocks, inserted_transactions)
+
       {:ok, next_number + 1}
     else
       _ -> {:ok, next_number}
@@ -308,7 +328,6 @@ defmodule GodwokenIndexer.Block.SyncWorker do
                      hash_type: hash_type,
                      script_args: script_args,
                      fee_amount: fee_amount,
-                     fee_udt_id: fee_udt_id,
                      hash: hash
                    } ->
       %{
@@ -316,7 +335,6 @@ defmodule GodwokenIndexer.Block.SyncWorker do
         hash_type: hash_type,
         script_args: script_args,
         fee_amount: fee_amount,
-        fee_udt_id: fee_udt_id,
         tx_hash: hash
       }
       |> Map.merge(timestamps())
