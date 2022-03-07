@@ -444,30 +444,33 @@ defmodule GodwokenExplorer.Account do
   end
 
   def manual_create_account(id) do
-    nonce = GodwokenRPC.fetch_nonce(id)
-    {:ok, script_hash} = GodwokenRPC.fetch_script_hash(%{account_id: id})
-    short_address = String.slice(script_hash, 0, 42)
-    {:ok, script} = GodwokenRPC.fetch_script(script_hash)
-    type = switch_account_type(script["code_hash"], script["args"])
-    eth_address = script_to_eth_adress(type, script["args"])
-    parsed_script = add_name_to_polyjuice_script(type, script)
+    with {:ok, script_hash}
+         when script_hash != "0x0000000000000000000000000000000000000000000000000000000000000000" <-
+           GodwokenRPC.fetch_script_hash(%{account_id: id}) do
+      nonce = GodwokenRPC.fetch_nonce(id)
+      short_address = String.slice(script_hash, 0, 42)
+      {:ok, script} = GodwokenRPC.fetch_script(script_hash)
+      type = switch_account_type(script["code_hash"], script["args"])
+      eth_address = script_to_eth_adress(type, script["args"])
+      parsed_script = add_name_to_polyjuice_script(type, script)
 
-    attrs = %{
-      id: id,
-      script: parsed_script,
-      script_hash: script_hash,
-      short_address: short_address,
-      type: type,
-      nonce: nonce,
-      eth_address: eth_address
-    }
+      attrs = %{
+        id: id,
+        script: parsed_script,
+        script_hash: script_hash,
+        short_address: short_address,
+        type: type,
+        nonce: nonce,
+        eth_address: eth_address
+      }
 
-    case Repo.get_by(__MODULE__, script_hash: attrs[:script_hash]) do
-      nil -> %__MODULE__{}
-      account -> account
+      case Repo.get_by(__MODULE__, script_hash: attrs[:script_hash]) do
+        nil -> %__MODULE__{}
+        account -> account
+      end
+      |> changeset(attrs)
+      |> Repo.insert_or_update!()
     end
-    |> changeset(attrs)
-    |> Repo.insert_or_update!()
   end
 
   def update_nonce!(id) do
