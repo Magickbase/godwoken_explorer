@@ -70,7 +70,7 @@ defmodule GodwokenExplorer.Transaction do
   # TODO: from and to may can refactor to be a single method
   def latest_10_records do
     case Transactions.all() do
-      txs when is_list(txs) and length(txs) == 10 ->
+      txs when is_list(txs) and length(txs) > 0 ->
         txs
         |> Enum.map(fn t ->
           t
@@ -79,12 +79,12 @@ defmodule GodwokenExplorer.Transaction do
         end)
 
       _ ->
-        list_tx_hash_by_transaction_query(true)
-        |> order_by([t], desc: t.block_number, desc: t.inserted_at)
+        %Block{hash: hash} = from(b in Block, where: b.transaction_count > 0, order_by: [desc: b.number], limit: 1) |> Repo.one()
+        list_tx_hash_by_transaction_query(dynamic([t], t.block_hash == ^hash))
         |> limit(10)
         |> Repo.all()
-        |> Enum.map(fn %{tx_hash: tx_hash} -> tx_hash end)
         |> list_transaction_by_tx_hash()
+        |> order_by([t], desc: t.block_number, desc: t.inserted_at)
         |> Repo.all()
     end
   end
@@ -129,7 +129,8 @@ defmodule GodwokenExplorer.Transaction do
     from(t in Transaction,
       where: t.from_account_id == ^account_id,
       select: t.hash
-    ) |> Repo.aggregate(:count)
+    )
+    |> Repo.aggregate(:count)
   end
 
   def count_of_account(%{type: type, account_id: account_id})
@@ -143,7 +144,6 @@ defmodule GodwokenExplorer.Transaction do
       ) do
     tx_hashes =
       list_tx_hash_by_transaction_query(dynamic([t], t.block_hash == ^block_hash))
-      |> order_by([t], desc: t.block_number, desc: t.inserted_at)
 
     parse_result(tx_hashes, page)
   end
@@ -155,9 +155,7 @@ defmodule GodwokenExplorer.Transaction do
     tx_hashes =
       list_tx_hash_by_transaction_query(
         dynamic([t], t.from_account_id == ^account_id and t.to_account_id == ^contract_id)
-      )
-      |> order_by([t], desc: t.block_number, desc: t.inserted_at)
-      |> order_by([t], desc: t.block_number, desc: t.inserted_at)
+      ) |> limit(@account_tx_limit)
 
     parse_result(tx_hashes, page)
   end
@@ -169,7 +167,6 @@ defmodule GodwokenExplorer.Transaction do
       when type in [:meta_contract, :udt, :polyjuice_root, :polyjuice_contract] do
     tx_hashes =
       list_tx_hash_by_transaction_query(dynamic([t], t.to_account_id == ^account_id))
-      |> order_by([t], desc: t.block_number, desc: t.inserted_at)
       |> limit(@account_tx_limit)
 
     parse_result(tx_hashes, page)
@@ -183,7 +180,6 @@ defmodule GodwokenExplorer.Transaction do
     tx_hashes =
       list_tx_hash_by_transaction_query(dynamic([t], t.from_account_id == ^account_id))
       |> limit(@account_tx_limit)
-      |> order_by([t], desc: t.block_number, desc: t.inserted_at)
 
     parse_result(tx_hashes, page)
   end
@@ -191,7 +187,6 @@ defmodule GodwokenExplorer.Transaction do
   def account_transactions_data(page) do
     tx_hashes =
       list_tx_hash_by_transaction_query(true)
-      |> order_by([t], desc: t.block_number, desc: t.inserted_at)
       |> limit(@tx_limit)
 
     parse_result(tx_hashes, page)
@@ -201,9 +196,7 @@ defmodule GodwokenExplorer.Transaction do
     tx_hashes_struct = Repo.paginate(tx_hashes, page: page)
 
     results =
-      list_transaction_by_tx_hash(
-        Enum.map(tx_hashes_struct.entries, fn %{tx_hash: tx_hash} -> tx_hash end)
-      )
+      list_transaction_by_tx_hash(tx_hashes_struct.entries)
       |> order_by([t], desc: t.block_number, desc: t.inserted_at)
       |> Repo.all()
 
@@ -223,8 +216,9 @@ defmodule GodwokenExplorer.Transaction do
 
   def list_tx_hash_by_transaction_query(condition) do
     from(t in Transaction,
-      select: %{tx_hash: t.hash, block_number: t.block_number, inserted_at: t.inserted_at},
-      where: ^condition
+      select: t.hash,
+      where: ^condition,
+      order_by: [desc: t.block_number, desc: t.inserted_at]
     )
   end
 
