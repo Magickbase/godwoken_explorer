@@ -8,6 +8,7 @@ defmodule GodwokenExplorer.TokenTransfer do
   @erc1155_batch_transfer_signature "0x4a39dc06d4c0dbc64b70af90fd698a233a518aa5d07e595d983b8c0526c8f7fb"
 
   @transfer_function_signature "0xa9059cbb"
+  @yok_address "0xb02c930c2825a960a50ba4ab005e8264498b64a0"
 
   @derive {Jason.Encoder, except: [:__meta__]}
   @primary_key false
@@ -168,10 +169,18 @@ defmodule GodwokenExplorer.TokenTransfer do
 
   def list(%{udt_address: udt_address}, paging_options) do
     condition =
-      dynamic(
-        [tt],
-        tt.token_contract_address_hash == ^udt_address
-      )
+      if udt_address == @yok_address do
+        datetime = Timex.now() |> Timex.shift(days: -5)
+        dynamic(
+          [tt],
+          tt.token_contract_address_hash == ^udt_address and tt.inserted_at > ^datetime
+        )
+      else
+        dynamic(
+          [tt],
+          tt.token_contract_address_hash == ^udt_address
+        )
+      end
 
     paginate_result = base_query_by(condition, paging_options)
 

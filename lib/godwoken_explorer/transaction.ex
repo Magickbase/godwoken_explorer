@@ -7,6 +7,7 @@ defmodule GodwokenExplorer.Transaction do
 
   @tx_limit 500_000
   @account_tx_limit 100_000
+  @yok_account_id 23983
 
   @derive {Jason.Encoder, except: [:__meta__]}
   @primary_key {:hash, :binary, autogenerate: false}
@@ -79,7 +80,10 @@ defmodule GodwokenExplorer.Transaction do
         end)
 
       _ ->
-        %Block{hash: hash} = from(b in Block, where: b.transaction_count > 0, order_by: [desc: b.number], limit: 1) |> Repo.one()
+        %Block{hash: hash} =
+          from(b in Block, where: b.transaction_count > 0, order_by: [desc: b.number], limit: 1)
+          |> Repo.one()
+
         list_tx_hash_by_transaction_query(dynamic([t], t.block_hash == ^hash))
         |> limit(10)
         |> Repo.all()
@@ -142,8 +146,7 @@ defmodule GodwokenExplorer.Transaction do
         %{block_hash: block_hash},
         page
       ) do
-    tx_hashes =
-      list_tx_hash_by_transaction_query(dynamic([t], t.block_hash == ^block_hash))
+    tx_hashes = list_tx_hash_by_transaction_query(dynamic([t], t.block_hash == ^block_hash))
 
     parse_result(tx_hashes, page)
   end
@@ -155,7 +158,8 @@ defmodule GodwokenExplorer.Transaction do
     tx_hashes =
       list_tx_hash_by_transaction_query(
         dynamic([t], t.from_account_id == ^account_id and t.to_account_id == ^contract_id)
-      ) |> limit(@account_tx_limit)
+      )
+      |> limit(@account_tx_limit)
 
     parse_result(tx_hashes, page)
   end
@@ -165,8 +169,16 @@ defmodule GodwokenExplorer.Transaction do
         page
       )
       when type in [:meta_contract, :udt, :polyjuice_root, :polyjuice_contract] do
+    condition =
+      if account_id == @yok_account_id do
+        datetime = Timex.now() |> Timex.shift(days: -5)
+        dynamic([t], t.to_account_id == ^account_id and t.inserted_at > ^datetime)
+      else
+        dynamic([t], t.to_account_id == ^account_id)
+      end
+
     tx_hashes =
-      list_tx_hash_by_transaction_query(dynamic([t], t.to_account_id == ^account_id))
+      list_tx_hash_by_transaction_query(condition)
       |> limit(@account_tx_limit)
 
     parse_result(tx_hashes, page)
@@ -185,8 +197,12 @@ defmodule GodwokenExplorer.Transaction do
   end
 
   def account_transactions_data(page) do
+    datetime = Timex.now() |> Timex.shift(days: -5)
+    condition =
+      dynamic([t], t.inserted_at > ^datetime)
+
     tx_hashes =
-      list_tx_hash_by_transaction_query(true)
+      list_tx_hash_by_transaction_query(condition)
       |> limit(@tx_limit)
 
     parse_result(tx_hashes, page)
