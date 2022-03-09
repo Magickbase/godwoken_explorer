@@ -7,7 +7,7 @@ defmodule GodwokenExplorer.Transaction do
 
   @tx_limit 500_000
   @account_tx_limit 100_000
-  @yok_account_id 23983
+  @huge_data_account_ids [23983, 23988, 23992]
 
   @derive {Jason.Encoder, except: [:__meta__]}
   @primary_key {:hash, :binary, autogenerate: false}
@@ -170,7 +170,7 @@ defmodule GodwokenExplorer.Transaction do
       )
       when type in [:meta_contract, :udt, :polyjuice_root, :polyjuice_contract] do
     condition =
-      if account_id == @yok_account_id do
+      if account_id in @huge_data_account_ids do
         datetime = Timex.now() |> Timex.shift(days: -5)
         dynamic([t], t.to_account_id == ^account_id and t.inserted_at > ^datetime)
       else
