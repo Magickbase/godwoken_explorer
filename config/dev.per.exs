@@ -90,9 +90,3 @@ config :sentry,
     env: ""
   },
   included_environments: [""]
-
-config :appsignal, :config,
-  otp_app: :godwoken_explorer,
-  name: "godwoken_explorer",
-  push_api_key: "",
-  env: Mix.env()

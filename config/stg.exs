@@ -72,5 +72,3 @@ config :logger,
 # Finally import the config/prod.secret.exs which loads secrets
 # and configuration from environment variables.
 import_config "stg.secret.exs"
-
-config :appsignal, :config, active: false
