@@ -12,17 +12,8 @@ import Config
 config :godwoken_explorer, GodwokenExplorerWeb.Endpoint,
   http: [port: 4001],
   # This is critical for ensuring web-sockets properly authorize.
-  url: [host: "www.layerview.io"],
-  check_origin: [
-    "https://www.layerview.io",
-    "//layerview.io",
-    "https://www.gwscan.com",
-    "//gwscan.com",
-    "https://api.godwoken.nervina.cn",
-    "https://api.godwoken.staging.nervina.cn",
-    "https://api.gwscan.com",
-    "https://api.aggron.gwscan.com"
-  ],
+  url: [host: ""],
+  check_origin: [],
   server: true,
   root: ".",
   version: Application.spec(:phoenix_distillery, :vsn)
