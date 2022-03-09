@@ -73,8 +73,6 @@ defmodule GodwokenExplorer.MixProject do
       # monitor
       {:observer_cli, "~> 1.6"},
       {:sentry, "~> 8.0"},
-      {:appsignal_phoenix, "~> 2.0"},
-      {:appsignal, "~> 2.0"},
 
       # static code analysis tool
       {:credo, "~> 1.5", only: [:dev, :test], runtime: false},
