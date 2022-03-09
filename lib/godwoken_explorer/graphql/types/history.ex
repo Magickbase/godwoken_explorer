@@ -3,19 +3,20 @@ defmodule GodwokenExplorer.Graphql.Types.History do
   alias GodwokenExplorer.Graphql.Resolvers, as: Resolvers
 
   object :history_querys do
-    field :withdrawal_histories, list_of(:withdrawal_history) do
-      arg :input, :withdrawal_history_input
-      resolve(&Resolvers.History.withdrawal_historys/3)
+    field :withdrawal_deposit_histories, list_of(:withdrawal_deposit_history) do
+      arg(:input, :withdrawal_deposit_history_input)
+      resolve(&Resolvers.History.withdrawal_deposit_histories/3)
     end
+  end
 
-    field :deposit_histories, list_of(:deposit_history) do
-      arg :input, :deposit_history_input
-      resolve(&Resolvers.History.deposit_histories/3)
-    end
+  object :withdrawal_deposit_history do
+    field :value, :decimal
+    field :timestamp, :datetime
+    field :layer1_block_number, :integer
+    field :layer1_tx_hash, :string
 
-    field :withdrawal_requests, list_of(:withdrawal_request) do
-      arg :input, :withdrawal_request_input
-      resolve(&Resolvers.History.withdrawal_requests/3)
+    field :udt, :udt do
+      resolve(&Resolvers.History.udt/3)
     end
   end
 
@@ -69,25 +70,13 @@ defmodule GodwokenExplorer.Graphql.Types.History do
   end
 
   enum :withdrawal_history_state do
-    value :pending
-    value :available
-    value :succeed
+    value(:pending)
+    value(:available)
+    value(:succeed)
   end
 
-  input_object :withdrawal_history_input do
-    field :owner_lock_hash, :string
-    field :l2_script_hash, :string
+  input_object :withdrawal_deposit_history_input do
     field :eth_address, :string
-    import_fields :page_and_size_input
-  end
-
-  input_object :deposit_history_input do
-    field :eth_address, :string
-    import_fields :page_and_size_input
-  end
-
-  input_object :withdrawal_request_input do
-    field :eth_address, :string
-    import_fields :page_and_size_input
+    import_fields(:page_and_size_input)
   end
 end

@@ -16,6 +16,7 @@ defmodule GodwokenExplorer.Graphql.Schemas.Frontend do
   import_types(GodwokenExplorer.Graphql.Types.UDT)
   import_types(GodwokenExplorer.Graphql.Types.Search)
   import_types(GodwokenExplorer.Graphql.Types.History)
+  import_types(GodwokenExplorer.Graphql.Types.AccountUDT)
 
   def middleware(middleware, _field, _object) do
     middleware
@@ -29,6 +30,7 @@ defmodule GodwokenExplorer.Graphql.Schemas.Frontend do
     import_fields(:token_transfer_querys)
     import_fields(:search_querys)
     import_fields(:history_querys)
+    import_fields(:account_udt_querys)
   end
 
   # mutation do

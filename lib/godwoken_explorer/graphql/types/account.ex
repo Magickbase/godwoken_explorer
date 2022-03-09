@@ -1,12 +1,10 @@
-
-
 defmodule GodwokenExplorer.Graphql.Types.Account do
   use Absinthe.Schema.Notation
   alias GodwokenExplorer.Graphql.Resolvers, as: Resolvers
 
   object :account_querys do
     field :account, :account do
-      arg :input, :account_input
+      arg(:input, :account_input)
       resolve(&Resolvers.Account.account/3)
     end
   end
@@ -25,14 +23,14 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
   end
 
   enum :account_type do
-    value :meta_contract
-    value :udt
-    value :user
-    value :polyjuice_root
-    value :polyjuice_contract
+    value(:meta_contract)
+    value(:udt)
+    value(:user)
+    value(:polyjuice_root)
+    value(:polyjuice_contract)
   end
 
   input_object :account_input do
-    field :id, :string
+    field :eth_address_or_short_address, :string
   end
 end

@@ -25,19 +25,21 @@ defmodule GodwokenExplorerWeb.Router do
   scope "/graphql" do
     pipe_through([:graphql_api])
 
-    get("/frontend", Absinthe.Plug.GraphiQL,
-      schema: GodwokenExplorer.Graphql.Schemas.Frontend,
-      interface: :playground,
-      log_level: :info,
-      adapter: Absinthe.Adapter.Underscore
-    )
+    if Mix.env() in [:dev, :stg] do
+      get("/frontend", Absinthe.Plug.GraphiQL,
+        schema: GodwokenExplorer.Graphql.Schemas.Frontend,
+        interface: :playground,
+        log_level: :info,
+        adapter: Absinthe.Adapter.Underscore
+      )
 
-    get("/dashboard", Absinthe.Plug.GraphiQL,
-      schema: GodwokenExplorer.Graphql.Schemas.Dashboard,
-      interface: :playground,
-      log_level: :info,
-      adapter: Absinthe.Adapter.Underscore
-    )
+      get("/dashboard", Absinthe.Plug.GraphiQL,
+        schema: GodwokenExplorer.Graphql.Schemas.Dashboard,
+        interface: :playground,
+        log_level: :info,
+        adapter: Absinthe.Adapter.Underscore
+      )
+    end
 
     post("/frontend", Absinthe.Plug,
       schema: GodwokenExplorer.Graphql.Schemas.Frontend,

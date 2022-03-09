@@ -4,12 +4,12 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
 
   object :udt_querys do
     field :udt, :udt do
-      arg :input, :udt_id_input
+      arg(:input, :udt_id_input)
       resolve(&Resolvers.UDT.udt/3)
     end
 
     field :udts, list_of(:udt) do
-      arg :input, :udt_input
+      arg(:input, :udt_input)
       resolve(&Resolvers.UDT.udts/3)
     end
   end
@@ -29,11 +29,19 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
     field :price, :decimal
     field :bridge_account_id, :integer
     field :type, :udt_type
+
+    field :account, :account do
+      resolve(&Resolvers.UDT.account/3)
+    end
+
+    field :bridge_account, :account do
+      resolve(&Resolvers.UDT.bridge_account/3)
+    end
   end
 
   enum :udt_type do
-    value :bridge
-    value :native
+    value(:bridge)
+    value(:native)
   end
 
   input_object :udt_id_input do
@@ -42,8 +50,6 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
 
   input_object :udt_input do
     field :type, :udt_type
-    import_fields :page_and_size_input
+    import_fields(:page_and_size_input)
   end
-
-
 end

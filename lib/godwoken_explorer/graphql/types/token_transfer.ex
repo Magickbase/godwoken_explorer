@@ -4,12 +4,22 @@ defmodule GodwokenExplorer.Graphql.Types.TokenTransfer do
 
   object :token_transfer_querys do
     field :token_transfer, :token_transfer do
-      arg :input, :token_transfer_hash_input
+      arg(:input, :token_transfer_hash_input)
       resolve(&Resolvers.TokenTransfer.token_transfer/3)
     end
 
-    field :token_transfers, list_of(:token_transfer) do
-      arg :input, :token_transfer_input
+    field :token_transfers_eth_udt, list_of(:token_transfer) do
+      arg(:input, :token_transfer_eth_udt_input)
+      resolve(&Resolvers.TokenTransfer.token_transfers/3)
+    end
+
+    field :token_transfers_eth, list_of(:token_transfer) do
+      arg(:input, :token_transfer_eth_input)
+      resolve(&Resolvers.TokenTransfer.token_transfers/3)
+    end
+
+    field :token_transfers_udt, list_of(:token_transfer) do
+      arg(:input, :token_transfer_udt_input)
       resolve(&Resolvers.TokenTransfer.token_transfers/3)
     end
   end
@@ -24,15 +34,45 @@ defmodule GodwokenExplorer.Graphql.Types.TokenTransfer do
     field :from_address_hash, :string
     field :to_address_hash, :string
     field :token_contract_address_hash, :string
+
+    field :polyjuice, :polyjuice do
+      resolve(&Resolvers.TokenTransfer.polyjuice/3)
+    end
+
+    field :account, :account do
+      resolve(&Resolvers.TokenTransfer.account/3)
+    end
+
+    field :udt, :udt do
+      resolve(&Resolvers.TokenTransfer.udt/3)
+    end
+
+    field :block, :block do
+      resolve(&Resolvers.TokenTransfer.block/3)
+    end
+
+    field :transaction, :block do
+      resolve(&Resolvers.TokenTransfer.transaction/3)
+    end
   end
 
-  input_object :token_transfer_input do
+  input_object :token_transfer_eth_udt_input do
     field :eth_address, :string
     field :udt_address, :string
-    import_fields :page_and_size_input
+    import_fields(:page_and_size_input)
   end
 
-  input_object  :token_transfer_hash_input do
+  input_object :token_transfer_eth_input do
+    field :eth_address, :string
+    import_fields(:page_and_size_input)
+  end
+
+  input_object :token_transfer_udt_input do
+    field :udt_address, :string
+    import_fields(:page_and_size_input)
+  end
+
+  input_object :token_transfer_hash_input do
     field :transaction_hash, :string
   end
 end
