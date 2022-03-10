@@ -1,58 +1,4 @@
 # Transaction
-## List udt transfer txs
-```
-GET /txs
-```
-
-### Parameters
-|Name|Type|In|Description|
-|---|---|---|---|
-|udt_address|string|query|udt eth address|
-|page|integer|query|default is 1|
-
-### Code samples
-
-```console
-curl https://api.godwoken.staging.nervina.cn/api/txs?udt_address=0xc5e133e6b01b2c335055576c51a53647b1b9b624
-```
-
-### Response
-
-```
-Status: 200 OK
-```
-
-```json
-{
-page: "1",
-total_count: "8",
-txs: [
-{
-block_hash: "0x88d0b2c105a7a17ab958f421ba71acc5aee475dfd11d0d33ff20b2544d7b5ab1",
-block_number: 231666,
-fee: "0",
-from: "0xf7f6e5f6f0c905cbd385060a8b05d9d5ade91b07",
-gas_limit: 12500000,
-gas_price: "0",
-gas_used: 44483,
-hash: "0xc30d26c095b8cc27643ccf2ca8ba5d5c7fd5c11625510ae8a5ea0d104121e797",
-method: "Transfer",
-nonce: 66,
-receive_eth_address: "0x72f411d54643619fb855983383d88a0c7661c3ac",
-status: "committed",
-timestamp: 1641414025,
-to: "0xc5e133e6b01b2c335055576c51a53647b1b9b624",
-to_alias: "YOKAI",
-transfer_value: "1",
-type: "polyjuice",
-udt_id: 3014,
-udt_symobl: null,
-udt_icon: null,
-value: "0"
-}
-]
-}
-```
 
 ## List contract's txs of user eth address
 
@@ -70,7 +16,7 @@ GET /txs
 ### Code samples
 
 ```console
-curl https://api.godwoken.staging.nervina.cn/api/txs?eth_address=0xbFbE23681D99A158f632e64A31288946770c7A9e&contract_address=0xc5e133e6b01b2c335055576c51a53647b1b9b624&page=1
+curl https://api.aggron.gwscan.com/api/txs?eth_address=0xbFbE23681D99A158f632e64A31288946770c7A9e&contract_address=0xc5e133e6b01b2c335055576c51a53647b1b9b624&page=1
 ```
 
 ### Response
@@ -126,7 +72,7 @@ GET /txs
 ### Code samples
 
 ```console
-curl https://api.godwoken.staging.nervina.cn/api/txs?eth_address=0xbFbE23681D99A158f632e64A31288946770c7A9e&page=1
+curl https://api.aggron.gwscan.com/api/txs?eth_address=0xbFbE23681D99A158f632e64A31288946770c7A9e&page=1
 ```
 
 ### Response
@@ -167,62 +113,6 @@ Status: 200 OK
 }
 ```
 
-## List udt transfer type txs
-
-```
-GET /txs
-```
-
-### Parameters
-|Name|Type|In|Description|
-|---|---|---|---|
-|udt_address|string|query|udt account type eth address|
-|page|integer|query|default is 1|
-
-### Code samples
-
-```console
-curl https://api.godwoken.staging.nervina.cn/api/txs?udt_address=0xc5e133e6b01b2c335055576c51a53647b1b9b624
-```
-
-### Response
-
-```
-Status: 200 OK
-```
-
-```json
-{
-  page: "1",
-  total_count: "24",
-  txs: [
-{
-block_hash: "0x88d0b2c105a7a17ab958f421ba71acc5aee475dfd11d0d33ff20b2544d7b5ab1",
-block_number: 231666,
-fee: "0",
-from: "0xf7f6e5f6f0c905cbd385060a8b05d9d5ade91b07",
-gas_limit: 12500000,
-gas_price: "0",
-gas_used: 44483,
-hash: "0xc30d26c095b8cc27643ccf2ca8ba5d5c7fd5c11625510ae8a5ea0d104121e797",
-method: "Transfer",
-nonce: 66,
-receive_eth_address: "0x72f411d54643619fb855983383d88a0c7661c3ac",
-status: "committed",
-timestamp: 1641414025,
-to: "0xc5e133e6b01b2c335055576c51a53647b1b9b624",
-to_alias: "YOKAI",
-transfer_value: "1",
-type: "polyjuice",
-udt_id: 3014,
-udt_symobl: null,
-udt_icon: null,
-value: "0"
-},
-  ]
-}
-```
-
 ## List txs of block
 
 ```
@@ -238,7 +128,7 @@ GET /txs
 ### Code samples
 
 ```console
-https://api.godwoken.staging.nervina.cn/api/txs?block_hash=0x88d0b2c105a7a17ab958f421ba71acc5aee475dfd11d0d33ff20b2544d7b5ab1
+https://api.aggron.gwscan.com/api/txs?block_hash=0x88d0b2c105a7a17ab958f421ba71acc5aee475dfd11d0d33ff20b2544d7b5ab1
 ```
 
 ### Response
@@ -293,7 +183,7 @@ GET /txs
 ### Code samples
 
 ```console
-curl https://api.godwoken.staging.nervina.cn/api/txs/ 0xc30d26c095b8cc27643ccf2ca8ba5d5c7fd5c11625510ae8a5ea0d104121e797
+curl https://api.aggron.gwscan.com/api/txs/ 0xc30d26c095b8cc27643ccf2ca8ba5d5c7fd5c11625510ae8a5ea0d104121e797
 ```
 
 ### Response
@@ -343,7 +233,7 @@ GET /txs
 ### Code samples
 
 ```console
-curl https://api.godwoken.staging.nervina.cn/api/txs/
+curl https://api.aggron.gwscan.com/api/txs/
 0x548abac7dd2ca0c9df349a8523e7964887dd3007699ef94665e03caeba9385be
 ```
 
