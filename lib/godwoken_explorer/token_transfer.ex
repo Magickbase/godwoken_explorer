@@ -9,6 +9,7 @@ defmodule GodwokenExplorer.TokenTransfer do
 
   @transfer_function_signature "0xa9059cbb"
   @yok_address "0xb02c930c2825a960a50ba4ab005e8264498b64a0"
+  @huge_data_address ["0x8967af2789aabbc6ff68bd75336b09e6e4303c98", "0xf00b259ed79bb80291b45a76b13e3d71d4869433"]
 
   @derive {Jason.Encoder, except: [:__meta__]}
   @primary_key false
@@ -105,10 +106,18 @@ defmodule GodwokenExplorer.TokenTransfer do
 
   def list(%{eth_address: eth_address}, paging_options) do
     condition =
-      dynamic(
-        [tt],
-        tt.from_address_hash == ^eth_address or tt.to_address_hash == ^eth_address
-      )
+      if eth_address in @huge_data_address do
+        datetime = Timex.now() |> Timex.shift(days: -5)
+        dynamic(
+          [tt],
+          tt.inserted_at > ^datetime and (tt.from_address_hash == ^eth_address or tt.to_address_hash == ^eth_address)
+        )
+      else
+        dynamic(
+          [tt],
+          tt.from_address_hash == ^eth_address or tt.to_address_hash == ^eth_address
+        )
+      end
 
     paginate_result = base_query_by(condition, paging_options)
 
