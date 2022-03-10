@@ -5,21 +5,57 @@ defmodule GodwokenExplorerWeb.Router do
   import Phoenix.LiveDashboard.Router
 
   pipeline :browser do
-    plug :accepts, ["html"]
-    plug :basic_auth, Application.compile_env(:godwoken_explorer, :basic_auth)
-    plug :fetch_session
-    plug :fetch_flash
-    plug :protect_from_forgery
-    plug :put_secure_browser_headers
+    plug(:accepts, ["html"])
+    plug(:basic_auth, Application.compile_env(:godwoken_explorer, :basic_auth))
+    plug(:fetch_session)
+    plug(:fetch_flash)
+    plug(:protect_from_forgery)
+    plug(:put_secure_browser_headers)
   end
 
   pipeline :api do
-    plug :accepts, ["json"]
-    plug GodwokenExplorerWeb.Plugs.PageSize
+    plug(:accepts, ["json"])
+    plug(GodwokenExplorerWeb.Plugs.PageSize)
+  end
+
+  pipeline :graphql_api do
+    plug(:accepts, ["json"])
+  end
+
+  scope "/graphql" do
+    pipe_through([:graphql_api])
+
+    if Mix.env() in [:dev, :stg] do
+      get("/frontend", Absinthe.Plug.GraphiQL,
+        schema: GodwokenExplorer.Graphql.Schemas.Frontend,
+        interface: :playground,
+        log_level: :info,
+        adapter: Absinthe.Adapter.Underscore
+      )
+
+      get("/dashboard", Absinthe.Plug.GraphiQL,
+        schema: GodwokenExplorer.Graphql.Schemas.Dashboard,
+        interface: :playground,
+        log_level: :info,
+        adapter: Absinthe.Adapter.Underscore
+      )
+    end
+
+    post("/frontend", Absinthe.Plug,
+      schema: GodwokenExplorer.Graphql.Schemas.Frontend,
+      log_level: :info,
+      adapter: Absinthe.Adapter.Underscore
+    )
+
+    post("/dashboard", Absinthe.Plug,
+      schema: GodwokenExplorer.Graphql.Schemas.Dashboard,
+      log_level: :info,
+      adapter: Absinthe.Adapter.Underscore
+    )
   end
 
   scope "/api", GodwokenExplorerWeb.API do
-    pipe_through :api
+    pipe_through(:api)
 
     get("/home", HomeController, :index)
     get("/blocks", BlockController, :index)
@@ -38,15 +74,15 @@ defmodule GodwokenExplorerWeb.Router do
   end
 
   scope "/", GodwokenExplorerWeb do
-    get "/", RootController, :index
+    get("/", RootController, :index)
   end
 
   scope "/admin", GodwokenExplorerWeb.Admin, as: :admin do
-    pipe_through :browser
+    pipe_through(:browser)
 
-    get "/", UDTController, :index
-    resources "/udts", UDTController
-    resources "/smart_contracts", SmartContractController
+    get("/", UDTController, :index)
+    resources("/udts", UDTController)
+    resources("/smart_contracts", SmartContractController)
   end
 
   # Other scopes may use custom stacks.
@@ -63,10 +99,11 @@ defmodule GodwokenExplorerWeb.Router do
   # as long as you are also using SSL (which you should anyway).
 
   scope "/" do
-    pipe_through :browser
+    pipe_through(:browser)
 
-    live_dashboard "/dashboard",
+    live_dashboard("/dashboard",
       metrics: GodwokenExplorerWeb.Telemetry,
       ecto_repos: [GodwokenExplorer.Repo]
+    )
   end
 end

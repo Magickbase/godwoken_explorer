@@ -11,6 +11,7 @@ defmodule GodwokenExplorer.MixProject do
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
       deps: deps(),
+      releases: releases(),
       test_coverage: [tool: ExCoveralls],
       preferred_cli_env: [
         coveralls: :test,
@@ -31,6 +32,16 @@ defmodule GodwokenExplorer.MixProject do
     ]
   end
 
+  defp releases() do
+    [
+      godwoken_explorer: [
+        applications: [godwoken_explorer: :permanent],
+        include_erts: true,
+        steps: [:assemble, :tar]
+      ]
+    ]
+  end
+
   # Specifies which paths to compile per environment.
   defp elixirc_paths(:test), do: ["lib", "test/support"]
   defp elixirc_paths(_), do: ["lib"]
@@ -40,15 +51,15 @@ defmodule GodwokenExplorer.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
-      {:phoenix, "~> 1.5.9"},
-      {:phoenix_ecto, "~> 4.3"},
-      {:ecto_sql, "~> 3.6.2"},
+      {:phoenix, "~> 1.6.6", override: true},
+      {:phoenix_ecto, "~> 4.4"},
+      {:ecto_sql, "~> 3.7.2"},
       {:postgrex, ">= 0.0.0"},
-      {:phoenix_html, "~> 2.14.3"},
-      {:phoenix_live_reload, "~> 1.2", only: :dev},
-      {:phoenix_live_dashboard, "~> 0.4"},
-      {:telemetry_metrics, "~> 0.4"},
-      {:telemetry_poller, "~> 0.4"},
+      {:phoenix_html, "~> 3.2.0", override: true},
+      {:phoenix_live_reload, "~> 1.3.3", only: :dev},
+      {:phoenix_live_dashboard, "~> 0.6.5"},
+      {:telemetry_metrics, "~> 0.6.1"},
+      {:telemetry_poller, "~> 1.0.0"},
       {:gettext, "~> 0.11"},
       {:jason, "~> 1.0"},
       {:plug_cowboy, "~> 2.0"},
@@ -65,7 +76,7 @@ defmodule GodwokenExplorer.MixProject do
       {:ecto_psql_extras, "~> 0.6"},
 
       # admin dashboard
-      {:torch, "~> 3.6"},
+      {:torch, "~> 3.8"},
 
       # CORS
       {:cors_plug, "~> 2.0"},
@@ -102,7 +113,15 @@ defmodule GodwokenExplorer.MixProject do
       {:mox, "~> 0.4", only: [:test]},
 
       # deployment
-      {:distillery, "~> 2.1", warn_missing: false}
+      {:distillery, "~> 2.1", warn_missing: false},
+
+      # graphql
+      {:absinthe, "~> 1.7"},
+      {:absinthe_plug, "~> 1.5"},
+      {:absinthe_phoenix, "~> 2.0"},
+      {:dataloader, "~> 1.0"},
+      {:money, "~> 1.9"},
+      {:plug_heartbeat, "~> 1.0"}
     ]
   end
 
