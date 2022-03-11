@@ -150,7 +150,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
           )
 
           display_ids =
-            (polyjuice_with_receipts ++ polyjuice_creator_params)
+            (polyjuice_with_receipts ++ polyjuice_creator_params ++ eth_address_registry_params)
             |> extract_account_ids()
             |> Account.display_ids()
 
