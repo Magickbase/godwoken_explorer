@@ -31,13 +31,13 @@ defmodule GodwokenExplorer.Chain.Cache.TransactionCount do
     {:ok, task} =
       Task.start(fn ->
         try do
-          # result = Repo.aggregate(Transaction, :count, :hash, timeout: :infinity)
-          %Postgrex.Result{rows: [[rows]]} =
-            Repo.query!(
-              "SELECT reltuples::BIGINT AS estimate FROM pg_class WHERE relname='transactions'"
-            )
+          result = Repo.aggregate(Transaction, :count, :hash, timeout: :infinity)
+          # %Postgrex.Result{rows: [[rows]]} =
+          #   Repo.query!(
+          #     Repo.aggregate(:count, Transaction)
+          #   )
 
-          result = trunc(rows)
+          # result = trunc(rows)
 
           set_count(result)
         rescue
