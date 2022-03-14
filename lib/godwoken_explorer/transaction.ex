@@ -91,11 +91,13 @@ defmodule GodwokenExplorer.Transaction do
         end)
 
       _ ->
-        %Block{hash: hash} =
-          from(b in Block, where: b.transaction_count > 0, order_by: [desc: b.number], limit: 1)
-          |> Repo.one()
 
-        list_tx_hash_by_transaction_query(dynamic([t], t.block_hash == ^hash))
+        case from(b in Block, where: b.transaction_count > 0, order_by: [desc: b.number], limit: 1) |> Repo.one() do
+          %Block{hash: hash} ->
+            list_tx_hash_by_transaction_query(dynamic([t], t.block_hash == ^hash))
+          nil ->
+            list_tx_hash_by_transaction_query(true)
+        end
         |> limit(10)
         |> Repo.all()
         |> list_transaction_by_tx_hash()
