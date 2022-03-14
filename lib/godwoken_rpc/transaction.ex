@@ -54,11 +54,12 @@ defmodule GodwokenRPC.Transaction do
         },
         "hash" => hash
       }) do
+    from_account_id = hex_to_number(from_account_id)
+    to_account_id = hex_to_number(to_id)
+
     cond do
       String.starts_with?(args, "ffffff504f4c59") ->
         [is_create, gas_limit, gas_price, value, input_size, input] = parse_polyjuice_args(args)
-        from_account_id = hex_to_number(from_account_id)
-        to_account_id = hex_to_number(to_id)
 
         %{
           type: :polyjuice,
@@ -79,9 +80,6 @@ defmodule GodwokenRPC.Transaction do
         }
 
       to_id == @creator_id ->
-        from_account_id = hex_to_number(from_account_id)
-        to_account_id = hex_to_number(to_id)
-
         case parse_eth_address_registry_args(args) do
           {"EthToGw", eth_address, _} ->
             Logger.info("===========ETHToGw#{eth_address}")
@@ -100,6 +98,18 @@ defmodule GodwokenRPC.Transaction do
 
         %{
           type: :eth_address_registry,
+          hash: hash,
+          block_hash: block_hash,
+          block_number: block_number,
+          nonce: hex_to_number(nonce),
+          args: "0x" <> args,
+          from_account_id: from_account_id,
+          to_account_id: to_account_id,
+          account_ids: [from_account_id, to_account_id]
+        }
+      true ->
+        %{
+          type: :unknown,
           hash: hash,
           block_hash: block_hash,
           block_number: block_number,
