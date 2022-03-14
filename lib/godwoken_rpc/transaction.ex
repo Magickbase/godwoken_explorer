@@ -7,6 +7,8 @@ defmodule GodwokenRPC.Transaction do
 
   require Logger
 
+  @creator_id Application.get_env(:godwoken_explorer, :polyjuice_creator_id)
+
   def elixir_to_params(%{
         "block_hash" => block_hash,
         "block_number" => block_number,
@@ -52,7 +54,7 @@ defmodule GodwokenRPC.Transaction do
         },
         "hash" => hash
       })
-      when to_account_id == "0x3" do
+      when to_account_id == @creator_id do
     from_account_id = hex_to_number(from_account_id)
 
     case parse_eth_address_registry_args(args) do
