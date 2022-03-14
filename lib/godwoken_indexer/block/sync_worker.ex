@@ -103,28 +103,38 @@ defmodule GodwokenIndexer.Block.SyncWorker do
           polyjuice_creator_params = grouped_transactions_params[:polyjuice_creator] || []
           eth_address_registry_params = grouped_transactions_params[:eth_address_registry] || []
 
-          {:ok, %{logs: logs, receipts: receipts}} =
-            GodwokenRPC.fetch_transaction_receipts(polyjuice_without_receipts)
+          polyjuice_with_receipts =
+            case GodwokenRPC.fetch_transaction_receipts(polyjuice_without_receipts) do
+              {:ok, %{logs: logs, receipts: receipts}} ->
+                Repo.insert_all(Log, logs |> Enum.map(fn log -> Map.merge(log, timestamps()) end),
+                  on_conflict: :nothing
+                )
 
-          Repo.insert_all(Log, logs |> Enum.map(fn log -> Map.merge(log, timestamps()) end),
-            on_conflict: :nothing
-          )
+                Logger.info("=====================UPDATED LOG")
 
-          Logger.info("=====================UPDATED LOG")
+                polyjuice_with_receipts = Receipts.put(polyjuice_without_receipts, receipts)
+                %{token_transfers: token_transfers, tokens: _tokens} = TokenTransfers.parse(logs)
 
-          polyjuice_with_receipts = Receipts.put(polyjuice_without_receipts, receipts)
-          %{token_transfers: token_transfers, tokens: _tokens} = TokenTransfers.parse(logs)
+                Repo.insert_all(
+                  TokenTransfer,
+                  token_transfers |> Enum.map(fn log -> Map.merge(log, timestamps()) end),
+                  on_conflict: :nothing
+                )
 
-          Repo.insert_all(
-            TokenTransfer,
-            token_transfers |> Enum.map(fn log -> Map.merge(log, timestamps()) end),
-            on_conflict: :nothing
-          )
+                if length(token_transfers) > 0, do: udpate_erc20_balance(token_transfers)
 
-          Logger.info("=====================UPDATED TOKENTRANSFER")
+                Logger.info("=====================UPDATED TOKENTRANSFER")
+
+                polyjuice_with_receipts
+
+              _ ->
+                polyjuice_without_receipts
+            end
 
           inserted_transaction_params =
-            filter_transaction_columns(polyjuice_with_receipts ++ polyjuice_creator_params ++ eth_address_registry_params)
+            filter_transaction_columns(
+              polyjuice_with_receipts ++ polyjuice_creator_params ++ eth_address_registry_params
+            )
 
           {_count, returned_values} =
             Repo.insert_all(Transaction, inserted_transaction_params,
@@ -170,8 +180,6 @@ defmodule GodwokenIndexer.Block.SyncWorker do
 
           update_transactions_cache(inserted_transactions)
           Logger.info("=====================UPDATED TRANSACTIONS")
-
-          if length(token_transfers) > 0, do: udpate_erc20_balance(token_transfers)
 
           if length(polyjuice_without_receipts) > 0,
             do: update_ckb_balance(polyjuice_without_receipts)
