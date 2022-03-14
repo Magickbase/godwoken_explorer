@@ -17,7 +17,7 @@ defmodule GodwokenExplorer.Transaction do
     field(:from_account_id, :integer)
     field(:nonce, :integer)
     field(:to_account_id, :integer)
-    field(:type, Ecto.Enum, values: [:polyjuice_creator, :polyjuice, :eth_address_registry])
+    field(:type, Ecto.Enum, values: [:polyjuice_creator, :polyjuice, :eth_address_registry, :unknown])
     field(:block_number, :integer)
     field(:block_hash, :binary)
 
@@ -68,6 +68,16 @@ defmodule GodwokenExplorer.Transaction do
     Polyjuice.create_polyjuice(attrs)
     transaction
   end
+
+  def create_transaction(%{type: type} = attrs) when type in [:unknown, :eth_address_registry] do
+    transaction =
+      %Transaction{}
+      |> Transaction.changeset(attrs)
+      |> Repo.insert(on_conflict: :nothing)
+
+    transaction
+  end
+
 
   # TODO: from and to may can refactor to be a single method
   def latest_10_records do
