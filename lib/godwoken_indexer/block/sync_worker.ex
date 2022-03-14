@@ -125,6 +125,9 @@ defmodule GodwokenIndexer.Block.SyncWorker do
 
                 Logger.info("=====================UPDATED TOKENTRANSFER")
 
+                inserted_polyjuice_params = filter_polyjuice_columns(polyjuice_with_receipts)
+                Repo.insert_all(Polyjuice, inserted_polyjuice_params, on_conflict: :nothing)
+
                 polyjuice_with_receipts
 
               _ ->
@@ -149,8 +152,6 @@ defmodule GodwokenIndexer.Block.SyncWorker do
               ]
             )
 
-          inserted_polyjuice_params = filter_polyjuice_columns(polyjuice_with_receipts)
-          Repo.insert_all(Polyjuice, inserted_polyjuice_params, on_conflict: :nothing)
 
           inserted_polyjuice_creator_params =
             filter_polyjuice_creator_columns(polyjuice_creator_params)
