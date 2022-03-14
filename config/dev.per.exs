@@ -2,31 +2,32 @@ import Config
 
 
 config :godwoken_explorer,
-  meta_contract_code_hash: "0x4a8ef5f6b366cb84e362dc747c314e32d5e2f1a6f64d118eaec6df2c36512ac0",
-  udt_code_hash: "0x4e55cb08c3c772414e364aa5ed26609cfd3ee6619a2bb78c3bafa6f2f41b16b3",
+  rollup_type_hash: "0x4940246f168f4106429dc641add3381a44b5eef61e7754142f594e986671a575",
+  meta_contract_validator_type_hash: "0xe37425948da964046bc470a77f5b3df3a661e8b0e0f8c1987239d9e4b9a629f5",
+  l2_udt_code_hash: "0xe3e86ae888b3df3328842d11708b8ac30a7385c9f60d67f64efec65b7129e78e",
   polyjuice_validator_code_hash:
-    "0x848753a2b16c63682c7de4e6cc7167890ff3f821d61328f45386d91ece54373e",
-  eth_eoa_type_hash: "0x6ac8027edfd86557a0b02fb8b9dce9ffc2bb2ac0b2f0352f74912bb546dc374c",
-  tron_eoa_type_hash: "0xa289d7e6f46ae922a57691b42ce7b8ff9387f5d18ccce0287e14916a03cae51c",
-  rollup_script_hash: "0xbd3f6ca6bdc273f1699e67a7b72cae0e0a7250646f168d03adab3892b5e2cfef",
+    "0x8755bcc380e3494b6a2ca9657d16fd2254f7570731c4b87867ed8b747b1b3457",
+  eth_eoa_type_hash: "0x10571f91073fdc3cdef4ddad96b4204dd30d6355f3dda9a6d7fc0fa0326408da",
+  tron_eoa_type_hash: "0x7e19e979f77305cdd61e39258b747809297ece6ab4d579ee38de8bce85d52124",
   rollup_cell_type: %{
-    code_hash: "0x3949a52e86048d6184641e7e441c543097559829daa9f60b7ee137031123ef24",
+    code_hash: "0x0d3bfeaa292a59fcb58ed026e8f14e2167bd27f1765aa4b2af7d842b6123c6a9",
     hash_type: "type",
-    args: "0xd35def1737c65ef34969c6cc93d5b87841434024e15d58693ea054059b58fc8d"
+    args: "0x8137c84a9089f92fee684ac840532ee1133b012a9d42b6b76b74fbdde6999230"
   },
   deposition_lock: %{
-    code_hash: "0x6f46d7c451d63e584e60e6a748662df044e4ada30291e0d35aa1d0ddb1237f40",
+    code_hash: "0xcc2b4e14d7dfeb1e72f7708ac2d7f636ae222b003bac6bccfcf8f4dfebd9c714",
     hash_type: "type",
-    args: "0xbd3f6ca6bdc273f1699e67a7b72cae0e0a7250646f168d03adab3892b5e2cfef"
+    args: "0x4940246f168f4106429dc641add3381a44b5eef61e7754142f594e986671a575"
   },
   withdrawal_lock: %{
-    code_hash: "0xc897744bffee22bae91afdf581e396d5d1f34313d2aa1b3fa8121e561f2bae59",
+    code_hash: "0x318e8882bec0339fa20584f4791152e71d5b71c5dbd8bf988fd511373e142222",
     hash_type: "type",
-    args: "0xbd3f6ca6bdc273f1699e67a7b72cae0e0a7250646f168d03adab3892b5e2cfef"
+    args: "0x4940246f168f4106429dc641add3381a44b5eef61e7754142f594e986671a575"
   },
-  init_godwoken_l1_block_number: 4_499_838,
+  init_godwoken_l1_block_number: 4_672_922,
   ckb_token_script_hash: "0x0000000000000000000000000000000000000000000000000000000000000000",
-  eth_token_script_hash: "0xa9eb9df467715766b009ad57cf4c7a2977bc8377d51ace37a3653f3bbb540b7c"
+  eth_token_script_hash: "0xa9eb9df467715766b009ad57cf4c7a2977bc8377d51ace37a3653f3bbb540b7c",
+  polyjuice_creator_id: "0x6"
 
 config :godwoken_explorer, :basic_auth, username: "hello", password: "secret"
 

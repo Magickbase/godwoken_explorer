@@ -268,13 +268,13 @@ defmodule GodwokenExplorer.Account do
         {:ok, id}
 
       nil ->
-        udt_code_hash = Application.get_env(:godwoken_explorer, :udt_code_hash)
-        rollup_script_hash = Application.get_env(:godwoken_explorer, :rollup_script_hash)
+        l2_udt_code_hash = Application.get_env(:godwoken_explorer, :l2_udt_code_hash)
+        rollup_type_hash = Application.get_env(:godwoken_explorer, :rollup_type_hash)
 
         account_script = %{
-          "code_hash" => udt_code_hash,
+          "code_hash" => l2_udt_code_hash,
           "hash_type" => "type",
-          "args" => rollup_script_hash <> String.slice(udt_script_hash, 2..-1)
+          "args" => rollup_type_hash <> String.slice(udt_script_hash, 2..-1)
         }
 
         l2_udt_script_hash = script_to_hash(account_script)
@@ -325,13 +325,13 @@ defmodule GodwokenExplorer.Account do
   def switch_account_type(code_hash, args) do
     polyjuice_code_hash = Application.get_env(:godwoken_explorer, :polyjuice_validator_code_hash)
     eth_eoa_type_hash = Application.get_env(:godwoken_explorer, :eth_eoa_type_hash)
-    udt_code_hash = Application.get_env(:godwoken_explorer, :udt_code_hash)
-    meta_contract_code_hash = Application.get_env(:godwoken_explorer, :meta_contract_code_hash)
+    l2_udt_code_hash = Application.get_env(:godwoken_explorer, :l2_udt_code_hash)
+    meta_contract_validator_type_hash  = Application.get_env(:godwoken_explorer, :meta_contract_validator_type_hash )
     tron_eoa_type_hash = Application.get_env(:godwoken_explorer, :tron_eoa_type_hash)
 
     case code_hash do
-      ^meta_contract_code_hash -> :meta_contract
-      ^udt_code_hash -> :udt
+      ^meta_contract_validator_type_hash  -> :meta_contract
+      ^l2_udt_code_hash -> :udt
       ^polyjuice_code_hash when byte_size(args) == 74 -> :polyjuice_root
       ^polyjuice_code_hash -> :polyjuice_contract
       ^eth_eoa_type_hash -> :eth_user
@@ -341,10 +341,10 @@ defmodule GodwokenExplorer.Account do
   end
 
   def script_to_eth_adress(type, args) do
-    rollup_script_hash = Application.get_env(:godwoken_explorer, :rollup_script_hash)
+    rollup_type_hash = Application.get_env(:godwoken_explorer, :rollup_type_hash)
 
     if type in [:eth_user, :tron_user, :polyjuice_contract] &&
-         args |> String.slice(0, 66) == rollup_script_hash do
+         args |> String.slice(0, 66) == rollup_type_hash do
       "0x" <> String.slice(args, -40, 40)
     else
       nil
