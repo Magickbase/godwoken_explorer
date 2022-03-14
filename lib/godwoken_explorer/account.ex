@@ -19,7 +19,7 @@ defmodule GodwokenExplorer.Account do
     field :nonce, :integer
 
     field :type, Ecto.Enum,
-      values: [:meta_contract, :udt, :eth_user, :tron_user, :polyjuice_root, :polyjuice_contract]
+      values: [:meta_contract, :udt, :eth_user, :tron_user, :polyjuice_root, :polyjuice_contract, :eth_addr_reg, :unknown]
 
     has_many :account_udts, AccountUDT
     has_one :smart_contract, SmartContract
@@ -216,6 +216,12 @@ defmodule GodwokenExplorer.Account do
             }
           }
         end
+      _ ->
+          %{
+            polyjuice: %{
+              script: account.script
+            }
+          }
     end
     |> Map.merge(base_map)
   end
@@ -332,6 +338,7 @@ defmodule GodwokenExplorer.Account do
     l2_udt_code_hash = Application.get_env(:godwoken_explorer, :l2_udt_code_hash)
     meta_contract_validator_type_hash  = Application.get_env(:godwoken_explorer, :meta_contract_validator_type_hash )
     tron_eoa_type_hash = Application.get_env(:godwoken_explorer, :tron_eoa_type_hash)
+    eth_addr_reg_type_hash = Application.get_env(:godwoken_explorer, :eth_addr_reg_validator_script_type_hash)
 
     case code_hash do
       ^meta_contract_validator_type_hash  -> :meta_contract
@@ -340,6 +347,7 @@ defmodule GodwokenExplorer.Account do
       ^polyjuice_code_hash -> :polyjuice_contract
       ^eth_eoa_type_hash -> :eth_user
       ^tron_eoa_type_hash -> :tron_user
+      ^eth_addr_reg_type_hash -> :eth_addr_reg
       _ -> :unkonw
     end
   end
