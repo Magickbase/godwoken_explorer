@@ -280,6 +280,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
     params
     |> Enum.map(fn %{
                      hash: hash,
+                     eth_hash: eth_hash,
                      from_account_id: from_account_id,
                      to_account_id: to_account_id,
                      args: args,
@@ -290,6 +291,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
                    } ->
       %{
         hash: hash,
+        eth_hash: eth_hash,
         from_account_id: from_account_id,
         to_account_id: to_account_id,
         args: args,
@@ -313,6 +315,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
                      input: input,
                      gas_used: gas_used,
                      status: status,
+                     transaction_index: transaction_index,
                      hash: hash
                    } ->
       %{
@@ -324,7 +327,8 @@ defmodule GodwokenIndexer.Block.SyncWorker do
         input: input,
         gas_used: gas_used,
         status: status,
-        tx_hash: hash
+        tx_hash: hash,
+        transaction_index: transaction_index
       }
       |> Map.merge(timestamps())
     end)

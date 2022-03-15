@@ -18,7 +18,8 @@ defmodule GodwokenRPC.Transaction do
           "nonce" => nonce,
           "args" => "0x" <> args
         },
-        "hash" => hash
+        "hash" => hash,
+        "eth_hash" => eth_hash
       })
       when to_account_id == "0x0" do
     {{code_hash, hash_type, script_args}, fee_amount_hex_string} = parse_meta_contract_args(args)
@@ -29,6 +30,7 @@ defmodule GodwokenRPC.Transaction do
     %{
       type: :polyjuice_creator,
       hash: hash,
+      eth_hash: eth_hash,
       block_hash: block_hash,
       block_number: block_number,
       nonce: hex_to_number(nonce),
@@ -52,7 +54,8 @@ defmodule GodwokenRPC.Transaction do
           "nonce" => nonce,
           "args" => "0x" <> args
         },
-        "hash" => hash
+        "hash" => hash,
+        "eth_hash" => eth_hash
       }) do
     from_account_id = hex_to_number(from_account_id)
     to_account_id = hex_to_number(to_id)
@@ -64,6 +67,7 @@ defmodule GodwokenRPC.Transaction do
         %{
           type: :polyjuice,
           hash: hash,
+          eth_hash: eth_hash,
           block_hash: block_hash,
           block_number: block_number,
           nonce: hex_to_number(nonce),
@@ -99,6 +103,7 @@ defmodule GodwokenRPC.Transaction do
         %{
           type: :eth_address_registry,
           hash: hash,
+          eth_hash: eth_hash,
           block_hash: block_hash,
           block_number: block_number,
           nonce: hex_to_number(nonce),
@@ -111,6 +116,7 @@ defmodule GodwokenRPC.Transaction do
         %{
           type: :unknown,
           hash: hash,
+          eth_hash: eth_hash,
           block_hash: block_hash,
           block_number: block_number,
           nonce: hex_to_number(nonce),
