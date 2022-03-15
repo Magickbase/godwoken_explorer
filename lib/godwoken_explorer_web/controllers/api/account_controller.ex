@@ -8,7 +8,7 @@ defmodule GodwokenExplorerWeb.API.AccountController do
   def show(conn, %{"id" => "0x" <> _} = params) do
     downcase_id = params["id"] |> String.downcase()
 
-    case Account.search(downcase_id) do
+    case Account |> Repo.get_by(eth_address: downcase_id) do
       %Account{id: id} ->
         result =
           id

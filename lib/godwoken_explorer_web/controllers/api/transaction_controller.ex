@@ -9,9 +9,9 @@ defmodule GodwokenExplorerWeb.API.TransactionController do
   def index(conn, %{"eth_address" => "0x" <> _, "contract_address" => "0x" <> _} = params) do
     results =
       with %Account{id: account_id, type: type}  when type in [:eth_user, :tron_user] <-
-             Account.search(String.downcase(params["eth_address"])),
+             Account |> Repo.get_by(eth_address: String.downcase(params["eth_address"])),
            %Account{id: contract_id, type: :polyjuice_contract} <-
-             Repo.get_by(Account, short_address: params["contract_address"]) do
+             Repo.get_by(Account, eth_address: params["contract_address"]) do
         Transaction.account_transactions_data(
           %{
             account_id: account_id,
@@ -34,7 +34,8 @@ defmodule GodwokenExplorerWeb.API.TransactionController do
   end
 
   def index(conn, %{"eth_address" => "0x" <> _} = params) do
-    %Account{id: account_id, type: type} = Account.search(String.downcase(params["eth_address"]))
+    %Account{id: account_id, type: type} =
+      Account |> Repo.get_by(eth_address: String.downcase(params["eth_address"]))
 
     results =
       Transaction.account_transactions_data(

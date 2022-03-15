@@ -126,14 +126,16 @@ defmodule GodwokenExplorer.Transaction do
               fee_amount: creator.fee_amount,
               fee_udt: creator.udt.name
             })
-
-          true ->
+          tx.type == :polyjuice ->
             contract = Repo.get_by(SmartContract, account_id: tx.to_account_id)
 
             tx
             |> Map.merge(%{
               contract_abi: contract && contract.abi
             })
+
+          true ->
+            tx
         end
         |> stringify_and_unix_maps()
         |> Map.drop([:to_account_id])
@@ -247,7 +249,7 @@ defmodule GodwokenExplorer.Transaction do
 
   def list_tx_hash_by_transaction_query(condition) do
     from(t in Transaction,
-      select: t.hash,
+      select: fragment("CASE WHEN ? IS NOT NULL THEN ? ELSE ? END", t.eth_hash, t.eth_hash, t.hash),
       where: ^condition,
       order_by: [desc: t.block_number, desc: t.inserted_at]
     )
@@ -269,16 +271,14 @@ defmodule GodwokenExplorer.Transaction do
       on: u6.id == s4.account_id,
       left_join: u7 in UDT,
       on: u7.bridge_account_id == s4.account_id,
-      where: t.hash in ^hashes,
+      where: t.eth_hash in ^hashes or t.hash in ^hashes,
       select: %{
-        hash: t.hash,
+        hash: fragment("CASE WHEN ? IS NOT NULL THEN ? ELSE ? END", t.eth_hash, t.eth_hash, t.hash),
         block_hash: b.hash,
         block_number: b.number,
         l1_block_number: b.layer1_block_number,
         from: a2.eth_address,
-        to: fragment("
-          CASE WHEN ? = 'user' THEN encode(?, 'escape')
-           ELSE encode(?, 'escape') END", a3.type, a3.eth_address, a3.short_address),
+        to: a3.eth_address,
         to_alias:
           fragment(
             "
@@ -296,7 +296,7 @@ defmodule GodwokenExplorer.Transaction do
             a3.type,
             s4.name,
             s4.name,
-            a3.short_address,
+            a3.eth_address,
             a3.type,
             a3.short_address
           ),

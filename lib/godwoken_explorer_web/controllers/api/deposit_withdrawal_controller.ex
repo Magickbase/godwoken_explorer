@@ -6,7 +6,7 @@ defmodule GodwokenExplorerWeb.API.DepositWithdrawalController do
   alias GodwokenExplorer.{Account, DepositWithdrawalView, UDT, Repo, Block}
 
   def index(conn, %{"eth_address" => "0x" <> _} = params) do
-    case Account.search(String.downcase(params["eth_address"])) do
+    case Account |> Repo.get_by(eth_address: String.downcase(params["eth_address"])) do
       %Account{script_hash: script_hash} ->
         data = DepositWithdrawalView.list_by_script_hash(script_hash, conn.params["page"] || 1)
         json(conn, data)

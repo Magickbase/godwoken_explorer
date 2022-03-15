@@ -7,9 +7,9 @@ defmodule GodwokenExplorerWeb.API.TransferController do
 
   def index(conn, %{"eth_address" => "0x" <> _, "udt_address" => "0x" <> _} = params) do
     with %Account{short_address: short_address} <-
-           Account.search(String.downcase(params["eth_address"])),
+           Account |> Repo.get_by(eth_address: String.downcase(params["eth_address"])),
          %Account{short_address: udt_address} <-
-           Repo.get_by(Account, short_address: String.downcase(params["udt_address"])) do
+           Repo.get_by(Account, eth_address: String.downcase(params["udt_address"])) do
       results =
         TokenTransfer.list(%{eth_address: short_address, udt_address: udt_address}, %{
           page: conn.params["page"] || 1,
@@ -25,7 +25,7 @@ defmodule GodwokenExplorerWeb.API.TransferController do
 
   def index(conn, %{"eth_address" => "0x" <> _} = params) do
     with %Account{short_address: short_address} <-
-           Account.search(String.downcase(params["eth_address"])) do
+           Account |> Repo.get_by(eth_address: String.downcase(params["eth_address"])) do
       results =
         TokenTransfer.list(%{eth_address: short_address}, %{
           page: conn.params["page"] || 1,
