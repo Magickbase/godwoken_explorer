@@ -117,16 +117,16 @@ defmodule GodwokenExplorer.Transaction do
       tx ->
         cond do
           tx.type == :polyjuice_creator ->
-            creator = Repo.get_by(PolyjuiceCreator, tx_hash: tx.hash) |> Repo.preload(:udt)
+            creator = Repo.get_by(PolyjuiceCreator, tx_hash: tx.hash)
 
             tx
             |> Map.merge(%{
               code_hash: creator.code_hash,
               hash_type: creator.hash_type,
               script_args: creator.script_args,
-              fee_amount: creator.fee_amount,
-              fee_udt: creator.udt.name
+              fee_amount: creator.fee_amount
             })
+
           tx.type == :polyjuice ->
             contract = Repo.get_by(SmartContract, account_id: tx.to_account_id)
 
