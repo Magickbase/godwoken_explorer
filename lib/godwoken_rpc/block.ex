@@ -70,9 +70,19 @@ defmodule GodwokenRPC.Block do
         "raw" => %{"number" => block_number},
         "transactions" => transactions
       }) do
+    {:ok,
+     %{
+       "transactions" => eth_transactions
+     }} = GodwokenRPC.fetch_eth_block_by_hash(block_hash)
+
     transactions
-    |> Enum.map(fn t ->
-      Map.merge(t, %{"block_hash" => block_hash, "block_number" => hex_to_number(block_number)})
+    |> Enum.with_index()
+    |> Enum.map(fn {t, index} ->
+      Map.merge(t, %{
+        "block_hash" => block_hash,
+        "block_number" => hex_to_number(block_number),
+        "eth_hash" => eth_transactions |> Enum.at(index)
+      })
     end)
   end
 

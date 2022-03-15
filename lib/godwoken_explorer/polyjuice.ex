@@ -17,6 +17,7 @@ defmodule GodwokenExplorer.Polyjuice do
     field :input, :binary
     field :tx_hash, :binary
     field :gas_used, :integer
+    field :transaction_index, :integer
     field(:status, Ecto.Enum, values: [:succeed, :failed])
 
     belongs_to(:transaction, GodwokenExplorer.Transaction,
@@ -39,9 +40,10 @@ defmodule GodwokenExplorer.Polyjuice do
       :input_size,
       :input,
       :gas_used,
+      :transaction_index,
       :status
     ])
-    |> validate_required([:is_create, :gas_limit, :gas_price, :value, :input_size, :input])
+    |> validate_required([:is_create, :gas_limit, :gas_price, :value, :input_size, :input, :transaction_index])
     |> unique_constraint(:tx_hash)
   end
 

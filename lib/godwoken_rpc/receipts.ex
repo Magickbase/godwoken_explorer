@@ -117,7 +117,7 @@ defmodule GodwokenRPC.Receipts do
     {requests, id_to_transaction_params} =
       transactions_params
       |> Stream.with_index()
-      |> Enum.reduce({[], %{}}, fn {%{hash: transaction_hash} = transaction_params, id},
+      |> Enum.reduce({[], %{}}, fn {%{eth_hash: transaction_hash} = transaction_params, id},
                                    {acc_requests, acc_id_to_transaction_params} ->
         requests = [request(id, transaction_hash) | acc_requests]
         id_to_transaction_params = Map.put(acc_id_to_transaction_params, id, transaction_params)
@@ -142,7 +142,7 @@ defmodule GodwokenRPC.Receipts do
         {transaction_hash, receipt_params}
       end)
 
-    Enum.map(transactions_params, fn %{hash: transaction_hash} = transaction_params ->
+    Enum.map(transactions_params, fn %{eth_hash: transaction_hash} = transaction_params ->
       receipts_params = Map.fetch!(transaction_hash_to_receipt_params, transaction_hash)
       merged_params = Map.merge(transaction_params, receipts_params)
 

@@ -20,6 +20,7 @@ defmodule GodwokenExplorer.Transaction do
     field(:type, Ecto.Enum, values: [:polyjuice_creator, :polyjuice, :eth_address_registry, :unknown])
     field(:block_number, :integer)
     field(:block_hash, :binary)
+    field(:eth_hash, :binary)
 
     belongs_to(:block, Block, foreign_key: :block_hash, references: :hash, define_field: false)
 
@@ -36,7 +37,8 @@ defmodule GodwokenExplorer.Transaction do
       :to_account_id,
       :nonce,
       :args,
-      :block_number
+      :block_number,
+      :eth_hash
     ])
     |> validate_required([
       :hash,
@@ -44,7 +46,8 @@ defmodule GodwokenExplorer.Transaction do
       :to_account_id,
       :nonce,
       :args,
-      :block_number
+      :block_number,
+      :eth_hash
     ])
   end
 
