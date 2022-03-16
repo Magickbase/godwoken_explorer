@@ -389,8 +389,11 @@ defmodule GodwokenIndexer.Block.SyncWorker do
             balance: balance
           }
           |> Map.merge(timestamps())
+        else
+          _ -> nil
         end
       end)
+      |> Enum.reject(&is_nil(&1))
 
     Repo.insert_all(AccountUDT, import_account_udts,
       on_conflict: {:replace, [:balance, :updated_at]},
