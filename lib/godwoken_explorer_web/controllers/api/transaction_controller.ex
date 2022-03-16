@@ -17,7 +17,10 @@ defmodule GodwokenExplorerWeb.API.TransactionController do
             account_id: account_id,
             contract_id: contract_id
           },
-          conn.params["page"] || 1
+          %{
+            page: conn.params["page"] || 1,
+            page_size: conn.assigns.page_size
+          }
         )
       else
         _ ->
@@ -31,13 +34,15 @@ defmodule GodwokenExplorerWeb.API.TransactionController do
   end
 
   def index(conn, %{"eth_address" => "0x" <> _} = params) do
-    %Account{id: account_id, type: type} =
-      Account.search(String.downcase(params["eth_address"]))
+    %Account{id: account_id, type: type} = Account.search(String.downcase(params["eth_address"]))
 
     results =
       Transaction.account_transactions_data(
         %{type: type, account_id: account_id},
-        conn.params["page"] || 1
+        %{
+          page: conn.params["page"] || 1,
+          page_size: conn.assigns.page_size
+        }
       )
 
     json(conn, results)
@@ -47,14 +52,21 @@ defmodule GodwokenExplorerWeb.API.TransactionController do
     results =
       Transaction.account_transactions_data(
         %{block_hash: params["block_hash"]},
-        conn.params["page"] || 1
+        %{
+          page: conn.params["page"] || 1,
+          page_size: conn.assigns.page_size
+        }
       )
 
     json(conn, results)
   end
 
   def index(conn, _params) do
-    results = Transaction.account_transactions_data(conn.params["page"] || 1)
+    results =
+      Transaction.account_transactions_data(%{
+        page: conn.params["page"] || 1,
+        page_size: conn.assigns.page_size
+      })
 
     json(conn, results)
   end
