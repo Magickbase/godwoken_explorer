@@ -28,7 +28,7 @@ defmodule GodwokenExplorer.Token.BalanceReader do
   ]
 
   @spec get_balances_of([
-          %{token_contract_address_hash: String.t(), address_hash: String.t(), block_number: non_neg_integer()}
+          %{token_contract_address_hash: String.t(), address_hash: String.t(), block_number: non_neg_integer() | nil}
         ]) :: [{:ok, non_neg_integer()} | {:error, String.t()}]
   def get_balances_of(token_balance_requests) do
     token_balance_requests
@@ -43,6 +43,7 @@ defmodule GodwokenExplorer.Token.BalanceReader do
          token_contract_address_hash: token_contract_address_hash
        }) do
     %{
+      from: address_hash,
       contract_address: token_contract_address_hash,
       method_id: "70a08231",
       args: [address_hash],
