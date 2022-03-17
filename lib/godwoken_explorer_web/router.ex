@@ -71,8 +71,8 @@ defmodule GodwokenExplorerWeb.Router do
     get("/deposit_withdrawals", DepositWithdrawalController, :index)
     get("/udts", UDTController, :index)
     get("/udts/:id", UDTController, :show)
-
     get("/smart_contracts", SmartContractController, :index)
+    get("/account_udts", AccountUDTController, :index)
   end
 
   scope "/", GodwokenExplorerWeb do

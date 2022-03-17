@@ -28,7 +28,10 @@ defmodule GodwokenExplorer.AccountUDT do
   end
 
   def create_or_update_account_udt!(attrs) do
-    case Repo.get_by(__MODULE__, %{address_hash: attrs[:address_hash], token_contract_address_hash: attrs[:token_contract_address_hash]}) do
+    case Repo.get_by(__MODULE__, %{
+           address_hash: attrs[:address_hash],
+           token_contract_address_hash: attrs[:token_contract_address_hash]
+         }) do
       nil -> %__MODULE__{}
       account_udt -> account_udt
     end
@@ -83,18 +86,18 @@ defmodule GodwokenExplorer.AccountUDT do
         symbol: fragment("CASE WHEN ? IS NULL THEN ? ELSE ? END", u1, u2.symbol, u1.symbol),
         icon: fragment("CASE WHEN ? IS NULL THEN ? ELSE ? END", u1, u2.icon, u1.icon),
         balance:
-        fragment(
-          "CASE WHEN ? IS NOT NULL THEN ? / power(10, ?)::decimal
+          fragment(
+            "CASE WHEN ? IS NOT NULL THEN ? / power(10, ?)::decimal
           WHEN ? IS NOT NULL THEN ? / power(10, ?)::decimal
           ELSE ? END",
-          u1.decimal,
-          au.balance,
-          u1.decimal,
-          u2.decimal,
-          au.balance,
-          u2.decimal,
-          au.balance
-        ),
+            u1.decimal,
+            au.balance,
+            u1.decimal,
+            u2.decimal,
+            au.balance,
+            u2.decimal,
+            au.balance
+          ),
         updated_at: au.updated_at
       }
     )
@@ -103,11 +106,13 @@ defmodule GodwokenExplorer.AccountUDT do
   end
 
   def unique_account_udts(results) do
-    results |> Enum.group_by(fn result -> result[:id] end) |> Enum.reduce([], fn {id, account_udts}, acc ->
-      if not(is_nil(id)) and id != UDT.ckb_account_id do
+    results
+    |> Enum.group_by(fn result -> result[:id] end)
+    |> Enum.reduce([], fn {id, account_udts}, acc ->
+      if not is_nil(id) and id != UDT.ckb_account_id() do
         if length(account_udts) > 1 do
-          latest_au = account_udts |> Enum.sort_by(fn au -> au[:updated_at] end) |> List.last
-          [latest_au | acc ]
+          latest_au = account_udts |> Enum.sort_by(fn au -> au[:updated_at] end) |> List.last()
+          [latest_au | acc]
         else
           [List.first(account_udts) | acc]
         end
@@ -118,17 +123,18 @@ defmodule GodwokenExplorer.AccountUDT do
   end
 
   def sync_balance!(%{script_hash: script_hash, udt_id: udt_id}) do
-    with %Account{id: account_id, short_address: short_address} <- Repo.get_by(Account, script_hash: script_hash),
-        %Account{short_address: udt_short_address} <- Repo.get(Account, udt_id) do
-        {:ok, balance} = GodwokenRPC.fetch_balance(short_address, udt_id)
+    with %Account{id: account_id, short_address: short_address} <-
+           Repo.get_by(Account, script_hash: script_hash),
+         %Account{short_address: udt_short_address} <- Repo.get(Account, udt_id) do
+      {:ok, balance} = GodwokenRPC.fetch_balance(short_address, udt_id)
 
-        AccountUDT.create_or_update_account_udt!(%{
-          account_id: account_id,
-          address_hash: short_address,
-          udt_id: udt_id,
-          token_contract_address_hash: udt_short_address,
-          balance: balance
-        })
+      AccountUDT.create_or_update_account_udt!(%{
+        account_id: account_id,
+        address_hash: short_address,
+        udt_id: udt_id,
+        token_contract_address_hash: udt_short_address,
+        balance: balance
+      })
     else
       _ ->
         {:error, :account_not_exist}
@@ -137,20 +143,95 @@ defmodule GodwokenExplorer.AccountUDT do
 
   def sync_balance!(%{account_id: account_id, udt_id: udt_id}) do
     with %Account{short_address: short_address} <- Repo.get(Account, account_id),
-        %Account{short_address: udt_short_address} <- Repo.get(Account, udt_id) do
-        {:ok, balance} = GodwokenRPC.fetch_balance(short_address, udt_id)
+         %Account{short_address: udt_short_address} <- Repo.get(Account, udt_id) do
+      {:ok, balance} = GodwokenRPC.fetch_balance(short_address, udt_id)
 
-        AccountUDT.create_or_update_account_udt!(%{
-          account_id: account_id,
-          address_hash: short_address,
-          udt_id: udt_id,
-          token_contract_address_hash: udt_short_address,
-          balance: balance
-        })
+      AccountUDT.create_or_update_account_udt!(%{
+        account_id: account_id,
+        address_hash: short_address,
+        udt_id: udt_id,
+        token_contract_address_hash: udt_short_address,
+        balance: balance
+      })
     else
       _ ->
         {:error, :account_not_exist}
     end
   end
 
+  def sort_holder_list(udt_id, paging_options) do
+    case Repo.get(UDT, udt_id) do
+      %UDT{type: :native, supply: supply, decimal: decimal} ->
+        %Account{short_address: short_address} = Repo.get(Account, udt_id)
+
+        address_and_balances =
+          from(au in AccountUDT,
+            join: a1 in Account,
+            on: a1.short_address == au.address_hash,
+            where: au.token_contract_address_hash == ^short_address and au.balance > 0,
+            select: %{
+              eth_address: fragment("CASE WHEN ? = 'user' THEN encode(?, 'escape')
+        ELSE encode(?, 'escape') END", a1.type, a1.eth_address, a1.short_address),
+              balance: fragment("? / power(10, ?)::decimal", au.balance, ^decimal),
+              account_id: a1.id
+            },
+            order_by: [desc: au.balance]
+          )
+          |> Repo.paginate(page: paging_options[:page], page_size: paging_options[:page_size])
+
+        parse_holder_sort_results(address_and_balances, supply)
+
+      %UDT{type: :bridge, bridge_account_id: bridge_account_id, supply: supply, decimal: decimal} ->
+        udt_short_addresses =
+          from(a in Account, select: a.short_address, where: a.id in [^udt_id, ^bridge_account_id])
+          |> Repo.all()
+
+        sub_query =
+          from(au in AccountUDT,
+            join: a1 in Account,
+            on: a1.short_address == au.address_hash,
+            where: au.token_contract_address_hash in ^udt_short_addresses and au.balance > 0,
+            select: %{
+              eth_address: fragment("CASE WHEN ? = 'user' THEN encode(?, 'escape')
+        ELSE encode(?, 'escape') END", a1.type, a1.eth_address, a1.short_address),
+              balance: fragment("? / power(10, ?)::decimal", au.balance, ^decimal),
+              account_id: a1.id
+            },
+            distinct: au.address_hash,
+            order_by: [desc: au.updated_at]
+          )
+
+        address_and_balances =
+          from(sq in subquery(sub_query), order_by: [desc: sq.balance])
+          |> Repo.paginate(page: paging_options[:page], page_size: paging_options[:page_size])
+
+        parse_holder_sort_results(address_and_balances, supply)
+    end
+  end
+
+  defp parse_holder_sort_results(address_and_balances, supply) do
+    results =
+      address_and_balances.entries
+      |> Enum.map(fn %{account_id: account_id, balance: balance} = result ->
+        percentage =
+          if is_nil(supply) do
+            0.0
+          else
+            D.div(balance, supply) |> D.mult(D.new(99)) |> D.round(2) |> D.to_string()
+          end
+
+        result
+        |> Map.merge(%{
+          percentage: percentage,
+          tx_count: GodwokenExplorer.Chain.Cache.AccountTransactionCount.get(account_id)
+        })
+        |> Map.drop([:account_id])
+      end)
+
+    %{
+      page: address_and_balances.page_number,
+      total_count: address_and_balances.total_entries,
+      results: results
+    }
+  end
 end
