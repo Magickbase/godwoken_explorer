@@ -1,11 +1,15 @@
 defmodule GodwokenExplorerWeb.API.DailyStatController do
   use GodwokenExplorerWeb, :controller
 
-  alias GodwokenExplorer.{DailyStat}
+  alias GodwokenExplorer.{DailyStat, DailyStatView}
 
-  def index(conn, %{start_date: start_date, end_date: end_date}) do
+  plug JSONAPI.QueryParser, view: DailyStatView
+
+  def index(conn, %{"start_date" => start_date, "end_date" => end_date}) do
     results = DailyStat.by_date_range(start_date, end_date)
+    data =
+      JSONAPI.Serializer.serialize(DailyStatView, results, conn)
 
-    json(conn, results)
+    json(conn, data)
   end
 end
