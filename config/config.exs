@@ -53,7 +53,8 @@ config :jsonapi,
 # UTC
 config :godwoken_explorer, GodwokenExplorer.Scheduler,
   jobs: [
-    {"01 00 * * *", {GodwokenExplorer.UDT, :refresh_supply, []}}
+    {"01 00 * * *", {GodwokenExplorer.UDT, :refresh_supply, []}},
+    {"10 00 * * *", {GodwokenExplorer.DailyStat, :refresh_yesterday_data, [DateTime.utc_now]}}
   ]
 
 # Import environment specific config. This must remain at the bottom

@@ -48,7 +48,7 @@ defmodule GodwokenExplorer.DailyStat do
     |> Repo.insert_or_update()
   end
 
-  def refresh_data_daily(datetime) do
+  def refresh_yesterday_data(datetime) do
     start_time = datetime |> Timex.shift(days: -1) |> Timex.beginning_of_day()
     end_time = datetime |> Timex.shift(days: -1) |> Timex.end_of_day()
 
