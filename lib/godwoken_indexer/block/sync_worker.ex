@@ -99,6 +99,9 @@ defmodule GodwokenIndexer.Block.SyncWorker do
           grouped_transactions_params =
             transactions_params_without_receipts |> Enum.group_by(fn tx -> tx[:type] end)
 
+          trigger_account_worker(transactions_params_without_receipts)
+          Logger.info("=====================UPDATED ACCOUNT")
+
           polyjuice_without_receipts = grouped_transactions_params[:polyjuice] || []
           polyjuice_creator_params = grouped_transactions_params[:polyjuice_creator] || []
           eth_address_registry_params = grouped_transactions_params[:eth_address_registry] || []
@@ -184,9 +187,6 @@ defmodule GodwokenIndexer.Block.SyncWorker do
 
           if length(polyjuice_without_receipts) > 0,
             do: update_ckb_balance(polyjuice_without_receipts)
-
-          trigger_account_worker(transactions_params_without_receipts)
-          Logger.info("=====================UPDATED ACCOUNT")
 
           inserted_transactions
         else
