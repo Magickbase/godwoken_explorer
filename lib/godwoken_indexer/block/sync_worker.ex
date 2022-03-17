@@ -368,11 +368,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
     ckb_id = UDT.ckb_account_id()
 
     if not is_nil(ckb_id) do
-      ckb_contract_address =
-        with %UDT{bridge_account_id: bridge_account_id} <- UDT |> Repo.get(ckb_id),
-             %Account{short_address: short_address} <- Repo.get(Account, bridge_account_id) do
-          short_address
-        end
+      %Account{short_address: ckb_contract_address} = Repo.get(Account, ckb_id)
 
       account_ids =
         polyjuice_params
