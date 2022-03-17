@@ -1,8 +1,6 @@
 defmodule GodwokenExplorer.DailyStatView do
   use JSONAPI.View, type: "daily_stat"
 
-  import Ecto.Query, only: [from: 2]
-
   def fields do
     [
       :id,

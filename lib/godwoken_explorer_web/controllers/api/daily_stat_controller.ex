@@ -1,7 +1,7 @@
 defmodule GodwokenExplorerWeb.API.DailyStatController do
   use GodwokenExplorerWeb, :controller
 
-  alias GodwokenExplorer.{DailyStat}
+  alias GodwokenExplorer.{DailyStat, DailyStatView}
 
   plug JSONAPI.QueryParser, view: DailyStatView
 
