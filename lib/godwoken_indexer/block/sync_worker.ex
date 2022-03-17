@@ -98,6 +98,9 @@ defmodule GodwokenIndexer.Block.SyncWorker do
         transactions_params_without_receipts
         |> Enum.split_with(fn %{type: type} -> type == :polyjuice end)
 
+      trigger_account_worker(polyjuice_without_receipts)
+      Logger.info("=====================UPDATED ACCOUNT")
+
       {:ok, %{logs: logs, receipts: receipts}} =
         GodwokenRPC.fetch_transaction_receipts(polyjuice_without_receipts)
 
@@ -170,9 +173,6 @@ defmodule GodwokenIndexer.Block.SyncWorker do
       end)
 
       Logger.info("=====================UPDATED BALANCE")
-
-      trigger_account_worker(polyjuice_with_receipts)
-      Logger.info("=====================UPDATED ACCOUNT")
 
       broadcast_block_and_tx(inserted_blocks, inserted_transactions)
       {:ok, next_number + 1}
@@ -368,11 +368,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
     ckb_id = UDT.ckb_account_id()
 
     if not is_nil(ckb_id) do
-      ckb_contract_address =
-        with %UDT{bridge_account_id: bridge_account_id} <- UDT |> Repo.get(ckb_id),
-             %Account{short_address: short_address} <- Repo.get(Account, bridge_account_id) do
-          short_address
-        end
+      %Account{short_address: ckb_contract_address} = Repo.get(Account, ckb_id)
 
       account_ids =
         polyjuice_params
