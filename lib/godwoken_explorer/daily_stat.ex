@@ -40,7 +40,7 @@ defmodule GodwokenExplorer.DailyStat do
   end
 
   def insert_or_update(changes) do
-    case Repo.get_by(__MODULE__, changes[:date]) do
+    case Repo.get_by(__MODULE__, date: changes[:date]) do
       nil -> %__MODULE__{}
       daily_stat -> daily_stat
     end
@@ -53,26 +53,22 @@ defmodule GodwokenExplorer.DailyStat do
     end_time = datetime |> Timex.shift(days: -1) |> Timex.end_of_day()
 
     blocks =
-      Block
-      |> select([b], %{
+      Block |> select([b], %{
         timestamp: b.timestamp,
         transaction_count: b.transaction_count,
         size: b.size,
         gas_used: b.gas_used,
         gas_limit: b.gas_limit,
         number: b.number
-      })
-      |> where([b], b.timestamp >= ^start_time and b.timestamp <= ^end_time)
-      |> order_by([b], asc: b.number)
-      |> Repo.all()
+      }) |> where([b], b.timestamp >= ^start_time and b.timestamp <= ^end_time) |> order_by([b], asc: b.number) |> Repo.all()
 
     total_block_count = blocks |> Enum.count()
     total_txn = blocks |> Enum.reduce(0, fn block, acc -> block[:transaction_count] + acc end)
 
     block_time_range_sec =
       Timex.diff(
-        blocks |> List.last() |> Map.get(:inserted_at),
-        blocks |> List.first() |> Map.get(:inserted_at),
+        blocks |> List.last() |> Map.get(:timestamp),
+        blocks |> List.first() |> Map.get(:timestamp),
         :seconds
       )
 
@@ -106,7 +102,7 @@ defmodule GodwokenExplorer.DailyStat do
 
     insert_or_update(%{
       date: date,
-      erc20_transer_count: erc20_transfer_count,
+      erc20_transfer_count: erc20_transfer_count,
       total_block_count: total_block_count,
       total_txn: total_txn,
       avg_block_size: avg_block_size,
