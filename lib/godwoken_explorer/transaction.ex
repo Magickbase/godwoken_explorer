@@ -144,16 +144,16 @@ defmodule GodwokenExplorer.Transaction do
 
   def account_transactions_data(
         %{block_hash: block_hash},
-        page
+        paging_options
       ) do
     tx_hashes = list_tx_hash_by_transaction_query(dynamic([t], t.block_hash == ^block_hash))
 
-    parse_result(tx_hashes, page)
+    parse_result(tx_hashes, paging_options)
   end
 
   def account_transactions_data(
         %{account_id: account_id, contract_id: contract_id},
-        page
+        paging_options
       ) do
     tx_hashes =
       list_tx_hash_by_transaction_query(
@@ -161,12 +161,12 @@ defmodule GodwokenExplorer.Transaction do
       )
       |> limit(@account_tx_limit)
 
-    parse_result(tx_hashes, page)
+    parse_result(tx_hashes, paging_options)
   end
 
   def account_transactions_data(
         %{type: type, account_id: account_id},
-        page
+        paging_options
       )
       when type in [:meta_contract, :udt, :polyjuice_root, :polyjuice_contract] do
     condition =
@@ -181,22 +181,22 @@ defmodule GodwokenExplorer.Transaction do
       list_tx_hash_by_transaction_query(condition)
       |> limit(@account_tx_limit)
 
-    parse_result(tx_hashes, page)
+    parse_result(tx_hashes, paging_options)
   end
 
   def account_transactions_data(
         %{type: type, account_id: account_id},
-        page
+        paging_options
       )
       when type == :user do
     tx_hashes =
       list_tx_hash_by_transaction_query(dynamic([t], t.from_account_id == ^account_id))
       |> limit(@account_tx_limit)
 
-    parse_result(tx_hashes, page)
+    parse_result(tx_hashes, paging_options)
   end
 
-  def account_transactions_data(page) do
+  def account_transactions_data(paging_options) do
     datetime = Timex.now() |> Timex.shift(days: -5)
     condition =
       dynamic([t], t.inserted_at > ^datetime)
@@ -205,11 +205,11 @@ defmodule GodwokenExplorer.Transaction do
       list_tx_hash_by_transaction_query(condition)
       |> limit(@tx_limit)
 
-    parse_result(tx_hashes, page)
+    parse_result(tx_hashes, paging_options)
   end
 
-  defp parse_result(tx_hashes, page) do
-    tx_hashes_struct = Repo.paginate(tx_hashes, page: page)
+  defp parse_result(tx_hashes, paging_options) do
+    tx_hashes_struct = Repo.paginate(tx_hashes, page: paging_options[:page], page_size: paging_options[:page_size])
 
     results =
       list_transaction_by_tx_hash(tx_hashes_struct.entries)
@@ -224,7 +224,7 @@ defmodule GodwokenExplorer.Transaction do
       end)
 
     %{
-      page: page,
+      page: paging_options[:page],
       total_count: tx_hashes_struct.total_entries,
       txs: parsed_result
     }
