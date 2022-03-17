@@ -73,6 +73,7 @@ defmodule GodwokenExplorerWeb.Router do
     get("/udts/:id", UDTController, :show)
     get("/smart_contracts", SmartContractController, :index)
     get("/account_udts", AccountUDTController, :index)
+    get("/daily_stats", DailyStatController, :index)
   end
 
   scope "/", GodwokenExplorerWeb do
