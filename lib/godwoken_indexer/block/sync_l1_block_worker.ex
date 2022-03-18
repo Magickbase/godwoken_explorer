@@ -73,8 +73,7 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
     header = response["header"]
     block_hash = header["hash"]
 
-    timestamp =
-      header["timestamp"] |> hex_to_number() |> timestamp_to_datetime
+    timestamp = header["timestamp"] |> hex_to_number() |> timestamp_to_datetime
 
     if forked?(header["parent_hash"], check_info) do
       Logger.error("!!!!!!forked!!!!!!#{block_number}")
@@ -97,8 +96,10 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
         if output["lock"]["code_hash"] == deposition_lock.code_hash &&
              output["lock"]["hash_type"] == deposition_lock.hash_type &&
              String.starts_with?(output["lock"]["args"], deposition_lock.args) &&
-             (is_nil(Map.get(output, "type")) && hex_to_number(output["capacity"]) >= @smallest_ckb_capacity ||
-             not(is_nil(Map.get(output, "type"))) && hex_to_number(output["capacity"]) >= @smallest_udt_ckb_capacity) do
+             ((is_nil(Map.get(output, "type")) &&
+                 hex_to_number(output["capacity"]) >= @smallest_ckb_capacity) ||
+                (not is_nil(Map.get(output, "type")) &&
+                   hex_to_number(output["capacity"]) >= @smallest_udt_ckb_capacity)) do
           parse_lock_args_and_bind(%{
             output: output,
             index: index,
@@ -144,28 +145,32 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
          output_data: output_data,
          output: output
        }) do
-    {
-      l2_script_hash,
-      {l2_block_hash, l2_block_number},
-      owner_lock_hash,
-    } = parse_withdrawal_lock_args(args)
+    try do
+      {
+        l2_script_hash,
+        {l2_block_hash, l2_block_number},
+        owner_lock_hash
+      } = parse_withdrawal_lock_args(args)
 
-    {udt_script, udt_script_hash, amount} = parse_udt_script(output, output_data)
+      {udt_script, udt_script_hash, amount} = parse_udt_script(output, output_data)
 
-    with {:ok, udt_id} <- Account.find_or_create_udt_account!(udt_script, udt_script_hash) do
-      WithdrawalHistory.create_or_update_history!(%{
-        layer1_block_number: block_number,
-        layer1_tx_hash: tx_hash,
-        layer1_output_index: index,
-        l2_script_hash: "0x" <> l2_script_hash,
-        block_hash: "0x" <> l2_block_hash,
-        block_number: l2_block_number,
-        udt_script_hash: "0x" <> udt_script_hash,
-        owner_lock_hash: "0x" <> owner_lock_hash,
-        timestamp: timestamp,
-        udt_id: udt_id,
-        amount: amount
-      })
+      with {:ok, udt_id} <- Account.find_or_create_udt_account!(udt_script, udt_script_hash) do
+        WithdrawalHistory.create_or_update_history!(%{
+          layer1_block_number: block_number,
+          layer1_tx_hash: tx_hash,
+          layer1_output_index: index,
+          l2_script_hash: "0x" <> l2_script_hash,
+          block_hash: "0x" <> l2_block_hash,
+          block_number: l2_block_number,
+          udt_script_hash: "0x" <> udt_script_hash,
+          owner_lock_hash: "0x" <> owner_lock_hash,
+          timestamp: timestamp,
+          udt_id: udt_id,
+          amount: amount
+        })
+      end
+    rescue
+      e -> Sentry.capture_exception(e, extra: %{l1_tx_hash: tx_hash, index: index})
     end
   end
 
@@ -217,9 +222,11 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
               case Repo.get(Account, account_id) do
                 account = %Account{script_hash: wrong_script_hash} ->
                   {:ok, new_account_id} = GodwokenRPC.fetch_account_id(wrong_script_hash)
+
                   Logger.error(
                     "Account id is changed!!!!old id:#{account_id}, new id: #{new_account_id}, script_hash: #{wrong_script_hash}"
                   )
+
                   Ecto.Changeset.change(account, %{id: new_account_id}) |> Repo.update!()
 
                   Account.create_or_update_account!(%{
