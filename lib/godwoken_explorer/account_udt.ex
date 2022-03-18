@@ -217,7 +217,7 @@ defmodule GodwokenExplorer.AccountUDT do
           if is_nil(supply) do
             0.0
           else
-            D.div(balance, supply) |> D.mult(D.new(99)) |> D.round(2) |> D.to_string()
+            D.div(balance, supply) |> D.mult(D.new(100)) |> D.round(2) |> D.to_string()
           end
 
         result
