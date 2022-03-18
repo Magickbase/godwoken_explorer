@@ -7,7 +7,7 @@ defmodule GodwokenExplorer.Transaction do
 
   @tx_limit 500_000
   @account_tx_limit 100_000
-  @huge_data_account_ids [23983, 23988, 23992]
+  @huge_data_account_ids [23983, 23988, 23992, 27130]
 
   @derive {Jason.Encoder, except: [:__meta__]}
   @primary_key {:hash, :binary, autogenerate: false}
