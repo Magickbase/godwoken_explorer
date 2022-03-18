@@ -8,7 +8,7 @@ defmodule GodwokenExplorer.TokenTransfer do
   @erc1155_batch_transfer_signature "0x4a39dc06d4c0dbc64b70af90fd698a233a518aa5d07e595d983b8c0526c8f7fb"
 
   @transfer_function_signature "0xa9059cbb"
-  @yok_address "0xb02c930c2825a960a50ba4ab005e8264498b64a0"
+  @huge_data_udt_address ["0xb02c930c2825a960a50ba4ab005e8264498b64a0", "0xd66eb642ee33837531fda61eb7ab15b15658bcab"]
   @huge_data_address ["0x8967af2789aabbc6ff68bd75336b09e6e4303c98", "0xf00b259ed79bb80291b45a76b13e3d71d4869433"]
 
   @derive {Jason.Encoder, except: [:__meta__]}
@@ -178,7 +178,7 @@ defmodule GodwokenExplorer.TokenTransfer do
 
   def list(%{udt_address: udt_address}, paging_options) do
     condition =
-      if udt_address == @yok_address do
+      if udt_address in @huge_data_udt_address do
         datetime = Timex.now() |> Timex.shift(days: -5)
         dynamic(
           [tt],
