@@ -11,4 +11,9 @@ defmodule GodwokenExplorer.Graphql.Resolvers.AccountUDT do
     {:ok, nil}
   end
 
+  # TODO: find account
+  def account_udt_ckbs(_parent, _args, _resolution) do
+    {:ok, nil}
+  end
+
 end

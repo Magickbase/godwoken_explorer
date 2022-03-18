@@ -26,42 +26,16 @@ defmodule GodwokenExplorerWeb.Router do
     pipe_through([:graphql_api])
 
     if Mix.env() in [:dev, :stg] do
-      get("/frontend", Absinthe.Plug.GraphiQL,
-        schema: GodwokenExplorer.Graphql.Schemas.Frontend,
-        interface: :playground,
-        log_level: :info,
-        adapter: Absinthe.Adapter.Underscore
-      )
-
-      get("/dashboard", Absinthe.Plug.GraphiQL,
-        schema: GodwokenExplorer.Graphql.Schemas.Dashboard,
-        interface: :playground,
-        log_level: :info,
-        adapter: Absinthe.Adapter.Underscore
-      )
-
-      get("/web3api", Absinthe.Plug.GraphiQL,
-        schema: GodwokenExplorer.Graphql.Schemas.Web3API,
+      get("/", Absinthe.Plug.GraphiQL,
+        schema: GodwokenExplorer.Graphql.Schemas.Graphql,
         interface: :playground,
         log_level: :info,
         adapter: Absinthe.Adapter.Underscore
       )
     end
 
-    post("/frontend", Absinthe.Plug,
-      schema: GodwokenExplorer.Graphql.Schemas.Frontend,
-      log_level: :info,
-      adapter: Absinthe.Adapter.Underscore
-    )
-
-    post("/dashboard", Absinthe.Plug,
-      schema: GodwokenExplorer.Graphql.Schemas.Dashboard,
-      log_level: :info,
-      adapter: Absinthe.Adapter.Underscore
-    )
-
-    post("/web3api", Absinthe.Plug,
-      schema: GodwokenExplorer.Graphql.Schemas.Web3API,
+    post("/", Absinthe.Plug,
+      schema: GodwokenExplorer.Graphql.Schemas.Graphql,
       log_level: :info,
       adapter: Absinthe.Adapter.Underscore
     )
