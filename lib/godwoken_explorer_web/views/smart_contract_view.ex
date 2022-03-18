@@ -41,6 +41,7 @@ defmodule GodwokenExplorer.SmartContractView do
     from(
       sc in SmartContract,
       preload: :account,
+      where: not(is_nil(sc.deployment_tx_hash)),
       select: map(sc, ^select_fields())
     )
     |> Repo.paginate(page: paging_options[:page], page_size: paging_options[:page_size])
