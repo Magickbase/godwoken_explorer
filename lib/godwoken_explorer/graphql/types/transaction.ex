@@ -2,16 +2,14 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
   use Absinthe.Schema.Notation
   alias GodwokenExplorer.Graphql.Resolvers, as: Resolvers
 
-  object :web3_transaction_querys do
-    field :transactions, list_of(:transaction) do
-      arg(:input, :transaction_input)
-      resolve(&Resolvers.Transaction.transactions/3)
-    end
-  end
-
   object :transaction_querys do
     field :latest_10_transactions, list_of(:transaction) do
       resolve(&Resolvers.Transaction.latest_10_transactions/3)
+    end
+
+    field :transaction, :transaction do
+      arg(:input, :transaction_hash_input)
+      resolve(&Resolvers.Transaction.transaction/3)
     end
 
     field :transactions, list_of(:transaction) do
@@ -59,11 +57,12 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
     value(:polyjuice)
   end
 
+  input_object :transaction_hash_input do
+    field :transaction_hash, :string
+  end
+
   input_object :transaction_input do
-    field :hash, :string
-    field :eth_address, :string
-    field :contract_address, :string
-    field :block_hash, :string
+    field :address, :string
     field :sort, :sort_type
     import_fields(:page_and_size_input)
     import_fields(:block_range_input)
