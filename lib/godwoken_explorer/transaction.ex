@@ -7,7 +7,8 @@ defmodule GodwokenExplorer.Transaction do
 
   @tx_limit 500_000
   @account_tx_limit 100_000
-  @huge_data_account_ids [23983, 23988, 23992, 27130]
+  @huge_data_account_ids [23983, 23988, 23992]
+  @huge_data_user_account_ids [27130]
 
   @derive {Jason.Encoder, except: [:__meta__]}
   @primary_key {:hash, :binary, autogenerate: false}
@@ -189,8 +190,16 @@ defmodule GodwokenExplorer.Transaction do
         paging_options
       )
       when type == :user do
+    condition =
+      if account_id in @huge_data_user_account_ids do
+        datetime = Timex.now() |> Timex.shift(days: -5)
+        dynamic([t], t.from_account_id == ^account_id and t.inserted_at > ^datetime)
+      else
+        dynamic([t], t.from_account_id == ^account_id)
+      end
+
     tx_hashes =
-      list_tx_hash_by_transaction_query(dynamic([t], t.from_account_id == ^account_id))
+      list_tx_hash_by_transaction_query(condition)
       |> limit(@account_tx_limit)
 
     parse_result(tx_hashes, paging_options)
