@@ -2,33 +2,20 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
   use Absinthe.Schema.Notation
   alias GodwokenExplorer.Graphql.Resolvers, as: Resolvers
 
+  object :web3_transaction_querys do
+    field :transactions, list_of(:transaction) do
+      arg(:input, :transaction_input)
+      resolve(&Resolvers.Transaction.transactions/3)
+    end
+  end
+
   object :transaction_querys do
     field :latest_10_transactions, list_of(:transaction) do
       resolve(&Resolvers.Transaction.latest_10_transactions/3)
     end
 
-    field :transaction, :transaction do
-      arg(:input, :transaction_hash_input)
-      resolve(&Resolvers.Transaction.transaction/3)
-    end
-
-    field :transactions_contract_eth_address, list_of(:transaction) do
-      arg(:input, :transaction_contract_eth_address_input)
-      resolve(&Resolvers.Transaction.transactions/3)
-    end
-
-    field :transactions_eth_address, list_of(:transaction) do
-      arg(:input, :transaction_eth_address_input)
-      resolve(&Resolvers.Transaction.transactions/3)
-    end
-
-    field :transactions_contract_address, list_of(:transaction) do
-      arg(:input, :transaction_contract_address_input)
-      resolve(&Resolvers.Transaction.transactions/3)
-    end
-
-    field :transactions_block_hash, list_of(:transaction) do
-      arg(:input, :transaction_block_hash_input)
+    field :transactions, list_of(:transaction) do
+      arg(:input, :transaction_input)
       resolve(&Resolvers.Transaction.transactions/3)
     end
   end
@@ -68,33 +55,17 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
   end
 
   enum :transaction_type do
-    value(:sudt)
     value(:polyjuice_creator)
     value(:polyjuice)
   end
 
-  input_object :transaction_contract_eth_address_input do
-    field :eth_address, :string
-    field :contract_address, :string
-    import_fields(:page_and_size_input)
-  end
-
-  input_object :transaction_eth_address_input do
-    field :eth_address, :string
-    import_fields(:page_and_size_input)
-  end
-
-  input_object :transaction_contract_address_input do
-    field :contract_address, :string
-    import_fields(:page_and_size_input)
-  end
-
-  input_object :transaction_block_hash_input do
-    field :block_hash, :string
-    import_fields(:page_and_size_input)
-  end
-
-  input_object :transaction_hash_input do
+  input_object :transaction_input do
     field :hash, :string
+    field :eth_address, :string
+    field :contract_address, :string
+    field :block_hash, :string
+    field :sort, :sort_type
+    import_fields(:page_and_size_input)
+    import_fields(:block_range_input)
   end
 end

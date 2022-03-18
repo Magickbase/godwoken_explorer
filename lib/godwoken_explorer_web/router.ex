@@ -39,6 +39,13 @@ defmodule GodwokenExplorerWeb.Router do
         log_level: :info,
         adapter: Absinthe.Adapter.Underscore
       )
+
+      get("/web3api", Absinthe.Plug.GraphiQL,
+        schema: GodwokenExplorer.Graphql.Schemas.Web3API,
+        interface: :playground,
+        log_level: :info,
+        adapter: Absinthe.Adapter.Underscore
+      )
     end
 
     post("/frontend", Absinthe.Plug,
@@ -49,6 +56,12 @@ defmodule GodwokenExplorerWeb.Router do
 
     post("/dashboard", Absinthe.Plug,
       schema: GodwokenExplorer.Graphql.Schemas.Dashboard,
+      log_level: :info,
+      adapter: Absinthe.Adapter.Underscore
+    )
+
+    post("/web3api", Absinthe.Plug,
+      schema: GodwokenExplorer.Graphql.Schemas.Web3API,
       log_level: :info,
       adapter: Absinthe.Adapter.Underscore
     )

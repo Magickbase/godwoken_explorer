@@ -1,5 +1,10 @@
-defmodule GodwokenExplorer.Graphql.Schemas.Frontend do
+defmodule GodwokenExplorer.Graphql.Schemas.Web3API do
   use Absinthe.Schema
+  import_types(Absinthe.Type.Custom)
+  import_types(GodwokenExplorer.Graphql.Types.Custom.JSON)
+  import_types(GodwokenExplorer.Graphql.Types.Custom.UUID4)
+  import_types(GodwokenExplorer.Graphql.Types.Custom.Money)
+
   import_types(Absinthe.Type.Custom)
   import_types(GodwokenExplorer.Graphql.Types.Custom.JSON)
   import_types(GodwokenExplorer.Graphql.Types.Custom.UUID4)
@@ -18,20 +23,15 @@ defmodule GodwokenExplorer.Graphql.Schemas.Frontend do
   import_types(GodwokenExplorer.Graphql.Types.History)
   import_types(GodwokenExplorer.Graphql.Types.AccountUDT)
   import_types(GodwokenExplorer.Graphql.Types.Log)
-
-  def middleware(middleware, _field, _object) do
-    middleware
-  end
+  import_types(GodwokenExplorer.Graphql.Types.Tracker)
 
   query do
-    import_fields(:block_querys)
-    import_fields(:transaction_querys)
-    import_fields(:statistic_querys)
-    import_fields(:account_querys)
-    import_fields(:token_transfer_querys)
-    import_fields(:search_querys)
-    import_fields(:history_querys)
-    import_fields(:account_udt_querys)
+    import_fields(:web3_account_udt_querys)
+    import_fields(:web3_transaction_querys)
+    import_fields(:web3_token_transfer_querys)
+    import_fields(:web3_smart_contract_querys)
+    import_fields(:web3_log_querys)
+    import_fields(:web3_tracker_querys)
   end
 
   # mutation do
