@@ -12,23 +12,8 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
       resolve(&Resolvers.Transaction.transaction/3)
     end
 
-    field :transactions_contract_eth_address, list_of(:transaction) do
-      arg(:input, :transaction_contract_eth_address_input)
-      resolve(&Resolvers.Transaction.transactions/3)
-    end
-
-    field :transactions_eth_address, list_of(:transaction) do
-      arg(:input, :transaction_eth_address_input)
-      resolve(&Resolvers.Transaction.transactions/3)
-    end
-
-    field :transactions_contract_address, list_of(:transaction) do
-      arg(:input, :transaction_contract_address_input)
-      resolve(&Resolvers.Transaction.transactions/3)
-    end
-
-    field :transactions_block_hash, list_of(:transaction) do
-      arg(:input, :transaction_block_hash_input)
+    field :transactions, list_of(:transaction) do
+      arg(:input, :transaction_input)
       resolve(&Resolvers.Transaction.transactions/3)
     end
   end
@@ -68,33 +53,18 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
   end
 
   enum :transaction_type do
-    value(:sudt)
     value(:polyjuice_creator)
     value(:polyjuice)
   end
 
-  input_object :transaction_contract_eth_address_input do
-    field :eth_address, :string
-    field :contract_address, :string
-    import_fields(:page_and_size_input)
-  end
-
-  input_object :transaction_eth_address_input do
-    field :eth_address, :string
-    import_fields(:page_and_size_input)
-  end
-
-  input_object :transaction_contract_address_input do
-    field :contract_address, :string
-    import_fields(:page_and_size_input)
-  end
-
-  input_object :transaction_block_hash_input do
-    field :block_hash, :string
-    import_fields(:page_and_size_input)
-  end
-
   input_object :transaction_hash_input do
-    field :hash, :string
+    field :transaction_hash, :string
+  end
+
+  input_object :transaction_input do
+    field :address, :string
+    field :sort, :sort_type
+    import_fields(:page_and_size_input)
+    import_fields(:block_range_input)
   end
 end

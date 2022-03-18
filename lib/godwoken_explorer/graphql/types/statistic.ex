@@ -11,6 +11,17 @@ defmodule GodwokenExplorer.Graphql.Types.Statistic do
   object :statistic_mutations do
   end
 
+  object :daily_statistic do
+    field :avg_block_size, :integer
+    field :avg_block_time, :float
+    field :avg_gas_used, :decimal
+    field :avg_gas_limit, :decimal
+    field :date, :date
+    field :erc20_transfer_count, :integer
+    field :total_block_count, :integer
+    field :total_txn, :integer
+  end
+
   object :home_page_statistic do
     field :account_count, :integer
     field :block_count, :integer
