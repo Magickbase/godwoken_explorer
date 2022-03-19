@@ -9,7 +9,7 @@ defmodule GodwokenExplorer.TokenTransfer do
 
   @transfer_function_signature "0xa9059cbb"
   @huge_data_udt_address ["0xb02c930c2825a960a50ba4ab005e8264498b64a0", "0xd66eb642ee33837531fda61eb7ab15b15658bcab"]
-  @huge_data_address ["0x8967af2789aabbc6ff68bd75336b09e6e4303c98", "0xf00b259ed79bb80291b45a76b13e3d71d4869433"]
+  @huge_data_address ["0x8967af2789aabbc6ff68bd75336b09e6e4303c98", "0xf00b259ed79bb80291b45a76b13e3d71d4869433", "0x1ac741946998fcdba3ba8ccff4797407eb30274e", "0x297ce8d1532704f7be447bc897ab63563d60f223"]
 
   @derive {Jason.Encoder, except: [:__meta__]}
   @primary_key false
