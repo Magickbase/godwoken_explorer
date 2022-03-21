@@ -3,7 +3,7 @@ defmodule GodwokenExplorer.Chain do
 
   import GodwokenRPC.Util, only: [stringify_and_unix_maps: 1]
 
-  alias GodwokenExplorer.Counters.AccountsCounter
+  alias GodwokenExplorer.Counters.{AccountsCounter, AverageBlockTime}
   alias GodwokenExplorer.Chain.Cache.{BlockCount, TransactionCount}
 
   def extract_db_name(db_url) do
@@ -89,7 +89,8 @@ defmodule GodwokenExplorer.Chain do
         account_count: Integer.to_string(account_estimated_count()),
         block_count: ((blocks |> List.first() |> Map.get(:number)) + 1) |> Integer.to_string(),
         tx_count: Integer.to_string(transaction_estimated_count()),
-        tps: Float.to_string(Block.transactions_count_per_second())
+        tps: Float.to_string(Block.transactions_count_per_second()),
+        average_block_time: AverageBlockTime.average_block_time() |> Timex.Duration.to_seconds
       }
     }
   end
