@@ -197,12 +197,13 @@ defmodule GodwokenExplorer.Transaction do
       else
         dynamic([t], t.from_account_id == ^account_id)
       end
+    custom_order =  [desc: dynamic([t], t.block_number), desc: dynamic([t], t.nonce)]
 
     tx_hashes =
-      list_tx_hash_by_transaction_query(condition)
+      list_tx_hash_by_transaction_query(condition, custom_order)
       |> limit(@account_tx_limit)
 
-    parse_result(tx_hashes, paging_options)
+    parse_result(tx_hashes, paging_options, custom_order)
   end
 
   def account_transactions_data(paging_options) do
@@ -217,12 +218,18 @@ defmodule GodwokenExplorer.Transaction do
     parse_result(tx_hashes, paging_options)
   end
 
-  defp parse_result(tx_hashes, paging_options) do
+  defp parse_result(tx_hashes, paging_options, custom_order \\ nil) do
     tx_hashes_struct = Repo.paginate(tx_hashes, page: paging_options[:page], page_size: paging_options[:page_size])
+    order_by =
+      if is_nil(custom_order) do
+        [desc: dynamic([t], t.block_number), desc: dynamic([t], t.inserted_at)]
+      else
+        custom_order
+      end
 
     results =
       list_transaction_by_tx_hash(tx_hashes_struct.entries)
-      |> order_by([t], desc: t.block_number, desc: t.inserted_at)
+      |> order_by(^order_by)
       |> Repo.all()
 
     parsed_result =
@@ -239,11 +246,18 @@ defmodule GodwokenExplorer.Transaction do
     }
   end
 
-  def list_tx_hash_by_transaction_query(condition) do
+  def list_tx_hash_by_transaction_query(condition, custom_order \\ nil) do
+    order_by =
+      if is_nil(custom_order) do
+        [desc: dynamic([t], t.block_number), desc: dynamic([t], t.inserted_at)]
+      else
+        custom_order
+      end
+
     from(t in Transaction,
       select: t.hash,
       where: ^condition,
-      order_by: [desc: t.block_number, desc: t.inserted_at]
+      order_by: ^order_by
     )
   end
 
