@@ -22,6 +22,7 @@ defmodule GodwokenExplorer.Application do
       GodwokenExplorer.Chain.Events.Listener,
       GodwokenIndexer.Server,
       GodwokenExplorer.Counters.AccountsCounter,
+      GodwokenExplorer.Counters.AverageBlockTime,
       GodwokenExplorer.Chain.Cache.BlockCount,
       GodwokenExplorer.Chain.Cache.TransactionCount,
       GodwokenExplorer.Chain.Cache.Blocks,
