@@ -75,7 +75,9 @@ defmodule GodwokenExplorer.Transaction do
       txs when is_list(txs) and length(txs) > 0 ->
         txs
         |> Enum.map(fn t ->
-          t |> Map.take([:hash, :from, :to, :to_alias, :type, :timestamp])
+          t
+          |> Map.take([:hash, :from, :to, :to_alias, :type])
+          |> Map.merge(%{timestamp: t.inserted_at})
         end)
 
       _ ->
@@ -266,7 +268,6 @@ defmodule GodwokenExplorer.Transaction do
         hash: t.hash,
         block_hash: b.hash,
         block_number: b.number,
-        timestamp: b.timestamp,
         l1_block_number: b.layer1_block_number,
         from: a2.eth_address,
         to: fragment("
@@ -297,6 +298,7 @@ defmodule GodwokenExplorer.Transaction do
         polyjuice_status: p.status,
         type: t.type,
         nonce: t.nonce,
+        inserted_at: t.inserted_at,
         fee: p.gas_price * p.gas_used,
         gas_price: p.gas_price,
         gas_used: p.gas_used,
