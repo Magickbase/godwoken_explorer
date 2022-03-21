@@ -150,7 +150,7 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
         l2_script_hash,
         {l2_block_hash, l2_block_number},
         owner_lock_hash
-      } = parse_withdrawal_lock_args(args)
+      } = parse_withdrawal_lock_args(String.slice(args, 0..271))
 
       {udt_script, udt_script_hash, amount} = parse_udt_script(output, output_data)
 
