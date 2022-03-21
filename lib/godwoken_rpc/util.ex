@@ -34,6 +34,7 @@ defmodule GodwokenRPC.Util do
       parsed_key =
         case k do
           :transaction_count -> :tx_count
+          :inserted_at -> :timestamp
           _ -> k
         end
 
