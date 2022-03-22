@@ -4,6 +4,8 @@ defmodule GodwokenExplorer.UDT do
   import Torch.Helpers, only: [sort: 1, paginate: 4]
   import Filtrex.Type.Config
 
+  alias GodwokenExplorer.KeyValue
+
   @pagination [page_size: 15]
   @pagination_distance 5
 
@@ -282,7 +284,13 @@ defmodule GodwokenExplorer.UDT do
 
   # TODO: current will calculate all deposits and withdrawals, after can calculate by incrementation
   def refresh_supply do
-    start_time = nil
+    key_value = Repo.get_by(KeyValue, key: :last_udt_supply_at)
+    start_time =
+      if key_value != nil do
+        key_value.value |> Timex.parse!("{ISO:Extended}")
+      else
+        nil
+      end
     end_time = Timex.beginning_of_day(Timex.now())
 
     deposits = DepositHistory.group_udt_amount(start_time, end_time) |> Map.new()
@@ -299,6 +307,7 @@ defmodule GodwokenExplorer.UDT do
         })
         |> Repo.update!()
       end)
+      KeyValue.changeset(key_value, %{value: end_time |> Timex.format!("{ISO:Extended}")}) |> Repo.update!
     end)
   end
 

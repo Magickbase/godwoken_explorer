@@ -7,6 +7,7 @@ defmodule GodwokenExplorer.Account do
 
   alias GodwokenRPC
   alias GodwokenExplorer.Chain.Events.Publisher
+  alias GodwokenExplorer.KeyValue
 
   @derive {Jason.Encoder, except: [:__meta__]}
   @primary_key {:id, :integer, autogenerate: false}
@@ -446,7 +447,7 @@ defmodule GodwokenExplorer.Account do
     end)
   end
 
-  def manual_create_account(id) do
+  def manual_create_account!(id) do
     with {:ok, script_hash}
          when script_hash != "0x0000000000000000000000000000000000000000000000000000000000000000" <-
            GodwokenRPC.fetch_script_hash(%{account_id: id}) do
@@ -498,5 +499,35 @@ defmodule GodwokenExplorer.Account do
       on_conflict: {:replace, [:nonce, :updated_at]},
       conflict_target: :id
     )
+  end
+
+  def check_account_and_create do
+    key_value = Repo.get_by(KeyValue, key: :last_account_total_count)
+
+    last_count =
+      if key_value != nil do
+        key_value.value |> String.to_integer()
+      else
+        0
+      end
+
+    with %Account{script: script} when not is_nil(script) <- Account |> Repo.get(0) do
+      total_count = get_in(script, ["account_merkle_state", "account_count"]) - 1
+
+      if last_count <= total_count do
+        database_ids =
+          from(a in GodwokenExplorer.Account,
+            where: a.id >= ^last_count,
+            select: a.id
+          ) |> GodwokenExplorer.Repo.all()
+
+        less_ids = ((last_count..total_count |> Enum.to_list()) -- database_ids) |> Enum.sort()
+
+        Repo.transaction(fn ->
+          less_ids |> Enum.each(fn x -> Account.manual_create_account!(x) end)
+          KeyValue.changeset(key_value, %{value: total_count + 1}) |> Repo.update!()
+        end)
+      end
+    end
   end
 end

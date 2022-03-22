@@ -104,10 +104,10 @@ defmodule GodwokenExplorer.WithdrawalHistory do
       if start_time do
         dynamic(
           [wh],
-          wh.inserted_at >= ^start_time and wh.inserted_at <= ^end_time
+          wh.inserted_at >= ^start_time and wh.inserted_at < ^end_time
         )
       else
-        dynamic([wh], wh.inserted_at <= ^end_time)
+        dynamic([wh], wh.inserted_at < ^end_time)
       end
 
     from(wh in WithdrawalHistory,

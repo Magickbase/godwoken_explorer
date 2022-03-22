@@ -54,7 +54,8 @@ config :jsonapi,
 config :godwoken_explorer, GodwokenExplorer.Scheduler,
   jobs: [
     {"01 00 * * *", {GodwokenExplorer.UDT, :refresh_supply, []}},
-    {"10 00 * * *", {GodwokenExplorer.DailyStat, :refresh_yesterday_data, [DateTime.utc_now]}}
+    {"10 00 * * *", {GodwokenExplorer.DailyStat, :refresh_yesterday_data, [DateTime.utc_now]}},
+    {"*/2 * * * *", {GodwokenExplorer.Account, :check_account_and_create, []}}
   ]
 
 # Import environment specific config. This must remain at the bottom
