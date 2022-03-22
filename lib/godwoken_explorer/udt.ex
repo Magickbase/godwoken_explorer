@@ -284,13 +284,15 @@ defmodule GodwokenExplorer.UDT do
 
   # TODO: current will calculate all deposits and withdrawals, after can calculate by incrementation
   def refresh_supply do
-    key_value = Repo.get_by(KeyValue, key: :last_udt_supply_at)
-    start_time =
-      if key_value != nil do
-        key_value.value |> Timex.parse!("{ISO:Extended}")
-      else
-        nil
+    key_value =
+      case Repo.get_by(KeyValue, key: :last_udt_supply_at) do
+        nil ->
+          {:ok, key_value} = %KeyValue{} |> KeyValue.changeset(%{key: :last_udt_supply_at}) |> Repo.insert()
+          key_value
+        %KeyValue{} = key_value ->
+          key_value
       end
+    start_time = key_value.value
     end_time = Timex.beginning_of_day(Timex.now())
 
     deposits = DepositHistory.group_udt_amount(start_time, end_time) |> Map.new()
@@ -302,12 +304,19 @@ defmodule GodwokenExplorer.UDT do
       from(u in UDT, where: u.id in ^udt_ids)
       |> Repo.all()
       |> Enum.each(fn u ->
+        supply =
+          udt_amounts
+          |> Map.fetch!(u.id)
+          |> Decimal.div(Integer.pow(10, u.decimal || 0))
+          |> D.add(u.supply || D.new(0))
         UDT.changeset(u, %{
-          supply: udt_amounts |> Map.fetch!(u.id) |> Decimal.div(Integer.pow(10, u.decimal || 0))
+          supply: supply
         })
         |> Repo.update!()
       end)
-      KeyValue.changeset(key_value, %{value: end_time |> Timex.format!("{ISO:Extended}")}) |> Repo.update!
+
+      KeyValue.changeset(key_value, %{value: end_time |> Timex.format!("{ISO:Extended}")})
+      |> Repo.update!()
     end)
   end
 

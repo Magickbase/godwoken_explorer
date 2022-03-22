@@ -502,14 +502,16 @@ defmodule GodwokenExplorer.Account do
   end
 
   def check_account_and_create do
-    key_value = Repo.get_by(KeyValue, key: :last_account_total_count)
-
-    last_count =
-      if key_value != nil do
-        key_value.value |> String.to_integer()
-      else
-        0
+    key_value =
+      case Repo.get_by(KeyValue, key: :last_account_total_count) do
+        nil ->
+          {:ok, key_value} = %KeyValue{} |> KeyValue.changeset(%{key: :last_account_total_count, value: "0"}) |> Repo.insert()
+          key_value
+        %KeyValue{} = key_value ->
+          key_value
       end
+
+    last_count = key_value.value |> String.to_integer()
 
     with %Account{script: script} when not is_nil(script) <- Account |> Repo.get(0) do
       total_count = get_in(script, ["account_merkle_state", "account_count"]) - 1
