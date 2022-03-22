@@ -46,8 +46,7 @@ defmodule GodwokenExplorer.Transaction do
       :to_account_id,
       :nonce,
       :args,
-      :block_number,
-      :eth_hash
+      :block_number
     ])
   end
 
