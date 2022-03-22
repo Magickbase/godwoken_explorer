@@ -527,7 +527,7 @@ defmodule GodwokenExplorer.Account do
 
         Repo.transaction(fn ->
           less_ids |> Enum.each(fn x -> Account.manual_create_account!(x) end)
-          KeyValue.changeset(key_value, %{value: total_count + 1}) |> Repo.update!()
+          KeyValue.changeset(key_value, %{value: Integer.to_string(total_count + 1)}) |> Repo.update!()
         end)
       end
     end
