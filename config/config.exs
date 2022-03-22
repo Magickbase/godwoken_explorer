@@ -52,6 +52,7 @@ config :jsonapi,
 
 # UTC
 config :godwoken_explorer, GodwokenExplorer.Scheduler,
+  storage: QuantumStoragePersistentEts,
   jobs: [
     {"01 00 * * *", {GodwokenExplorer.UDT, :refresh_supply, []}},
     {"10 00 * * *", {GodwokenExplorer.DailyStat, :refresh_yesterday_data, [DateTime.utc_now]}},

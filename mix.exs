@@ -105,6 +105,7 @@ defmodule GodwokenExplorer.MixProject do
 
       # cron
       {:quantum, "~> 3.0"},
+      {:quantum_storage_persistent_ets, "~> 1.0"},
 
       # test
       {:ex_machina, "~> 2.7.0", only: :test},
