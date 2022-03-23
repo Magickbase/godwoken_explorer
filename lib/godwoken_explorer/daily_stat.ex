@@ -52,7 +52,7 @@ defmodule GodwokenExplorer.DailyStat do
 
   def refresh_yesterday_data(datetime) do
     start_time = datetime |> Timex.shift(days: -1) |> Timex.beginning_of_day()
-    end_time = datetime |> Timex.shift(days: -1) |> Timex.end_of_day()
+    end_time = datetime |> Timex.beginning_of_day()
     date = start_time |> Timex.to_date()
 
     with blocks when blocks != [] <-
@@ -65,7 +65,7 @@ defmodule GodwokenExplorer.DailyStat do
              gas_limit: b.gas_limit,
              number: b.number
            })
-           |> where([b], b.timestamp >= ^start_time and b.timestamp <= ^end_time)
+           |> where([b], b.timestamp >= ^start_time and b.timestamp < ^end_time)
            |> order_by([b], asc: b.number)
            |> Repo.all() do
       total_block_count = blocks |> Enum.count()
