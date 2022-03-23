@@ -284,40 +284,46 @@ defmodule GodwokenExplorer.UDT do
 
   # TODO: current will calculate all deposits and withdrawals, after can calculate by incrementation
   def refresh_supply do
-    key_value =
+    {key_value, start_time} =
       case Repo.get_by(KeyValue, key: :last_udt_supply_at) do
         nil ->
-          {:ok, key_value} = %KeyValue{} |> KeyValue.changeset(%{key: :last_udt_supply_at}) |> Repo.insert()
-          key_value
-        %KeyValue{} = key_value ->
-          key_value
+          {:ok, key_value} =
+            %KeyValue{} |> KeyValue.changeset(%{key: :last_udt_supply_at}) |> Repo.insert()
+
+          {key_value, nil}
+
+        %KeyValue{value: value} = key_value ->
+          {key_value, value |> Timex.parse!("{ISO:Extended}")}
       end
-    start_time = key_value.value
+
     end_time = Timex.beginning_of_day(Timex.now())
 
-    deposits = DepositHistory.group_udt_amount(start_time, end_time) |> Map.new()
-    withdrawals = WithdrawalHistory.group_udt_amount(start_time, end_time) |> Map.new()
-    udt_amounts = Map.merge(deposits, withdrawals, fn _k, v1, v2 -> D.add(v1, v2) end)
-    udt_ids = udt_amounts |> Map.keys()
+    if Timex.compare(start_time, end_time) != 0 do
+      deposits = DepositHistory.group_udt_amount(start_time, end_time) |> Map.new()
+      withdrawals = WithdrawalHistory.group_udt_amount(start_time, end_time) |> Map.new()
+      udt_amounts = Map.merge(deposits, withdrawals, fn _k, v1, v2 -> D.add(v1, v2) end)
+      udt_ids = udt_amounts |> Map.keys()
 
-    Repo.transaction(fn ->
-      from(u in UDT, where: u.id in ^udt_ids)
-      |> Repo.all()
-      |> Enum.each(fn u ->
-        supply =
-          udt_amounts
-          |> Map.fetch!(u.id)
-          |> Decimal.div(Integer.pow(10, u.decimal || 0))
-          |> D.add(u.supply || D.new(0))
-        UDT.changeset(u, %{
-          supply: supply
-        })
+      Repo.transaction(fn ->
+        from(u in UDT, where: u.id in ^udt_ids)
+        |> Repo.all()
+        |> Enum.each(fn u ->
+          supply =
+            udt_amounts
+            |> Map.fetch!(u.id)
+            |> Decimal.div(Integer.pow(10, u.decimal || 0))
+            |> D.add(u.supply || D.new(0))
+
+          UDT.changeset(u, %{
+            supply: supply
+          })
+          |> Repo.update!()
+        end)
+
+        KeyValue.changeset(key_value, %{value: end_time |> Timex.format!("{ISO:Extended}")})
         |> Repo.update!()
       end)
-
-      KeyValue.changeset(key_value, %{value: end_time |> Timex.format!("{ISO:Extended}")})
-      |> Repo.update!()
-    end)
+    end
   end
 
   def get_by_contract_address(contract_address) do
