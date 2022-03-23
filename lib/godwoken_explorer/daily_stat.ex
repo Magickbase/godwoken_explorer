@@ -53,9 +53,7 @@ defmodule GodwokenExplorer.DailyStat do
   def refresh_yesterday_data(datetime) do
     start_time = datetime |> Timex.shift(days: -1) |> Timex.beginning_of_day()
     end_time = datetime |> Timex.shift(days: -1) |> Timex.end_of_day()
-
-    Logger.info(start_time)
-    Logger.info(end_time)
+    date = start_time |> Timex.to_date()
 
     with blocks when blocks != [] <-
            Block
@@ -106,8 +104,6 @@ defmodule GodwokenExplorer.DailyStat do
       erc20_transfer_count =
         TokenTransfer |> where([tt], tt.block_number in ^block_numbers) |> Repo.aggregate(:count)
 
-      date = start_time |> Timex.to_date()
-
       insert_or_update(%{
         date: date,
         erc20_transfer_count: erc20_transfer_count,
@@ -118,6 +114,18 @@ defmodule GodwokenExplorer.DailyStat do
         avg_gas_limit: avg_gas_limit,
         avg_gas_used: avg_gas_used
       })
+    else
+      _ ->
+        insert_or_update(%{
+          date: date,
+          erc20_transfer_count: 0,
+          total_block_count: 0,
+          total_txn: 0,
+          avg_block_size: 0,
+          avg_block_time: 0,
+          avg_gas_limit: 0,
+          avg_gas_used: 0
+        })
     end
   end
 
