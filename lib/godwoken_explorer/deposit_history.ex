@@ -79,9 +79,9 @@ defmodule GodwokenExplorer.DepositHistory do
   def group_udt_amount(start_time, end_time) do
     condition =
       if start_time do
-        dynamic([dh], dh.inserted_at >= ^start_time and dh.inserted_at <= ^end_time)
+        dynamic([dh], dh.inserted_at >= ^start_time and dh.inserted_at < ^end_time)
       else
-        dynamic([dh], dh.inserted_at <= ^end_time)
+        dynamic([dh], dh.inserted_at < ^end_time)
       end
 
     from(dh in DepositHistory,

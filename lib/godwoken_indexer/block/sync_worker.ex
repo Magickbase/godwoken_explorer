@@ -219,7 +219,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
 
       (account_ids -- exist_ids)
       |> Enum.each(fn account_id ->
-        Account.manual_create_account(account_id)
+        Account.manual_create_account!(account_id)
       end)
     end
   end
