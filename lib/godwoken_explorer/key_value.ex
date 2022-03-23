@@ -14,7 +14,7 @@ defmodule GodwokenExplorer.KeyValue do
   def changeset(key_value, attrs) do
     key_value
     |> cast(attrs, [:key, :value])
-    |> validate_required([:key, :value])
+    |> validate_required([:key])
   end
 
   def exist?(key) do
