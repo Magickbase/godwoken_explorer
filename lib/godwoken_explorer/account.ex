@@ -99,7 +99,7 @@ defmodule GodwokenExplorer.Account do
         end
 
       nil ->
-        manual_create_account(0)
+        manual_create_account!(0)
     end
   end
 
