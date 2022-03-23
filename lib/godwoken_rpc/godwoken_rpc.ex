@@ -6,8 +6,18 @@ defmodule GodwokenRPC do
   alias GodwokenRPC.{Blocks, Block, HTTP, Receipts, Contract}
   alias GodwokenRPC.Web3.{FetchedTransactionReceipt, FetchedBlockByHash}
   alias GodwokenRPC.Transaction.FetchedTransaction, as: FetchedGodwokenTransaction
-  alias GodwokenRPC.CKBIndexer.{FetchedTransactions, FetchedTransaction, FetchedTip, FetchedBlock, FetchedLiveCell, FetchedCells}
+
+  alias GodwokenRPC.CKBIndexer.{
+    FetchedTransactions,
+    FetchedTransaction,
+    FetchedTip,
+    FetchedBlock,
+    FetchedLiveCell,
+    FetchedCells
+  }
+
   alias GodwokenRPC.Web3.EthCall
+
   alias GodwokenRPC.Account.{
     FetchedAccountID,
     FetchedScriptHash,
@@ -16,6 +26,11 @@ defmodule GodwokenRPC do
     FetchedBalance,
     FetchedBalances
   }
+
+  alias GodwokenRPC.Block.{FetchedTipBlockHash, ByHash}
+
+  @type block_number :: non_neg_integer()
+  @type hash :: String.t()
 
   def request(%{method: method, params: params} = map)
       when is_binary(method) and is_list(params) do
@@ -46,6 +61,18 @@ defmodule GodwokenRPC do
     end
   end
 
+  def fetch_tip_block_number do
+    options = Application.get_env(:godwoken_explorer, :json_rpc_named_arguments)
+
+    with {:ok, tip_block_hash} <- FetchedTipBlockHash.request() |> HTTP.json_rpc(options),
+         {:ok, %{"block" => %{"raw" => %{"number" => tip_number}}}} <-
+           ByHash.request(%{id: 1, hash: tip_block_hash}) |> HTTP.json_rpc(options) do
+      {:ok, tip_number |> hex_to_number()}
+    else
+      {:error, msg} -> {:error, msg}
+    end
+  end
+
   def fetch_nonce_by_ids(ids) do
     ids
     |> fetch_nonce_by_params(&GodwokenRPC.Account.FetchedNonce.request/1)
@@ -56,13 +83,18 @@ defmodule GodwokenRPC do
     id_to_params =
       params
       |> Enum.into(%{}, fn params -> {params[:account_id], params} end)
+
     options = Application.get_env(:godwoken_explorer, :json_rpc_named_arguments)
 
     with {:ok, responses} <-
            id_to_params
            |> Blocks.requests(request)
            |> HTTP.json_rpc(options) do
-      {:ok, responses |> Enum.map(fn response -> %{id: response[:id], nonce: hex_to_number(response[:result])} end)}
+      {:ok,
+       responses
+       |> Enum.map(fn response ->
+         %{id: response[:id], nonce: hex_to_number(response[:result])}
+       end)}
     end
   end
 
@@ -134,8 +166,9 @@ defmodule GodwokenRPC do
       {:ok, account_id} when is_nil(account_id) ->
         Logger.error("Fetch account succeed.But is nil!!!:#{account_script_hash}")
         {:error, :account_slow}
+
       {:ok, account_id} ->
-        {:ok, account_id |> hex_to_number() }
+        {:ok, account_id |> hex_to_number()}
 
       {:error, msg} ->
         Logger.error("Failed to fetch #{account_script_hash} L2 account_id: #{inspect(msg)}")
@@ -149,7 +182,9 @@ defmodule GodwokenRPC do
 
     case FetchedScriptHash.request(%{account_id: account_id})
          |> HTTP.json_rpc(options) do
-      {:ok, script_hash} -> {:ok, script_hash}
+      {:ok, script_hash} ->
+        {:ok, script_hash}
+
       {:error, msg} ->
         Logger.error("Failed to fetch #{account_id} script_hash: #{inspect(msg)}")
 
@@ -162,7 +197,9 @@ defmodule GodwokenRPC do
 
     case FetchedScriptHash.request(%{short_address: short_address})
          |> HTTP.json_rpc(options) do
-      {:ok, script_hash} -> {:ok, script_hash}
+      {:ok, script_hash} ->
+        {:ok, script_hash}
+
       {:error, msg} ->
         Logger.error("Failed to fetch #{short_address} script_hash: #{inspect(msg)}")
 
@@ -175,7 +212,9 @@ defmodule GodwokenRPC do
 
     case FetchedScript.request(%{script_hash: script_hash})
          |> HTTP.json_rpc(options) do
-      {:ok, script} -> {:ok, script}
+      {:ok, script} ->
+        {:ok, script}
+
       {:error, msg} ->
         Logger.error("Failed to fetch script #{script_hash} : #{inspect(msg)}")
         {:error, :network_error}
@@ -192,9 +231,19 @@ defmodule GodwokenRPC do
     end
   end
 
-  def execute_contract_functions(functions, abi, json_rpc_named_arguments, leave_error_as_map \\ false) do
+  def execute_contract_functions(
+        functions,
+        abi,
+        json_rpc_named_arguments,
+        leave_error_as_map \\ false
+      ) do
     if Enum.count(functions) > 0 do
-      Contract.execute_contract_functions(functions, abi, json_rpc_named_arguments, leave_error_as_map)
+      Contract.execute_contract_functions(
+        functions,
+        abi,
+        json_rpc_named_arguments,
+        leave_error_as_map
+      )
     else
       []
     end
@@ -205,9 +254,9 @@ defmodule GodwokenRPC do
     options = Application.get_env(:godwoken_explorer, :json_rpc_named_arguments)
 
     with {:ok, responses} <-
-         id_to_params
-         |> FetchedBalances.requests()
-         |> HTTP.json_rpc(options) do
+           id_to_params
+           |> FetchedBalances.requests()
+           |> HTTP.json_rpc(options) do
       {:ok, FetchedBalances.from_responses(responses, id_to_params)}
     end
   end
@@ -259,7 +308,8 @@ defmodule GodwokenRPC do
     options = Application.get_env(:godwoken_explorer, :ckb_indexer_named_arguments)
 
     case FetchedCells.request(script, script_type) |> HTTP.json_rpc(options) do
-      {:ok, response} -> {:ok, response}
+      {:ok, response} ->
+        {:ok, response}
 
       _ ->
         Logger.error("Failed to fetch cells: #{inspect(script)}")
@@ -285,7 +335,9 @@ defmodule GodwokenRPC do
 
     case FetchedGodwokenTransaction.request(tx_hash)
          |> HTTP.json_rpc(options) do
-      {:ok, response} -> {:ok, response}
+      {:ok, response} ->
+        {:ok, response}
+
       {:error, msg} ->
         Logger.error("Failed to request transaction: #{tx_hash} > #{inspect(msg)}")
         {:error, :node_error}
@@ -297,7 +349,9 @@ defmodule GodwokenRPC do
 
     case EthCall.request(params)
          |> HTTP.json_rpc(options) do
-      {:ok, response} -> {:ok, response}
+      {:ok, response} ->
+        {:ok, response}
+
       {:error, msg} ->
         Logger.error("Failed to eth call: #{msg} #{inspect(params)}")
         {:error, :node_error}

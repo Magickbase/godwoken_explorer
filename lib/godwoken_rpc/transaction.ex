@@ -54,7 +54,6 @@ defmodule GodwokenRPC.Transaction do
       from_account_id = hex_to_number(from_account_id)
       to_account_id = hex_to_number(to_id)
 
-
       %{
         type: :polyjuice,
         hash: hash,
