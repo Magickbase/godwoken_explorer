@@ -7,7 +7,7 @@ defmodule GodwokenRPC.Transaction do
 
   require Logger
 
-  @creator_id Application.get_env(:godwoken_explorer, :polyjuice_creator_id)
+  @eth_addr_reg_id Application.get_env(:godwoken_explorer, :eth_addr_reg_id)
 
   def elixir_to_params(%{
         "block_hash" => block_hash,
@@ -83,7 +83,7 @@ defmodule GodwokenRPC.Transaction do
           account_ids: [from_account_id, to_account_id]
         }
 
-      to_id == @creator_id ->
+      to_id == @eth_addr_reg_id ->
         case parse_eth_address_registry_args(args) do
           {"EthToGw", eth_address, _} ->
             Logger.info("===========ETHToGw#{eth_address}")

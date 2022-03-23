@@ -27,7 +27,7 @@ config :godwoken_explorer,
   init_godwoken_l1_block_number: 4_672_922,
   ckb_token_script_hash: "0x0000000000000000000000000000000000000000000000000000000000000000",
   eth_token_script_hash: "0xa9eb9df467715766b009ad57cf4c7a2977bc8377d51ace37a3653f3bbb540b7c",
-  polyjuice_creator_id: "0x6"
+  eth_addr_reg_id: "0x4"
 
 config :godwoken_explorer, :basic_auth, username: "hello", password: "secret"
 
