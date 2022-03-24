@@ -298,7 +298,7 @@ defmodule GodwokenExplorer.UDT do
 
     end_time = Timex.beginning_of_day(Timex.now())
 
-    if Timex.compare(start_time, end_time) != 0 do
+    if start_time != end_time do
       deposits = DepositHistory.group_udt_amount(start_time, end_time) |> Map.new()
       withdrawals = WithdrawalHistory.group_udt_amount(start_time, end_time) |> Map.new()
       udt_amounts = Map.merge(deposits, withdrawals, fn _k, v1, v2 -> D.add(v1, v2) end)
