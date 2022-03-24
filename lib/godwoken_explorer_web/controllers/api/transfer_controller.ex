@@ -25,7 +25,7 @@ defmodule GodwokenExplorerWeb.API.TransferController do
 
   def index(conn, %{"eth_address" => "0x" <> _} = params) do
     with %Account{short_address: short_address} <-
-           Account |> Repo.get_by(eth_address: String.downcase(params["eth_address"])) do
+           Account.search(String.downcase(params["eth_address"])) do
       results =
         TokenTransfer.list(%{eth_address: short_address}, %{
           page: conn.params["page"] || 1,

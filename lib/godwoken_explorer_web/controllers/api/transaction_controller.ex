@@ -35,7 +35,7 @@ defmodule GodwokenExplorerWeb.API.TransactionController do
 
   def index(conn, %{"eth_address" => "0x" <> _} = params) do
     %Account{id: account_id, type: type} =
-      Account |> Repo.get_by(eth_address: String.downcase(params["eth_address"]))
+      Account.search(String.downcase(params["eth_address"]))
 
     results =
       Transaction.account_transactions_data(

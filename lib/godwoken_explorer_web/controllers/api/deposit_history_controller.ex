@@ -1,11 +1,11 @@
 defmodule GodwokenExplorerWeb.API.DepositHistoryController do
   use GodwokenExplorerWeb, :controller
 
-  alias GodwokenExplorer.{Account, DepositHistoryView, Repo}
+  alias GodwokenExplorer.{Account, DepositHistoryView}
 
   def index(conn, %{"eth_address" => "0x" <> _} = params) do
     data =
-      case Account |> Repo.get_by(eth_address: String.downcase(params["eth_address"])) do
+      case Account.search( String.downcase(params["eth_address"])) do
         %Account{script_hash: script_hash} ->
           results = DepositHistoryView.list_by_script_hash(script_hash, conn.params["page"] || 1)
           JSONAPI.Serializer.serialize(DepositHistoryView, results.entries, conn, %{total_page: results.total_pages, current_page: results.page_number} )
