@@ -309,7 +309,7 @@ defmodule GodwokenExplorer.TokenTransfer do
 
       parsed_results =
         query
-        |> order_by([tt], desc: tt.block_number, desc: tt.inserted_at)
+        |> order_by([tt], desc: tt.block_number, desc: tt.inserted_at, desc: tt.log_index)
         |> Repo.all()
         |> Enum.map(fn transfer ->
           transfer

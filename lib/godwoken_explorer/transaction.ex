@@ -249,7 +249,7 @@ defmodule GodwokenExplorer.Transaction do
   def list_tx_hash_by_transaction_query(condition, custom_order \\ nil) do
     order_by =
       if is_nil(custom_order) do
-        [desc: dynamic([t], t.block_number), desc: dynamic([t], t.inserted_at)]
+        [desc: dynamic([t], t.block_number), desc: dynamic([t], t.inserted_at), desc: dynamic([t], t.nonce)]
       else
         custom_order
       end
