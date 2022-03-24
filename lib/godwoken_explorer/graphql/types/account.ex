@@ -26,7 +26,7 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
     value(:meta_contract)
     value(:udt)
     value(:user)
-    value(:polyjuice_root)
+    value(:polyjuice_creator)
     value(:polyjuice_contract)
   end
 

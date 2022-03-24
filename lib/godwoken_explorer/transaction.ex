@@ -155,7 +155,7 @@ defmodule GodwokenExplorer.Transaction do
   end
 
   def count_of_account(%{type: type, account_id: account_id})
-      when type in [:meta_contract, :polyjuice_root, :polyjuice_contract, :udt] do
+      when type in [:meta_contract, :polyjuice_creator, :polyjuice_contract, :udt] do
     from(t in Transaction, where: t.to_account_id == ^account_id) |> Repo.aggregate(:count)
   end
 
@@ -185,7 +185,7 @@ defmodule GodwokenExplorer.Transaction do
         %{type: type, account_id: account_id},
         paging_options
       )
-      when type in [:meta_contract, :udt, :polyjuice_root, :polyjuice_contract] do
+      when type in [:meta_contract, :udt, :polyjuice_creator, :polyjuice_contract] do
     condition =
       if account_id in @huge_data_account_ids do
         datetime = Timex.now() |> Timex.shift(days: -5)

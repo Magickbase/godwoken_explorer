@@ -9,6 +9,8 @@ defmodule GodwokenExplorer.Account do
   alias GodwokenExplorer.Chain.Events.Publisher
   alias GodwokenExplorer.KeyValue
 
+  @polyjuice_creator_args_length 82
+
   @derive {Jason.Encoder, except: [:__meta__]}
   @primary_key {:id, :integer, autogenerate: false}
   schema "accounts" do
@@ -24,7 +26,7 @@ defmodule GodwokenExplorer.Account do
         :udt,
         :eth_user,
         :tron_user,
-        :polyjuice_root,
+        :polyjuice_creator,
         :polyjuice_contract,
         :eth_addr_reg,
         :unknown
@@ -155,7 +157,7 @@ defmodule GodwokenExplorer.Account do
           }
         }
 
-      %Account{type: :polyjuice_root} ->
+      %Account{type: :polyjuice_creator} ->
         %{
           polyjuice: %{
             script: account.script
@@ -359,7 +361,7 @@ defmodule GodwokenExplorer.Account do
     case code_hash do
       ^meta_contract_validator_type_hash -> :meta_contract
       ^l2_udt_code_hash -> :udt
-      ^polyjuice_code_hash when byte_size(args) == 74 -> :polyjuice_root
+      ^polyjuice_code_hash when byte_size(args) == @polyjuice_creator_args_length -> :polyjuice_creator
       ^polyjuice_code_hash -> :polyjuice_contract
       ^eth_eoa_type_hash -> :eth_user
       ^tron_eoa_type_hash -> :tron_user
@@ -380,7 +382,7 @@ defmodule GodwokenExplorer.Account do
   end
 
   def add_name_to_polyjuice_script(type, script) do
-    if type in [:polyjuice_contract, :polyjuice_root] do
+    if type in [:polyjuice_contract, :polyjuice_creator] do
       script |> Map.merge(%{"name" => "validator"})
     else
       script
@@ -409,7 +411,7 @@ defmodule GodwokenExplorer.Account do
         cond do
           type in [:eth_user, :tron_user, :polyjuice_contract] -> {eth_address, eth_address}
           type == :udt -> {short_address, contract_name || short_address}
-          type == :polyjuice_root -> {short_address, "Deploy Contract"}
+          type == :polyjuice_creator -> {short_address, "Deploy Contract"}
           type == :meta_contract -> {short_address, "Meta Contract"}
           type == :eth_addr_reg -> {short_address, "Eth Address Registry"}
           true -> {id, id}
@@ -426,7 +428,7 @@ defmodule GodwokenExplorer.Account do
               {Account.script_to_eth_adress(type, script["args"]),
                Account.script_to_eth_adress(type, script["args"])}
 
-            type == :polyjuice_root ->
+            type == :polyjuice_creator ->
               {short_address, "Deploy Contract"}
 
             type == :meta_contract ->
@@ -472,7 +474,7 @@ defmodule GodwokenExplorer.Account do
        cond do
          type in [:eth_user, :tron_user, :polyjuice_contract] -> {eth_address, eth_address}
          type == :udt -> {short_address, contract_name || short_address}
-         type == :polyjuice_root -> {short_address, "Deploy Contract"}
+         type == :polyjuice_creator -> {short_address, "Deploy Contract"}
          type == :meta_contract -> {short_address, "Meta Contract"}
          type == :eth_addr_reg -> {short_address, "Eth Address Registry"}
          true -> {id, id}
