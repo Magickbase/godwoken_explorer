@@ -292,6 +292,9 @@ defmodule GodwokenExplorer.UDT do
 
           {key_value, nil}
 
+        %KeyValue{value: value} = key_value when is_nil(value) ->
+          {key_value, nil}
+
         %KeyValue{value: value} = key_value ->
           {key_value, value |> Timex.parse!("{ISO:Extended}")}
       end
