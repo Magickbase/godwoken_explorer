@@ -299,7 +299,7 @@ defmodule GodwokenExplorer.Transaction do
         block_number: b.number,
         l1_block_number: b.layer1_block_number,
         from: a2.eth_address,
-        to: a3.eth_address,
+        to: fragment("CASE WHEN ? IS NOT NULL THEN ? ELSE ? END", a3.eth_address, a3.eth_address, a3.short_address),
         to_alias:
           fragment(
             "
