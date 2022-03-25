@@ -16,7 +16,6 @@ defmodule GodwokenExplorer.UDTView do
       :type,
       :short_address,
       :type_script,
-      :script_hash,
       :official_site,
       :description,
       :value,
