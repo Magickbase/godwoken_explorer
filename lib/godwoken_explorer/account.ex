@@ -107,6 +107,7 @@ defmodule GodwokenExplorer.Account do
       id: id,
       type: account.type,
       ckb: ckb_balance,
+      eth: "0",
       tx_count: tx_count |> Integer.to_string(),
       eth_addr: elem(display_id(id), 0)
     }
