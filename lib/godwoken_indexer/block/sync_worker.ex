@@ -1,15 +1,14 @@
 defmodule GodwokenIndexer.Block.SyncWorker do
   use GenServer
 
-  import GodwokenRPC.Util, only: [hex_to_number: 1, timestamps: 0]
+  import GodwokenRPC.Util, only: [timestamps: 0]
   import Ecto.Query, only: [from: 2]
 
   require Logger
 
   alias GodwokenExplorer.Token.BalanceReader
   alias GodwokenIndexer.Transform.{TokenTransfers, TokenBalances}
-  alias GodwokenRPC.Block.{FetchedTipBlockHash, ByHash}
-  alias GodwokenRPC.{Blocks, HTTP, Receipts}
+  alias GodwokenRPC.{Blocks, Receipts}
 
   alias GodwokenExplorer.{
     AccountUDT,
@@ -38,146 +37,195 @@ defmodule GodwokenIndexer.Block.SyncWorker do
 
   @impl true
   def init(state) do
-    next_number = get_next_number()
-    schedule_work(next_number)
+    next_block_number = get_next_block_number()
+    schedule_work(next_block_number)
 
     {:ok, state}
   end
 
   @impl true
-  def handle_info({:work, next_number}, state) do
-    {:ok, block_number} = fetch_and_import(next_number)
+  def handle_info({:work, next_block_number}, state) do
+    {:ok, block_number} =
+      if under_tip_block?(next_block_number) do
+        {:ok, _} = fetch_and_import(next_block_number)
+      else
+        {:ok, next_block_number}
+      end
 
-    Logger.info("=====================SYNC NUMBER:#{block_number}")
-    # Reschedule once more
     schedule_work(block_number)
 
     {:noreply, state}
   end
 
-  def fetch_and_import(next_number) do
-    with {:ok, tip_number} <- fetch_tip_number(),
-         true <- next_number <= tip_number do
-      Logger.info("=====================TIP NUMBER:#{tip_number}")
-      Logger.info("=====================NEXT NUMBER:#{next_number}")
+  @spec fetch_and_import(GodwokenRPC.block_number()) :: {:ok, GodwokenRPC.block_number()}
+  def fetch_and_import(next_block_number) do
+    range = next_block_number..next_block_number
 
-      range = next_number..next_number
+    {:ok,
+     %Blocks{
+       blocks_params: blocks_params,
+       transactions_params: transactions_params_without_receipts,
+       withdrawal_params: withdrawal_params,
+       errors: []
+     }} = GodwokenRPC.fetch_blocks_by_range(range)
 
-      {:ok,
-       %Blocks{
-         blocks_params: blocks_params,
-         transactions_params: transactions_params_without_receipts,
-         withdrawal_params: withdrawal_params,
-         errors: _
-       }} = GodwokenRPC.fetch_blocks_by_range(range)
+    {:ok, _} = validate_last_block_fork(blocks_params, next_block_number)
 
-      Logger.info("=====================FETCHED DATA")
+    {:ok, inserted_transactions} =
+      if transactions_params_without_receipts != [] do
+        import_account(transactions_params_without_receipts)
 
-      parent_hash =
-        blocks_params
-        |> List.first()
-        |> Map.get(:parent_hash)
+        {polyjuice_without_receipts, polyjuice_creator_params} =
+          group_transaction_params(transactions_params_without_receipts)
 
-      if forked?(parent_hash, next_number - 1) do
-        Logger.error("!!!!!!Layer2 forked!!!!!!#{next_number - 1}")
-        Block.rollback!(parent_hash)
-        throw(:rollback)
+        {:ok, polyjuice_with_receipts} = handle_polyjuice_transactions(polyjuice_without_receipts)
+        import_polyjuice_creator(polyjuice_creator_params)
+
+        inserted_transactions =
+          import_transactions(polyjuice_with_receipts, polyjuice_creator_params)
+
+        update_transactions_cache(inserted_transactions)
+        {:ok, inserted_transactions}
+      else
+        {:ok, []}
       end
 
-      inserted_blocks =
-        blocks_params
-        |> Enum.map(fn block_params ->
-          {:ok, %Block{} = block_struct} = Block.create_block(block_params)
-          block_struct
-        end)
+    import_withdrawal_requests(withdrawal_params)
+    inserted_blocks = import_block(blocks_params)
+    update_block_cache(inserted_blocks)
+    broadcast_block_and_tx(inserted_blocks, inserted_transactions)
 
-      update_block_cache(inserted_blocks)
-      Logger.info("=====================UPDATED BLOCKS")
+    {:ok, next_block_number + 1}
+  end
 
-      {polyjuice_without_receipts, polyjuice_creator_params} =
-        transactions_params_without_receipts
-        |> Enum.split_with(fn %{type: type} -> type == :polyjuice end)
-
-      trigger_account_worker(polyjuice_without_receipts)
-      Logger.info("=====================UPDATED ACCOUNT")
-
+  defp handle_polyjuice_transactions(polyjuice_without_receipts) do
+    if polyjuice_without_receipts != [] do
       {:ok, %{logs: logs, receipts: receipts}} =
         GodwokenRPC.fetch_transaction_receipts(polyjuice_without_receipts)
 
-      Repo.insert_all(Log, logs |> Enum.map(fn log -> Map.merge(log, timestamps()) end),
-        on_conflict: :nothing
-      )
-
-      Logger.info("=====================UPDATED LOG")
-
       polyjuice_with_receipts = Receipts.put(polyjuice_without_receipts, receipts)
-      %{token_transfers: token_transfers, tokens: _tokens} = TokenTransfers.parse(logs)
+      import_logs(logs)
+      import_token_transfers(logs)
+      import_polyjuice(polyjuice_with_receipts)
+      update_ckb_balance(polyjuice_without_receipts)
+      {:ok, polyjuice_with_receipts}
+    else
+      {:ok, []}
+    end
+  end
 
-      Repo.insert_all(
-        TokenTransfer,
-        token_transfers |> Enum.map(fn log -> Map.merge(log, timestamps()) end),
-        on_conflict: :nothing
+  defp group_transaction_params(transactions_params_without_receipts) do
+    grouped = transactions_params_without_receipts |> Enum.group_by(fn tx -> tx[:type] end)
+    {grouped[:polyjuice] || [], grouped[:polyjuice_creator] || []}
+  end
+
+  @spec under_tip_block?(GodwokenRPC.block_number()) :: boolean
+  defp under_tip_block?(block_number) do
+    case GodwokenRPC.fetch_tip_block_number() do
+      {:ok, tip_number} ->
+        block_number <= tip_number
+
+      {:error, msg} ->
+        Logger.error("Fetch Tip Block Number Failed: #{inspect(msg)}")
+        false
+    end
+  end
+
+  @spec validate_last_block_fork(list, GodwokenRPC.block_number()) ::
+          {:ok, :normal} | {:error, :forked}
+  defp validate_last_block_fork(blocks_params, next_block_number) do
+    parent_hash =
+      blocks_params
+      |> List.first()
+      |> Map.get(:parent_hash)
+
+    if forked?(parent_hash, next_block_number - 1) do
+      Logger.error("!!!!!!Layer2 forked!!!!!!#{next_block_number - 1}")
+      Block.rollback!(parent_hash)
+      {:error, :forked}
+    else
+      {:ok, :normal}
+    end
+  end
+
+  @spec import_block(list) :: list
+  defp import_block(blocks_params) do
+    blocks_params
+    |> Enum.map(fn block_params ->
+      {:ok, %Block{} = block_struct} = Block.create_block(block_params)
+      block_struct
+    end)
+  end
+
+  defp import_logs(logs) do
+    Repo.insert_all(Log, logs |> Enum.map(fn log -> Map.merge(log, timestamps()) end),
+      on_conflict: :nothing
+    )
+  end
+
+  defp import_token_transfers(logs) do
+    %{token_transfers: token_transfers, tokens: _tokens} = TokenTransfers.parse(logs)
+
+    Repo.insert_all(
+      TokenTransfer,
+      token_transfers |> Enum.map(fn log -> Map.merge(log, timestamps()) end),
+      on_conflict: :nothing
+    )
+
+    if length(token_transfers) > 0, do: udpate_erc20_balance(token_transfers)
+  end
+
+  defp import_transactions(polyjuice_with_receipts, polyjuice_creator_params) do
+    inserted_transaction_params =
+      filter_transaction_columns(polyjuice_with_receipts ++ polyjuice_creator_params)
+
+    {_count, returned_values} =
+      Repo.insert_all(Transaction, inserted_transaction_params,
+        on_conflict: :nothing,
+        returning: [:from_account_id, :to_account_id, :hash, :type, :block_number, :inserted_at]
       )
 
-      Logger.info("=====================UPDATED TOKENTRANSFER")
+    display_ids =
+      (polyjuice_with_receipts ++ polyjuice_creator_params)
+      |> extract_account_ids()
+      |> Account.display_ids()
 
-      inserted_transaction_params =
-        filter_transaction_columns(polyjuice_with_receipts ++ polyjuice_creator_params)
+    returned_values
+    |> Enum.map(fn tx ->
+      tx
+      |> Map.merge(%{
+        from: display_ids |> Map.get(tx.from_account_id, {tx.from_account_id}) |> elem(0),
+        to: display_ids |> Map.get(tx.to_account_id, {tx.to_account_id}) |> elem(0),
+        to_alias:
+          display_ids
+          |> Map.get(tx.to_account_id, {tx.to_account_id, tx.to_account_id})
+          |> elem(1)
+      })
+    end)
+  end
 
-      {_count, returned_values} =
-        Repo.insert_all(Transaction, inserted_transaction_params,
-          on_conflict: :nothing,
-          returning: [:from_account_id, :to_account_id, :hash, :type, :block_number, :inserted_at]
-        )
+  defp import_polyjuice(polyjuice_with_receipts) do
+    inserted_polyjuice_params = filter_polyjuice_columns(polyjuice_with_receipts)
+    Repo.insert_all(Polyjuice, inserted_polyjuice_params, on_conflict: :nothing)
+  end
 
-      inserted_polyjuice_params = filter_polyjuice_columns(polyjuice_with_receipts)
-      Repo.insert_all(Polyjuice, inserted_polyjuice_params, on_conflict: :nothing)
-
-      inserted_polyjuice_creator_params =
-        filter_polyjuice_creator_columns(polyjuice_creator_params)
-
-      Repo.insert_all(PolyjuiceCreator, inserted_polyjuice_creator_params, on_conflict: :nothing)
-
-      display_ids =
-        (polyjuice_with_receipts ++ polyjuice_creator_params)
-        |> extract_account_ids()
-        |> Account.display_ids()
-
-      inserted_transactions =
-        returned_values
-        |> Enum.map(fn tx ->
-          tx
-          |> Map.merge(%{
-            from: display_ids |> Map.get(tx.from_account_id, {tx.from_account_id}) |> elem(0),
-            to: display_ids |> Map.get(tx.to_account_id, {tx.to_account_id}) |> elem(0),
-            to_alias:
-              display_ids
-              |> Map.get(tx.to_account_id, {tx.to_account_id, tx.to_account_id})
-              |> elem(1)
-          })
-        end)
-
-      update_transactions_cache(inserted_transactions)
-      Logger.info("=====================UPDATED TRANSACTIONS")
-
-      if length(token_transfers) > 0, do: udpate_erc20_balance(token_transfers)
-
-      if length(polyjuice_without_receipts) > 0,
-        do: update_ckb_balance(polyjuice_without_receipts)
-
+  defp import_withdrawal_requests(withdrawal_params) do
+    if withdrawal_params != [] do
       Repo.insert_all(WithdrawalRequest, withdrawal_params, on_conflict: :nothing)
 
       withdrawal_params
       |> Enum.each(fn %{account_script_hash: account_script_hash, udt_id: udt_id} ->
         AccountUDT.sync_balance!(%{script_hash: account_script_hash, udt_id: udt_id})
       end)
+    end
+  end
 
-      Logger.info("=====================UPDATED BALANCE")
+  defp import_polyjuice_creator(polyjuice_creator_params) do
+    if polyjuice_creator_params != [] do
+      inserted_polyjuice_creator_params =
+        filter_polyjuice_creator_columns(polyjuice_creator_params)
 
-      broadcast_block_and_tx(inserted_blocks, inserted_transactions)
-      {:ok, next_number + 1}
-    else
-      _ -> {:ok, next_number}
+      Repo.insert_all(PolyjuiceCreator, inserted_polyjuice_creator_params, on_conflict: :nothing)
     end
   end
 
@@ -210,7 +258,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
     end)
   end
 
-  defp trigger_account_worker(transactions_params) do
+  defp import_account(transactions_params) do
     account_ids = extract_account_ids(transactions_params)
 
     if length(account_ids) > 0 do
@@ -318,17 +366,8 @@ defmodule GodwokenIndexer.Block.SyncWorker do
     end)
   end
 
-  defp fetch_tip_number do
-    options = Application.get_env(:godwoken_explorer, :json_rpc_named_arguments)
-
-    with {:ok, tip_block_hash} <- FetchedTipBlockHash.request() |> HTTP.json_rpc(options),
-         {:ok, %{"block" => %{"raw" => %{"number" => tip_number}}}} <-
-           ByHash.request(%{id: 1, hash: tip_block_hash}) |> HTTP.json_rpc(options) do
-      {:ok, tip_number |> hex_to_number()}
-    end
-  end
-
-  defp get_next_number do
+  @spec get_next_block_number :: integer
+  defp get_next_block_number do
     case Repo.one(from block in Block, order_by: [desc: block.number], limit: 1) do
       %Block{number: number} -> number + 1
       nil -> 0
@@ -365,47 +404,49 @@ defmodule GodwokenIndexer.Block.SyncWorker do
   end
 
   defp update_ckb_balance(polyjuice_params) do
-    ckb_id = UDT.ckb_account_id()
+    if length(polyjuice_params) > 0 do
+      ckb_id = UDT.ckb_account_id()
 
-    if not is_nil(ckb_id) do
-      %Account{short_address: ckb_contract_address} = Repo.get(Account, ckb_id)
+      if not is_nil(ckb_id) do
+        %Account{short_address: ckb_contract_address} = Repo.get(Account, ckb_id)
 
-      account_ids =
-        polyjuice_params
-        |> Enum.filter(fn %{value: value} -> value > 0 end)
-        |> Enum.map(fn %{from_account_id: from_account_id} ->
-          from_account_id
-        end)
+        account_ids =
+          polyjuice_params
+          |> Enum.filter(fn %{value: value} -> value > 0 end)
+          |> Enum.map(fn %{from_account_id: from_account_id} ->
+            from_account_id
+          end)
 
-      account_id_to_short_addresses =
-        from(a in Account, where: a.id in ^account_ids, select: a.short_address) |> Repo.all()
+        account_id_to_short_addresses =
+          from(a in Account, where: a.id in ^account_ids, select: a.short_address) |> Repo.all()
 
-      params =
-        account_id_to_short_addresses
-        |> Enum.reject(&is_nil/1)
-        |> Enum.map(fn address ->
-          %{
-            short_address: address,
-            udt_id: ckb_id,
-            token_contract_address_hash: ckb_contract_address
-          }
-        end)
+        params =
+          account_id_to_short_addresses
+          |> Enum.reject(&is_nil/1)
+          |> Enum.map(fn address ->
+            %{
+              short_address: address,
+              udt_id: ckb_id,
+              token_contract_address_hash: ckb_contract_address
+            }
+          end)
 
-      {:ok, %GodwokenRPC.Account.FetchedBalances{params_list: import_account_udts}} =
-        GodwokenRPC.fetch_balances(params)
+        {:ok, %GodwokenRPC.Account.FetchedBalances{params_list: import_account_udts}} =
+          GodwokenRPC.fetch_balances(params)
 
-      import_account_udts =
-        import_account_udts |> Enum.map(fn import_au -> import_au |> Map.merge(timestamps()) end)
+        import_account_udts =
+          import_account_udts
+          |> Enum.map(fn import_au -> import_au |> Map.merge(timestamps()) end)
 
-      Repo.insert_all(AccountUDT, import_account_udts,
-        on_conflict: {:replace, [:balance, :updated_at]},
-        conflict_target: [:address_hash, :token_contract_address_hash]
-      )
+        Repo.insert_all(AccountUDT, import_account_udts,
+          on_conflict: {:replace, [:balance, :updated_at]},
+          conflict_target: [:address_hash, :token_contract_address_hash]
+        )
+      end
     end
-
-    :ok
   end
 
+  @spec forked?(GodwokenRPC.hash(), GodwokenRPC.block_number()) :: boolean
   defp forked?(parent_hash, parent_block_number) do
     case Repo.get_by(Block, number: parent_block_number) do
       nil -> false
@@ -413,11 +454,12 @@ defmodule GodwokenIndexer.Block.SyncWorker do
     end
   end
 
-  defp schedule_work(next_number) do
-    second =
+  @spec schedule_work(GodwokenRPC.block_number()) :: reference()
+  defp schedule_work(next_block_number) do
+    second_interval =
       Application.get_env(:godwoken_explorer, :sync_worker_interval) ||
         @default_worker_interval
 
-    Process.send_after(self(), {:work, next_number}, second * 1000)
+    Process.send_after(self(), {:work, next_block_number}, second_interval * 1000)
   end
 end
