@@ -15,6 +15,7 @@ defmodule GodwokenExplorer.Graphql.Types.TokenTransfer do
   end
 
   object :token_transfer do
+    import_fields :ecto_datetime
     field :transaction_hash, :string
     field :amount, :decimal
     field :block_number, :integer
@@ -25,12 +26,17 @@ defmodule GodwokenExplorer.Graphql.Types.TokenTransfer do
     field :to_address_hash, :string
     field :token_contract_address_hash, :string
 
+
     field :polyjuice, :polyjuice do
       resolve(&Resolvers.TokenTransfer.polyjuice/3)
     end
 
-    field :account, :account do
-      resolve(&Resolvers.TokenTransfer.account/3)
+    field :from_account, :account do
+      resolve(&Resolvers.TokenTransfer.from_account/3)
+    end
+
+    field :to_account, :account do
+      resolve(&Resolvers.TokenTransfer.to_account/3)
     end
 
     field :udt, :udt do

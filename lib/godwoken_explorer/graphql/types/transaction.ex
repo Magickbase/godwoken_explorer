@@ -22,6 +22,7 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
   end
 
   object :transaction do
+    import_fields :ecto_datetime
     field :hash, :string
     field :args, :string
     field :from_account_id, :integer
@@ -35,20 +36,20 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
       resolve(&Resolvers.Transaction.polyjuice/3)
     end
 
-    field :account, :account do
-      resolve(&Resolvers.Transaction.account/3)
+    field :polyjuice_creator, :polyjuice_creator do
+      resolve(&Resolvers.Transaction.polyjuice_creator/3)
     end
 
-    field :udt, :udt do
-      resolve(&Resolvers.Transaction.udt/3)
+    field :from_account, :account do
+      resolve(&Resolvers.Transaction.from_account/3)
+    end
+
+    field :to_account, :account do
+      resolve(&Resolvers.Transaction.to_account/3)
     end
 
     field :block, :block do
       resolve(&Resolvers.Transaction.block/3)
-    end
-
-    field :smart_contract, :smart_contract do
-      resolve(&Resolvers.Transaction.smart_contract/3)
     end
   end
 

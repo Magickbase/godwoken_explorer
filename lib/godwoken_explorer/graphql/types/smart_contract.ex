@@ -15,6 +15,7 @@ defmodule GodwokenExplorer.Graphql.Types.SmartContract do
   end
 
   object :smart_contract do
+    import_fields :ecto_datetime
     field :id, :integer
     field :abi, list_of(:json)
     field :contract_source_code, :string
@@ -25,10 +26,6 @@ defmodule GodwokenExplorer.Graphql.Types.SmartContract do
     field :compiler_version, :string
     field :compiler_file_format, :string
     field :other_info, :string
-
-    field :udt, :udt do
-      resolve(&Resolvers.SmartContract.udt/3)
-    end
   end
 
   input_object :smart_contract_input do
