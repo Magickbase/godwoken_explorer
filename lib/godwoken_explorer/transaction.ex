@@ -274,9 +274,7 @@ defmodule GodwokenExplorer.Transaction do
       left_join: p in Polyjuice,
       on: p.tx_hash == t.hash,
       left_join: u6 in UDT,
-      on: u6.id == s4.account_id,
-      left_join: u7 in UDT,
-      on: u7.bridge_account_id == s4.account_id,
+      on: u6.bridge_account_id == s4.account_id,
       where: t.hash in ^hashes,
       select: %{
         hash: t.hash,
@@ -319,8 +317,8 @@ defmodule GodwokenExplorer.Transaction do
         gas_limit: p.gas_limit,
         value: p.value,
         udt_id: s4.account_id,
-        udt_symbol: fragment("CASE WHEN ? IS NULL THEN ? ELSE ? END", u6, u7.symbol, u6.symbol),
-        udt_icon: fragment("CASE WHEN ? IS NULL THEN ? ELSE ? END", u6, u7.icon, u6.icon),
+        udt_symbol: fragment("CASE WHEN ? IS NULL THEN ? ELSE ? END", u6, "", u6.symbol),
+        udt_icon: fragment("CASE WHEN ? IS NULL THEN ? ELSE ? END", u6, "", u6.icon),
         input: p.input,
         to_account_id: t.to_account_id
       }

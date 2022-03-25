@@ -66,7 +66,8 @@ defmodule GodwokenExplorer.UDTView do
           u in UDT,
           preload: :account,
           where: u.type == :bridge,
-          select: map(u, ^select_fields())
+          select: map(u, ^select_fields()),
+          order_by: [asc: :name]
         )
 
       type == "native" ->
@@ -74,7 +75,8 @@ defmodule GodwokenExplorer.UDTView do
           u in UDT,
           preload: :account,
           where: u.type == :native,
-          select: map(u, ^select_fields())
+          select: map(u, ^select_fields()),
+          order_by: [asc: :name]
         )
 
       true ->
