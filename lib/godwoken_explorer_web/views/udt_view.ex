@@ -65,7 +65,7 @@ defmodule GodwokenExplorer.UDTView do
         from(
           u in UDT,
           preload: :account,
-          where: u.type == :bridge,
+          where: u.type == :bridge and not(is_nil(u.bridge_account_id)),
           select: map(u, ^select_fields()),
           order_by: [asc: :name]
         )
