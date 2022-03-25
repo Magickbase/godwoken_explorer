@@ -4,34 +4,40 @@ defmodule GodwokenExplorer.Graphql.Types.AccountUDT do
 
   object :account_udt_querys do
     field :account_udts, list_of(:account_udt) do
-      arg(:input, :account_udt_input)
+      arg(:input, :account_udts_input)
       resolve(&Resolvers.AccountUDT.account_udts/3)
     end
 
-    field :account_udt_ckbs, list_of(:account_udt) do
-      arg(:input, :account_udt_ckb_input)
-      resolve(&Resolvers.AccountUDT.account_udt_ckbs/3)
+    field :account_ckbs, list_of(:account_ckb) do
+      arg(:input, :account_ckbs_input)
+      resolve(&Resolvers.AccountUDT.account_ckbs/3)
     end
 
     field :account_udts_by_contract_address, list_of(:account_udt) do
       arg(:input, :account_udt_contract_address_input)
-      resolve(&Resolvers.AccountUDT.account_udts/3)
+      resolve(&Resolvers.AccountUDT.account_udts_by_contract_address/3)
     end
   end
 
+  object :account_ckb do
+    field :address_hash, :string
+    field :balance, :decimal
+  end
+
   object :account_udt do
+    import_fields :ecto_datetime
     field :id, :integer
     field :balance, :decimal
     field :address_hash, :string
-    field :token_contract_address_hash, :string
+    field :inputs, :string
   end
 
-  input_object :account_udt_ckb_input do
-    field :address_hash, list_of(:string)
+  input_object :account_ckbs_input do
+    field :address_hashes, list_of(:string)
   end
 
-  input_object :account_udt_input do
-    field :address_hash, list_of(:string)
+  input_object :account_udts_input do
+    field :address_hashes, list_of(:string)
     field :token_contract_address_hash, :string
   end
 

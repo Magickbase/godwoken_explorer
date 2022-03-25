@@ -1,43 +1,88 @@
 defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
-  alias GodwokenExplorer.{Transaction}
+  alias GodwokenExplorer.Repo
+  alias GodwokenExplorer.{Account, Transaction, Block, Polyjuice, PolyjuiceCreator}
 
-  # TODO: add latest 10 blocks
+  import Ecto.Query
+
+  ## TODO: wait for optimize
   def latest_10_transactions(_parent, _args, _resolution) do
-    {:ok, Transaction.latest_10_records()}
+    return =
+      from(t in Transaction,
+        limit: 10,
+        order_by: [desc: t.inserted_at]
+      )
+      |> Repo.all()
+
+    {:ok, return}
   end
 
-  # TODO: show transaction
-  def transaction(_parent, _args, _resolution) do
-    {:ok, nil}
+  def transaction(_parent, %{input: input} = _args, _resolution) do
+    transaction_hash = Map.get(input, :transaction_hash)
+    Repo.get(Transaction, transaction_hash)
+    {:ok, Repo.get(Transaction, transaction_hash)}
   end
 
-  # TODO: show transactions
-  def transactions(_parent, _args, _resolution) do
-    {:ok, nil}
+  # TODO: wait for optimize
+  def transactions(_parent, %{input: input} = _args, _resolution) do
+    address = Map.get(input, :address)
+
+    account =
+      from(
+        a in Account,
+        where:
+          a.eth_address == ^address or a.script_hash == ^address or
+            a.short_address == ^address
+      )
+      |> Repo.one()
+
+    query_condition =
+      case account do
+        %Account{type: :user} ->
+          from t in Transaction,
+            where: t.from_account_id == ^account.id,
+            limit: 100,
+            order_by: [desc: t.inserted_at]
+
+        %Account{type: type}
+        when type in [:meta_contract, :udt, :polyjuice_root, :polyjuice_contract] ->
+          from t in Transaction,
+            where: t.to_account_id == ^account.id,
+            limit: 100,
+            order_by: [desc: t.inserted_at]
+      end
+
+    {:ok, Repo.all(query_condition)}
   end
 
-  # TODO: get polyjuice
-  def polyjuice(%Transaction{hash: _hash}, _args, _resolution) do
-    {:ok, nil}
+  def polyjuice(%Transaction{hash: hash}, _args, _resolution) do
+    return =
+      Repo.one(
+        from p in Polyjuice,
+          where: p.tx_hash == ^hash
+      )
+
+    {:ok, return}
   end
 
-  # TODO: get block
-  def block(%Transaction{}, _args, _resolution) do
-    {:ok, nil}
+  def polyjuice_creator(%Transaction{hash: hash}, _args, _resolution) do
+    return =
+      Repo.one(
+        from pc in PolyjuiceCreator,
+          where: pc.tx_hash == ^hash
+      )
+
+    {:ok, return}
   end
 
-  # TODO: get account
-  def account(%Transaction{}, _args, _resolution) do
-    {:ok, nil}
+  def block(%Transaction{block_hash: block_hash}, _args, _resolution) do
+    {:ok, Repo.get(Block, block_hash)}
   end
 
-  # TODO: get udt
-  def udt(%Transaction{}, _args, _resolution) do
-    {:ok, nil}
+  def from_account(%Transaction{from_account_id: from_account_id}, _args, _resolution) do
+    {:ok, Repo.get(Account, from_account_id)}
   end
 
-  # TODO: get smart_contract
-  def smart_contract(%Transaction{}, _args, _resolution) do
-    {:ok, nil}
+  def to_account(%Transaction{to_account_id: to_account_id}, _args, _resolution) do
+    {:ok, Repo.get(Account, to_account_id)}
   end
 end

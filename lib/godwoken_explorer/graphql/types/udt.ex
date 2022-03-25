@@ -8,6 +8,11 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
       resolve(&Resolvers.UDT.udt/3)
     end
 
+    field :get_udt_by_contract_address, :udt do
+      arg(:input, :smart_contract_input)
+      resolve(&Resolvers.UDT.get_udt_by_contract_address/3)
+    end
+
     field :udts, list_of(:udt) do
       arg(:input, :udt_input)
       resolve(&Resolvers.UDT.udts/3)
@@ -15,6 +20,7 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
   end
 
   object :udt do
+    import_fields :ecto_datetime
     field :id, :string
     field :decimal, :integer
     field :name, :string

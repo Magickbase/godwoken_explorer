@@ -3,6 +3,7 @@ defmodule GodwokenExplorer.Graphql.Types.Polyjuice do
   # alias GodwokenExplorer.Graphql.Resolvers, as: Resolvers
 
   object :polyjuice do
+    import_fields :ecto_datetime
     field :id, :integer
     field :is_create, :boolean
     field :gas_limit, :integer
@@ -15,7 +16,7 @@ defmodule GodwokenExplorer.Graphql.Types.Polyjuice do
     field :status, :polyjuice_status
   end
 
-  object :polyjuice_creators do
+  object :polyjuice_creator do
     field :id, :integer
     field :code_hash, :string
     field :hash_type, :string

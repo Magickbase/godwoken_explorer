@@ -21,6 +21,7 @@ defmodule GodwokenExplorer.Graphql.Types.History do
   end
 
   object :withdrawal_history do
+    import_fields :ecto_datetime
     field :id, :integer
     field :block_hash, :string
     field :block_number, :integer
