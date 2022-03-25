@@ -26,7 +26,7 @@ defmodule GodwokenExplorer.UDT do
     field(:bridge_account_id, :integer)
     field :type, Ecto.Enum, values: [:bridge, :native]
 
-    belongs_to(:account, Account, foreign_key: :id, references: :bridge_account_id, define_field: false)
+    belongs_to(:account, Account, foreign_key: :bridge_account_id, references: :id, define_field: false)
 
     timestamps()
   end
