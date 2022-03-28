@@ -8,8 +8,17 @@ defmodule GodwokenExplorer.TokenTransfer do
   @erc1155_batch_transfer_signature "0x4a39dc06d4c0dbc64b70af90fd698a233a518aa5d07e595d983b8c0526c8f7fb"
 
   @transfer_function_signature "0xa9059cbb"
-  @huge_data_udt_address ["0xb02c930c2825a960a50ba4ab005e8264498b64a0", "0xd66eb642ee33837531fda61eb7ab15b15658bcab"]
-  @huge_data_address ["0x8967af2789aabbc6ff68bd75336b09e6e4303c98", "0xf00b259ed79bb80291b45a76b13e3d71d4869433", "0x1ac741946998fcdba3ba8ccff4797407eb30274e", "0x297ce8d1532704f7be447bc897ab63563d60f223", "0x62493bfa183bb6ccd4b4e856230cf72f68299469"]
+  @huge_data_udt_address [
+    "0xb02c930c2825a960a50ba4ab005e8264498b64a0",
+    "0xd66eb642ee33837531fda61eb7ab15b15658bcab"
+  ]
+  @huge_data_address [
+    "0x8967af2789aabbc6ff68bd75336b09e6e4303c98",
+    "0xf00b259ed79bb80291b45a76b13e3d71d4869433",
+    "0x1ac741946998fcdba3ba8ccff4797407eb30274e",
+    "0x297ce8d1532704f7be447bc897ab63563d60f223",
+    "0x62493bfa183bb6ccd4b4e856230cf72f68299469"
+  ]
 
   @derive {Jason.Encoder, except: [:__meta__]}
   @primary_key false
@@ -108,9 +117,11 @@ defmodule GodwokenExplorer.TokenTransfer do
     condition =
       if eth_address in @huge_data_address do
         datetime = Timex.now() |> Timex.shift(days: -5)
+
         dynamic(
           [tt],
-          tt.inserted_at > ^datetime and (tt.from_address_hash == ^eth_address or tt.to_address_hash == ^eth_address)
+          tt.inserted_at > ^datetime and
+            (tt.from_address_hash == ^eth_address or tt.to_address_hash == ^eth_address)
         )
       else
         dynamic(
@@ -132,9 +143,7 @@ defmodule GodwokenExplorer.TokenTransfer do
         join: a4 in Account,
         on: a4.short_address == tt.token_contract_address_hash,
         left_join: u5 in UDT,
-        on: u5.id == a4.id,
-        left_join: u6 in UDT,
-        on: u6.bridge_account_id == a4.id,
+        on: u5.bridge_account_id == a4.id,
         join: p in Polyjuice,
         on: p.tx_hash == tt.transaction_hash,
         join: t in Transaction,
@@ -147,20 +156,16 @@ defmodule GodwokenExplorer.TokenTransfer do
         ELSE encode(?, 'escape') END", a1.type, a1.eth_address, a1.short_address),
           to: fragment("CASE WHEN ? = 'user' THEN encode(?, 'escape')
         ELSE encode(?, 'escape') END", a2.type, a2.eth_address, a2.short_address),
-          udt_id: fragment("CASE WHEN ? IS NULL THEN ? ELSE ? END", u5, u6.id, u5.id),
-          udt_name: fragment("CASE WHEN ? IS NULL THEN ? ELSE ? END", u5, u6.name, u5.name),
-          udt_symbol: fragment("CASE WHEN ? IS NULL THEN ? ELSE ? END", u5, u6.symbol, u5.symbol),
+          udt_id: u5.id,
+          udt_name: u5.name,
+          udt_symbol: u5.symbol,
           transfer_value:
             fragment(
               "CASE WHEN ? IS NOT NULL THEN ? / power(10, ?)::decimal
-            WHEN ? IS NOT NULL THEN ? / power(10, ?)::decimal
             ELSE ? END",
               u5.decimal,
               tt.amount,
               u5.decimal,
-              u6.decimal,
-              tt.amount,
-              u6.decimal,
               tt.amount
             ),
           status: b.status,
@@ -180,6 +185,7 @@ defmodule GodwokenExplorer.TokenTransfer do
     condition =
       if udt_address in @huge_data_udt_address do
         datetime = Timex.now() |> Timex.shift(days: -5)
+
         dynamic(
           [tt],
           tt.token_contract_address_hash == ^udt_address and tt.inserted_at > ^datetime
@@ -266,9 +272,9 @@ defmodule GodwokenExplorer.TokenTransfer do
         ELSE encode(?, 'escape') END", a1.type, a1.eth_address, a1.short_address),
           to: fragment("CASE WHEN ? = 'user' THEN encode(?, 'escape')
         ELSE encode(?, 'escape') END", a2.type, a2.eth_address, a2.short_address),
-          udt_id: fragment("CASE WHEN ? IS NULL THEN ? ELSE ? END", u5, "", u5.id),
-          udt_name: fragment("CASE WHEN ? IS NULL THEN ? ELSE ? END", u5, "", u5.name),
-          udt_symbol: fragment("CASE WHEN ? IS NULL THEN ? ELSE ? END", u5, "", u5.symbol),
+          udt_id: u5.id,
+          udt_name: u5.name,
+          udt_symbol: u5.symbol,
           transfer_value:
             fragment(
               "CASE WHEN ? IS NULL THEN ? ELSE ? / power(10, ?)::decimal END",
