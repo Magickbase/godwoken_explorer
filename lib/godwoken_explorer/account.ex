@@ -116,21 +116,13 @@ defmodule GodwokenExplorer.Account do
         _ -> ""
       end
 
-    eth_balance =
-      with udt_id when is_integer(udt_id) <- UDT.eth_account_id(),
-           {:ok, balance} <- GodwokenRPC.fetch_balance(account.short_address, udt_id) do
-        balance
-      else
-        _ -> ""
-      end
-
     tx_count = GodwokenExplorer.Chain.Cache.AccountTransactionCount.get(account.id)
 
     base_map = %{
       id: id,
       type: account.type,
       ckb: ckb_balance,
-      eth: eth_balance,
+      eth: "0",
       tx_count: tx_count |> Integer.to_string(),
       eth_addr: elem(display_id(id), 0)
     }
@@ -242,8 +234,7 @@ defmodule GodwokenExplorer.Account do
   def account_to_view(account) do
     account =
       Map.merge(account, %{
-        ckb: balance_to_view(account.ckb, 8),
-        eth: balance_to_view(account.eth, 18)
+        ckb: balance_to_view(account.ckb, 8)
       })
 
     case Kernel.get_in(account, [:eth_user, :tron_user, :udt_list]) do

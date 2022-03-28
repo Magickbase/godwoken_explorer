@@ -28,7 +28,7 @@
     </div>
 
     <div class="torch-form-group">
-      <%= label f, :bridge_account_id, "bridge_account_id(only with bridge type udt)" %>
+      <%= label f, :bridge_account_id, "bridge_account_id(polyjuice contract id)" %>
       <%= number_input f, :bridge_account_id %>
       <%= error_tag f, :bridge_account_id %>
     </div>
@@ -98,3 +98,15 @@
     </div>
   </fieldset>
 <% end %>
+<script>
+const selectElement = document.querySelector('#torch-form_type');
+const bridgeAccountIdElement = document.querySelector('#torch-form_bridge_account_id');
+selectElement.addEventListener('change', (event) => {
+  if(event.target.value == "native") {
+    bridgeAccountIdElement.parentNode.style.display = 'none';
+  }
+  else {
+    bridgeAccountIdElement.parentNode.style.display = 'flex';
+  }
+});
+</script>
