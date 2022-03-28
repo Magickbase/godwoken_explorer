@@ -17,6 +17,8 @@ defmodule GodwokenExplorer.Account do
     field :short_address, :binary
     field :script, :map
     field :nonce, :integer
+    field(:transaction_count, :integer)
+    field(:token_transfer_count, :integer)
 
     field :type, Ecto.Enum,
       values: [:meta_contract, :udt, :user, :polyjuice_root, :polyjuice_contract]
@@ -37,7 +39,9 @@ defmodule GodwokenExplorer.Account do
       :script,
       :nonce,
       :type,
-      :short_address
+      :short_address,
+      :transaction_count,
+      :token_transfer_count
     ])
     |> validate_required([:id, :script_hash])
   end
@@ -496,8 +500,13 @@ defmodule GodwokenExplorer.Account do
     key_value =
       case Repo.get_by(KeyValue, key: :last_account_total_count) do
         nil ->
-          {:ok, key_value} = %KeyValue{} |> KeyValue.changeset(%{key: :last_account_total_count, value: "0"}) |> Repo.insert()
+          {:ok, key_value} =
+            %KeyValue{}
+            |> KeyValue.changeset(%{key: :last_account_total_count, value: "0"})
+            |> Repo.insert()
+
           key_value
+
         %KeyValue{} = key_value ->
           key_value
       end
@@ -512,13 +521,16 @@ defmodule GodwokenExplorer.Account do
           from(a in GodwokenExplorer.Account,
             where: a.id >= ^last_count,
             select: a.id
-          ) |> GodwokenExplorer.Repo.all()
+          )
+          |> GodwokenExplorer.Repo.all()
 
         less_ids = ((last_count..total_count |> Enum.to_list()) -- database_ids) |> Enum.sort()
 
         Repo.transaction(fn ->
           less_ids |> Enum.each(fn x -> Account.manual_create_account!(x) end)
-          KeyValue.changeset(key_value, %{value: Integer.to_string(total_count + 1)}) |> Repo.update!()
+
+          KeyValue.changeset(key_value, %{value: Integer.to_string(total_count + 1)})
+          |> Repo.update!()
         end)
       end
     end
