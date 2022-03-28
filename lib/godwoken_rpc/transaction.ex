@@ -112,6 +112,7 @@ defmodule GodwokenRPC.Transaction do
           to_account_id: to_account_id,
           account_ids: [from_account_id, to_account_id]
         }
+
       true ->
         %{
           type: :unknown,

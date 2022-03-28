@@ -51,6 +51,7 @@ defmodule GodwokenExplorer.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
+      # default phoneix template deps
       {:phoenix, "~> 1.6.6", override: true},
       {:phoenix_ecto, "~> 4.4"},
       {:ecto_sql, "~> 3.7.2"},
@@ -58,11 +59,13 @@ defmodule GodwokenExplorer.MixProject do
       {:phoenix_html, "~> 3.2.0", override: true},
       {:phoenix_live_reload, "~> 1.3.3", only: :dev},
       {:phoenix_live_dashboard, "~> 0.6.5"},
+      {:esbuild, "~> 0.3", runtime: Mix.env() == :dev},
       {:telemetry_metrics, "~> 0.6.1"},
       {:telemetry_poller, "~> 1.0.0"},
       {:gettext, "~> 0.11"},
       {:jason, "~> 1.0"},
       {:plug_cowboy, "~> 2.0"},
+
       {:httpoison, "~> 1.8"},
       {:rustler, "~> 0.22.0"},
       {:con_cache, "~> 0.13"},

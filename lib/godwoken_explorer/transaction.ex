@@ -17,7 +17,11 @@ defmodule GodwokenExplorer.Transaction do
     field(:from_account_id, :integer)
     field(:nonce, :integer)
     field(:to_account_id, :integer)
-    field(:type, Ecto.Enum, values: [:polyjuice_creator, :polyjuice, :eth_address_registry, :unknown])
+
+    field(:type, Ecto.Enum,
+      values: [:polyjuice_creator, :polyjuice, :eth_address_registry, :unknown]
+    )
+
     field(:block_number, :integer)
     field(:block_hash, :binary)
     field(:eth_hash, :binary)
@@ -80,7 +84,6 @@ defmodule GodwokenExplorer.Transaction do
     transaction
   end
 
-
   # TODO: from and to may can refactor to be a single method
   def latest_10_records do
     case Transactions.all() do
@@ -93,10 +96,11 @@ defmodule GodwokenExplorer.Transaction do
         end)
 
       _ ->
-
-        case from(b in Block, where: b.transaction_count > 0, order_by: [desc: b.number], limit: 1) |> Repo.one() do
+        case from(b in Block, where: b.transaction_count > 0, order_by: [desc: b.number], limit: 1)
+             |> Repo.one() do
           %Block{hash: hash} ->
             list_tx_hash_by_transaction_query(dynamic([t], t.block_hash == ^hash))
+
           nil ->
             list_tx_hash_by_transaction_query(true)
         end
@@ -213,7 +217,8 @@ defmodule GodwokenExplorer.Transaction do
       else
         dynamic([t], t.from_account_id == ^account_id)
       end
-    custom_order =  [desc: dynamic([t], t.block_number), desc: dynamic([t], t.nonce)]
+
+    custom_order = [desc: dynamic([t], t.block_number), desc: dynamic([t], t.nonce)]
 
     tx_hashes =
       list_tx_hash_by_transaction_query(condition, custom_order)
@@ -234,7 +239,9 @@ defmodule GodwokenExplorer.Transaction do
   end
 
   defp parse_result(tx_hashes, paging_options, custom_order \\ nil) do
-    tx_hashes_struct = Repo.paginate(tx_hashes, page: paging_options[:page], page_size: paging_options[:page_size])
+    tx_hashes_struct =
+      Repo.paginate(tx_hashes, page: paging_options[:page], page_size: paging_options[:page_size])
+
     order_by =
       if is_nil(custom_order) do
         [desc: dynamic([t], t.block_number), desc: dynamic([t], t.inserted_at)]
@@ -264,13 +271,18 @@ defmodule GodwokenExplorer.Transaction do
   def list_tx_hash_by_transaction_query(condition, custom_order \\ nil) do
     order_by =
       if is_nil(custom_order) do
-        [desc: dynamic([t], t.block_number), desc: dynamic([t], t.inserted_at), desc: dynamic([t], t.nonce)]
+        [
+          desc: dynamic([t], t.block_number),
+          desc: dynamic([t], t.inserted_at),
+          desc: dynamic([t], t.nonce)
+        ]
       else
         custom_order
       end
 
     from(t in Transaction,
-      select: fragment("CASE WHEN ? IS NOT NULL THEN ? ELSE ? END", t.eth_hash, t.eth_hash, t.hash),
+      select:
+        fragment("CASE WHEN ? IS NOT NULL THEN ? ELSE ? END", t.eth_hash, t.eth_hash, t.hash),
       where: ^condition,
       order_by: ^order_by
     )
@@ -289,17 +301,22 @@ defmodule GodwokenExplorer.Transaction do
       left_join: p in Polyjuice,
       on: p.tx_hash == t.hash,
       left_join: u6 in UDT,
-      on: u6.id == s4.account_id,
-      left_join: u7 in UDT,
-      on: u7.bridge_account_id == s4.account_id,
+      on: u6.bridge_account_id == s4.account_id,
       where: t.eth_hash in ^hashes or t.hash in ^hashes,
       select: %{
-        hash: fragment("CASE WHEN ? IS NOT NULL THEN ? ELSE ? END", t.eth_hash, t.eth_hash, t.hash),
+        hash:
+          fragment("CASE WHEN ? IS NOT NULL THEN ? ELSE ? END", t.eth_hash, t.eth_hash, t.hash),
         block_hash: b.hash,
         block_number: b.number,
         l1_block_number: b.layer1_block_number,
         from: a2.eth_address,
-        to: fragment("CASE WHEN ? IS NOT NULL THEN ? ELSE ? END", a3.eth_address, a3.eth_address, a3.short_address),
+        to:
+          fragment(
+            "CASE WHEN ? IS NOT NULL THEN ? ELSE ? END",
+            a3.eth_address,
+            a3.eth_address,
+            a3.short_address
+          ),
         to_alias:
           fragment(
             "
@@ -332,8 +349,8 @@ defmodule GodwokenExplorer.Transaction do
         gas_limit: p.gas_limit,
         value: p.value,
         udt_id: s4.account_id,
-        udt_symbol: fragment("CASE WHEN ? IS NULL THEN ? ELSE ? END", u6, u7.symbol, u6.symbol),
-        udt_icon: fragment("CASE WHEN ? IS NULL THEN ? ELSE ? END", u6, u7.icon, u6.icon),
+        udt_symbol: fragment("CASE WHEN ? IS NULL THEN ? ELSE ? END", u6, "", u6.symbol),
+        udt_icon: fragment("CASE WHEN ? IS NULL THEN ? ELSE ? END", u6, "", u6.icon),
         input: p.input,
         to_account_id: t.to_account_id
       }

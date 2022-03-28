@@ -16,7 +16,6 @@ defmodule GodwokenExplorer.UDTView do
       :type,
       :short_address,
       :type_script,
-      :script_hash,
       :official_site,
       :description,
       :value,
@@ -66,8 +65,9 @@ defmodule GodwokenExplorer.UDTView do
         from(
           u in UDT,
           preload: :account,
-          where: u.type == :bridge,
-          select: map(u, ^select_fields())
+          where: u.type == :bridge and not(is_nil(u.bridge_account_id)),
+          select: map(u, ^select_fields()),
+          order_by: [asc: :name]
         )
 
       type == "native" ->
@@ -75,7 +75,8 @@ defmodule GodwokenExplorer.UDTView do
           u in UDT,
           preload: :account,
           where: u.type == :native,
-          select: map(u, ^select_fields())
+          select: map(u, ^select_fields()),
+          order_by: [asc: :name]
         )
 
       true ->
