@@ -75,14 +75,17 @@ defmodule GodwokenIndexer.Block.SyncWorker do
       if transactions_params_without_receipts != [] do
         import_account(transactions_params_without_receipts)
 
-        {polyjuice_without_receipts, polyjuice_creator_params} =
-          group_transaction_params(transactions_params_without_receipts)
+        {polyjuice_without_receipts, polyjuice_creator_params, eth_addr_reg_params,
+         unknown_params} = group_transaction_params(transactions_params_without_receipts)
 
         {:ok, polyjuice_with_receipts} = handle_polyjuice_transactions(polyjuice_without_receipts)
         import_polyjuice_creator(polyjuice_creator_params)
 
         inserted_transactions =
-          import_transactions(polyjuice_with_receipts, polyjuice_creator_params)
+          import_transactions(
+            polyjuice_with_receipts ++
+              polyjuice_creator_params ++ eth_addr_reg_params ++ unknown_params
+          )
 
         update_transactions_cache(inserted_transactions)
         {:ok, inserted_transactions}
@@ -116,7 +119,9 @@ defmodule GodwokenIndexer.Block.SyncWorker do
 
   defp group_transaction_params(transactions_params_without_receipts) do
     grouped = transactions_params_without_receipts |> Enum.group_by(fn tx -> tx[:type] end)
-    {grouped[:polyjuice] || [], grouped[:polyjuice_creator] || []}
+
+    {grouped[:polyjuice] || [], grouped[:polyjuice_creator] || [],
+     grouped[:eth_address_registry] || [], grouped[:unknown] || []}
   end
 
   @spec under_tip_block?(GodwokenRPC.block_number()) :: boolean
@@ -175,9 +180,8 @@ defmodule GodwokenIndexer.Block.SyncWorker do
     if length(token_transfers) > 0, do: udpate_erc20_balance(token_transfers)
   end
 
-  defp import_transactions(polyjuice_with_receipts, polyjuice_creator_params) do
-    inserted_transaction_params =
-      filter_transaction_columns(polyjuice_with_receipts ++ polyjuice_creator_params)
+  defp import_transactions(all_params) do
+    inserted_transaction_params = filter_transaction_columns(all_params)
 
     {_count, returned_values} =
       Repo.insert_all(Transaction, inserted_transaction_params,
@@ -186,7 +190,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
       )
 
     display_ids =
-      (polyjuice_with_receipts ++ polyjuice_creator_params)
+      all_params
       |> extract_account_ids()
       |> Account.display_ids()
 
