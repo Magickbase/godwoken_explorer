@@ -72,7 +72,7 @@ defmodule GodwokenExplorer.Transaction do
   # TODO: from and to may can refactor to be a single method
   def latest_10_records do
     case Transactions.all() do
-      txs when is_list(txs) and length(txs) > 0 ->
+      txs when is_list(txs) and length(txs) == 10 ->
         txs
         |> Enum.map(fn t ->
           t
@@ -197,7 +197,8 @@ defmodule GodwokenExplorer.Transaction do
       else
         dynamic([t], t.from_account_id == ^account_id)
       end
-    custom_order =  [desc: dynamic([t], t.block_number), desc: dynamic([t], t.nonce)]
+
+    custom_order = [desc: dynamic([t], t.block_number), desc: dynamic([t], t.nonce)]
 
     tx_hashes =
       list_tx_hash_by_transaction_query(condition, custom_order)
@@ -208,8 +209,7 @@ defmodule GodwokenExplorer.Transaction do
 
   def account_transactions_data(paging_options) do
     datetime = Timex.now() |> Timex.shift(days: -5)
-    condition =
-      dynamic([t], t.inserted_at > ^datetime)
+    condition = dynamic([t], t.inserted_at > ^datetime)
 
     tx_hashes =
       list_tx_hash_by_transaction_query(condition)
@@ -219,7 +219,9 @@ defmodule GodwokenExplorer.Transaction do
   end
 
   defp parse_result(tx_hashes, paging_options, custom_order \\ nil) do
-    tx_hashes_struct = Repo.paginate(tx_hashes, page: paging_options[:page], page_size: paging_options[:page_size])
+    tx_hashes_struct =
+      Repo.paginate(tx_hashes, page: paging_options[:page], page_size: paging_options[:page_size])
+
     order_by =
       if is_nil(custom_order) do
         [desc: dynamic([t], t.block_number), desc: dynamic([t], t.inserted_at)]
@@ -249,7 +251,11 @@ defmodule GodwokenExplorer.Transaction do
   def list_tx_hash_by_transaction_query(condition, custom_order \\ nil) do
     order_by =
       if is_nil(custom_order) do
-        [desc: dynamic([t], t.block_number), desc: dynamic([t], t.inserted_at), desc: dynamic([t], t.nonce)]
+        [
+          desc: dynamic([t], t.block_number),
+          desc: dynamic([t], t.inserted_at),
+          desc: dynamic([t], t.nonce)
+        ]
       else
         custom_order
       end
