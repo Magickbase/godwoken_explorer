@@ -69,6 +69,11 @@ config :godwoken_explorer, GodwokenExplorer.Scheduler,
     {"*/2 * * * *", {GodwokenExplorer.Account, :check_account_and_create, []}}
   ]
 
+  # need to override by runtime config
+  config  :godwoken_explorer, :special_address,
+    layer2_ckb_smart_contract_address_1: "0x0000000000000000000000000000000000000000",
+    layer2_ckb_smart_contract_address_2: "0x0000000000000000000000000000000000000000"
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{Mix.env()}.exs"
