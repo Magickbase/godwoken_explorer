@@ -111,7 +111,6 @@ defmodule GodwokenExplorer.Account do
       id: id,
       type: account.type,
       ckb: ckb_balance,
-      eth: "0",
       tx_count: tx_count |> Integer.to_string(),
       eth_addr: elem(display_id(id), 0)
     }
@@ -353,6 +352,22 @@ defmodule GodwokenExplorer.Account do
     else
       script
     end
+  end
+
+  def non_create_account_info(short_address) do
+    udt_list = AccountUDT.list_udt_by_eth_address(short_address)
+
+    %{
+      id: nil,
+      type: :user,
+      ckb: "0",
+      tx_count: 0,
+      eth_addr: short_address,
+      user: %{
+        nonce: 0,
+        udt_list: udt_list
+      }
+    }
   end
 
   def display_id(id) do
