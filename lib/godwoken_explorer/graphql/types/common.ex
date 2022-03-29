@@ -8,8 +8,8 @@ defmodule GodwokenExplorer.Graphql.Types.Common do
   end
 
   input_object :page_and_size_input do
-    field :page, :integer
-    field :page_size, :integer
+    field :page, :integer, default_value: 1
+    field :page_size, :integer, default_value: 100
   end
 
   input_object :block_range_input do
