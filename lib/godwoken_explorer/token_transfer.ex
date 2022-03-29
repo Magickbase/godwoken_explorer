@@ -184,7 +184,7 @@ defmodule GodwokenExplorer.TokenTransfer do
       from(tt in TokenTransfer,
         join: a1 in Account,
         on: a1.short_address == tt.from_address_hash,
-        join: a2 in Account,
+        left_join: a2 in Account,
         on: a2.short_address == tt.to_address_hash,
         join: b in Block,
         on: b.hash == tt.block_hash,
