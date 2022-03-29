@@ -76,7 +76,7 @@ defmodule GodwokenExplorer.TokenTransfer do
 
     init_query =
       from(tt in TokenTransfer,
-        join: a1 in Account,
+        left_join: a1 in Account,
         on: a1.short_address == tt.from_address_hash,
         join: a2 in Account,
         on: a2.short_address == tt.to_address_hash,
@@ -90,8 +90,17 @@ defmodule GodwokenExplorer.TokenTransfer do
           hash: tt.transaction_hash,
           block_number: tt.block_number,
           inserted_at: b.inserted_at,
-          from: fragment("CASE WHEN ? in ('user', 'polyjuice_contract') THEN encode(?, 'escape')
-        ELSE encode(?, 'escape') END", a1.type, a1.eth_address, a1.short_address),
+          from:
+            fragment(
+              "CASE WHEN ? IS NULL THEN encode(?, 'escape')
+          WHEN ? in ('user', 'polyjuice_contract') THEN encode(?, 'escape')
+        ELSE encode(?, 'escape') END",
+              a1,
+              tt.from_address_hash,
+              a1.type,
+              a1.eth_address,
+              a1.short_address
+            ),
           to:
             fragment(
               "CASE WHEN ? IS NULL THEN encode(?, 'escape')
@@ -123,29 +132,68 @@ defmodule GodwokenExplorer.TokenTransfer do
   end
 
   def list(%{eth_address: eth_address}, paging_options) do
-    condition =
+    from_condition =
       if eth_address in @huge_data_address do
         datetime = Timex.now() |> Timex.shift(days: -5)
 
         dynamic(
           [tt],
-          tt.inserted_at > ^datetime and
-            (tt.from_address_hash == ^eth_address or tt.to_address_hash == ^eth_address)
+          tt.from_address_hash == ^eth_address and tt.inserted_at > ^datetime
         )
       else
         dynamic(
           [tt],
-          tt.from_address_hash == ^eth_address or tt.to_address_hash == ^eth_address
+          tt.from_address_hash == ^eth_address
         )
       end
 
-    paginate_result = base_query_by(condition, paging_options)
+    to_condition =
+      if eth_address in @huge_data_address do
+        datetime = Timex.now() |> Timex.shift(days: -5)
+
+        dynamic(
+          [tt],
+          tt.to_address_hash == ^eth_address and tt.inserted_at > ^datetime
+        )
+      else
+        dynamic(
+          [tt],
+          tt.to_address_hash == ^eth_address
+        )
+      end
+
+    from_query =
+      from(tt in TokenTransfer,
+        where: ^from_condition,
+        select: %{
+          transaction_hash: tt.transaction_hash,
+          log_index: tt.log_index,
+          block_number: tt.block_number,
+          inserted_at: tt.inserted_at
+        }
+      )
+
+    to_query =
+      from(tt in TokenTransfer,
+        where: ^to_condition,
+        select: %{
+          transaction_hash: tt.transaction_hash,
+          log_index: tt.log_index,
+          block_number: tt.block_number,
+          inserted_at: tt.inserted_at
+        }
+      )
+
+    paginate_result =
+      from(q in subquery(union_all(from_query, ^to_query)))
+      |> order_by([tt], desc: tt.block_number, desc: tt.inserted_at)
+      |> Repo.paginate(page: paging_options[:page], page_size: paging_options[:page_size])
 
     init_query =
       from(tt in TokenTransfer,
-        join: a1 in Account,
+        left_join: a1 in Account,
         on: a1.short_address == tt.from_address_hash,
-        join: a2 in Account,
+        left_join: a2 in Account,
         on: a2.short_address == tt.to_address_hash,
         join: b in Block,
         on: b.hash == tt.block_hash,
@@ -161,8 +209,17 @@ defmodule GodwokenExplorer.TokenTransfer do
           hash: tt.transaction_hash,
           block_number: tt.block_number,
           inserted_at: b.inserted_at,
-          from: fragment("CASE WHEN ? in ('user', 'polyjuice_contract') THEN encode(?, 'escape')
-        ELSE encode(?, 'escape') END", a1.type, a1.eth_address, a1.short_address),
+          from:
+            fragment(
+              "CASE WHEN ? IS NULL THEN encode(?, 'escape')
+          WHEN ? in ('user', 'polyjuice_contract') THEN encode(?, 'escape')
+        ELSE encode(?, 'escape') END",
+              a1,
+              tt.from_address_hash,
+              a1.type,
+              a1.eth_address,
+              a1.short_address
+            ),
           to:
             fragment(
               "CASE WHEN ? IS NULL THEN encode(?, 'escape')
@@ -222,7 +279,7 @@ defmodule GodwokenExplorer.TokenTransfer do
 
     init_query =
       from(tt in TokenTransfer,
-        join: a1 in Account,
+        left_join: a1 in Account,
         on: a1.short_address == tt.from_address_hash,
         left_join: a2 in Account,
         on: a2.short_address == tt.to_address_hash,
@@ -236,8 +293,17 @@ defmodule GodwokenExplorer.TokenTransfer do
           hash: tt.transaction_hash,
           block_number: tt.block_number,
           inserted_at: b.inserted_at,
-          from: fragment("CASE WHEN ? in ('user', 'polyjuice_contract') THEN encode(?, 'escape')
-        ELSE encode(?, 'escape') END", a1.type, a1.eth_address, a1.short_address),
+          from:
+            fragment(
+              "CASE WHEN ? IS NULL THEN encode(?, 'escape')
+          WHEN ? in ('user', 'polyjuice_contract') THEN encode(?, 'escape')
+        ELSE encode(?, 'escape') END",
+              a1,
+              tt.from_address_hash,
+              a1.type,
+              a1.eth_address,
+              a1.short_address
+            ),
           to:
             fragment(
               "CASE WHEN ? IS NULL THEN encode(?, 'escape')
@@ -279,7 +345,7 @@ defmodule GodwokenExplorer.TokenTransfer do
 
     init_query =
       from(tt in TokenTransfer,
-        join: a1 in Account,
+        left_join: a1 in Account,
         on: a1.short_address == tt.from_address_hash,
         left_join: a2 in Account,
         on: a2.short_address == tt.to_address_hash,
@@ -295,8 +361,17 @@ defmodule GodwokenExplorer.TokenTransfer do
           hash: tt.transaction_hash,
           block_number: tt.block_number,
           inserted_at: b.inserted_at,
-          from: fragment("CASE WHEN ? in ('user', 'polyjuice_contract') THEN encode(?, 'escape')
-        ELSE encode(?, 'escape') END", a1.type, a1.eth_address, a1.short_address),
+          from:
+            fragment(
+              "CASE WHEN ? IS NULL THEN encode(?, 'escape')
+          WHEN ? in ('user', 'polyjuice_contract') THEN encode(?, 'escape')
+        ELSE encode(?, 'escape') END",
+              a1,
+              tt.from_address_hash,
+              a1.type,
+              a1.eth_address,
+              a1.short_address
+            ),
           to:
             fragment(
               "CASE WHEN ? IS NULL THEN encode(?, 'escape')

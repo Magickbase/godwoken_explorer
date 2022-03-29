@@ -21,7 +21,12 @@ defmodule GodwokenExplorerWeb.API.AccountController do
         )
 
       nil ->
-        {:error, :not_found}
+        result = Account.non_create_account_info(downcase_id)
+
+        json(
+          conn,
+          result
+        )
     end
   end
 
@@ -43,6 +48,7 @@ defmodule GodwokenExplorerWeb.API.AccountController do
           nil ->
             {:error, :not_found}
         end
+
       _ ->
         {:error, :not_found}
     end
