@@ -25,8 +25,9 @@ defmodule GodwokenExplorerWeb.API.TransactionController do
       else
         _ ->
           %{
-            error_code: 404,
-            message: "not found"
+            page: 1,
+            total_count: 0,
+            txs: []
           }
       end
 
@@ -34,16 +35,24 @@ defmodule GodwokenExplorerWeb.API.TransactionController do
   end
 
   def index(conn, %{"eth_address" => "0x" <> _} = params) do
-    %Account{id: account_id, type: type} = Account.search(String.downcase(params["eth_address"]))
-
     results =
-      Transaction.account_transactions_data(
-        %{type: type, account_id: account_id},
-        %{
-          page: conn.params["page"] || 1,
-          page_size: conn.assigns.page_size
-        }
-      )
+      with %Account{id: account_id, type: type} <-
+             Account.search(String.downcase(params["eth_address"])) do
+        Transaction.account_transactions_data(
+          %{type: type, account_id: account_id},
+          %{
+            page: conn.params["page"] || 1,
+            page_size: conn.assigns.page_size
+          }
+        )
+      else
+        nil ->
+          %{
+            page: 1,
+            total_count: 0,
+            txs: []
+          }
+      end
 
     json(conn, results)
   end

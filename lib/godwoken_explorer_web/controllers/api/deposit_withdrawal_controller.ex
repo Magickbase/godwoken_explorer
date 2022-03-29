@@ -12,7 +12,11 @@ defmodule GodwokenExplorerWeb.API.DepositWithdrawalController do
         json(conn, data)
 
       nil ->
-        {:error, :not_found}
+        %{
+          page: 1,
+          total_count: 0,
+          data: []
+        }
     end
   end
 
