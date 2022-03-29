@@ -8,7 +8,7 @@ defmodule GodwokenExplorer.Graphql.Types.AccountUDT do
       resolve(&Resolvers.AccountUDT.account_udts/3)
     end
 
-    field :account_ckbs, list_of(:account_ckb) do
+    field :account_ckbs, list_of(:account_udt) do
       arg(:input, :account_ckbs_input)
       resolve(&Resolvers.AccountUDT.account_ckbs/3)
     end
@@ -19,13 +19,13 @@ defmodule GodwokenExplorer.Graphql.Types.AccountUDT do
     end
   end
 
-  object :account_ckb do
-    field :address_hash, :string
-    field :balance, :decimal
-  end
+  # object :account_ckb do
+  #   field :address_hash, :string
+  #   field :balance, :decimal
+  # end
 
   object :account_udt do
-    import_fields :ecto_datetime
+    import_fields(:ecto_datetime)
     field :id, :integer
     field :balance, :decimal
     field :address_hash, :string
@@ -33,15 +33,15 @@ defmodule GodwokenExplorer.Graphql.Types.AccountUDT do
   end
 
   input_object :account_ckbs_input do
-    field :address_hashes, list_of(:string)
+    field :address_hashes, list_of(:string), default_value: []
   end
 
   input_object :account_udts_input do
-    field :address_hashes, list_of(:string)
-    field :token_contract_address_hash, :string
+    field :address_hashes, list_of(:string), default_value: []
+    field :token_contract_address_hash, :string, default_value: ""
   end
 
   input_object :account_udt_contract_address_input do
-    field :token_contract_address_hash, :string
+    field :token_contract_address_hash, :string, default_value: ""
   end
 end
