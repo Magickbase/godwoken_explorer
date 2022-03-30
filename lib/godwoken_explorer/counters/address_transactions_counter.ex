@@ -51,7 +51,7 @@ defmodule GodwokenExplorer.Counters.AddressTransactionsCounter do
       update_cache(address)
     end
 
-    address_hash_string = to_string(address.hash)
+    address_hash_string = to_string(address.short_address)
     fetch_from_cache("hash_#{address_hash_string}")
   end
 
