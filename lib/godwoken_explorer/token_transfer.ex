@@ -126,7 +126,7 @@ defmodule GodwokenExplorer.TokenTransfer do
     account = Account.search(eth_address)
 
     from_condition =
-      if account.token_transfer_count > @account_transfer_limit do
+      if (account.token_transfer_count || 0) > @account_transfer_limit do
         datetime = Timex.now() |> Timex.shift(days: -5)
 
         dynamic(
@@ -253,7 +253,7 @@ defmodule GodwokenExplorer.TokenTransfer do
     account = Account.search(udt_address)
 
     condition =
-      if account.token_transfer_count > @account_transfer_limit do
+      if (account.token_transfer_count || 0) > @account_transfer_limit do
         datetime = Timex.now() |> Timex.shift(days: -5)
 
         dynamic(

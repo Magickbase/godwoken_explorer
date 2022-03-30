@@ -158,7 +158,7 @@ defmodule GodwokenExplorer.Transaction do
       )
       when type in [:meta_contract, :udt, :polyjuice_root, :polyjuice_contract] do
     condition =
-      if account.transaction_count > @account_tx_limit do
+      if (account.transaction_count || 0) > @account_tx_limit do
         datetime = Timex.now() |> Timex.shift(days: -5)
         dynamic([t], t.to_account_id == ^account.id and t.inserted_at > ^datetime)
       else
@@ -178,7 +178,7 @@ defmodule GodwokenExplorer.Transaction do
       )
       when type == :user do
     condition =
-      if account.transaction_count > @account_tx_limit do
+      if (account.transaction_count || 0) > @account_tx_limit do
         datetime = Timex.now() |> Timex.shift(days: -5)
         dynamic([t], t.from_account_id == ^account.id and t.inserted_at > ^datetime)
       else
