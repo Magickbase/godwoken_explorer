@@ -40,6 +40,6 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
   end
 
   input_object :account_input do
-    field :eth_address_or_short_address, :string
+    field :address, :string
   end
 end

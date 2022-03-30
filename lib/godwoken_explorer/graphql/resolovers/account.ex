@@ -4,12 +4,25 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Account do
   import Ecto.Query
 
   def account(_parent, %{input: input} = _args, _resolution) do
-    {:ok, get_account_by_address(input)}
+    address = Map.get(input, :address)
+
+    return =
+      from(a in Account)
+      |> where(
+        [a],
+        a.eth_address == ^address or
+          a.short_address == ^address or
+          a.script_hash == ^address
+      )
+      |> Repo.one()
+
+    {:ok, return}
   end
 
   def account_udts(%Account{id: id}, _args, _resolution) do
     return =
-      from(ac in AccountUDT, where: ac.account_id == ^id, limit: 100)
+      from(ac in AccountUDT)
+      |> where([ac], ac.account_id == ^id)
       |> Repo.all()
 
     {:ok, return}
@@ -17,23 +30,10 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Account do
 
   def smart_contract(%Account{id: id}, _args, _resolution) do
     return =
-      from(sm in SmartContract,
-        where: sm.account_id == ^id
-      )
+      from(sm in SmartContract)
+      |> where([sm], sm.account_id == ^id)
       |> Repo.one()
 
     {:ok, return}
-  end
-
-  defp get_account_by_address(input) do
-    eth_address_or_short_address = Map.get(input, :eth_address_or_short_address)
-
-    Repo.one(
-      from a in Account,
-        where:
-          a.eth_address == ^eth_address_or_short_address or
-            a.short_address == ^eth_address_or_short_address or
-            a.script_hash == ^eth_address_or_short_address
-    )
   end
 end
