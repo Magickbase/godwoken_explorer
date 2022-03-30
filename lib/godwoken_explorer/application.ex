@@ -23,6 +23,8 @@ defmodule GodwokenExplorer.Application do
       GodwokenIndexer.Server,
       GodwokenExplorer.Counters.AccountsCounter,
       GodwokenExplorer.Counters.AverageBlockTime,
+      GodwokenExplorer.Counters.AddressTransactionsCounter,
+      GodwokenExplorer.Counters.AddressTokenTransfersCounter,
       GodwokenExplorer.Chain.Cache.BlockCount,
       GodwokenExplorer.Chain.Cache.TransactionCount,
       GodwokenExplorer.Chain.Cache.Blocks,
