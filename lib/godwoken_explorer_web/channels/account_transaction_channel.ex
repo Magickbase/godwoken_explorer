@@ -9,10 +9,11 @@ defmodule GodwokenExplorerWeb.AccountTransactionChannel do
   intercept(["refresh"])
 
   def join("account_transactions:" <> account_id, _params, socket) do
-    %Account{id: account_id, type: type, eth_address: eth_address} = Repo.get(Account, account_id)
-    results = Transaction.account_transactions_data(%{type: type, account_id: account_id, eth_address: eth_address}, 1)
+    with %Account{id: account_id, type: type} = account <- Repo.get(Account, account_id) do
+      results = Transaction.account_transactions_data(%{type: type, account: account}, 1)
 
-    {:ok, results, assign(socket, :account_id, account_id)}
+      {:ok, results, assign(socket, :account_id, account_id)}
+    end
   end
 
   def handle_out(

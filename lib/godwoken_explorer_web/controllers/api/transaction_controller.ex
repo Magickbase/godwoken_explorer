@@ -8,14 +8,14 @@ defmodule GodwokenExplorerWeb.API.TransactionController do
   # TODO: Remove after safepal is no longer used
   def index(conn, %{"eth_address" => "0x" <> _, "contract_address" => "0x" <> _} = params) do
     results =
-      with %Account{id: account_id, type: :user} <-
+      with %Account{type: :user} = account <-
              Account.search(String.downcase(params["eth_address"])),
-           %Account{id: contract_id, type: :polyjuice_contract} <-
+           %Account{type: :polyjuice_contract} = contract <-
              Repo.get_by(Account, short_address: params["contract_address"]) do
         Transaction.account_transactions_data(
           %{
-            account_id: account_id,
-            contract_id: contract_id
+            account: account,
+            contract: contract
           },
           %{
             page: conn.params["page"] || 1,
@@ -36,10 +36,10 @@ defmodule GodwokenExplorerWeb.API.TransactionController do
 
   def index(conn, %{"eth_address" => "0x" <> _} = params) do
     results =
-      with %Account{id: account_id, type: type} <-
+      with %Account{type: type} = account <-
              Account.search(String.downcase(params["eth_address"])) do
         Transaction.account_transactions_data(
-          %{type: type, account_id: account_id},
+          %{type: type, account: account},
           %{
             page: conn.params["page"] || 1,
             page_size: conn.assigns.page_size
