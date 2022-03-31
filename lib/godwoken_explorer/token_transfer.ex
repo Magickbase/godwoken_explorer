@@ -3,6 +3,8 @@ defmodule GodwokenExplorer.TokenTransfer do
 
   import GodwokenRPC.Util, only: [utc_to_unix: 1]
 
+  alias GodwokenExplorer.Chain
+
   @constant "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
   @erc1155_single_transfer_signature "0xc3d58168c5ae7397731d063d5bbf3d657854427343f4c083240f7aacaa2d0f62"
   @erc1155_batch_transfer_signature "0x4a39dc06d4c0dbc64b70af90fd698a233a518aa5d07e595d983b8c0526c8f7fb"
@@ -123,10 +125,14 @@ defmodule GodwokenExplorer.TokenTransfer do
   end
 
   def list(%{eth_address: eth_address}, paging_options) do
-    account = Account.search(eth_address)
+    token_transfer_count =
+      case Account.search(eth_address) do
+        %Account{token_transfer_count: token_transfer_count} -> token_transfer_count || 0
+        nil -> Chain.address_to_token_transfer_count(eth_address)
+      end
 
     from_condition =
-      if (account.token_transfer_count || 0) > @account_transfer_limit do
+      if token_transfer_count > @account_transfer_limit do
         datetime = Timex.now() |> Timex.shift(days: -5)
 
         dynamic(
@@ -141,7 +147,7 @@ defmodule GodwokenExplorer.TokenTransfer do
       end
 
     to_condition =
-      if account.token_transfer_count > @account_transfer_limit do
+      if token_transfer_count > @account_transfer_limit do
         datetime = Timex.now() |> Timex.shift(days: -5)
 
         dynamic(

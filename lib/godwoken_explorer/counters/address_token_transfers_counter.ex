@@ -72,7 +72,7 @@ defmodule GodwokenExplorer.Counters.AddressTokenTransfersCounter do
   defp update_cache(address) do
     address_hash_string = to_string(address.short_address)
     put_into_cache("hash_#{address_hash_string}_#{@last_update_key}", current_time())
-    new_data = Chain.address_to_token_transfer_count(address)
+    new_data = Chain.address_to_token_transfer_count(address.short_address)
     put_into_cache("hash_#{address_hash_string}", new_data)
     put_into_db(address, new_data)
   end
