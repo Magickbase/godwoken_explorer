@@ -8,17 +8,8 @@ defmodule GodwokenExplorer.TokenTransfer do
   @erc1155_batch_transfer_signature "0x4a39dc06d4c0dbc64b70af90fd698a233a518aa5d07e595d983b8c0526c8f7fb"
 
   @transfer_function_signature "0xa9059cbb"
-  @huge_data_udt_address [
-    "0xb02c930c2825a960a50ba4ab005e8264498b64a0",
-    "0xd66eb642ee33837531fda61eb7ab15b15658bcab"
-  ]
-  @huge_data_address [
-    "0x8967af2789aabbc6ff68bd75336b09e6e4303c98",
-    "0xf00b259ed79bb80291b45a76b13e3d71d4869433",
-    "0x1ac741946998fcdba3ba8ccff4797407eb30274e",
-    "0x297ce8d1532704f7be447bc897ab63563d60f223",
-    "0x62493bfa183bb6ccd4b4e856230cf72f68299469"
-  ]
+
+  @account_transfer_limit 100_000
 
   @derive {Jason.Encoder, except: [:__meta__]}
   @primary_key false
@@ -132,8 +123,10 @@ defmodule GodwokenExplorer.TokenTransfer do
   end
 
   def list(%{eth_address: eth_address}, paging_options) do
+    account = Account.search(eth_address)
+
     from_condition =
-      if eth_address in @huge_data_address do
+      if (account.token_transfer_count || 0) > @account_transfer_limit do
         datetime = Timex.now() |> Timex.shift(days: -5)
 
         dynamic(
@@ -148,7 +141,7 @@ defmodule GodwokenExplorer.TokenTransfer do
       end
 
     to_condition =
-      if eth_address in @huge_data_address do
+      if account.token_transfer_count > @account_transfer_limit do
         datetime = Timex.now() |> Timex.shift(days: -5)
 
         dynamic(
@@ -257,8 +250,10 @@ defmodule GodwokenExplorer.TokenTransfer do
   end
 
   def list(%{udt_address: udt_address}, paging_options) do
+    account = Account.search(udt_address)
+
     condition =
-      if udt_address in @huge_data_udt_address do
+      if (account.token_transfer_count || 0) > @account_transfer_limit do
         datetime = Timex.now() |> Timex.shift(days: -5)
 
         dynamic(

@@ -7,8 +7,6 @@ defmodule GodwokenExplorer.Transaction do
 
   @tx_limit 500_000
   @account_tx_limit 100_000
-  @huge_data_account_ids [23983, 23988, 23992]
-  @huge_data_user_account_ids [27130]
 
   @derive {Jason.Encoder, except: [:__meta__]}
   @primary_key {:hash, :binary, autogenerate: false}
@@ -46,6 +44,16 @@ defmodule GodwokenExplorer.Transaction do
       :args,
       :block_number
     ])
+  end
+
+  def last_nonce_by_address_query(account_id) do
+    from(
+      t in Transaction,
+      select: t.nonce,
+      where: t.from_account_id == ^account_id,
+      order_by: [desc: :block_number],
+      limit: 1
+    )
   end
 
   # TODO: from and to may can refactor to be a single method
@@ -132,12 +140,12 @@ defmodule GodwokenExplorer.Transaction do
   end
 
   def account_transactions_data(
-        %{account_id: account_id, contract_id: contract_id},
+        %{account: account, contract: contract},
         paging_options
       ) do
     tx_hashes =
       list_tx_hash_by_transaction_query(
-        dynamic([t], t.from_account_id == ^account_id and t.to_account_id == ^contract_id)
+        dynamic([t], t.from_account_id == ^account.id and t.to_account_id == ^contract.id)
       )
       |> limit(@account_tx_limit)
 
@@ -145,16 +153,16 @@ defmodule GodwokenExplorer.Transaction do
   end
 
   def account_transactions_data(
-        %{type: type, account_id: account_id},
+        %{type: type, account: account},
         paging_options
       )
       when type in [:meta_contract, :udt, :polyjuice_root, :polyjuice_contract] do
     condition =
-      if account_id in @huge_data_account_ids do
+      if (account.transaction_count || 0) > @account_tx_limit do
         datetime = Timex.now() |> Timex.shift(days: -5)
-        dynamic([t], t.to_account_id == ^account_id and t.inserted_at > ^datetime)
+        dynamic([t], t.to_account_id == ^account.id and t.inserted_at > ^datetime)
       else
-        dynamic([t], t.to_account_id == ^account_id)
+        dynamic([t], t.to_account_id == ^account.id)
       end
 
     tx_hashes =
@@ -165,16 +173,16 @@ defmodule GodwokenExplorer.Transaction do
   end
 
   def account_transactions_data(
-        %{type: type, account_id: account_id},
+        %{type: type, account: account},
         paging_options
       )
       when type == :user do
     condition =
-      if account_id in @huge_data_user_account_ids do
+      if (account.transaction_count || 0) > @account_tx_limit do
         datetime = Timex.now() |> Timex.shift(days: -5)
-        dynamic([t], t.from_account_id == ^account_id and t.inserted_at > ^datetime)
+        dynamic([t], t.from_account_id == ^account.id and t.inserted_at > ^datetime)
       else
-        dynamic([t], t.from_account_id == ^account_id)
+        dynamic([t], t.from_account_id == ^account.id)
       end
 
     custom_order = [desc: dynamic([t], t.block_number), desc: dynamic([t], t.nonce)]

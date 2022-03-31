@@ -105,13 +105,12 @@ defmodule GodwokenExplorer.Account do
         _ -> ""
       end
 
-    tx_count = GodwokenExplorer.Chain.Cache.AccountTransactionCount.get(account.id)
-
     base_map = %{
       id: id,
       type: account.type,
       ckb: ckb_balance,
-      tx_count: tx_count |> Integer.to_string(),
+      tx_count: account.transaction_count || 0,
+      transfer_count: account.token_transfer_count || 0,
       eth_addr: elem(display_id(id), 0)
     }
 
