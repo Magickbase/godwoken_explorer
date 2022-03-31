@@ -17,7 +17,7 @@ defmodule GodwokenExplorer.Transaction do
     field(:from_account_id, :integer)
     field(:nonce, :integer)
     field(:to_account_id, :integer)
-    field(:type, Ecto.Enum, values: [:polyjuice_creator, :polyjuice])
+    field(:type, Ecto.Enum, values: [:polyjuice_creator, :polyjuice, :unknown])
     field(:block_number, :integer)
     field(:block_hash, :binary)
 
@@ -46,27 +46,6 @@ defmodule GodwokenExplorer.Transaction do
       :args,
       :block_number
     ])
-  end
-
-  def create_transaction(%{type: :polyjuice_creator} = attrs) do
-    transaction =
-      %Transaction{}
-      |> Transaction.changeset(attrs)
-      |> Ecto.Changeset.put_change(:block_hash, attrs[:block_hash])
-      |> Repo.insert(on_conflict: :nothing)
-
-    PolyjuiceCreator.create_polyjuice_creator(attrs)
-    transaction
-  end
-
-  def create_transaction(%{type: :polyjuice} = attrs) do
-    transaction =
-      %Transaction{}
-      |> Transaction.changeset(attrs)
-      |> Repo.insert(on_conflict: :nothing)
-
-    Polyjuice.create_polyjuice(attrs)
-    transaction
   end
 
   # TODO: from and to may can refactor to be a single method

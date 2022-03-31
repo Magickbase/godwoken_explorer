@@ -1,5 +1,7 @@
 defmodule GodwokenRPC.Transaction do
-  import GodwokenRPC.Util, only: [hex_to_number: 1, parse_le_number: 1, transform_hash_type: 1, parse_polyjuice_args: 1]
+  import GodwokenRPC.Util,
+    only: [hex_to_number: 1, parse_le_number: 1, transform_hash_type: 1, parse_polyjuice_args: 1]
+
   import Godwoken.MoleculeParser, only: [parse_meta_contract_args: 1]
 
   def elixir_to_params(%{
@@ -49,10 +51,11 @@ defmodule GodwokenRPC.Transaction do
         },
         "hash" => hash
       }) do
+    from_account_id = hex_to_number(from_account_id)
+    to_account_id = hex_to_number(to_id)
+
     if String.starts_with?(args, "ffffff504f4c59") do
       [is_create, gas_limit, gas_price, value, input_size, input] = parse_polyjuice_args(args)
-      from_account_id = hex_to_number(from_account_id)
-      to_account_id = hex_to_number(to_id)
 
       %{
         type: :polyjuice,
@@ -69,6 +72,18 @@ defmodule GodwokenRPC.Transaction do
         value: value,
         input_size: input_size,
         input: input,
+        account_ids: [from_account_id, to_account_id]
+      }
+    else
+      %{
+        type: :unknown,
+        hash: hash,
+        block_hash: block_hash,
+        block_number: block_number,
+        nonce: hex_to_number(nonce),
+        args: "0x" <> args,
+        from_account_id: from_account_id,
+        to_account_id: to_account_id,
         account_ids: [from_account_id, to_account_id]
       }
     end
