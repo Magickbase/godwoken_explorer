@@ -34,14 +34,14 @@ defmodule GodwokenExplorer.SmartContractView do
   end
 
   def tx_count(smart_contract, _conn) do
-    GodwokenExplorer.Chain.Cache.AccountTransactionCount.get(smart_contract.account_id)
+    Repo.get(Account, smart_contract.account_id).transaction_count
   end
 
   def list(paging_options) do
     from(
       sc in SmartContract,
       preload: :account,
-      where: not(is_nil(sc.deployment_tx_hash)),
+      where: not is_nil(sc.deployment_tx_hash),
       select: map(sc, ^select_fields())
     )
     |> Repo.paginate(page: paging_options[:page], page_size: paging_options[:page_size])

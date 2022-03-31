@@ -29,7 +29,6 @@ defmodule GodwokenExplorer.Application do
       GodwokenExplorer.Chain.Cache.TransactionCount,
       GodwokenExplorer.Chain.Cache.Blocks,
       GodwokenExplorer.Chain.Cache.Transactions,
-      GodwokenExplorer.Chain.Cache.AccountTransactionCount,
       GodwokenExplorer.Scheduler,
       GodwokenExplorer.ETS.SmartContracts
     ]
