@@ -78,11 +78,10 @@ defmodule GodwokenIndexer.Block.SyncWorker do
         {polyjuice_without_receipts, polyjuice_creator_params} =
           group_transaction_params(transactions_params_without_receipts)
 
-        {:ok, polyjuice_with_receipts} = handle_polyjuice_transactions(polyjuice_without_receipts)
+        handle_polyjuice_transactions(polyjuice_without_receipts)
         import_polyjuice_creator(polyjuice_creator_params)
 
-        inserted_transactions =
-          import_transactions(polyjuice_with_receipts, polyjuice_creator_params)
+        inserted_transactions = import_transactions(transactions_params_without_receipts)
 
         update_transactions_cache(inserted_transactions)
         {:ok, inserted_transactions}
@@ -108,9 +107,6 @@ defmodule GodwokenIndexer.Block.SyncWorker do
       import_token_transfers(logs)
       import_polyjuice(polyjuice_with_receipts)
       update_ckb_balance(polyjuice_without_receipts)
-      {:ok, polyjuice_with_receipts}
-    else
-      {:ok, []}
     end
   end
 
@@ -175,9 +171,8 @@ defmodule GodwokenIndexer.Block.SyncWorker do
     if length(token_transfers) > 0, do: udpate_erc20_balance(token_transfers)
   end
 
-  defp import_transactions(polyjuice_with_receipts, polyjuice_creator_params) do
-    inserted_transaction_params =
-      filter_transaction_columns(polyjuice_with_receipts ++ polyjuice_creator_params)
+  defp import_transactions(transactions_params_without_receipts) do
+    inserted_transaction_params = filter_transaction_columns(transactions_params_without_receipts)
 
     {_count, returned_values} =
       Repo.insert_all(Transaction, inserted_transaction_params,
@@ -186,7 +181,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
       )
 
     display_ids =
-      (polyjuice_with_receipts ++ polyjuice_creator_params)
+      transactions_params_without_receipts
       |> extract_account_ids()
       |> Account.display_ids()
 
