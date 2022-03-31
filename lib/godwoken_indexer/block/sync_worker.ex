@@ -75,17 +75,13 @@ defmodule GodwokenIndexer.Block.SyncWorker do
       if transactions_params_without_receipts != [] do
         import_account(transactions_params_without_receipts)
 
-        {polyjuice_without_receipts, polyjuice_creator_params, eth_addr_reg_params,
-         unknown_params} = group_transaction_params(transactions_params_without_receipts)
+        {polyjuice_without_receipts, polyjuice_creator_params, _eth_addr_reg_params,
+         _unknown_params} = group_transaction_params(transactions_params_without_receipts)
 
-        {:ok, polyjuice_with_receipts} = handle_polyjuice_transactions(polyjuice_without_receipts)
+        handle_polyjuice_transactions(polyjuice_without_receipts)
         import_polyjuice_creator(polyjuice_creator_params)
 
-        inserted_transactions =
-          import_transactions(
-            polyjuice_with_receipts ++
-              polyjuice_creator_params ++ eth_addr_reg_params ++ unknown_params
-          )
+        inserted_transactions = import_transactions(transactions_params_without_receipts)
 
         update_transactions_cache(inserted_transactions)
         {:ok, inserted_transactions}
@@ -103,17 +99,17 @@ defmodule GodwokenIndexer.Block.SyncWorker do
 
   defp handle_polyjuice_transactions(polyjuice_without_receipts) do
     if polyjuice_without_receipts != [] do
-      {:ok, %{logs: logs, receipts: receipts}} =
-        GodwokenRPC.fetch_transaction_receipts(polyjuice_without_receipts)
+      {polyjuice_transaction, polyjuice_deploy_contract} =
+        polyjuice_without_receipts |> Enum.split_while(fn polyjuice -> polyjuice[:eth_hash] end)
 
-      polyjuice_with_receipts = Receipts.put(polyjuice_without_receipts, receipts)
+      {:ok, %{logs: logs, receipts: receipts}} =
+        GodwokenRPC.fetch_transaction_receipts(polyjuice_transaction)
+
+      polyjuice_with_receipts = Receipts.put(polyjuice_transaction, receipts)
       import_logs(logs)
       import_token_transfers(logs)
-      import_polyjuice(polyjuice_with_receipts)
+      import_polyjuice(polyjuice_with_receipts ++ polyjuice_deploy_contract)
       update_ckb_balance(polyjuice_without_receipts)
-      {:ok, polyjuice_with_receipts}
-    else
-      {:ok, []}
     end
   end
 
