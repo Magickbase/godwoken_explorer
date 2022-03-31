@@ -381,7 +381,10 @@ defmodule GodwokenIndexer.Block.SyncWorker do
   end
 
   defp udpate_erc20_balance(token_transfers) do
-    address_token_balances = TokenBalances.params_set(%{token_transfers_params: token_transfers})
+    address_token_balances =
+      TokenBalances.params_set(%{token_transfers_params: token_transfers})
+      |> Enum.uniq_by(fn map -> {map[:address_hash], map[:token_contract_address_hash]} end)
+
     balances = BalanceReader.get_balances_of(address_token_balances)
 
     import_account_udts =
