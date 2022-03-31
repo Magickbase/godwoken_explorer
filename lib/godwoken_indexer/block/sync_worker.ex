@@ -102,6 +102,12 @@ defmodule GodwokenIndexer.Block.SyncWorker do
       {polyjuice_transaction, polyjuice_deploy_contract} =
         polyjuice_without_receipts |> Enum.split_while(fn polyjuice -> polyjuice[:eth_hash] end)
 
+      polyjuice_deploy_contract =
+        polyjuice_deploy_contract
+        |> Enum.map(fn x ->
+          x |> Map.merge(%{gas_used: 0, status: :succeed, transaction_index: 0})
+        end)
+
       {:ok, %{logs: logs, receipts: receipts}} =
         GodwokenRPC.fetch_transaction_receipts(polyjuice_transaction)
 
