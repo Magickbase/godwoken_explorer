@@ -72,12 +72,12 @@ defmodule GodwokenExplorer.Chain do
     end
   end
 
-  def address_to_token_transfer_count(account) do
+  def address_to_token_transfer_count(short_address) do
     query =
       from(
         token_transfer in TokenTransfer,
-        where: token_transfer.to_address_hash == ^account.short_address,
-        or_where: token_transfer.from_address_hash == ^account.short_address
+        where: token_transfer.to_address_hash == ^short_address,
+        or_where: token_transfer.from_address_hash == ^short_address
       )
 
     Repo.aggregate(query, :count, timeout: :infinity)
