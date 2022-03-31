@@ -34,7 +34,7 @@ defmodule GodwokenExplorer.SmartContractView do
   end
 
   def tx_count(smart_contract, _conn) do
-    Repo.get(Account, smart_contract.account_id).transaction_count
+    Repo.get(Account, smart_contract.account_id).transaction_count || 0
   end
 
   def list(paging_options) do

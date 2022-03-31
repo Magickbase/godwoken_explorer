@@ -109,8 +109,8 @@ defmodule GodwokenExplorer.Account do
       id: id,
       type: account.type,
       ckb: ckb_balance,
-      tx_count: account.transaction_count,
-      transfer_count: account.token_transfer_count,
+      tx_count: account.transaction_count || 0,
+      transfer_count: account.token_transfer_count || 0,
       eth_addr: elem(display_id(id), 0)
     }
 
