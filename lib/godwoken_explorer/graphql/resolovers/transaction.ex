@@ -3,14 +3,14 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
   alias GodwokenExplorer.{Account, Transaction, Block, Polyjuice, PolyjuiceCreator}
 
   import Ecto.Query
+  import GodwokenExplorer.Graphql.PageAndSize, only: [page_and_size: 2]
 
   ## TODO: wait for optimize
   def latest_10_transactions(_parent, _args, _resolution) do
     return =
-      from(t in Transaction,
-        limit: 10,
-        order_by: [desc: t.inserted_at]
-      )
+      from(t in Transaction)
+      |> limit(10)
+      |> order_by([t], desc: t.inserted_at)
       |> Repo.all()
 
     {:ok, return}
@@ -25,33 +25,27 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
   # TODO: wait for optimize
   def transactions(_parent, %{input: input} = _args, _resolution) do
     address = Map.get(input, :address)
-
-    account =
-      from(
-        a in Account,
-        where:
-          a.eth_address == ^address or a.script_hash == ^address or
-            a.short_address == ^address
-      )
-      |> Repo.one()
+    account = Account.search(address)
 
     query_condition =
       case account do
         %Account{type: :user} ->
-          from t in Transaction,
-            where: t.from_account_id == ^account.id,
-            limit: 100,
-            order_by: [desc: t.inserted_at]
+          from(t in Transaction)
+          |> where([t], t.from_account_id == ^account.id)
 
         %Account{type: type}
         when type in [:meta_contract, :udt, :polyjuice_root, :polyjuice_contract] ->
-          from t in Transaction,
-            where: t.to_account_id == ^account.id,
-            limit: 100,
-            order_by: [desc: t.inserted_at]
+          from(t in Transaction)
+          |> where([t], t.to_account_id == ^account.id)
       end
 
-    {:ok, Repo.all(query_condition)}
+    return =
+      query_condition
+      |> page_and_size(input)
+      |> order_by([t], desc: t.inserted_at)
+      |> Repo.all()
+
+    {:ok, return}
   end
 
   def polyjuice(%Transaction{hash: hash}, _args, _resolution) do
