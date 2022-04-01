@@ -7,6 +7,16 @@ defmodule GodwokenExplorer.Graphql.Resolvers.AccountUDT do
 
   @addresses_max_limit 20
 
+  def udt(%AccountUDT{udt_id: udt_id} = _parent, _args, _resolution) do
+    return = Repo.get(UDT, udt_id)
+    {:ok, return}
+  end
+
+  def account(%AccountUDT{account_id: account_id} = _parent, _args, _resolution) do
+    return = Repo.get(Account, account_id)
+    {:ok, return}
+  end
+
   def account_udts(_parent, %{input: input} = _args, _resolution) do
     address_hashes = Map.get(input, :address_hashes)
     token_contract_address_hash = Map.get(input, :token_contract_address_hash)

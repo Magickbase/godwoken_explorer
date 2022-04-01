@@ -30,6 +30,15 @@ defmodule GodwokenExplorer.Graphql.Types.AccountUDT do
     field :balance, :decimal
     field :address_hash, :string
     field :inputs, :string
+
+    field :udt, :udt do
+      resolve(&Resolvers.AccountUDT.udt/3)
+
+    end
+
+    field :account, :account do
+      resolve(&Resolvers.AccountUDT.account/3)
+    end
   end
 
   input_object :account_ckbs_input do
