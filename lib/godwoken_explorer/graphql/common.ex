@@ -1,4 +1,4 @@
-defmodule GodwokenExplorer.Graphql.PageAndSize do
+defmodule GodwokenExplorer.Graphql.Common do
   import Ecto.Query
 
   def page_and_size(query, input, max_limit \\ 100) do

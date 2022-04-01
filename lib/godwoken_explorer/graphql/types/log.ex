@@ -30,5 +30,6 @@ defmodule GodwokenExplorer.Graphql.Types.Log do
     field :fourth_topic, :string
     field :address_hash, :string
     import_fields(:block_range_input)
+    import_fields(:page_and_size_input)
   end
 end

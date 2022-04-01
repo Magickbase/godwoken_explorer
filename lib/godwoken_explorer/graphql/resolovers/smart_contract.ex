@@ -3,7 +3,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.SmartContract do
   alias GodwokenExplorer.{SmartContract, Account}
 
   import Ecto.Query
-  import GodwokenExplorer.Graphql.PageAndSize, only: [page_and_size: 2]
+  import GodwokenExplorer.Graphql.Common, only: [page_and_size: 2]
 
   def smart_contract(
         _parent,
