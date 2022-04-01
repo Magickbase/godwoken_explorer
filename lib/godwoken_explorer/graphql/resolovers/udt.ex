@@ -17,7 +17,8 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
     account = Account.search(contract_address)
 
     udt =
-      from(u in UDT, where: u.id == ^account.id or u.bridge_account_id == ^account.id)
+      from(u in UDT)
+      |> where([u], u.id == ^account.id or u.bridge_account_id == ^account.id)
       |> Repo.one()
 
     {:ok, udt}

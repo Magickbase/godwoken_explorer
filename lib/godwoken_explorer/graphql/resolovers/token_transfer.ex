@@ -4,6 +4,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.TokenTransfer do
   alias GodwokenExplorer.Repo
 
   import Ecto.Query
+  import GodwokenExplorer.Graphql.PageAndSize, only: [page_and_size: 2]
 
   def token_transfer(_parent, %{input: %{transaction_hash: transaction_hash}}, _resolution) do
     return = Repo.get(TokenTransfer, transaction_hash)
@@ -11,7 +12,9 @@ defmodule GodwokenExplorer.Graphql.Resolvers.TokenTransfer do
   end
 
   def token_transfers(_parent, %{input: input}, _resolution) do
-    {:ok, get_token_transfers(input)}
+    query = query_token_transfers(input)
+    return = Repo.all(query)
+    {:ok, return}
   end
 
   def polyjuice(%TokenTransfer{transaction_hash: transaction_hash}, _args, _resolution) do
@@ -48,7 +51,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.TokenTransfer do
     {:ok, return}
   end
 
-  defp get_token_transfers(input) do
+  defp query_token_transfers(input) do
     conditions =
       Enum.reduce(input, true, fn arg, acc ->
         case arg do
@@ -73,7 +76,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.TokenTransfer do
       end)
 
     from(tt in TokenTransfer, where: ^conditions)
-    |> limit(100)
+    |> page_and_size(input)
     |> Repo.all()
   end
 end
