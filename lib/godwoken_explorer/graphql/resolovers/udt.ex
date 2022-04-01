@@ -3,12 +3,14 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
   alias GodwokenExplorer.Repo
 
   import Ecto.Query
-  # TODO: show udt
-  def udt(_parent, _args, _resolution) do
-    {:ok, nil}
+  import GodwokenExplorer.Graphql.Common, only: [page_and_size: 2]
+
+  def udt(_parent, %{input: input} = _args, _resolution) do
+    id = Map.get(input, :id)
+    udt = Repo.get(UDT, id)
+    {:ok, udt}
   end
 
-  # TODO: show udt
   def get_udt_by_contract_address(
         _parent,
         %{input: %{contract_address: contract_address}},
@@ -24,18 +26,26 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
     {:ok, udt}
   end
 
-  # TODO: show udts
-  def udts(_parent, _args, _resolution) do
-    {:ok, nil}
+  def udts(_parent, %{input: input} = _args, _resolution) do
+    conditions =
+      Enum.reduce(input, true, fn arg, acc ->
+        case arg do
+          {:type, value} ->
+            dynamic([u], ^acc and u.type == ^value)
+
+          _ ->
+            acc
+        end
+      end)
+
+    return = conditions |> page_and_size(input) |> Repo.all()
+
+    {:ok, return}
   end
 
   # TODO: show account
-  def account(%UDT{} = _parent, _args, _resolution) do
-    {:ok, nil}
-  end
-
-  # TODO: show bridge_account
-  def bridge_account(%UDT{} = _parent, _args, _resolution) do
-    {:ok, nil}
+  def account(%UDT{bridge_account_id: bridge_account_id} = _parent, _args, _resolution) do
+    account = Repo.get(Account, bridge_account_id)
+    {:ok, account}
   end
 end

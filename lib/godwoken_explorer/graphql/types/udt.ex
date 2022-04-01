@@ -20,7 +20,7 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
   end
 
   object :udt do
-    import_fields :ecto_datetime
+    import_fields(:ecto_datetime)
     field :id, :string
     field :decimal, :integer
     field :name, :string
@@ -38,10 +38,6 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
 
     field :account, :account do
       resolve(&Resolvers.UDT.account/3)
-    end
-
-    field :bridge_account, :account do
-      resolve(&Resolvers.UDT.bridge_account/3)
     end
   end
 
