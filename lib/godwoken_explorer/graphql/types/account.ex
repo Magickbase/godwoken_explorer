@@ -13,6 +13,7 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
   end
 
   object :account do
+    import_fields(:ecto_datetime)
     field :id, :integer
     field :eth_address, :string
     field :script_hash, :string
@@ -20,6 +21,16 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
     field :script, :json
     field :nonce, :integer
     field :type, :account_type
+    field :transaction_count, :integer
+    field :token_transfer_count, :integer
+
+    field :account_udts, list_of(:account_udt) do
+      resolve(&Resolvers.Account.account_udts/3)
+    end
+
+    field :smart_contract, :smart_contract do
+      resolve(&Resolvers.Account.smart_contract/3)
+    end
   end
 
   enum :account_type do
@@ -31,6 +42,6 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
   end
 
   input_object :account_input do
-    field :eth_address_or_short_address, :string
+    field :address, :string
   end
 end

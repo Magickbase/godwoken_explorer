@@ -10,6 +10,7 @@ defmodule GodwokenExplorer.Graphql.Types.Log do
   end
 
   object :log do
+    import_fields :ecto_datetime
     field :transaction_hash, :string
     field :data, :string
     field :first_topic, :string
@@ -29,5 +30,6 @@ defmodule GodwokenExplorer.Graphql.Types.Log do
     field :fourth_topic, :string
     field :address_hash, :string
     import_fields(:block_range_input)
+    import_fields(:page_and_size_input)
   end
 end

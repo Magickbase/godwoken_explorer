@@ -22,6 +22,7 @@ defmodule GodwokenExplorer.Graphql.Types.Block do
   end
 
   object :block do
+    import_fields :ecto_datetime
     field :hash, :string
     field :number, :integer
     field :parent_hash, :string

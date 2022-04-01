@@ -1,18 +1,31 @@
 defmodule GodwokenExplorer.Graphql.Resolvers.SmartContract do
-  alias GodwokenExplorer.{SmartContract}
+  alias GodwokenExplorer.Repo
+  alias GodwokenExplorer.{SmartContract, Account}
 
-  # TODO: show udt
-  def udt(_parent, _args, _resolution) do
-    {:ok, nil}
+  import Ecto.Query
+  import GodwokenExplorer.Graphql.Common, only: [page_and_size: 2]
+
+  def smart_contract(
+        _parent,
+        %{input: %{contract_address: contract_address}} = _args,
+        _resolution
+      ) do
+    account = Account.search(contract_address)
+
+    return =
+      from(sc in SmartContract)
+      |> where([sc], sc.account_id == ^account.id)
+      |> Repo.one()
+
+    {:ok, return}
   end
 
-  # TODO: show smart_contract
-  def smart_contract(_parent, _args, _resolution) do
-    {:ok, %SmartContract{}}
-  end
+  def smart_contracts(_parent, %{input: input} = _args, _resolution) do
+    return =
+      from(sc in SmartContract)
+      |> page_and_size(input)
+      |> Repo.all()
 
-    # TODO: show smart_contracts
-  def smart_contracts(_parent, _args, _resolution) do
-    {:ok, nil}
+    {:ok, return}
   end
 end
