@@ -19,11 +19,6 @@ defmodule GodwokenExplorer.Graphql.Types.AccountUDT do
     end
   end
 
-  # object :account_ckb do
-  #   field :address_hash, :string
-  #   field :balance, :decimal
-  # end
-
   object :account_udt do
     import_fields(:ecto_datetime)
     field :id, :integer
@@ -33,7 +28,6 @@ defmodule GodwokenExplorer.Graphql.Types.AccountUDT do
 
     field :udt, :udt do
       resolve(&Resolvers.AccountUDT.udt/3)
-
     end
 
     field :account, :account do
