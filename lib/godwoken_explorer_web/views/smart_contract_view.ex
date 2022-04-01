@@ -4,7 +4,7 @@ defmodule GodwokenExplorer.SmartContractView do
   import Ecto.Query, only: [from: 2]
   import GodwokenRPC.Util, only: [balance_to_view: 2]
 
-  alias GodwokenExplorer.{SmartContract, Repo, UDT}
+  alias GodwokenExplorer.{SmartContract, Repo, UDT, Account}
 
   def fields do
     [
@@ -34,7 +34,10 @@ defmodule GodwokenExplorer.SmartContractView do
   end
 
   def tx_count(smart_contract, _conn) do
-    Repo.get(Account, smart_contract.account_id).transaction_count || 0
+    case Repo.get(Account, smart_contract.account_id) do
+      %Account{transaction_count: transaction_count} -> transaction_count || 0
+      nil -> 0
+    end
   end
 
   def list(paging_options) do
