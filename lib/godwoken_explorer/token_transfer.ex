@@ -256,22 +256,13 @@ defmodule GodwokenExplorer.TokenTransfer do
   end
 
   def list(%{udt_address: udt_address}, paging_options) do
-    account = Account.search(udt_address)
+    datetime = Timex.now() |> Timex.shift(days: -5)
 
     condition =
-      if (account.token_transfer_count || 0) > @account_transfer_limit do
-        datetime = Timex.now() |> Timex.shift(days: -5)
-
-        dynamic(
-          [tt],
-          tt.token_contract_address_hash == ^udt_address and tt.inserted_at > ^datetime
-        )
-      else
-        dynamic(
-          [tt],
-          tt.token_contract_address_hash == ^udt_address
-        )
-      end
+      dynamic(
+        [tt],
+        tt.token_contract_address_hash == ^udt_address and tt.inserted_at > ^datetime
+      )
 
     paginate_result = base_query_by(condition, paging_options)
 
