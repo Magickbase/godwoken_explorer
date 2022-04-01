@@ -3,7 +3,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
   alias GodwokenExplorer.{Account, Transaction, Block, Polyjuice, PolyjuiceCreator}
 
   import Ecto.Query
-  import GodwokenExplorer.Graphql.PageAndSize, only: [page_and_size: 2]
+  import GodwokenExplorer.Graphql.Common, only: [page_and_size: 2]
 
   ## TODO: wait for optimize
   def latest_10_transactions(_parent, _args, _resolution) do
@@ -50,20 +50,18 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
 
   def polyjuice(%Transaction{hash: hash}, _args, _resolution) do
     return =
-      Repo.one(
-        from p in Polyjuice,
-          where: p.tx_hash == ^hash
-      )
+      from(p in Polyjuice)
+      |> where([p], p.tx_hash == ^hash)
+      |> Repo.one()
 
     {:ok, return}
   end
 
   def polyjuice_creator(%Transaction{hash: hash}, _args, _resolution) do
     return =
-      Repo.one(
-        from pc in PolyjuiceCreator,
-          where: pc.tx_hash == ^hash
-      )
+      from(pc in PolyjuiceCreator)
+      |> where([pc], pc.tx_hash == ^hash)
+      |> Repo.one()
 
     {:ok, return}
   end

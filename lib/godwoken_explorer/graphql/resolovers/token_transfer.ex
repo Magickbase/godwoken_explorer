@@ -4,7 +4,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.TokenTransfer do
   alias GodwokenExplorer.Repo
 
   import Ecto.Query
-  import GodwokenExplorer.Graphql.PageAndSize, only: [page_and_size: 2]
+  import GodwokenExplorer.Graphql.Common, only: [page_and_size: 2]
 
   def token_transfer(_parent, %{input: %{transaction_hash: transaction_hash}}, _resolution) do
     return = Repo.get(TokenTransfer, transaction_hash)
@@ -68,7 +68,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.TokenTransfer do
             dynamic([tt], ^acc and tt.block_number >= ^value)
 
           {:end_block_number, value} ->
-            dynamic([tt], ^acc and tt.end_block_number <= ^value)
+            dynamic([tt], ^acc and tt.block_number <= ^value)
 
           _ ->
             acc
@@ -77,6 +77,5 @@ defmodule GodwokenExplorer.Graphql.Resolvers.TokenTransfer do
 
     from(tt in TokenTransfer, where: ^conditions)
     |> page_and_size(input)
-    |> Repo.all()
   end
 end

@@ -3,7 +3,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.AccountUDT do
   alias GodwokenExplorer.Repo
 
   import Ecto.Query
-  import GodwokenExplorer.Graphql.PageAndSize, only: [page_and_size: 2]
+  import GodwokenExplorer.Graphql.Common, only: [page_and_size: 2]
 
   @addresses_max_limit 20
 
