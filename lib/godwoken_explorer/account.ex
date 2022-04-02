@@ -19,6 +19,8 @@ defmodule GodwokenExplorer.Account do
     field :short_address, :binary
     field :script, :map
     field :nonce, :integer
+    field(:transaction_count, :integer)
+    field(:token_transfer_count, :integer)
 
     field :type, Ecto.Enum,
       values: [
@@ -48,7 +50,9 @@ defmodule GodwokenExplorer.Account do
       :script,
       :nonce,
       :type,
-      :short_address
+      :short_address,
+      :transaction_count,
+      :token_transfer_count
     ])
     |> validate_required([:id, :script_hash])
   end
@@ -116,14 +120,12 @@ defmodule GodwokenExplorer.Account do
         _ -> ""
       end
 
-    tx_count = GodwokenExplorer.Chain.Cache.AccountTransactionCount.get(account.id)
-
     base_map = %{
       id: id,
       type: account.type,
       ckb: ckb_balance,
-      eth: "0",
-      tx_count: tx_count |> Integer.to_string(),
+      tx_count: account.transaction_count || 0,
+      transfer_count: account.token_transfer_count || 0,
       eth_addr: elem(display_id(id), 0)
     }
 
@@ -380,6 +382,22 @@ defmodule GodwokenExplorer.Account do
     end
   end
 
+  def non_create_account_info(short_address) do
+    udt_list = AccountUDT.list_udt_by_eth_address(short_address)
+
+    %{
+      id: nil,
+      type: :user,
+      ckb: "0",
+      tx_count: 0,
+      eth_addr: short_address,
+      user: %{
+        nonce: 0,
+        udt_list: udt_list
+      }
+    }
+  end
+
   def display_id(id) do
     case from(a in Account,
            left_join: s in SmartContract,
@@ -531,8 +549,13 @@ defmodule GodwokenExplorer.Account do
     key_value =
       case Repo.get_by(KeyValue, key: :last_account_total_count) do
         nil ->
-          {:ok, key_value} = %KeyValue{} |> KeyValue.changeset(%{key: :last_account_total_count, value: "0"}) |> Repo.insert()
+          {:ok, key_value} =
+            %KeyValue{}
+            |> KeyValue.changeset(%{key: :last_account_total_count, value: "0"})
+            |> Repo.insert()
+
           key_value
+
         %KeyValue{} = key_value ->
           key_value
       end
@@ -547,13 +570,16 @@ defmodule GodwokenExplorer.Account do
           from(a in GodwokenExplorer.Account,
             where: a.id >= ^last_count,
             select: a.id
-          ) |> GodwokenExplorer.Repo.all()
+          )
+          |> GodwokenExplorer.Repo.all()
 
         less_ids = ((last_count..total_count |> Enum.to_list()) -- database_ids) |> Enum.sort()
 
         Repo.transaction(fn ->
           less_ids |> Enum.each(fn x -> Account.manual_create_account!(x) end)
-          KeyValue.changeset(key_value, %{value: Integer.to_string(total_count + 1)}) |> Repo.update!()
+
+          KeyValue.changeset(key_value, %{value: Integer.to_string(total_count + 1)})
+          |> Repo.update!()
         end)
       end
     end

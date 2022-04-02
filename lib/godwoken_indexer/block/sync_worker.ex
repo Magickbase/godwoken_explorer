@@ -182,8 +182,8 @@ defmodule GodwokenIndexer.Block.SyncWorker do
     if length(token_transfers) > 0, do: udpate_erc20_balance(token_transfers)
   end
 
-  defp import_transactions(all_params) do
-    inserted_transaction_params = filter_transaction_columns(all_params)
+  defp import_transactions(transactions_params_without_receipts) do
+    inserted_transaction_params = filter_transaction_columns(transactions_params_without_receipts)
 
     {_count, returned_values} =
       Repo.insert_all(Transaction, inserted_transaction_params,
@@ -192,7 +192,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
       )
 
     display_ids =
-      all_params
+      transactions_params_without_receipts
       |> extract_account_ids()
       |> Account.display_ids()
 

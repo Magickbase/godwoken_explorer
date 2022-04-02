@@ -8,14 +8,14 @@ defmodule GodwokenExplorerWeb.API.TransactionController do
   # TODO: Remove after safepal is no longer used
   def index(conn, %{"eth_address" => "0x" <> _, "contract_address" => "0x" <> _} = params) do
     results =
-      with %Account{id: account_id, type: type}  when type in [:eth_user, :tron_user] <-
+      with %Account{id: account_id, type: type} = account when type in [:eth_user, :tron_user] <-
              Account |> Repo.get_by(eth_address: String.downcase(params["eth_address"])),
-           %Account{id: contract_id, type: :polyjuice_contract} <-
+           %Account{id: contract_id, type: :polyjuice_contract} = contract <-
              Repo.get_by(Account, eth_address: params["contract_address"]) do
         Transaction.account_transactions_data(
           %{
-            account_id: account_id,
-            contract_id: contract_id
+            account: account,
+            contract: contract
           },
           %{
             page: conn.params["page"] || 1,
@@ -25,8 +25,9 @@ defmodule GodwokenExplorerWeb.API.TransactionController do
       else
         _ ->
           %{
-            error_code: 404,
-            message: "not found"
+            page: 1,
+            total_count: 0,
+            txs: []
           }
       end
 
@@ -34,17 +35,24 @@ defmodule GodwokenExplorerWeb.API.TransactionController do
   end
 
   def index(conn, %{"eth_address" => "0x" <> _} = params) do
-    %Account{id: account_id, type: type} =
-      Account.search(String.downcase(params["eth_address"]))
-
     results =
-      Transaction.account_transactions_data(
-        %{type: type, account_id: account_id},
-        %{
-          page: conn.params["page"] || 1,
-          page_size: conn.assigns.page_size
-        }
-      )
+      with %Account{type: type} = account <-
+             Account.search(String.downcase(params["eth_address"])) do
+        Transaction.account_transactions_data(
+          %{type: type, account: account},
+          %{
+            page: conn.params["page"] || 1,
+            page_size: conn.assigns.page_size
+          }
+        )
+      else
+        nil ->
+          %{
+            page: 1,
+            total_count: 0,
+            txs: []
+          }
+      end
 
     json(conn, results)
   end

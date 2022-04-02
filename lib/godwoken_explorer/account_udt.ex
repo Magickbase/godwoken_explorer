@@ -202,7 +202,7 @@ defmodule GodwokenExplorer.AccountUDT do
         result
         |> Map.merge(%{
           percentage: percentage,
-          tx_count: GodwokenExplorer.Chain.Cache.AccountTransactionCount.get(account_id)
+          tx_count: Repo.get(Account, account_id).transaction_count || 0
         })
         |> Map.drop([:account_id])
       end)

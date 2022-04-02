@@ -30,6 +30,59 @@ defmodule GodwokenExplorer.Chain do
     end
   end
 
+  def address_to_transaction_count(account) do
+    case account do
+      %Account{type: :polyjuice_contract, short_address: short_address} ->
+        incoming_transaction_count = address_to_incoming_transaction_count(short_address)
+
+        if incoming_transaction_count == 0 do
+          total_transactions_sent_by_address(short_address)
+        else
+          incoming_transaction_count
+        end
+
+      _ ->
+        total_transactions_sent_by_address(account.short_address)
+    end
+  end
+
+  def address_to_incoming_transaction_count(short_address) do
+    with %Account{id: id} <- Repo.get_by(Account, short_address: short_address) do
+      to_address_query =
+        from(
+          transaction in Transaction,
+          where: transaction.to_account_id == ^id
+        )
+
+      Repo.aggregate(to_address_query, :count, :hash, timeout: :infinity)
+    end
+  end
+
+  def total_transactions_sent_by_address(short_address) do
+    last_nonce =
+      with %Account{id: id} <- Repo.get_by(Account, short_address: short_address) do
+        id
+        |> Transaction.last_nonce_by_address_query()
+        |> Repo.one(timeout: :infinity)
+      end
+
+    case last_nonce do
+      nil -> 0
+      value -> value + 1
+    end
+  end
+
+  def address_to_token_transfer_count(short_address) do
+    query =
+      from(
+        token_transfer in TokenTransfer,
+        where: token_transfer.to_address_hash == ^short_address,
+        or_where: token_transfer.from_address_hash == ^short_address
+      )
+
+    Repo.aggregate(query, :count, timeout: :infinity)
+  end
+
   def account_estimated_count do
     cached_value = AccountsCounter.fetch()
 
@@ -90,7 +143,7 @@ defmodule GodwokenExplorer.Chain do
         block_count: ((blocks |> List.first() |> Map.get(:number)) + 1) |> Integer.to_string(),
         tx_count: Integer.to_string(transaction_estimated_count()),
         tps: Float.to_string(Block.transactions_count_per_second()),
-        average_block_time: AverageBlockTime.average_block_time() |> Timex.Duration.to_seconds
+        average_block_time: AverageBlockTime.average_block_time() |> Timex.Duration.to_seconds()
       }
     }
   end

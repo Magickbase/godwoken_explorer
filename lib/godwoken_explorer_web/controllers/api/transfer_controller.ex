@@ -34,8 +34,14 @@ defmodule GodwokenExplorerWeb.API.TransferController do
 
       json(conn, results)
     else
-      _ ->
-        {:error, :not_found}
+      nil ->
+        results =
+          TokenTransfer.list(%{eth_address: String.downcase(params["eth_address"])}, %{
+            page: conn.params["page"] || 1,
+            page_size: conn.assigns.page_size
+          })
+
+        json(conn, results)
     end
   end
 
