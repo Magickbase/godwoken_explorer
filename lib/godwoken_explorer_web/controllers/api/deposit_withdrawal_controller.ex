@@ -3,10 +3,10 @@ defmodule GodwokenExplorerWeb.API.DepositWithdrawalController do
 
   action_fallback GodwokenExplorerWeb.API.FallbackController
 
-  alias GodwokenExplorer.{Account, DepositWithdrawalView, UDT, Block}
+  alias GodwokenExplorer.{Account, DepositWithdrawalView, UDT, Block, Repo}
 
   def index(conn, %{"eth_address" => "0x" <> _} = params) do
-    case Account.search( String.downcase(params["eth_address"])) do
+    case Account.search(String.downcase(params["eth_address"])) do
       %Account{script_hash: script_hash} ->
         data = DepositWithdrawalView.list_by_script_hash(script_hash, conn.params["page"] || 1)
         json(conn, data)
