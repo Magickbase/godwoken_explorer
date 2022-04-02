@@ -22,6 +22,9 @@ defmodule GodwokenExplorerWeb.API.SearchController do
 
           (pending_tx = PendingTransaction.find_by_hash(downcase_keyword)) != nil ->
             json(conn, %{type: "transaction", id: pending_tx.hash})
+
+          true ->
+            {:error, :not_found}
         end
 
       String.length(downcase_keyword) == @account_hash_length ->
