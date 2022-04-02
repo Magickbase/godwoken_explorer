@@ -43,7 +43,6 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
     {:ok, return}
   end
 
-  # TODO: show account
   def account(%UDT{bridge_account_id: bridge_account_id} = _parent, _args, _resolution) do
     account = Repo.get(Account, bridge_account_id)
     {:ok, account}

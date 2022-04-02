@@ -27,7 +27,7 @@ defmodule GodwokenExplorer.Graphql.Schemas.Graphql do
   query do
     import_fields(:account_udt_querys)
     import_fields(:account_querys)
-    # import_fields(:block_querys)
+    import_fields(:block_querys)
     # import_fields(:history_querys)
     import_fields(:log_querys)
     # import_fields(:search_querys)
