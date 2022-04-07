@@ -32,7 +32,7 @@ defmodule GodwokenExplorer.Chain do
 
   def address_to_transaction_count(account) do
     case account do
-      %Account{type: :polyjuice_contract, short_address: short_address} ->
+      %Account{type: type, short_address: short_address} when type in [:polyjuice_contract, :meta_contract, :polyjuice_root]->
         incoming_transaction_count = address_to_incoming_transaction_count(short_address)
 
         if incoming_transaction_count == 0 do
