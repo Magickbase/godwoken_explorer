@@ -2,7 +2,7 @@ defmodule GodwokenExplorer.UDTView do
   use JSONAPI.View, type: "udt"
 
   import Ecto.Query, only: [from: 2]
-  alias GodwokenExplorer.{UDT, Repo, AccountUDT, TokenTransfer, Account}
+  alias GodwokenExplorer.{UDT, Repo, AccountUDT, Account}
 
   def fields do
     [
