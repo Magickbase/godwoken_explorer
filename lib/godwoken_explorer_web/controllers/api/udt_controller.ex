@@ -1,7 +1,8 @@
 defmodule GodwokenExplorerWeb.API.UDTController do
   use GodwokenExplorerWeb, :controller
 
-  alias GodwokenExplorer.{UDTView, Account}
+  alias GodwokenExplorer.{UDTView, Account, Repo}
+  alias GodwokenExplorer.Counters.{AddressTokenTransfersCounter, AddressTransactionsCounter}
 
   plug JSONAPI.QueryParser, view: UDTView
   action_fallback GodwokenExplorerWeb.API.FallbackController
@@ -23,7 +24,9 @@ defmodule GodwokenExplorerWeb.API.UDTController do
     downcase_id = params["id"] |> String.downcase()
 
     case Account.search(downcase_id) do
-      %Account{id: id} ->
+      %Account{id: id} = account ->
+        fetch_transfer_and_transaction_count(account)
+
         case UDTView.get_udt(id) do
           nil ->
             {:error, :not_found}
@@ -42,8 +45,21 @@ defmodule GodwokenExplorerWeb.API.UDTController do
       nil ->
         {:error, :not_found}
       udt = %{name: _name} ->
+        account = Repo.get(Account, udt.bridge_account_id)
+        fetch_transfer_and_transaction_count(account)
+
         result = JSONAPI.Serializer.serialize(UDTView, udt, conn)
         json(conn, result)
     end
+  end
+
+  defp fetch_transfer_and_transaction_count(account) do
+    Task.async(fn ->
+      AddressTokenTransfersCounter.fetch(account)
+    end)
+
+    Task.async(fn ->
+      AddressTransactionsCounter.fetch(account)
+    end)
   end
 end
