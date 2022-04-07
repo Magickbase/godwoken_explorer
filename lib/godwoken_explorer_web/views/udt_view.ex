@@ -2,7 +2,7 @@ defmodule GodwokenExplorer.UDTView do
   use JSONAPI.View, type: "udt"
 
   import Ecto.Query, only: [from: 2]
-  alias GodwokenExplorer.{UDT, Repo, AccountUDT, Transaction, Account}
+  alias GodwokenExplorer.{UDT, Repo, AccountUDT, Account}
 
   def fields do
     [
@@ -46,7 +46,11 @@ defmodule GodwokenExplorer.UDTView do
   end
 
   def transfer_count(udt, _conn) do
-    from(t in Transaction, where: t.to_account_id == ^udt.id) |> Repo.aggregate(:count)
+    case Repo.get(Account, udt.bridge_account_id) do
+      %Account{token_transfer_count: token_transfer_count} -> token_transfer_count
+      _ ->
+        0
+    end
   end
 
   def get_udt(id) do
