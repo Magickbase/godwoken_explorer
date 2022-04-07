@@ -20,7 +20,6 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
   end
 
   object :udt do
-    import_fields(:ecto_datetime)
     field :id, :string
     field :decimal, :integer
     field :name, :string

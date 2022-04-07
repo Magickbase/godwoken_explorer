@@ -15,7 +15,6 @@ defmodule GodwokenExplorer.Graphql.Types.TokenTransfer do
   end
 
   object :token_transfer do
-    import_fields :ecto_datetime
     field :transaction_hash, :string
     field :amount, :decimal
     field :block_number, :integer

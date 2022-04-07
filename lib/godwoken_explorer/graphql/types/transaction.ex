@@ -22,7 +22,6 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
   end
 
   object :transaction do
-    import_fields :ecto_datetime
     field :hash, :string
     field :args, :string
     field :from_account_id, :integer

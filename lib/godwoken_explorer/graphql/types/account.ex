@@ -13,7 +13,6 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
   end
 
   object :account do
-    import_fields(:ecto_datetime)
     field :id, :integer
     field :eth_address, :string
     field :script_hash, :string

@@ -15,7 +15,6 @@ defmodule GodwokenExplorer.Graphql.Types.SmartContract do
   end
 
   object :smart_contract do
-    import_fields :ecto_datetime
     field :id, :integer
     field :abi, list_of(:json)
     field :contract_source_code, :string
