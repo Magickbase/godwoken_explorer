@@ -1,0 +1,490 @@
+schema {
+  query: RootQueryType
+}
+
+type Account {
+  account_udts: [AccountUdt]
+  eth_address: String
+  id: Int
+  nonce: Int
+  script: Json
+  script_hash: String
+  short_address: String
+  smart_contract: SmartContract
+  token_transfer_count: Int
+  transaction_count: Int
+  type: AccountType
+}
+
+type AccountCkb {
+  address_hash: String
+  balance: Decimal
+}
+
+input AccountCkbsInput {
+  address_hashes: [String] = []
+}
+
+input AccountInput {
+  address: String
+}
+
+enum AccountType {
+  META_CONTRACT
+  POLYJUICE_CONTRACT
+  POLYJUICE_ROOT
+  UDT
+  USER
+}
+
+type AccountUdt {
+  account: Account
+  address_hash: String
+  balance: Decimal
+  id: Int
+  inputs: String
+  udt: Udt
+}
+
+input AccountUdtContractAddressInput {
+  """
+  argument: the page of query result, the relations of postgres offset: offset = (page - 1) * page_size
+  
+  default: 1
+  """
+  page: Int = 1
+
+  """
+  argument: the page_size of query result, it's the same of postgres limit
+  
+  default: 20
+  """
+  page_size: Int = 20
+
+  """
+  argument: the sort of type by custom condition
+  
+  default: desc
+  """
+  sort_type: SortType = DESC
+  token_contract_address_hash: String = ""
+}
+
+input AccountUdtsInput {
+  """
+  argument: the list of account address
+  example: ["0x15ca4f2165ff0e798d9c7434010eaacc4d768d85"]
+  """
+  address_hashes: [String] = []
+
+  """
+  argument: the address of smart contract which supply udts
+  example: "0xbf1f27daea43849b67f839fd101569daaa321e2c"
+  """
+  token_contract_address_hash: String = ""
+}
+
+type Block {
+  account: Account
+  aggregator_id: Int
+  difficulty: Decimal
+  extra_data: String
+  gas_limit: Decimal
+  gas_used: Decimal
+  hash: String
+  layer1_block_number: Int
+  layer1_tx_hash: String
+  logs_bloom: String
+  nonce: String
+  number: Int
+  parent_hash: String
+  sha3_uncles: String
+  size: Int
+  state_root: String
+  status: BlockStatus
+  timestamp: DateTime
+  total_difficulty: Decimal
+  transaction_count: Int
+  transactions: [Transaction]
+}
+
+input BlockInput {
+  hash: String
+  number: Int
+}
+
+enum BlockStatus {
+  COMMITTED
+  FINALIZED
+}
+
+"""
+The `DateTime` scalar type represents a date and time in the UTC
+timezone. The DateTime appears in a JSON response as an ISO8601 formatted
+string, including UTC timezone ("Z"). The parsed date and time string will
+be converted to UTC if there is an offset.
+"""
+scalar DateTime
+
+"""
+The `Decimal` scalar type represents signed double-precision fractional
+values parsed by the `Decimal` library.  The Decimal appears in a JSON
+response as a string to preserve precision.
+"""
+scalar Decimal
+
+"""
+The `Json` scalar type represents arbitrary json string data, represented as UTF-8
+character sequences. The Json type is most often used to represent a free-form
+human-readable json string.
+"""
+scalar Json
+
+type Log {
+  address_hash: String
+  block_hash: String
+  block_number: Int
+  data: String
+  first_topic: String
+  fourth_topic: String
+  index: Int
+  second_topic: String
+  third_topic: String
+  transaction_hash: String
+}
+
+input LogInput {
+  address_hash: String
+
+  """argument: the end of block number(inclusive) for search query"""
+  end_block_number: Int
+  first_topic: String
+  fourth_topic: String
+
+  """
+  argument: the page of query result, the relations of postgres offset: offset = (page - 1) * page_size
+  
+  default: 1
+  """
+  page: Int = 1
+
+  """
+  argument: the page_size of query result, it's the same of postgres limit
+  
+  default: 20
+  """
+  page_size: Int = 20
+  second_topic: String
+
+  """argument: the start of block number(inclusive) for search query"""
+  start_block_number: Int
+  third_topic: String
+}
+
+input PageAndSizeInput {
+  """
+  argument: the page of query result, the relations of postgres offset: offset = (page - 1) * page_size
+  
+  default: 1
+  """
+  page: Int = 1
+
+  """
+  argument: the page_size of query result, it's the same of postgres limit
+  
+  default: 20
+  """
+  page_size: Int = 20
+}
+
+type Polyjuice {
+  gas_limit: Int
+  gas_price: Decimal
+  gas_used: Int
+  id: Int
+  input: String
+  input_size: Int
+  is_create: Boolean
+  status: PolyjuiceStatus
+  tx_hash: String
+  value: Decimal
+}
+
+type PolyjuiceCreator {
+  code_hash: String
+  fee_amount: Decimal
+  fee_udt_id: Int
+  hash_type: String
+  id: Int
+  script_args: String
+  tx_hash: String
+}
+
+enum PolyjuiceStatus {
+  FAILED
+  SUCCEED
+}
+
+type RootQueryType {
+  account(input: AccountInput): Account
+
+  """
+  function: get list of account ckbs by account addresses
+  
+  request-example:
+  query {
+    account_ckbs(input: {address_hashes: ["0x15ca4f2165ff0e798d9c7434010eaacc4d768d85"]}){
+      address_hash
+      balance
+    }
+  }
+  
+  result-example:
+  {
+    "data": {
+      "account_ckbs": [
+        {
+          "address_hash": "0x15ca4f2165ff0e798d9c7434010eaacc4d768d85",
+          "balance": "993799999325"
+        }
+      ]
+    }
+  }
+  """
+  account_ckbs(input: AccountCkbsInput): [AccountCkb]
+
+  """
+  function: get list of account udt by account addresses
+  
+  request-example:
+  query{
+    account_udts(input: {address_hashes:
+  ["0x15ca4f2165ff0e798d9c7434010eaacc4d768d85"], token_contract_address_hash:
+  "0xbf1f27daea43849b67f839fd101569daaa321e2c"}) {
+      address_hash
+      balance
+    }
+  }
+  
+  result-example:
+  {
+    "data": {
+      "account_udts": [
+        {
+          "address_hash": "0x15ca4f2165ff0e798d9c7434010eaacc4d768d85",
+          "balance": "993799999325"
+        }
+      ]
+    }
+  }
+  """
+  account_udts(input: AccountUdtsInput): [AccountUdt]
+
+  """
+  function: get list account udts by smart contract address which sort of balance
+  
+  request-example:
+  query {
+    account_udts_by_contract_address(input: {token_contract_address_hash:
+  "0xbf1f27daea43849b67f839fd101569daaa321e2c", page_size: 2}){
+      address_hash
+      balance
+    }
+  }
+  
+  result-example:
+  {
+    "data": {
+      "account_udts_by_contract_address": [
+        {
+          "address_hash": "0x68f5cea51fa6fcfdcc10f6cddcafa13bf6717436",
+          "balance": "3711221022882427"
+        },
+        {
+          "address_hash": "0x7c12cbcbc3703bff1230434f792d84d70d47bb6f",
+          "balance": "1075120930414037"
+        }
+      ]
+    }
+  }
+  """
+  account_udts_by_contract_address(input: AccountUdtContractAddressInput): [AccountUdt]
+  block(input: BlockInput): Block
+  blocks(input: PageAndSizeInput): [Block]
+  get_udt_by_contract_address(input: SmartContractInput): Udt
+  latest_10_blocks: [Block]
+  latest_10_transactions: [Transaction]
+  logs(input: LogInput): [Log]
+  smart_contract(input: SmartContractInput): SmartContract
+  smart_contracts(input: PageAndSizeInput): [SmartContract]
+  token_transfer(input: TokenTransferHashInput): TokenTransfer
+  token_transfers(input: TokenTransferInput): [TokenTransfer]
+  transaction(input: TransactionHashInput): Transaction
+  transactions(input: TransactionInput): [Transaction]
+  udt(input: UdtIdInput): Udt
+  udts(input: UdtInput): [Udt]
+}
+
+type SmartContract {
+  abi: [Json]
+  account_id: String
+  compiler_file_format: String
+  compiler_version: String
+  constructor_arguments: String
+  contract_source_code: String
+  deployment_tx_hash: String
+  id: Int
+  name: String
+  other_info: String
+}
+
+input SmartContractInput {
+  contract_address: String
+}
+
+enum SortType {
+  ASC
+  DESC
+}
+
+type TokenTransfer {
+  amount: Decimal
+  block: Block
+  block_hash: String
+  block_number: Int
+  from_account: Account
+  from_address_hash: String
+  log_index: Int
+  polyjuice: Polyjuice
+  to_account: Account
+  to_address_hash: String
+  token_contract_address_hash: String
+  token_id: Decimal
+  transaction: Block
+  transaction_hash: String
+  udt: Udt
+}
+
+input TokenTransferHashInput {
+  transaction_hash: String
+}
+
+input TokenTransferInput {
+  """argument: the end of block number(inclusive) for search query"""
+  end_block_number: Int
+  from_address_hash: String
+
+  """
+  argument: the page of query result, the relations of postgres offset: offset = (page - 1) * page_size
+  
+  default: 1
+  """
+  page: Int = 1
+
+  """
+  argument: the page_size of query result, it's the same of postgres limit
+  
+  default: 20
+  """
+  page_size: Int = 20
+
+  """argument: the start of block number(inclusive) for search query"""
+  start_block_number: Int
+  to_address_hash: String
+  token_contract_address_hash: String
+}
+
+type Transaction {
+  args: String
+  block: Block
+  block_hash: String
+  block_number: Int
+  from_account: Account
+  from_account_id: Int
+  hash: String
+  nonce: Int
+  polyjuice: Polyjuice
+  polyjuice_creator: PolyjuiceCreator
+  to_account: Account
+  to_account_id: Int
+  type: TransactionType
+}
+
+input TransactionHashInput {
+  transaction_hash: String
+}
+
+input TransactionInput {
+  address: String
+
+  """argument: the end of block number(inclusive) for search query"""
+  end_block_number: Int
+
+  """
+  argument: the page of query result, the relations of postgres offset: offset = (page - 1) * page_size
+  
+  default: 1
+  """
+  page: Int = 1
+
+  """
+  argument: the page_size of query result, it's the same of postgres limit
+  
+  default: 20
+  """
+  page_size: Int = 20
+  sort: SortType
+
+  """argument: the start of block number(inclusive) for search query"""
+  start_block_number: Int
+}
+
+enum TransactionType {
+  POLYJUICE
+  POLYJUICE_CREATOR
+}
+
+type Udt {
+  account: Account
+  bridge_account_id: Int
+  decimal: Int
+  description: String
+  icon: String
+  id: String
+  name: String
+  official_site: String
+  price: Decimal
+  script_hash: String
+  supply: Decimal
+  symbol: String
+  type: UdtType
+  type_script: Json
+  value: Decimal
+}
+
+input UdtIdInput {
+  id: String
+}
+
+input UdtInput {
+  """
+  argument: the page of query result, the relations of postgres offset: offset = (page - 1) * page_size
+  
+  default: 1
+  """
+  page: Int = 1
+
+  """
+  argument: the page_size of query result, it's the same of postgres limit
+  
+  default: 20
+  """
+  page_size: Int = 20
+  type: UdtType
+}
+
+enum UdtType {
+  BRIDGE
+  NATIVE
+}
+

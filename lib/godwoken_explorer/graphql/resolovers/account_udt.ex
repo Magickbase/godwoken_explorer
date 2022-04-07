@@ -3,7 +3,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.AccountUDT do
   alias GodwokenExplorer.Repo
 
   import Ecto.Query
-  import GodwokenExplorer.Graphql.Common, only: [page_and_size: 2]
+  import GodwokenExplorer.Graphql.Common, only: [page_and_size: 2, sort_type: 3]
 
   @addresses_max_limit 20
 
@@ -43,7 +43,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.AccountUDT do
     return =
       from(au in AccountUDT)
       |> where([au], au.token_contract_address_hash == ^token_contract_address_hash)
-      |> order_by([au], desc: au.updated_at)
+      |> sort_type(input, :balance)
       |> page_and_size(input)
       |> Repo.all()
 

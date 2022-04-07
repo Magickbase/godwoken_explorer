@@ -31,4 +31,18 @@ defmodule GodwokenExplorer.Graphql.Common do
         query
     end
   end
+
+  def sort_type(query, input, value) do
+    sort_condtion = Map.get(input, :sort_type)
+
+    case sort_condtion do
+      :asc ->
+        query
+        |> order_by(asc: ^value)
+
+      :desc ->
+        query
+        |> order_by(desc: ^value)
+    end
+  end
 end
