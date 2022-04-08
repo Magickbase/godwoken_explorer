@@ -3,7 +3,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Log do
   alias GodwokenExplorer.Repo
 
   import Ecto.Query
-  import GodwokenExplorer.Graphql.Common, only: [page_and_size: 2]
+  import GodwokenExplorer.Graphql.Common, only: [page_and_size: 2, sort_type: 3]
 
   def logs(_parent, %{input: input} = _args, _resolution) do
     return =
@@ -17,6 +17,9 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Log do
     conditions =
       Enum.reduce(input, true, fn arg, acc ->
         case arg do
+          {:transaction_hash, value} ->
+            dynamic([l], ^acc and l.transaction_hash == ^value)
+
           {:first_topic, value} ->
             dynamic([l], ^acc and l.first_topic == ^value)
 
@@ -42,5 +45,6 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Log do
 
     from(l in Log, where: ^conditions)
     |> page_and_size(input)
+    |> sort_type(input, [:block_number, :inserted_at])
   end
 end

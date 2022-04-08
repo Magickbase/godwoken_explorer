@@ -4,12 +4,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.TokenTransfer do
   alias GodwokenExplorer.Repo
 
   import Ecto.Query
-  import GodwokenExplorer.Graphql.Common, only: [page_and_size: 2]
-
-  def token_transfer(_parent, %{input: %{transaction_hash: transaction_hash}}, _resolution) do
-    return = Repo.get(TokenTransfer, transaction_hash)
-    {:ok, return}
-  end
+  import GodwokenExplorer.Graphql.Common, only: [page_and_size: 2, sort_type: 3]
 
   def token_transfers(_parent, %{input: input}, _resolution) do
     query = query_token_transfers(input)
@@ -23,18 +18,30 @@ defmodule GodwokenExplorer.Graphql.Resolvers.TokenTransfer do
   end
 
   def block(%TokenTransfer{block_hash: block_hash}, _args, _resolution) do
-    return = Repo.get(Block, block_hash)
-    {:ok, return}
+    if block_hash do
+      return = Repo.get(Block, block_hash)
+      {:ok, return}
+    else
+      {:ok, nil}
+    end
   end
 
   def from_account(%TokenTransfer{from_address_hash: from_address_hash}, _args, _resolution) do
-    return = from(a in Account, where: a.short_address == ^from_address_hash) |> Repo.one()
-    {:ok, return}
+    if from_address_hash do
+      return = from(a in Account, where: a.short_address == ^from_address_hash) |> Repo.one()
+      {:ok, return}
+    else
+      {:ok, nil}
+    end
   end
 
   def to_account(%TokenTransfer{to_address_hash: to_address_hash}, _args, _resolution) do
-    return = from(a in Account, where: a.short_address == ^to_address_hash) |> Repo.one()
-    {:ok, return}
+    if to_address_hash do
+      return = from(a in Account, where: a.short_address == ^to_address_hash) |> Repo.one()
+      {:ok, return}
+    else
+      {:ok, nil}
+    end
   end
 
   def udt(
@@ -55,6 +62,9 @@ defmodule GodwokenExplorer.Graphql.Resolvers.TokenTransfer do
     conditions =
       Enum.reduce(input, true, fn arg, acc ->
         case arg do
+          {:transaction_hash, value} ->
+            dynamic([tt], ^acc and tt.transaction_hash == ^value)
+
           {:from_address_hash, value} ->
             dynamic([tt], ^acc and tt.from_address_hash == ^value)
 
@@ -77,5 +87,6 @@ defmodule GodwokenExplorer.Graphql.Resolvers.TokenTransfer do
 
     from(tt in TokenTransfer, where: ^conditions)
     |> page_and_size(input)
+    |> sort_type(input, [:block_number, :inserted_at])
   end
 end
