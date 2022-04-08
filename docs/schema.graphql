@@ -577,10 +577,67 @@ type RootQueryType {
   }
   """
   blocks(input: BlocksInput = {page: 1, page_size: 10, sort_type: DESC}): [Block]
-  get_udt_by_contract_address(input: SmartContractInput): Udt
   logs(input: LogInput): [Log]
-  smart_contract(input: SmartContractInput): SmartContract
-  smart_contracts(input: PageAndSizeInput): [SmartContract]
+
+  """
+  function: get smart contract by address
+  
+  request-example:
+  query {
+    smart_contract(input: {contract_address: "0x21c814bf216ec7b988d872c56bf948d9cc1638a2"}) {
+      name
+      account_id
+      account {
+        eth_address
+      }
+    }
+  }
+  
+  result-example:
+  {
+    "data": {
+      "smart_contract": {
+        "account": {
+          "eth_address": "0x21c814bf216ec7b988d872c56bf948d9cc1638a2"
+        },
+        "account_id": "3014",
+        "name": "YOKAI"
+      }
+    }
+  }
+  """
+  smart_contract(input: SmartContractInput!): SmartContract
+
+  """
+  function: get list of smart contracts
+  
+  request-example:
+  query {
+    smart_contracts {
+      name
+      account_id
+      account {
+        eth_address
+      }
+    }
+  }
+  
+  result-example:
+  {
+    "data": {
+      "smart_contracts": [
+        {
+          "account": {
+            "eth_address": "0x21c814bf216ec7b988d872c56bf948d9cc1638a2"
+          },
+          "account_id": "3014",
+          "name": "YOKAI"
+        }
+      ]
+    }
+  }
+  """
+  smart_contracts(input: PageAndSizeInput = {page: 1, page_size: 20}): [SmartContract]
   token_transfer(input: TokenTransferHashInput): TokenTransfer
   token_transfers(input: TokenTransferInput): [TokenTransfer]
 
@@ -653,12 +710,91 @@ type RootQueryType {
   }
   """
   transactions(input: TransactionInput!): [Transaction]
-  udt(input: UdtIdInput): Udt
-  udts(input: UdtInput): [Udt]
+
+  """
+  function: get udt by contract address
+  
+  request-example:
+  query {
+    udt(input: {contract_address: "0xbf1f27daea43849b67f839fd101569daaa321e2c"}){
+      id
+      name
+      type
+      supply
+      account{
+        short_address
+      }
+    }
+  }
+  
+  result-example:
+  {
+    "data": {
+      "udt": {
+        "account": {
+          "short_address": "0xbf1f27daea43849b67f839fd101569daaa321e2c"
+        },
+        "id": "1",
+        "name": "Nervos Token",
+        "supply": "693247799.35570027",
+        "type": "BRIDGE"
+      }
+    }
+  }
+  """
+  udt(input: SmartContractInput!): Udt
+
+  """
+  function: get list of udts
+  
+  request-example:
+  query {
+    udts(input: {page: 1, page_size: 2, sort_type: ASC}){
+      id
+      name
+      type
+      supply
+      account{
+        eth_address
+        short_address
+      }
+    }
+  }
+  
+  result-example:
+  {
+    "data": {
+      "udts": [
+        {
+          "account": {
+            "eth_address": null,
+            "short_address": "0xbf1f27daea43849b67f839fd101569daaa321e2c"
+          },
+          "id": "1",
+          "name": "Nervos Token",
+          "supply": "693247799.35570027",
+          "type": "BRIDGE"
+        },
+        {
+          "account": {
+            "eth_address": null,
+            "short_address": "0x21ad25fab1d759da1a419a589c0f36dee5e7fe3d"
+          },
+          "id": "17",
+          "name": null,
+          "supply": "400000002840",
+          "type": "BRIDGE"
+        }
+      ]
+    }
+  }
+  """
+  udts(input: UdtsInput = {page: 1, page_size: 10, sort_type: ASC, type: BRIDGE}): [Udt]
 }
 
 type SmartContract {
   abi: [Json]
+  account: Account
   account_id: String
   compiler_file_format: String
   compiler_version: String
@@ -671,7 +807,7 @@ type SmartContract {
 }
 
 input SmartContractInput {
-  contract_address: String
+  contract_address: String!
 }
 
 enum SortType {
@@ -801,11 +937,7 @@ type Udt {
   value: Decimal
 }
 
-input UdtIdInput {
-  id: String
-}
-
-input UdtInput {
+input UdtsInput {
   """
   argument: the page of query result, the relations of postgres offset: offset = (page - 1) * page_size
   
@@ -819,6 +951,13 @@ input UdtInput {
   default: 20
   """
   page_size: Int = 20
+
+  """
+  argument: the sort of type by custom condition
+  
+  default: desc
+  """
+  sort_type: SortType = DESC
   type: UdtType
 }
 
