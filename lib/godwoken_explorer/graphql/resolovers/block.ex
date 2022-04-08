@@ -5,16 +5,6 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Block do
   import Ecto.Query
   import GodwokenExplorer.Graphql.Common, only: [page_and_size: 2]
 
-  def latest_10_blocks(_parent, _args, _resolution) do
-    return =
-      from(b in Block)
-      |> limit(10)
-      |> order_by([b], desc: b.timestamp)
-      |> Repo.all()
-
-    {:ok, return}
-  end
-
   def block(_parent, %{input: input} = _args, _resolution) do
     conditions =
       Enum.reduce(input, true, fn arg, acc ->
@@ -42,7 +32,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Block do
     return =
       from(b in Block)
       |> page_and_size(input)
-      |> order_by([b], desc: b.timestamp)
+      |> order_by([b], desc: b.number)
       |> Repo.all()
 
     {:ok, return}
@@ -53,11 +43,12 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Block do
     {:ok, return}
   end
 
-  def transactions(%Block{hash: hash}, _args, _resolution) do
+  def transactions(%Block{hash: hash}, %{input: input} = _args, _resolution) do
+    IO.inspect(input)
     return =
       from(t in Transaction)
       |> where([t], t.block_hash == ^hash)
-      |> limit(100)
+      |> page_and_size(input)
       |> Repo.all()
 
     {:ok, return}

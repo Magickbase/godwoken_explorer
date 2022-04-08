@@ -23,6 +23,8 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Account do
     return =
       from(ac in AccountUDT)
       |> where([ac], ac.account_id == ^id)
+      |> order_by(desc: :balance)
+      |> limit(20)
       |> Repo.all()
 
     {:ok, return}

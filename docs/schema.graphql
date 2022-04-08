@@ -26,6 +26,11 @@ input AccountCkbsInput {
 }
 
 input AccountInput {
+  """
+  argument: account address(eth_address or short_address)
+  example-1: "0x15ca4f2165ff0e798d9c7434010eaacc4d768d85"
+  example-2: "0xc5e133e6b01b2c335055576c51a53647b1b9b624"
+  """
   address: String
 }
 
@@ -72,7 +77,7 @@ input AccountUdtContractAddressInput {
 
 input AccountUdtsInput {
   """
-  argument: the list of account address
+  argument: the list of account udt address
   example: ["0x15ca4f2165ff0e798d9c7434010eaacc4d768d85"]
   """
   address_hashes: [String] = []
@@ -105,12 +110,35 @@ type Block {
   timestamp: DateTime
   total_difficulty: Decimal
   transaction_count: Int
-  transactions: [Transaction]
+  transactions(input: PageAndSizeInput = {page: 1, page_size: 5}): [Transaction]
 }
 
 input BlockInput {
   hash: String
   number: Int
+}
+
+input BlocksInput {
+  """
+  argument: the page of query result, the relations of postgres offset: offset = (page - 1) * page_size
+  
+  default: 1
+  """
+  page: Int = 1
+
+  """
+  argument: the page_size of query result, it's the same of postgres limit
+  
+  default: 20
+  """
+  page_size: Int = 20
+
+  """
+  argument: the sort of type by custom condition
+  
+  default: desc
+  """
+  sort_type: SortType = DESC
 }
 
 enum BlockStatus {
@@ -226,6 +254,81 @@ enum PolyjuiceStatus {
 }
 
 type RootQueryType {
+  """
+  function: get account by account addresses
+  
+  request-example-1:
+  query {
+    account(input: {address: "0xbfbe23681d99a158f632e64a31288946770c7a9e"}){
+      id
+      type
+      account_udts{
+      	id
+        balance
+        udt{
+          name
+          type
+        }
+      }
+    }
+  }
+  
+  result-example-1:
+  {
+    "data": {
+      "account": {
+        "account_udts": [
+          {
+            "balance": "1352700556596252988061",
+            "id": 22651,
+            "udt": {
+              "name": "Yokai",
+              "type": "NATIVE"
+            }
+          },
+          {
+            "balance": "950876407191",
+            "id": 21837,
+            "udt": {
+              "name": "Nervos Token",
+              "type": "BRIDGE"
+            }
+          }
+        ],
+        "id": 51118,
+        "type": "USER"
+      }
+    }
+  }
+  
+  request-example-2:
+  query {
+    account(input: {address: "0xc5e133e6b01b2c335055576c51a53647b1b9b624"}){
+      id
+      type
+  smart_contract{
+        id
+        name
+  	deployment_tx_hash
+  }
+    }
+  }
+  
+  result-example-2:
+  {
+    "data": {
+      "account": {
+        "id": 3014,
+        "smart_contract": {
+          "deployment_tx_hash": "0x0000000000",
+          "id": 1,
+          "name": "YOKAI"
+        },
+        "type": "POLYJUICE_CONTRACT"
+      }
+    }
+  }
+  """
   account(input: AccountInput): Account
 
   """
@@ -257,12 +360,17 @@ type RootQueryType {
   function: get list of account udt by account addresses
   
   request-example:
-  query{
+  query {
     account_udts(input: {address_hashes:
-  ["0x15ca4f2165ff0e798d9c7434010eaacc4d768d85"], token_contract_address_hash:
-  "0xbf1f27daea43849b67f839fd101569daaa321e2c"}) {
+  ["0x15ca4f2165ff0e798d9c7434010eaacc4d768d85",
+  "0xc20538aa80bb3ced9e240dc8f8130b7f7d0b0c49"],
+        token_contract_address_hash: "0xbf1f27daea43849b67f839fd101569daaa321e2c"}) {
       address_hash
       balance
+      udt{
+        type
+        name
+      }
     }
   }
   
@@ -272,7 +380,19 @@ type RootQueryType {
       "account_udts": [
         {
           "address_hash": "0x15ca4f2165ff0e798d9c7434010eaacc4d768d85",
-          "balance": "993799999325"
+          "balance": "993799999325",
+          "udt": {
+            "name": "Nervos Token",
+            "type": "BRIDGE"
+          }
+        },
+        {
+          "address_hash": "0xc20538aa80bb3ced9e240dc8f8130b7f7d0b0c49",
+          "balance": "950876407191",
+          "udt": {
+            "name": "Nervos Token",
+            "type": "BRIDGE"
+          }
         }
       ]
     }
@@ -289,6 +409,10 @@ type RootQueryType {
   "0xbf1f27daea43849b67f839fd101569daaa321e2c", page_size: 2}){
       address_hash
       balance
+      udt {
+        type
+  	name
+      }
     }
   }
   
@@ -298,21 +422,125 @@ type RootQueryType {
       "account_udts_by_contract_address": [
         {
           "address_hash": "0x68f5cea51fa6fcfdcc10f6cddcafa13bf6717436",
-          "balance": "3711221022882427"
+          "balance": "3711221022882427",
+          "udt": {
+            "name": "Nervos Token",
+            "type": "BRIDGE"
+          }
         },
         {
           "address_hash": "0x7c12cbcbc3703bff1230434f792d84d70d47bb6f",
-          "balance": "1075120930414037"
+          "balance": "1075120930414037",
+          "udt": {
+            "name": "Nervos Token",
+            "type": "BRIDGE"
+          }
         }
       ]
     }
   }
   """
   account_udts_by_contract_address(input: AccountUdtContractAddressInput): [AccountUdt]
+
+  """
+  function: get block by block number or block hash
+  
+  request-example:
+  query {
+    block(input: {number: 345600}){
+      hash
+      parent_hash
+      number
+      gas_used
+      gas_limit
+      account{
+        id
+        short_address
+      }
+      transactions (input: {page: 1, page_size: 2}) {
+        type
+        from_account_id
+        to_account_id
+      }
+    }
+  }
+  
+  result-example:
+  {
+    "data": {
+      "block": {
+        "account": {
+          "id": 2,
+          "short_address": "0x68f5cea51fa6fcfdcc10f6cddcafa13bf6717436"
+        },
+        "gas_limit": "981000000",
+        "gas_used": "95240385",
+        "hash": "0x67dad5ec7f3bc8b5b8f623f4df230cb50c9c39493080a6b32d94023994ba886b",
+        "number": 345600,
+        "parent_hash": "0x962906210825c339fa4f871239d967c60b62005a6b780ced4334dba56618dbf5",
+        "transactions": [
+          {
+            "from_account_id": 52269,
+            "to_account_id": 64241,
+            "type": "POLYJUICE"
+          },
+          {
+            "from_account_id": 52920,
+            "to_account_id": 197067,
+            "type": "POLYJUICE"
+          }
+        ]
+      }
+    }
+  }
+  """
   block(input: BlockInput): Block
-  blocks(input: PageAndSizeInput): [Block]
+
+  """
+  function: get list of block sort by block number
+  
+  request-example:
+  query {
+    blocks(input: {page: 1, page_size: 1}){
+      hash
+      parent_hash
+      number
+      gas_used
+      gas_limit
+      account{
+        id
+        short_address
+      }
+      transactions (input: {page: 1, page_size: 2}) {
+        type
+        from_account_id
+        to_account_id
+      }
+    }
+  }
+  
+  result-example:
+  {
+    "data": {
+      "blocks": [
+        {
+          "account": {
+            "id": 2,
+            "short_address": "0x68f5cea51fa6fcfdcc10f6cddcafa13bf6717436"
+          },
+          "gas_limit": "12500000",
+          "gas_used": "0",
+          "hash": "0xba8cf2630dfb02bebb208aa674d835073c9a0ff61c881689622e7e07490669e5",
+          "number": 346124,
+          "parent_hash": "0x4a35f2a925a51aeb3f780afbd485226ec9603fceb2a2c77a04c9b49657b5ead4",
+          "transactions": []
+        }
+      ]
+    }
+  }
+  """
+  blocks(input: BlocksInput = {page: 1, page_size: 10, sort_type: DESC}): [Block]
   get_udt_by_contract_address(input: SmartContractInput): Udt
-  latest_10_blocks: [Block]
   latest_10_transactions: [Transaction]
   logs(input: LogInput): [Log]
   smart_contract(input: SmartContractInput): SmartContract

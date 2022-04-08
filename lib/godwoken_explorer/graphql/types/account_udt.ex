@@ -7,10 +7,15 @@ defmodule GodwokenExplorer.Graphql.Types.AccountUDT do
     function: get list of account udt by account addresses
 
     request-example:
-    query{
-      account_udts(input: {address_hashes: ["0x15ca4f2165ff0e798d9c7434010eaacc4d768d85"], token_contract_address_hash: "0xbf1f27daea43849b67f839fd101569daaa321e2c"}) {
+    query {
+      account_udts(input: {address_hashes: ["0x15ca4f2165ff0e798d9c7434010eaacc4d768d85", "0xc20538aa80bb3ced9e240dc8f8130b7f7d0b0c49"],
+          token_contract_address_hash: "0xbf1f27daea43849b67f839fd101569daaa321e2c"}) {
         address_hash
         balance
+        udt{
+          type
+          name
+        }
       }
     }
 
@@ -20,7 +25,19 @@ defmodule GodwokenExplorer.Graphql.Types.AccountUDT do
         "account_udts": [
           {
             "address_hash": "0x15ca4f2165ff0e798d9c7434010eaacc4d768d85",
-            "balance": "993799999325"
+            "balance": "993799999325",
+            "udt": {
+              "name": "Nervos Token",
+              "type": "BRIDGE"
+            }
+          },
+          {
+            "address_hash": "0xc20538aa80bb3ced9e240dc8f8130b7f7d0b0c49",
+            "balance": "950876407191",
+            "udt": {
+              "name": "Nervos Token",
+              "type": "BRIDGE"
+            }
           }
         ]
       }
@@ -68,6 +85,10 @@ defmodule GodwokenExplorer.Graphql.Types.AccountUDT do
       account_udts_by_contract_address(input: {token_contract_address_hash: "0xbf1f27daea43849b67f839fd101569daaa321e2c", page_size: 2}){
         address_hash
         balance
+        udt {
+          type
+					name
+        }
       }
     }
 
@@ -77,11 +98,19 @@ defmodule GodwokenExplorer.Graphql.Types.AccountUDT do
         "account_udts_by_contract_address": [
           {
             "address_hash": "0x68f5cea51fa6fcfdcc10f6cddcafa13bf6717436",
-            "balance": "3711221022882427"
+            "balance": "3711221022882427",
+            "udt": {
+              "name": "Nervos Token",
+              "type": "BRIDGE"
+            }
           },
           {
             "address_hash": "0x7c12cbcbc3703bff1230434f792d84d70d47bb6f",
-            "balance": "1075120930414037"
+            "balance": "1075120930414037",
+            "udt": {
+              "name": "Nervos Token",
+              "type": "BRIDGE"
+            }
           }
         ]
       }
@@ -119,7 +148,7 @@ defmodule GodwokenExplorer.Graphql.Types.AccountUDT do
 
   input_object :account_udts_input do
     @desc """
-    argument: the list of account address
+    argument: the list of account udt address
     example: ["0x15ca4f2165ff0e798d9c7434010eaacc4d768d85"]
     """
     field :address_hashes, list_of(:string), default_value: []
