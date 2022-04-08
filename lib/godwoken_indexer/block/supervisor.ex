@@ -13,6 +13,13 @@ defmodule GodwokenIndexer.Block.Supervisor do
       GodwokenIndexer.Block.SyncL1BlockWorker
     ]
 
-    Supervisor.init(children, strategy: :one_for_one)
+    childs =
+      if Application.get_env(:godwoken_explorer, :close_local_sync) do
+        []
+      else
+        children
+      end
+
+    Supervisor.init(childs, strategy: :one_for_one)
   end
 end

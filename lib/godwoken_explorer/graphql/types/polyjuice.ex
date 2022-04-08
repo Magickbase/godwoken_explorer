@@ -15,7 +15,7 @@ defmodule GodwokenExplorer.Graphql.Types.Polyjuice do
     field :status, :polyjuice_status
   end
 
-  object :polyjuice_creators do
+  object :polyjuice_creator do
     field :id, :integer
     field :code_hash, :string
     field :hash_type, :string

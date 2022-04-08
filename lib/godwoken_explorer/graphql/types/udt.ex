@@ -3,13 +3,92 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
   alias GodwokenExplorer.Graphql.Resolvers, as: Resolvers
 
   object :udt_querys do
+    @desc """
+    function: get udt by contract address
+
+    request-example:
+    query {
+      udt(input: {contract_address: "0xbf1f27daea43849b67f839fd101569daaa321e2c"}){
+        id
+        name
+        type
+        supply
+        account{
+          short_address
+        }
+      }
+    }
+
+    result-example:
+    {
+      "data": {
+        "udt": {
+          "account": {
+            "short_address": "0xbf1f27daea43849b67f839fd101569daaa321e2c"
+          },
+          "id": "1",
+          "name": "Nervos Token",
+          "supply": "693247799.35570027",
+          "type": "BRIDGE"
+        }
+      }
+    }
+    """
     field :udt, :udt do
-      arg(:input, :udt_id_input)
+      arg(:input, non_null(:smart_contract_input))
       resolve(&Resolvers.UDT.udt/3)
     end
 
+    @desc """
+    function: get list of udts
+
+    request-example:
+    query {
+      udts(input: {page: 1, page_size: 2, sort_type: ASC}){
+        id
+        name
+        type
+        supply
+        account{
+          eth_address
+          short_address
+        }
+      }
+    }
+
+    result-example:
+    {
+      "data": {
+        "udts": [
+          {
+            "account": {
+              "eth_address": null,
+              "short_address": "0xbf1f27daea43849b67f839fd101569daaa321e2c"
+            },
+            "id": "1",
+            "name": "Nervos Token",
+            "supply": "693247799.35570027",
+            "type": "BRIDGE"
+          },
+          {
+            "account": {
+              "eth_address": null,
+              "short_address": "0x21ad25fab1d759da1a419a589c0f36dee5e7fe3d"
+            },
+            "id": "17",
+            "name": null,
+            "supply": "400000002840",
+            "type": "BRIDGE"
+          }
+        ]
+      }
+    }
+    """
     field :udts, list_of(:udt) do
-      arg(:input, :udt_input)
+      arg(:input, :udts_input,
+        default_value: %{type: :bridge, page: 1, page_size: 10, sort_type: :asc}
+      )
+
       resolve(&Resolvers.UDT.udts/3)
     end
   end
@@ -33,10 +112,6 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
     field :account, :account do
       resolve(&Resolvers.UDT.account/3)
     end
-
-    field :bridge_account, :account do
-      resolve(&Resolvers.UDT.bridge_account/3)
-    end
   end
 
   enum :udt_type do
@@ -48,8 +123,9 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
     field :id, :string
   end
 
-  input_object :udt_input do
+  input_object :udts_input do
     field :type, :udt_type
     import_fields(:page_and_size_input)
+    import_fields(:sort_type_input)
   end
 end
