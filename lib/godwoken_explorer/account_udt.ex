@@ -61,6 +61,7 @@ defmodule GodwokenExplorer.AccountUDT do
       where: au.address_hash == ^eth_address and au.balance != 0,
       select: %{
         id: fragment("CASE WHEN ? IS NULL THEN ? ELSE ? END", u1, u2.id, u1.id),
+        type: fragment("CASE WHEN ? IS NULL THEN ? ELSE ? END", u1, u2.type, u1.type),
         name: fragment("CASE WHEN ? IS NULL THEN ? ELSE ? END", u1, u2.name, u1.name),
         symbol: fragment("CASE WHEN ? IS NULL THEN ? ELSE ? END", u1, u2.symbol, u1.symbol),
         icon: fragment("CASE WHEN ? IS NULL THEN ? ELSE ? END", u1, u2.icon, u1.icon),

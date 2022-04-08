@@ -32,7 +32,8 @@ defmodule GodwokenExplorer.Chain do
 
   def address_to_transaction_count(account) do
     case account do
-      %Account{type: :polyjuice_contract, short_address: short_address} ->
+      %Account{type: type, short_address: short_address}
+      when type in [:polyjuice_contract, :meta_contract, :polyjuice_root] ->
         incoming_transaction_count = address_to_incoming_transaction_count(short_address)
 
         if incoming_transaction_count == 0 do
@@ -73,12 +74,27 @@ defmodule GodwokenExplorer.Chain do
   end
 
   def address_to_token_transfer_count(short_address) do
-    query =
-      from(
-        token_transfer in TokenTransfer,
-        where: token_transfer.to_address_hash == ^short_address,
-        or_where: token_transfer.from_address_hash == ^short_address
+    udt_type? =
+      from(u in UDT,
+        join: a in Account,
+        on: a.id == u.bridge_account_id,
+        where: a.short_address == ^short_address
       )
+      |> Repo.exists?()
+
+    query =
+      if udt_type? do
+        from(
+          token_transfer in TokenTransfer,
+          where: token_transfer.token_contract_address_hash == ^short_address
+        )
+      else
+        from(
+          token_transfer in TokenTransfer,
+          where: token_transfer.to_address_hash == ^short_address,
+          or_where: token_transfer.from_address_hash == ^short_address
+        )
+      end
 
     Repo.aggregate(query, :count, timeout: :infinity)
   end
