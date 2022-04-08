@@ -55,11 +55,11 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
       account(input: {address: "0xc5e133e6b01b2c335055576c51a53647b1b9b624"}){
         id
         type
-				smart_contract{
-          id
-          name
-					deployment_tx_hash
-				}
+        smart_contract{
+              id
+              name
+          deployment_tx_hash
+        }
       }
     }
 
@@ -79,7 +79,7 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
     }
     """
     field :account, :account do
-      arg(:input, :account_input)
+      arg(:input, non_null(:account_input))
       resolve(&Resolvers.Account.account/3)
     end
   end
@@ -99,6 +99,10 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
     field :token_transfer_count, :integer
 
     field :account_udts, list_of(:account_udt) do
+      arg(:input, :account_child_account_udts_input,
+        default_value: %{page: 1, page_size: 20, sort_type: :desc}
+      )
+
       resolve(&Resolvers.Account.account_udts/3)
     end
 
@@ -121,6 +125,11 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
     example-1: "0x15ca4f2165ff0e798d9c7434010eaacc4d768d85"
     example-2: "0xc5e133e6b01b2c335055576c51a53647b1b9b624"
     """
-    field :address, :string
+    field :address, non_null(:string)
+  end
+
+  input_object :account_child_account_udts_input do
+    import_fields(:page_and_size_input)
+    import_fields(:sort_type_input)
   end
 end

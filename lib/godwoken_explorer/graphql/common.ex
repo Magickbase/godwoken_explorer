@@ -35,14 +35,19 @@ defmodule GodwokenExplorer.Graphql.Common do
   def sort_type(query, input, value) do
     sort_condtion = Map.get(input, :sort_type)
 
-    case sort_condtion do
-      :asc ->
-        query
-        |> order_by(asc: ^value)
+    values =
+      if is_list(value) do
+        List.duplicate(sort_condtion, length(value))
+        |> Enum.zip(value)
+      else
+        [{sort_condtion, value}]
+      end
 
-      :desc ->
-        query
-        |> order_by(desc: ^value)
+    if sort_condtion in [:asc, :desc] do
+      query
+      |> order_by(^values)
+    else
+      query
     end
   end
 end

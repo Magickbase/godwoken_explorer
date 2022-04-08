@@ -3,17 +3,79 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
   alias GodwokenExplorer.Graphql.Resolvers, as: Resolvers
 
   object :transaction_querys do
-    field :latest_10_transactions, list_of(:transaction) do
-      resolve(&Resolvers.Transaction.latest_10_transactions/3)
-    end
+    @desc """
+    function: get transaction by transaction_hash
 
+    request-example:
+    query {
+      transaction (input: {transaction_hash: "0x21d6428f5325fc3632fb4762d40a1833a4e739329ca5bcb1de0a91fb519cf8a4"}) {
+        hash
+        block_hash
+        block_number
+        type
+        from_account_id
+        to_account_id
+      }
+    }
+
+    result-example:
+    {
+      "data": {
+        "transaction": {
+          "block_hash": "0x47d74ac830a8da437da48d95844a9f60c71eaaeffa9e0547738dd49ffe5417cf",
+          "block_number": 341275,
+          "from_account_id": 27455,
+          "hash": "0x21d6428f5325fc3632fb4762d40a1833a4e739329ca5bcb1de0a91fb519cf8a4",
+          "to_account_id": 3014,
+          "type": "POLYJUICE"
+        }
+      }
+    }
+
+    """
     field :transaction, :transaction do
-      arg(:input, :transaction_hash_input)
+      arg(:input, non_null(:transaction_hash_input))
       resolve(&Resolvers.Transaction.transaction/3)
     end
 
+    @desc """
+    function: list transactions by account address
+
+    request-example:
+    query {
+      transactions (input: {address: "0xc5e133e6b01b2c335055576c51a53647b1b9b624",  page: 1, page_size: 2, start_block_number: 335796, end_block_number: 341275}) {
+        block_hash
+        block_number
+        type
+        from_account_id
+        to_account_id
+      }
+    }
+
+    result-example:
+    {
+      "data": {
+        "transactions": [
+          {
+            "block_hash": "0x47d74ac830a8da437da48d95844a9f60c71eaaeffa9e0547738dd49ffe5417cf",
+            "block_number": 341275,
+            "from_account_id": 27455,
+            "to_account_id": 3014,
+            "type": "POLYJUICE"
+          },
+          {
+            "block_hash": "0xb68eee6a72bfd54a06101bedb264e1026af2228250b82dd7c3f06beb35f5d865",
+            "block_number": 335796,
+            "from_account_id": 172581,
+            "to_account_id": 3014,
+            "type": "POLYJUICE"
+          }
+        ]
+      }
+    }
+    """
     field :transactions, list_of(:transaction) do
-      arg(:input, :transaction_input)
+      arg(:input, non_null(:transaction_input))
       resolve(&Resolvers.Transaction.transactions/3)
     end
   end
@@ -58,13 +120,14 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
   end
 
   input_object :transaction_hash_input do
-    field :transaction_hash, :string
+    field :transaction_hash, non_null(:string)
   end
 
   input_object :transaction_input do
-    field :address, :string
+    field :address, non_null(:string)
     field :sort, :sort_type
     import_fields(:page_and_size_input)
+    import_fields(:sort_type_input)
     import_fields(:block_range_input)
   end
 end

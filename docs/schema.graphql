@@ -3,7 +3,7 @@ schema {
 }
 
 type Account {
-  account_udts: [AccountUdt]
+  account_udts(input: AccountChildAccountUdtsInput = {page: 1, page_size: 20, sort_type: DESC}): [AccountUdt]
   eth_address: String
   id: Int
   nonce: Int
@@ -14,6 +14,29 @@ type Account {
   token_transfer_count: Int
   transaction_count: Int
   type: AccountType
+}
+
+input AccountChildAccountUdtsInput {
+  """
+  argument: the page of query result, the relations of postgres offset: offset = (page - 1) * page_size
+  
+  default: 1
+  """
+  page: Int = 1
+
+  """
+  argument: the page_size of query result, it's the same of postgres limit
+  
+  default: 20
+  """
+  page_size: Int = 20
+
+  """
+  argument: the sort of type by custom condition
+  
+  default: desc
+  """
+  sort_type: SortType = DESC
 }
 
 type AccountCkb {
@@ -31,7 +54,7 @@ input AccountInput {
   example-1: "0x15ca4f2165ff0e798d9c7434010eaacc4d768d85"
   example-2: "0xc5e133e6b01b2c335055576c51a53647b1b9b624"
   """
-  address: String
+  address: String!
 }
 
 enum AccountType {
@@ -72,7 +95,7 @@ input AccountUdtContractAddressInput {
   default: desc
   """
   sort_type: SortType = DESC
-  token_contract_address_hash: String = ""
+  token_contract_address_hash: String!
 }
 
 input AccountUdtsInput {
@@ -83,10 +106,24 @@ input AccountUdtsInput {
   address_hashes: [String] = []
 
   """
+  argument: the page of query result, the relations of postgres offset: offset = (page - 1) * page_size
+  
+  default: 1
+  """
+  page: Int = 1
+
+  """
+  argument: the page_size of query result, it's the same of postgres limit
+  
+  default: 20
+  """
+  page_size: Int = 20
+
+  """
   argument: the address of smart contract which supply udts
   example: "0xbf1f27daea43849b67f839fd101569daaa321e2c"
   """
-  token_contract_address_hash: String = ""
+  token_contract_address_hash: String
 }
 
 type Block {
@@ -306,11 +343,11 @@ type RootQueryType {
     account(input: {address: "0xc5e133e6b01b2c335055576c51a53647b1b9b624"}){
       id
       type
-  smart_contract{
-        id
-        name
-  	deployment_tx_hash
-  }
+      smart_contract{
+            id
+            name
+        deployment_tx_hash
+      }
     }
   }
   
@@ -329,7 +366,7 @@ type RootQueryType {
     }
   }
   """
-  account(input: AccountInput): Account
+  account(input: AccountInput!): Account
 
   """
   function: get list of account ckbs by account addresses
@@ -354,7 +391,7 @@ type RootQueryType {
     }
   }
   """
-  account_ckbs(input: AccountCkbsInput): [AccountCkb]
+  account_ckbs(input: AccountCkbsInput!): [AccountCkb]
 
   """
   function: get list of account udt by account addresses
@@ -398,7 +435,7 @@ type RootQueryType {
     }
   }
   """
-  account_udts(input: AccountUdtsInput): [AccountUdt]
+  account_udts(input: AccountUdtsInput!): [AccountUdt]
 
   """
   function: get list account udts by smart contract address which sort of balance
@@ -411,7 +448,7 @@ type RootQueryType {
       balance
       udt {
         type
-  	name
+  	    name
       }
     }
   }
@@ -440,7 +477,7 @@ type RootQueryType {
     }
   }
   """
-  account_udts_by_contract_address(input: AccountUdtContractAddressInput): [AccountUdt]
+  account_udts_by_contract_address(input: AccountUdtContractAddressInput!): [AccountUdt]
 
   """
   function: get block by block number or block hash
@@ -541,14 +578,81 @@ type RootQueryType {
   """
   blocks(input: BlocksInput = {page: 1, page_size: 10, sort_type: DESC}): [Block]
   get_udt_by_contract_address(input: SmartContractInput): Udt
-  latest_10_transactions: [Transaction]
   logs(input: LogInput): [Log]
   smart_contract(input: SmartContractInput): SmartContract
   smart_contracts(input: PageAndSizeInput): [SmartContract]
   token_transfer(input: TokenTransferHashInput): TokenTransfer
   token_transfers(input: TokenTransferInput): [TokenTransfer]
-  transaction(input: TransactionHashInput): Transaction
-  transactions(input: TransactionInput): [Transaction]
+
+  """
+  function: get transaction by transaction_hash
+  
+  request-example:
+  query {
+    transaction (input: {transaction_hash: "0x21d6428f5325fc3632fb4762d40a1833a4e739329ca5bcb1de0a91fb519cf8a4"}) {
+      hash
+      block_hash
+      block_number
+      type
+      from_account_id
+      to_account_id
+    }
+  }
+  
+  result-example:
+  {
+    "data": {
+      "transaction": {
+        "block_hash": "0x47d74ac830a8da437da48d95844a9f60c71eaaeffa9e0547738dd49ffe5417cf",
+        "block_number": 341275,
+        "from_account_id": 27455,
+        "hash": "0x21d6428f5325fc3632fb4762d40a1833a4e739329ca5bcb1de0a91fb519cf8a4",
+        "to_account_id": 3014,
+        "type": "POLYJUICE"
+      }
+    }
+  }
+  """
+  transaction(input: TransactionHashInput!): Transaction
+
+  """
+  function: list transactions by account address
+  
+  request-example:
+  query {
+    transactions (input: {address: "0xc5e133e6b01b2c335055576c51a53647b1b9b624", 
+  page: 1, page_size: 2, start_block_number: 335796, end_block_number: 341275}) {
+      block_hash
+      block_number
+      type
+      from_account_id
+      to_account_id
+    }
+  }
+  
+  result-example:
+  {
+    "data": {
+      "transactions": [
+        {
+          "block_hash": "0x47d74ac830a8da437da48d95844a9f60c71eaaeffa9e0547738dd49ffe5417cf",
+          "block_number": 341275,
+          "from_account_id": 27455,
+          "to_account_id": 3014,
+          "type": "POLYJUICE"
+        },
+        {
+          "block_hash": "0xb68eee6a72bfd54a06101bedb264e1026af2228250b82dd7c3f06beb35f5d865",
+          "block_number": 335796,
+          "from_account_id": 172581,
+          "to_account_id": 3014,
+          "type": "POLYJUICE"
+        }
+      ]
+    }
+  }
+  """
+  transactions(input: TransactionInput!): [Transaction]
   udt(input: UdtIdInput): Udt
   udts(input: UdtInput): [Udt]
 }
@@ -639,11 +743,11 @@ type Transaction {
 }
 
 input TransactionHashInput {
-  transaction_hash: String
+  transaction_hash: String!
 }
 
 input TransactionInput {
-  address: String
+  address: String!
 
   """argument: the end of block number(inclusive) for search query"""
   end_block_number: Int
@@ -662,6 +766,13 @@ input TransactionInput {
   """
   page_size: Int = 20
   sort: SortType
+
+  """
+  argument: the sort of type by custom condition
+  
+  default: desc
+  """
+  sort_type: SortType = DESC
 
   """argument: the start of block number(inclusive) for search query"""
   start_block_number: Int

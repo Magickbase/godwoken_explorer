@@ -154,7 +154,7 @@ defmodule GodwokenExplorer.Graphql.Types.Block do
   end
 
   input_object :blocks_input do
-    import_fields :page_and_size_input
-    import_fields :sort_type_input
+    import_fields(:page_and_size_input)
+    import_fields(:sort_type_input)
   end
 end

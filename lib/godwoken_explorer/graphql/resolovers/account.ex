@@ -1,7 +1,9 @@
 defmodule GodwokenExplorer.Graphql.Resolvers.Account do
   alias GodwokenExplorer.Repo
   alias GodwokenExplorer.{Account, SmartContract, AccountUDT}
+
   import Ecto.Query
+  import GodwokenExplorer.Graphql.Common, only: [page_and_size: 2, sort_type: 3]
 
   def account(_parent, %{input: input} = _args, _resolution) do
     address = Map.get(input, :address)
@@ -19,12 +21,12 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Account do
     {:ok, return}
   end
 
-  def account_udts(%Account{id: id}, _args, _resolution) do
+  def account_udts(%Account{id: id}, %{input: input} = _args, _resolution) do
     return =
       from(ac in AccountUDT)
       |> where([ac], ac.account_id == ^id)
-      |> order_by(desc: :balance)
-      |> limit(20)
+      |> page_and_size(input)
+      |> sort_type(input, :balance)
       |> Repo.all()
 
     {:ok, return}

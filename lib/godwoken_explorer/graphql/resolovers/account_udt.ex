@@ -8,25 +8,30 @@ defmodule GodwokenExplorer.Graphql.Resolvers.AccountUDT do
   @addresses_max_limit 20
 
   def udt(%AccountUDT{udt_id: udt_id} = _parent, _args, _resolution) do
-    return = Repo.get(UDT, udt_id)
-    {:ok, return}
+    if udt_id do
+      {:ok, Repo.get(UDT, udt_id)}
+    else
+      {:ok, nil}
+    end
   end
 
   def account(%AccountUDT{account_id: account_id} = _parent, _args, _resolution) do
-    return = Repo.get(Account, account_id)
-    {:ok, return}
+    if account_id do
+      {:ok, Repo.get(Account, account_id)}
+    else
+      {:ok, nil}
+    end
   end
 
   def account_udts(_parent, %{input: input} = _args, _resolution) do
     address_hashes = Map.get(input, :address_hashes)
-    token_contract_address_hash = Map.get(input, :token_contract_address_hash)
 
     query =
       from(au in AccountUDT)
+      |> query_with_token_contract_address_hash(input)
       |> where(
         [au],
-        au.token_contract_address_hash == ^token_contract_address_hash and
-          au.address_hash in ^address_hashes
+        au.address_hash in ^address_hashes
       )
 
     if length(address_hashes) > @addresses_max_limit do
@@ -34,6 +39,17 @@ defmodule GodwokenExplorer.Graphql.Resolvers.AccountUDT do
     else
       return = Repo.all(query)
       {:ok, return}
+    end
+  end
+
+  defp query_with_token_contract_address_hash(query, input) do
+    token_contract_address_hash = Map.get(input, :token_contract_address_hash)
+
+    if is_nil(token_contract_address_hash) do
+      query
+    else
+      query
+      |> where([au], au.token_contract_address_hash == ^token_contract_address_hash)
     end
   end
 

@@ -44,7 +44,7 @@ defmodule GodwokenExplorer.Graphql.Types.AccountUDT do
     }
     """
     field :account_udts, list_of(:account_udt) do
-      arg(:input, :account_udts_input)
+      arg(:input, non_null(:account_udts_input))
       resolve(&Resolvers.AccountUDT.account_udts/3)
     end
 
@@ -73,7 +73,7 @@ defmodule GodwokenExplorer.Graphql.Types.AccountUDT do
 
     """
     field :account_ckbs, list_of(:account_ckb) do
-      arg(:input, :account_ckbs_input)
+      arg(:input, non_null(:account_ckbs_input))
       resolve(&Resolvers.AccountUDT.account_ckbs/3)
     end
 
@@ -87,7 +87,7 @@ defmodule GodwokenExplorer.Graphql.Types.AccountUDT do
         balance
         udt {
           type
-					name
+    	    name
         }
       }
     }
@@ -117,7 +117,7 @@ defmodule GodwokenExplorer.Graphql.Types.AccountUDT do
     }
     """
     field :account_udts_by_contract_address, list_of(:account_udt) do
-      arg(:input, :account_udt_contract_address_input)
+      arg(:input, non_null(:account_udt_contract_address_input))
       resolve(&Resolvers.AccountUDT.account_udts_by_contract_address/3)
     end
   end
@@ -147,6 +147,8 @@ defmodule GodwokenExplorer.Graphql.Types.AccountUDT do
   end
 
   input_object :account_udts_input do
+    import_fields(:page_and_size_input)
+
     @desc """
     argument: the list of account udt address
     example: ["0x15ca4f2165ff0e798d9c7434010eaacc4d768d85"]
@@ -157,12 +159,12 @@ defmodule GodwokenExplorer.Graphql.Types.AccountUDT do
     argument: the address of smart contract which supply udts
     example: "0xbf1f27daea43849b67f839fd101569daaa321e2c"
     """
-    field :token_contract_address_hash, :string, default_value: ""
+    field :token_contract_address_hash, :string
   end
 
   input_object :account_udt_contract_address_input do
     import_fields(:page_and_size_input)
     import_fields(:sort_type_input)
-    field :token_contract_address_hash, :string, default_value: ""
+    field :token_contract_address_hash, non_null(:string)
   end
 end
