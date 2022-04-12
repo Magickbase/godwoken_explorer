@@ -1,23 +1,56 @@
 defmodule GodwokenExplorer.Graphql.Resolvers.Block do
-  alias GodwokenExplorer.{Block}
+  alias GodwokenExplorer.{Block, Account, Transaction}
+  alias GodwokenExplorer.Repo
 
-  # TODO: add latest 10 blocks
-  def latest_10_blocks(_parent, _args, _resolution) do
-    {:ok, Block.latest_10_records()}
+  import Ecto.Query
+  import GodwokenExplorer.Graphql.Common, only: [page_and_size: 2]
+
+  def block(_parent, %{input: input} = _args, _resolution) do
+    conditions =
+      Enum.reduce(input, true, fn arg, acc ->
+        case arg do
+          {:hash, value} ->
+            dynamic([b], ^acc and b.hash == ^value)
+
+          {:number, value} ->
+            dynamic([b], ^acc and b.number == ^value)
+
+          _ ->
+            acc
+        end
+      end)
+
+    return =
+      from(b in Block)
+      |> where(^conditions)
+      |> Repo.one()
+
+    {:ok, return}
   end
 
-  # TODO: find block by hash
-  def block(_parent, _args, _resolution) do
-    {:ok, nil}
+  def blocks(_parent, %{input: input} = _args, _resolution) do
+    return =
+      from(b in Block)
+      |> page_and_size(input)
+      |> order_by([b], desc: b.number)
+      |> Repo.all()
+
+    {:ok, return}
   end
 
-  # TODO: list block by page
-  def blocks(_parent, _args, _resolution) do
-    {:ok, nil}
+  def account(%Block{aggregator_id: aggregator_id}, _args, _resolution) do
+    return = Repo.get(Account, aggregator_id)
+    {:ok, return}
   end
 
-  # TODO: get account by block
-  def account(%Block{}, _args, _resolution) do
-    {:ok, nil}
+  def transactions(%Block{hash: hash}, %{input: input} = _args, _resolution) do
+    IO.inspect(input)
+    return =
+      from(t in Transaction)
+      |> where([t], t.block_hash == ^hash)
+      |> page_and_size(input)
+      |> Repo.all()
+
+    {:ok, return}
   end
 end
