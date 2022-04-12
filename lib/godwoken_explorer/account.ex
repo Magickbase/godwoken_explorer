@@ -545,7 +545,7 @@ defmodule GodwokenExplorer.Account do
 
           KeyValue.changeset(key_value, %{value: Integer.to_string(total_count + 1)})
           |> Repo.update!()
-        end)
+        end, timeout: :infinity)
       end
     end
   end
