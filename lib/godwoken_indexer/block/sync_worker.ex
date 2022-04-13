@@ -188,7 +188,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
     {_count, returned_values} =
       Repo.insert_all(Transaction, inserted_transaction_params,
         on_conflict: :nothing,
-        returning: [:from_account_id, :to_account_id, :hash, :type, :block_number, :inserted_at]
+        returning: [:from_account_id, :to_account_id, :hash, :eth_hash, :type, :block_number, :inserted_at]
       )
 
     display_ids =
@@ -198,8 +198,16 @@ defmodule GodwokenIndexer.Block.SyncWorker do
 
     returned_values
     |> Enum.map(fn tx ->
+      hash =
+        if tx.eth_hash != nil do
+          tx.eth_hash
+        else
+          tx.hash
+        end
+
       tx
       |> Map.merge(%{
+        hash: hash,
         from: display_ids |> Map.get(tx.from_account_id, {tx.from_account_id}) |> elem(0),
         to: display_ids |> Map.get(tx.to_account_id, {tx.to_account_id}) |> elem(0),
         to_alias:
