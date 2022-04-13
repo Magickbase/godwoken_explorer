@@ -20,6 +20,9 @@ defmodule GodwokenExplorerWeb.API.SearchController do
           (transaction = Repo.get_by(Transaction, hash: downcase_keyword)) != nil ->
             json(conn, %{type: "transaction", id: transaction.hash})
 
+          (transaction = Repo.get_by(Transaction, eth_hash: downcase_keyword)) != nil ->
+            json(conn, %{type: "transaction", id: transaction.eth_hash})
+
           (pending_tx = PendingTransaction.find_by_hash(downcase_keyword)) != nil ->
             json(conn, %{type: "transaction", id: pending_tx.hash})
 

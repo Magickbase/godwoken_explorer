@@ -7,4 +7,12 @@ defmodule GodwokenExplorerWeb.API.FallbackController do
     |> put_view(GodwokenExplorerWeb.ErrorView)
     |> render("404.json")
   end
+
+
+  def call(conn, {:error, :eth_hash, eth_hash}) do
+    conn
+    |> put_status(:see_other)
+    |> put_view(GodwokenExplorerWeb.ErrorView)
+    |> render("303.json", %{eth_hash: eth_hash})
+  end
 end
