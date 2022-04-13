@@ -322,7 +322,9 @@ defmodule GodwokenIndexer.Block.SyncWorker do
                      input: input,
                      gas_used: gas_used,
                      status: status,
-                     hash: hash
+                     hash: hash,
+                     transaction_index: transaction_index,
+                     created_contract_address_hash: created_contract_address_hash
                    } ->
       %{
         is_create: is_create,
@@ -333,7 +335,9 @@ defmodule GodwokenIndexer.Block.SyncWorker do
         input: input,
         gas_used: gas_used,
         status: status,
-        tx_hash: hash
+        tx_hash: hash,
+        index: transaction_index,
+        created_contract_address_hash: created_contract_address_hash
       }
       |> Map.merge(timestamps())
     end)
