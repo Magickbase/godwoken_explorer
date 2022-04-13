@@ -70,6 +70,15 @@ defmodule GodwokenExplorer.Graphql.Resolvers.AccountUDT do
     address_hashes = Map.get(input, :address_hashes)
 
     ckb_account_id = UDT.ckb_account_id()
+
+    if ckb_account_id do
+      do_account_ckbs(address_hashes, ckb_account_id)
+    else
+      {:error, :no_ckb_account}
+    end
+  end
+
+  defp do_account_ckbs(address_hashes, ckb_account_id) do
     %Account{short_address: token_contract_address_hash} = Repo.get(Account, ckb_account_id)
 
     query =
