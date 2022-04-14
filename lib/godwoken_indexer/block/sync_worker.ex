@@ -389,15 +389,16 @@ defmodule GodwokenIndexer.Block.SyncWorker do
                         address_hash: address_hash,
                         token_contract_address_hash: token_contract_address_hash
                       }, index} ->
-        {:ok, balance} = balances |> Enum.at(index)
-
-        %{
-          address_hash: address_hash,
-          token_contract_address_hash: token_contract_address_hash,
-          balance: balance
-        }
-        |> Map.merge(timestamps())
+        with {:ok, balance} <- balances |> Enum.at(index) do
+          %{
+            address_hash: address_hash,
+            token_contract_address_hash: token_contract_address_hash,
+            balance: balance
+          }
+          |> Map.merge(timestamps())
+        end
       end)
+      |> Enum.reject(&is_nil/1)
 
     Repo.insert_all(AccountUDT, import_account_udts,
       on_conflict: {:replace, [:balance, :updated_at]},
