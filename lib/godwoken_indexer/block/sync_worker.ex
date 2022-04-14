@@ -295,7 +295,8 @@ defmodule GodwokenIndexer.Block.SyncWorker do
                      type: type,
                      nonce: nonce,
                      block_number: block_number,
-                     block_hash: block_hash
+                     block_hash: block_hash,
+                     index: index
                    } ->
       %{
         hash: hash,
@@ -305,7 +306,8 @@ defmodule GodwokenIndexer.Block.SyncWorker do
         type: type,
         nonce: nonce,
         block_number: block_number,
-        block_hash: block_hash
+        block_hash: block_hash,
+        index: index
       }
       |> Map.merge(timestamps())
     end)
@@ -322,7 +324,9 @@ defmodule GodwokenIndexer.Block.SyncWorker do
                      input: input,
                      gas_used: gas_used,
                      status: status,
-                     hash: hash
+                     hash: hash,
+                     transaction_index: transaction_index,
+                     created_contract_address_hash: created_contract_address_hash
                    } ->
       %{
         is_create: is_create,
@@ -333,7 +337,9 @@ defmodule GodwokenIndexer.Block.SyncWorker do
         input: input,
         gas_used: gas_used,
         status: status,
-        tx_hash: hash
+        tx_hash: hash,
+        index: transaction_index,
+        created_contract_address_hash: created_contract_address_hash
       }
       |> Map.merge(timestamps())
     end)
@@ -383,15 +389,16 @@ defmodule GodwokenIndexer.Block.SyncWorker do
                         address_hash: address_hash,
                         token_contract_address_hash: token_contract_address_hash
                       }, index} ->
-        {:ok, balance} = balances |> Enum.at(index)
-
-        %{
-          address_hash: address_hash,
-          token_contract_address_hash: token_contract_address_hash,
-          balance: balance
-        }
-        |> Map.merge(timestamps())
+        with {:ok, balance} <- balances |> Enum.at(index) do
+          %{
+            address_hash: address_hash,
+            token_contract_address_hash: token_contract_address_hash,
+            balance: balance
+          }
+          |> Map.merge(timestamps())
+        end
       end)
+      |> Enum.reject(&is_nil/1)
 
     Repo.insert_all(AccountUDT, import_account_udts,
       on_conflict: {:replace, [:balance, :updated_at]},
