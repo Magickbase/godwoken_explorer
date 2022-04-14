@@ -17,7 +17,7 @@ defmodule GodwokenExplorer.Polyjuice do
     field :input, :binary
     field :tx_hash, :binary
     field :gas_used, :integer
-    field :index, :integer
+    field :transaction_index, :integer
     field :created_contract_address_hash, :binary
 
     field(:status, Ecto.Enum, values: [:succeed, :failed])
@@ -43,7 +43,7 @@ defmodule GodwokenExplorer.Polyjuice do
       :input,
       :gas_used,
       :status,
-      :index,
+      :transaction_index,
       :created_contract_address_hash
     ])
     |> validate_required([:is_create, :gas_limit, :gas_price, :value, :input_size, :input])
