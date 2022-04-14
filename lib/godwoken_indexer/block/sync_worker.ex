@@ -338,7 +338,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
         gas_used: gas_used,
         status: status,
         tx_hash: hash,
-        index: transaction_index,
+        transaction_index: transaction_index,
         created_contract_address_hash: created_contract_address_hash
       }
       |> Map.merge(timestamps())
