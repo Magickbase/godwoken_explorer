@@ -295,7 +295,8 @@ defmodule GodwokenIndexer.Block.SyncWorker do
                      type: type,
                      nonce: nonce,
                      block_number: block_number,
-                     block_hash: block_hash
+                     block_hash: block_hash,
+                     index: index
                    } ->
       %{
         hash: hash,
@@ -305,7 +306,8 @@ defmodule GodwokenIndexer.Block.SyncWorker do
         type: type,
         nonce: nonce,
         block_number: block_number,
-        block_hash: block_hash
+        block_hash: block_hash,
+        index: index
       }
       |> Map.merge(timestamps())
     end)

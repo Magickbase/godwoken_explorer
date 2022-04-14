@@ -58,7 +58,7 @@ defmodule GodwokenRPC.Block do
         "hash" => block_hash,
         "raw" => %{"number" => block_number},
         "transactions" => transactions
-      }) do
+      }) when transactions != [] do
     transactions
     |> Enum.map(fn t ->
       Map.merge(t, %{"block_hash" => block_hash, "block_number" => hex_to_number(block_number)})
