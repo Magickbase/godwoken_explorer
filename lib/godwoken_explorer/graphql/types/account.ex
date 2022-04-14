@@ -56,8 +56,8 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
         id
         type
         smart_contract{
-              id
-              name
+          id
+          name
           deployment_tx_hash
         }
       }

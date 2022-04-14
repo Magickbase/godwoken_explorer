@@ -315,7 +315,8 @@ defmodule GodwokenIndexer.Block.SyncWorker do
                      type: type,
                      nonce: nonce,
                      block_number: block_number,
-                     block_hash: block_hash
+                     block_hash: block_hash,
+                     index: index
                    } ->
       %{
         hash: hash,
@@ -326,7 +327,8 @@ defmodule GodwokenIndexer.Block.SyncWorker do
         type: type,
         nonce: nonce,
         block_number: block_number,
-        block_hash: block_hash
+        block_hash: block_hash,
+        index: index
       }
       |> Map.merge(timestamps())
     end)
@@ -343,8 +345,9 @@ defmodule GodwokenIndexer.Block.SyncWorker do
                      input: input,
                      gas_used: gas_used,
                      status: status,
+                     hash: hash,
                      transaction_index: transaction_index,
-                     hash: hash
+                     created_contract_address_hash: created_contract_address_hash
                    } ->
       %{
         is_create: is_create,
@@ -356,7 +359,8 @@ defmodule GodwokenIndexer.Block.SyncWorker do
         gas_used: gas_used,
         status: status,
         tx_hash: hash,
-        transaction_index: transaction_index
+        transaction_index: transaction_index,
+        created_contract_address_hash: created_contract_address_hash
       }
       |> Map.merge(timestamps())
     end)
@@ -411,11 +415,9 @@ defmodule GodwokenIndexer.Block.SyncWorker do
             balance: balance
           }
           |> Map.merge(timestamps())
-        else
-          _ -> nil
         end
       end)
-      |> Enum.reject(&is_nil(&1))
+      |> Enum.reject(&is_nil/1)
 
     Repo.insert_all(AccountUDT, import_account_udts,
       on_conflict: {:replace, [:balance, :updated_at]},

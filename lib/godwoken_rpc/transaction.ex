@@ -9,7 +9,7 @@ defmodule GodwokenRPC.Transaction do
 
   @eth_addr_reg_id Application.get_env(:godwoken_explorer, :eth_addr_reg_id)
 
-  def elixir_to_params(%{
+  def elixir_to_params({%{
         "block_hash" => block_hash,
         "block_number" => block_number,
         "raw" => %{
@@ -18,9 +18,10 @@ defmodule GodwokenRPC.Transaction do
           "nonce" => nonce,
           "args" => "0x" <> args
         },
+
         "hash" => hash,
         "eth_hash" => eth_hash
-      })
+      }, index})
       when to_account_id == "0x0" do
     {{code_hash, hash_type, script_args}, fee_amount_hex_string} = parse_meta_contract_args(args)
 
@@ -33,6 +34,7 @@ defmodule GodwokenRPC.Transaction do
       eth_hash: eth_hash,
       block_hash: block_hash,
       block_number: block_number,
+      index: index,
       nonce: hex_to_number(nonce),
       args: "0x" <> args,
       from_account_id: from_account_id,
@@ -45,7 +47,7 @@ defmodule GodwokenRPC.Transaction do
     }
   end
 
-  def elixir_to_params(%{
+  def elixir_to_params({%{
         "block_hash" => block_hash,
         "block_number" => block_number,
         "raw" => %{
@@ -56,7 +58,7 @@ defmodule GodwokenRPC.Transaction do
         },
         "hash" => hash,
         "eth_hash" => eth_hash
-      }) do
+      }, index}) do
     from_account_id = hex_to_number(from_account_id)
     to_account_id = hex_to_number(to_id)
 
@@ -70,6 +72,7 @@ defmodule GodwokenRPC.Transaction do
           eth_hash: eth_hash,
           block_hash: block_hash,
           block_number: block_number,
+          index: index,
           nonce: hex_to_number(nonce),
           args: "0x" <> args,
           from_account_id: from_account_id,
@@ -106,6 +109,7 @@ defmodule GodwokenRPC.Transaction do
           eth_hash: eth_hash,
           block_hash: block_hash,
           block_number: block_number,
+          index: index,
           nonce: hex_to_number(nonce),
           args: "0x" <> args,
           from_account_id: from_account_id,
@@ -120,6 +124,7 @@ defmodule GodwokenRPC.Transaction do
           eth_hash: eth_hash,
           block_hash: block_hash,
           block_number: block_number,
+          index: index,
           nonce: hex_to_number(nonce),
           args: "0x" <> args,
           from_account_id: from_account_id,

@@ -23,6 +23,7 @@ defmodule GodwokenExplorer.Transaction do
     field(:block_number, :integer)
     field(:block_hash, :binary)
     field(:eth_hash, :binary)
+    field(:index, :integer)
 
     belongs_to(:block, Block, foreign_key: :block_hash, references: :hash, define_field: false)
 
@@ -40,7 +41,8 @@ defmodule GodwokenExplorer.Transaction do
       :nonce,
       :args,
       :block_number,
-      :eth_hash
+      :eth_hash,
+      :index
     ])
     |> validate_required([
       :hash,

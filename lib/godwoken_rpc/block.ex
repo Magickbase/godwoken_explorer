@@ -69,7 +69,7 @@ defmodule GodwokenRPC.Block do
         "hash" => block_hash,
         "raw" => %{"number" => block_number},
         "transactions" => transactions
-      }) do
+      }) when transactions != [] do
     {:ok,
      %{
        "transactions" => eth_transactions

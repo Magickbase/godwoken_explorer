@@ -18,6 +18,8 @@ defmodule GodwokenExplorer.Polyjuice do
     field :tx_hash, :binary
     field :gas_used, :integer
     field :transaction_index, :integer
+    field :created_contract_address_hash, :binary
+
     field(:status, Ecto.Enum, values: [:succeed, :failed])
 
     belongs_to(:transaction, GodwokenExplorer.Transaction,
@@ -41,7 +43,8 @@ defmodule GodwokenExplorer.Polyjuice do
       :input,
       :gas_used,
       :transaction_index,
-      :status
+      :status,
+      :created_contract_address_hash
     ])
     |> validate_required([:is_create, :gas_limit, :gas_price, :value, :input_size, :input, :transaction_index])
     |> unique_constraint(:tx_hash)
@@ -85,18 +88,20 @@ defmodule GodwokenExplorer.Polyjuice do
   end
 
   defp decode_input(to_account_id, input, hash) do
-    if to_account_id in SmartContract.account_ids do
+    if to_account_id in SmartContract.account_ids() do
       full_abi = SmartContract.cache_abi(to_account_id)
+
       case do_decoded_input_data(
-        Base.decode16!(String.slice(input, 2..-1), case: :lower),
-        full_abi,
-        hash
-      ) do
+             Base.decode16!(String.slice(input, 2..-1), case: :lower),
+             full_abi,
+             hash
+           ) do
         {:ok, identifier, text, mapping} ->
           {:ok, identifier, text, mapping}
+
         _ ->
           {:error, :decode_error}
-        end
+      end
     else
       {:error, :decode_error}
     end
