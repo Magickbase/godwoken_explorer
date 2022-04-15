@@ -87,6 +87,6 @@ defmodule GodwokenExplorer.Graphql.Resolvers.TokenTransfer do
 
     from(tt in TokenTransfer, where: ^conditions)
     |> page_and_size(input)
-    |> sort_type(input, [:block_number, :inserted_at])
+    |> sort_type(input, [:block_number, :log_index])
   end
 end
