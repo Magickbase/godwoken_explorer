@@ -74,23 +74,27 @@ defmodule GodwokenExplorer.Account do
   end
 
   def update_meta_contract(global_state) do
-    with meta_contract when not is_nil(meta_contract) <- Repo.get(Account, 0) do
-      atom_script =
-        for {key, val} <- meta_contract.script, into: %{}, do: {String.to_atom(key), val}
+    case Repo.get(Account, 0) do
+      %Account{} = meta_contract ->
+        atom_script =
+          for {key, val} <- meta_contract.script, into: %{}, do: {String.to_atom(key), val}
 
-      new_script = atom_script |> Map.merge(global_state)
+        new_script = atom_script |> Map.merge(global_state)
 
-      case meta_contract
-           |> Ecto.Changeset.change(script: new_script)
-           |> Repo.update() do
-        {:ok, account} ->
-          account_api_data = 0 |> find_by_id() |> account_to_view()
-          Publisher.broadcast([{:accounts, account_api_data}], :realtime)
-          {:ok, account}
+        case meta_contract
+             |> Ecto.Changeset.change(script: new_script)
+             |> Repo.update() do
+          {:ok, account} ->
+            account_api_data = 0 |> find_by_id() |> account_to_view()
+            Publisher.broadcast([{:accounts, account_api_data}], :realtime)
+            {:ok, account}
 
-        {:error, schema} ->
-          {:error, schema}
-      end
+          {:error, schema} ->
+            {:error, schema}
+        end
+
+      nil ->
+        manual_create_account!(0)
     end
   end
 
@@ -527,8 +531,9 @@ defmodule GodwokenExplorer.Account do
 
     last_count = key_value.value |> String.to_integer()
 
-    with %Account{script: script} when not is_nil(script) <- Account |> Repo.get(0) do
-      total_count = get_in(script, ["account_merkle_state", "account_count"]) - 1
+    with %Account{script: script} when not is_nil(script) <- Account |> Repo.get(0),
+      account_count when account_count != nil <- get_in(script, ["account_merkle_state", "account_count"]) do
+      total_count =  account_count - 1
 
       if last_count <= total_count do
         database_ids =
