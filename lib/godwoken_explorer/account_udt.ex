@@ -102,7 +102,10 @@ defmodule GodwokenExplorer.AccountUDT do
     end)
   end
 
-  def sync_balance!(%{script_hash: script_hash, udt_id: udt_id}) do
+  def sync_balance!(%{script_hash: _script_hash, udt_id: nil}), do: {:error, :udt_not_exists}
+  def sync_balance!(%{account_id: _account_id, udt_id: nil}), do: {:error, :udt_not_exists}
+
+  def sync_balance!(%{script_hash: script_hash, udt_id: udt_id})  do
     with %Account{id: account_id, short_address: short_address} <-
            Repo.get_by(Account, script_hash: script_hash),
          %Account{short_address: udt_short_address} <- Repo.get(Account, udt_id) do

@@ -96,7 +96,7 @@ defmodule GodwokenExplorer.Transaction do
         |> limit(10)
         |> Repo.all()
         |> list_transaction_by_tx_hash()
-        |> order_by([t], desc: t.block_number, desc: t.inserted_at)
+        |> order_by([t], desc: t.block_number, desc: t.index)
         |> Repo.all()
     end
   end
@@ -233,7 +233,7 @@ defmodule GodwokenExplorer.Transaction do
 
     order_by =
       if is_nil(custom_order) do
-        [desc: dynamic([t], t.block_number), desc: dynamic([t], t.inserted_at)]
+        [desc: dynamic([t], t.block_number), desc: dynamic([t], t.index)]
       else
         custom_order
       end
@@ -262,8 +262,7 @@ defmodule GodwokenExplorer.Transaction do
       if is_nil(custom_order) do
         [
           desc: dynamic([t], t.block_number),
-          desc: dynamic([t], t.inserted_at),
-          desc: dynamic([t], t.nonce)
+          desc: dynamic([t], t.index)
         ]
       else
         custom_order
