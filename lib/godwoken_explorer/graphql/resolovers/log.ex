@@ -45,6 +45,6 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Log do
 
     from(l in Log, where: ^conditions)
     |> page_and_size(input)
-    |> sort_type(input, [:block_number, :inserted_at])
+    |> sort_type(input, [:block_number, :index])
   end
 end

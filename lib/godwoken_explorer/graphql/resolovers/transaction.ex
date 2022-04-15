@@ -17,7 +17,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
       |> query_with_account_address(input)
       |> query_with_block_range(input)
       |> page_and_size(input)
-      |> sort_type(input, [:block_number, :inserted_at])
+      |> sort_type(input, [:block_number, :index])
       |> Repo.all()
 
     {:ok, return}
