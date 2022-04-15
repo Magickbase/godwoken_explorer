@@ -562,8 +562,9 @@ defmodule GodwokenExplorer.Account do
 
     last_count = key_value.value |> String.to_integer()
 
-    with %Account{script: script} when not is_nil(script) <- Account |> Repo.get(0) do
-      total_count = get_in(script, ["account_merkle_state", "account_count"]) - 1
+    with %Account{script: script} when not is_nil(script) <- Account |> Repo.get(0),
+      account_count when account_count != nil <- get_in(script, ["account_merkle_state", "account_count"]) do
+      total_count =  account_count - 1
 
       if last_count <= total_count do
         database_ids =

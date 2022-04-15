@@ -8,7 +8,7 @@ defmodule GodwokenExplorer.Application do
   alias GodwokenExplorerWeb.RealtimeEventHandler
 
   def start(_type, _args) do
-    children = [
+    base_children = [
       # Start the Ecto repository
       GodwokenExplorer.Repo,
       # Start the Telemetry supervisor
@@ -29,9 +29,15 @@ defmodule GodwokenExplorer.Application do
       GodwokenExplorer.Chain.Cache.TransactionCount,
       GodwokenExplorer.Chain.Cache.Blocks,
       GodwokenExplorer.Chain.Cache.Transactions,
-      GodwokenExplorer.Scheduler,
       GodwokenExplorer.ETS.SmartContracts
     ]
+
+    children =
+      if Application.get_env(:godwoken_explorer, :job) do
+        base_children ++ [GodwokenExplorer.Scheduler]
+      else
+        base_children
+      end
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options

@@ -59,7 +59,13 @@ defmodule GodwokenIndexer.Block.SyncWorker do
 
   @spec fetch_and_import(GodwokenRPC.block_number()) :: {:ok, GodwokenRPC.block_number()}
   def fetch_and_import(next_block_number) do
-    range = next_block_number..next_block_number
+    multiple_block_once? = Application.get_env(:godwoken_explorer, :multiple_block_once)
+    range =
+      if multiple_block_once? do
+        next_block_number..next_block_number
+      else
+        next_block_number..(next_block_number + 5)
+      end
 
     {:ok,
      %Blocks{
@@ -69,7 +75,9 @@ defmodule GodwokenIndexer.Block.SyncWorker do
        errors: []
      }} = GodwokenRPC.fetch_blocks_by_range(range)
 
-    {:ok, _} = validate_last_block_fork(blocks_params, next_block_number)
+    if is_nil(multiple_block_once?) do
+      {:ok, _} = validate_last_block_fork(blocks_params, next_block_number)
+    end
 
     {:ok, inserted_transactions} =
       if transactions_params_without_receipts != [] do
@@ -94,7 +102,11 @@ defmodule GodwokenIndexer.Block.SyncWorker do
     update_block_cache(inserted_blocks)
     broadcast_block_and_tx(inserted_blocks, inserted_transactions)
 
-    {:ok, next_block_number + 1}
+    if multiple_block_once? do
+      {:ok, next_block_number + 6}
+    else
+      {:ok, next_block_number + 1}
+    end
   end
 
   defp handle_polyjuice_transactions(polyjuice_without_receipts) do
