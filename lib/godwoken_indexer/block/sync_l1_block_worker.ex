@@ -120,7 +120,8 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
             args: output["lock"]["args"] |> String.slice(2..-1),
             timestamp: timestamp,
             output_data: tx["outputs_data"] |> Enum.at(index),
-            output: output
+            output: output,
+            tip_block_number: l1_tip_number
           })
         end
       end)
@@ -142,7 +143,8 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
          args: args,
          timestamp: timestamp,
          output_data: output_data,
-         output: output
+         output: output,
+         tip_block_number: l1_tip_number
        }) do
     {
       l2_script_hash,
@@ -154,7 +156,7 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
 
     {udt_script, udt_script_hash, amount} = parse_udt_script(output, output_data)
 
-    with {:ok, udt_id} <- Account.find_or_create_udt_account!(udt_script, udt_script_hash) do
+    with {:ok, udt_id} <- Account.find_or_create_udt_account!(udt_script, udt_script_hash, block_number, l1_tip_number) do
       WithdrawalHistory.create_or_update_history!(%{
         layer1_block_number: block_number,
         layer1_tx_hash: tx_hash,
