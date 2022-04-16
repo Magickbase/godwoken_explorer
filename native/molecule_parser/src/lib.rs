@@ -3,6 +3,7 @@ pub use generated::packed;
 use packed::MetaContractArgs;
 use packed::CreateAccount;
 use packed::GlobalState;
+use packed::GlobalStateV0;
 use packed::L2Block;
 use packed::WitnessArgs;
 use packed::DepositLockArgs;
@@ -42,6 +43,34 @@ fn parse_meta_contract_args(arg: String) -> ((String, String, String), (u32, Str
 fn parse_global_state(arg: String) -> (u64, String, (u64, String), (u32, String), String) {
     let global_state = hex::decode(arg).unwrap();
     let molecule_global_state = GlobalState::from_slice(&global_state).unwrap();
+    let finalized_block_number = molecule_global_state.last_finalized_block_number();
+    let mut finalized_buf = [0u8; 8];
+    finalized_buf.copy_from_slice(finalized_block_number.as_slice());
+    let block_count = molecule_global_state.block().count();
+    let block_merkle_root = molecule_global_state.block().merkle_root();
+    let mut block_buf = [0u8; 8];
+    block_buf.copy_from_slice(block_count.as_slice());
+    let account_count = molecule_global_state.account().count();
+    let account_merkle_root = molecule_global_state.account().merkle_root();
+    let mut account_buf = [0u8; 4];
+    account_buf.copy_from_slice(account_count.as_slice());
+    let reverted_block_root = molecule_global_state.reverted_block_root();
+    let status = molecule_global_state.status();
+
+    // encode max params length is 7
+    (
+        u64::from_le_bytes(finalized_buf),
+        hex::encode(reverted_block_root.as_slice()),
+        (u64::from_le_bytes(block_buf), hex::encode(account_merkle_root.as_slice())),
+        (u32::from_le_bytes(account_buf), hex::encode(block_merkle_root.as_slice())),
+        hex::encode(status.as_slice())
+    )
+}
+
+#[rustler::nif]
+fn parse_v0_global_state(arg: String) -> (u64, String, (u64, String), (u32, String), String) {
+    let global_state = hex::decode(arg).unwrap();
+    let molecule_global_state = GlobalStateV0::from_slice(&global_state).unwrap();
     let finalized_block_number = molecule_global_state.last_finalized_block_number();
     let mut finalized_buf = [0u8; 8];
     finalized_buf.copy_from_slice(finalized_block_number.as_slice());
@@ -125,6 +154,7 @@ rustler::init!(
     [
         parse_meta_contract_args,
         parse_global_state,
+        parse_v0_global_state,
         parse_witness,
         parse_deposition_lock_args,
         parse_withdrawal_lock_args
