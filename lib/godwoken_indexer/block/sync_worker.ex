@@ -63,7 +63,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
 
     range =
       if multiple_block_once? do
-        next_block_number..(next_block_number + 5)
+        next_block_number..(next_block_number + 3)
       else
         next_block_number..next_block_number
       end
@@ -104,7 +104,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
     broadcast_block_and_tx(inserted_blocks, inserted_transactions)
 
     if multiple_block_once? do
-      {:ok, next_block_number + 6}
+      {:ok, next_block_number + 4}
     else
       {:ok, next_block_number + 1}
     end
