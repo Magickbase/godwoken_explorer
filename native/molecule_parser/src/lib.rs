@@ -4,8 +4,6 @@ use packed::MetaContractArgs;
 use packed::CreateAccount;
 use packed::GlobalState;
 use packed::GlobalStateV0;
-use packed::L2Block;
-use packed::WitnessArgs;
 use packed::DepositLockArgs;
 use packed::WithdrawalLockArgs;
 use molecule::prelude::Entity;
@@ -96,17 +94,6 @@ fn parse_v0_global_state(arg: String) -> (u64, String, (u64, String), (u32, Stri
 }
 
 #[rustler::nif]
-fn parse_witness(arg: String) -> u64 {
-    let witness = hex::decode(arg).unwrap();
-    let l2_block_data = WitnessArgs::from_slice(&witness).unwrap().output_type().as_bytes();
-    let l2_block_number = L2Block::from_slice(&l2_block_data[4..]).unwrap().raw().number();
-    let mut buf = [0u8; 8];
-    buf.copy_from_slice(l2_block_number.as_slice());
-
-    u64::from_le_bytes(buf)
-}
-
-#[rustler::nif]
 fn parse_deposition_lock_args(arg: String) -> (String, String) {
     let args = hex::decode(arg).unwrap();
     let deposition_args = DepositLockArgs::from_slice(&args[32..]).unwrap();
@@ -155,7 +142,6 @@ rustler::init!(
         parse_meta_contract_args,
         parse_global_state,
         parse_v0_global_state,
-        parse_witness,
         parse_deposition_lock_args,
         parse_withdrawal_lock_args
     ]
