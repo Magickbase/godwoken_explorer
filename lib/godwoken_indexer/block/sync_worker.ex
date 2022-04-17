@@ -118,7 +118,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
       polyjuice_deploy_contract =
         polyjuice_deploy_contract
         |> Enum.map(fn x ->
-          x |> Map.merge(%{gas_used: 0, status: :succeed, transaction_index: 0})
+          x |> Map.merge(%{gas_used: 0, status: :succeed, transaction_index: nil, created_contract_address_hash: nil})
         end)
 
       {:ok, %{logs: logs, receipts: receipts}} =
