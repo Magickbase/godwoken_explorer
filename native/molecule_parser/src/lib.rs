@@ -66,8 +66,6 @@ fn parse_global_state(arg: String) -> (u64, String, (u64, String), (u32, String)
 }
 
 #[rustler::nif]
-<<<<<<< HEAD
-=======
 fn parse_v0_global_state(arg: String) -> (u64, String, (u64, String), (u32, String), String) {
     let global_state = hex::decode(arg).unwrap();
     let molecule_global_state = GlobalStateV0::from_slice(&global_state).unwrap();
@@ -96,7 +94,6 @@ fn parse_v0_global_state(arg: String) -> (u64, String, (u64, String), (u32, Stri
 }
 
 #[rustler::nif]
->>>>>>> main
 fn parse_deposition_lock_args(arg: String) -> (String, String) {
     let args = hex::decode(arg).unwrap();
     let deposition_args = DepositLockArgs::from_slice(&args[32..]).unwrap();
@@ -161,10 +158,7 @@ rustler::init!(
     [
         parse_meta_contract_args,
         parse_global_state,
-<<<<<<< HEAD
-=======
         parse_v0_global_state,
->>>>>>> main
         parse_deposition_lock_args,
         parse_withdrawal_lock_args,
         parse_eth_address_registry_args
