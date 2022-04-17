@@ -60,11 +60,12 @@ defmodule GodwokenIndexer.Block.SyncWorker do
   @spec fetch_and_import(GodwokenRPC.block_number()) :: {:ok, GodwokenRPC.block_number()}
   def fetch_and_import(next_block_number) do
     multiple_block_once? = Application.get_env(:godwoken_explorer, :multiple_block_once)
+
     range =
       if multiple_block_once? do
-        next_block_number..next_block_number
+        next_block_number..(next_block_number + 3)
       else
-        next_block_number..(next_block_number + 5)
+        next_block_number..next_block_number
       end
 
     {:ok,
@@ -103,7 +104,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
     broadcast_block_and_tx(inserted_blocks, inserted_transactions)
 
     if multiple_block_once? do
-      {:ok, next_block_number + 6}
+      {:ok, next_block_number + 4}
     else
       {:ok, next_block_number + 1}
     end
@@ -169,11 +170,15 @@ defmodule GodwokenIndexer.Block.SyncWorker do
 
   @spec import_block(list) :: list
   defp import_block(blocks_params) do
-    blocks_params
-    |> Enum.map(fn block_params ->
-      {:ok, %Block{} = block_struct} = Block.create_block(block_params)
-      block_struct
-    end)
+    {_count, returned_values} =
+      Repo.insert_all(
+        Block,
+        blocks_params |> Enum.map(fn block -> Map.merge(block, timestamps()) end),
+        on_conflict: :nothing,
+        returning: [:hash, :number, :transaction_count, :size, :inserted_at]
+      )
+
+    returned_values
   end
 
   defp import_logs(logs) do

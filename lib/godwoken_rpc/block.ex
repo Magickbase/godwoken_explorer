@@ -44,11 +44,13 @@ defmodule GodwokenRPC.Block do
           hash: hash,
           parent_hash: parent_hash,
           number: hex_to_number(number),
-          timestamp: timestamp |> hex_to_number() |> timestamp_to_datetime,
+          timestamp:
+            timestamp |> hex_to_number() |> Kernel.*(1000) |> DateTime.from_unix!(:microsecond),
           aggregator_id: hex_to_number(aggregator_id),
           transaction_count: tx_count |> hex_to_number(),
           size: size |> hex_to_number(),
           logs_bloom: logs_bloom,
+          status: :committed,
           gas_limit: gas_limit |> hex_to_number(),
           gas_used: gas_used |> hex_to_number()
         }
@@ -58,7 +60,9 @@ defmodule GodwokenRPC.Block do
           hash: hash,
           parent_hash: parent_hash,
           number: hex_to_number(number),
-          timestamp: timestamp |> hex_to_number() |> timestamp_to_datetime,
+          timestamp:
+            timestamp |> hex_to_number() |> Kernel.*(1000) |> DateTime.from_unix!(:microsecond),
+          status: :committed,
           aggregator_id: hex_to_number(aggregator_id),
           transaction_count: tx_count |> hex_to_number()
         }
@@ -69,7 +73,8 @@ defmodule GodwokenRPC.Block do
         "hash" => block_hash,
         "raw" => %{"number" => block_number},
         "transactions" => transactions
-      }) when transactions != [] do
+      })
+      when transactions != [] do
     {:ok,
      %{
        "transactions" => eth_transactions

@@ -1,7 +1,7 @@
 defmodule GodwokenIndexer.Block.GlobalStateWorker do
   use GenServer
 
-  import Godwoken.MoleculeParser, only: [parse_global_state: 1]
+  import Godwoken.MoleculeParser, only: [parse_global_state: 1, parse_v0_global_state: 1]
 
   alias GodwokenExplorer.{Block, Account, WithdrawalHistory}
 
@@ -30,7 +30,7 @@ defmodule GodwokenIndexer.Block.GlobalStateWorker do
     {:noreply, state}
   end
 
-  defp fetch_and_update do
+  def fetch_and_update do
     with {:ok, latest_finalized_block_number, global_state} <- fetch_global_state_info() do
       Block.update_blocks_finalized(latest_finalized_block_number)
       Account.update_meta_contract(global_state)
@@ -49,7 +49,13 @@ defmodule GodwokenIndexer.Block.GlobalStateWorker do
         {l2_block_count, block_merkle_root},
         {account_count, account_merkle_root},
         status
-      } = global_state |> parse_global_state()
+      } =
+        try do
+          global_state |> parse_global_state()
+        rescue
+          ErlangError ->
+            global_state |> parse_v0_global_state()
+        end
 
       parsed_status =
         if status == "00" do

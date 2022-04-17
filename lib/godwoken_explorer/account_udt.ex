@@ -178,7 +178,7 @@ defmodule GodwokenExplorer.AccountUDT do
               eth_address: fragment("CASE WHEN ? = 'user' THEN encode(?, 'escape')
         ELSE encode(?, 'escape') END", a1.type, a1.eth_address, a1.short_address),
               balance: fragment("? / power(10, ?)::decimal", au.balance, ^decimal),
-              account_id: a1.id
+              tx_count: a1.transaction_count
             },
             distinct: au.address_hash,
             order_by: [desc: au.updated_at]
@@ -195,7 +195,7 @@ defmodule GodwokenExplorer.AccountUDT do
   defp parse_holder_sort_results(address_and_balances, supply) do
     results =
       address_and_balances.entries
-      |> Enum.map(fn %{account_id: account_id, balance: balance} = result ->
+      |> Enum.map(fn %{balance: balance} = result ->
         percentage =
           if is_nil(supply) do
             0.0
@@ -206,9 +206,7 @@ defmodule GodwokenExplorer.AccountUDT do
         result
         |> Map.merge(%{
           percentage: percentage,
-          tx_count: Repo.get(Account, account_id).transaction_count || 0
         })
-        |> Map.drop([:account_id])
       end)
 
     %{

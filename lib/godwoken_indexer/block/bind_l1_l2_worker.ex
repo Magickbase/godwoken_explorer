@@ -1,7 +1,7 @@
 defmodule GodwokenIndexer.Block.BindL1L2Worker do
   use GenServer
 
-  import Godwoken.MoleculeParser, only: [parse_global_state: 1]
+  import Godwoken.MoleculeParser, only: [parse_global_state: 1, parse_v0_global_state: 1]
   import GodwokenRPC.Util, only: [hex_to_number: 1, number_to_hex: 1]
 
   require Logger
@@ -100,10 +100,18 @@ defmodule GodwokenIndexer.Block.BindL1L2Worker do
       {_account_count, _account_merkle_root},
       _status
     } =
-      outputs
-      |> Enum.at(hex_to_number(io_index))
-      |> String.slice(2..-1)
-      |> parse_global_state()
+      try do
+        outputs
+        |> Enum.at(hex_to_number(io_index))
+        |> String.slice(2..-1)
+        |> parse_global_state()
+      rescue
+        ErlangError ->
+          outputs
+          |> Enum.at(hex_to_number(io_index))
+          |> String.slice(2..-1)
+          |> parse_v0_global_state()
+      end
 
     l2_block_count - 1
   end
