@@ -85,10 +85,10 @@ defmodule GodwokenExplorer.Transaction do
         end)
 
       _ ->
-        case from(b in Block, where: b.transaction_count > 0, order_by: [desc: b.number], limit: 1)
+        case from(b in Block, where: b.transaction_count >= 10, order_by: [desc: b.number], limit: 1)
              |> Repo.one() do
-          %Block{hash: hash} ->
-            list_tx_hash_by_transaction_query(dynamic([t], t.block_hash == ^hash))
+          %Block{number: number} ->
+            list_tx_hash_by_transaction_query(dynamic([t], t.block_number >= ^number))
 
           nil ->
             list_tx_hash_by_transaction_query(true)
