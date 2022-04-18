@@ -37,7 +37,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
           |> where([t], t.from_account_id == ^account.id)
 
         %Account{type: type}
-        when type in [:meta_contract, :udt, :polyjuice_root, :polyjuice_contract] ->
+        when type in [:meta_contract, :udt, :polyjuice_creator, :polyjuice_contract, :eth_addr_reg] ->
           query
           |> where([t], t.to_account_id == ^account.id)
 

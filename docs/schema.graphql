@@ -60,7 +60,7 @@ input AccountInput {
 enum AccountType {
   META_CONTRACT
   POLYJUICE_CONTRACT
-  POLYJUICE_ROOT
+  POLYJUICE_CREATOR
   UDT
   USER
 }
