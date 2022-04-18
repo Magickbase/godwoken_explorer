@@ -60,10 +60,11 @@ defmodule GodwokenIndexer.Block.SyncWorker do
   @spec fetch_and_import(GodwokenRPC.block_number()) :: {:ok, GodwokenRPC.block_number()}
   def fetch_and_import(next_block_number) do
     multiple_block_once? = Application.get_env(:godwoken_explorer, :multiple_block_once)
+    block_batch_size = Application.get_env(:godwoken_explorer, :block_batch_size)
 
     range =
       if multiple_block_once? do
-        next_block_number..(next_block_number + 3)
+        next_block_number..(next_block_number + block_batch_size)
       else
         next_block_number..next_block_number
       end
@@ -104,7 +105,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
     broadcast_block_and_tx(inserted_blocks, inserted_transactions)
 
     if multiple_block_once? do
-      {:ok, next_block_number + 4}
+      {:ok, next_block_number + block_batch_size + 1}
     else
       {:ok, next_block_number + 1}
     end
@@ -182,19 +183,26 @@ defmodule GodwokenIndexer.Block.SyncWorker do
   end
 
   defp import_logs(logs) do
-    Repo.insert_all(Log, logs |> Enum.map(fn log -> Map.merge(log, timestamps()) end),
-      on_conflict: :nothing
-    )
+    import_all_batch(Log, logs)
+  end
+
+  defp import_all_batch(module, changesets) do
+    reducer = fn {changeset, index}, multi ->
+      Ecto.Multi.insert_all(multi, "insert_all#{index}", module, changeset, on_conflict: :nothing)
+    end
+
+    changesets
+    |> Enum.map(fn changeset -> Map.merge(changeset, timestamps()) end)
+    |> Enum.chunk_every(5_000)
+    |> Enum.with_index()
+    |> Enum.reduce(Ecto.Multi.new(), reducer)
+    |> Repo.transaction()
   end
 
   defp import_token_transfers(logs) do
     %{token_transfers: token_transfers, tokens: _tokens} = TokenTransfers.parse(logs)
 
-    Repo.insert_all(
-      TokenTransfer,
-      token_transfers |> Enum.map(fn log -> Map.merge(log, timestamps()) end),
-      on_conflict: :nothing
-    )
+    import_all_batch(TokenTransfer, token_transfers)
 
     if length(token_transfers) > 0, do: update_erc20_balance(token_transfers)
   end
