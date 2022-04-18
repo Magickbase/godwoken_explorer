@@ -172,19 +172,26 @@ defmodule GodwokenIndexer.Block.SyncWorker do
   end
 
   defp import_logs(logs) do
-    Repo.insert_all(Log, logs |> Enum.map(fn log -> Map.merge(log, timestamps()) end),
-      on_conflict: :nothing
-    )
+    import_all_batch(Log, logs)
+  end
+
+  defp import_all_batch(module, changesets) do
+    reducer = fn {changeset, index}, multi ->
+      Ecto.Multi.insert_all(multi, "insert_all#{index}", module, changeset, on_conflict: :nothing)
+    end
+
+    changesets
+    |> Enum.map(fn changeset -> Map.merge(changeset, timestamps()) end)
+    |> Enum.chunk_every(5_000)
+    |> Enum.with_index()
+    |> Enum.reduce(Ecto.Multi.new(), reducer)
+    |> Repo.transaction()
   end
 
   defp import_token_transfers(logs) do
     %{token_transfers: token_transfers, tokens: _tokens} = TokenTransfers.parse(logs)
 
-    Repo.insert_all(
-      TokenTransfer,
-      token_transfers |> Enum.map(fn log -> Map.merge(log, timestamps()) end),
-      on_conflict: :nothing
-    )
+    import_all_batch(TokenTransfer, token_transfers)
 
     if length(token_transfers) > 0, do: update_erc20_balance(token_transfers)
   end
