@@ -60,10 +60,11 @@ defmodule GodwokenIndexer.Block.SyncWorker do
   @spec fetch_and_import(GodwokenRPC.block_number()) :: {:ok, GodwokenRPC.block_number()}
   def fetch_and_import(next_block_number) do
     multiple_block_once? = Application.get_env(:godwoken_explorer, :multiple_block_once)
+    block_batch_size = Application.get_env(:godwoken_explorer, :block_batch_size)
 
     range =
       if multiple_block_once? do
-        next_block_number..(next_block_number + 3)
+        next_block_number..(next_block_number + block_batch_size)
       else
         next_block_number..next_block_number
       end
@@ -104,7 +105,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
     broadcast_block_and_tx(inserted_blocks, inserted_transactions)
 
     if multiple_block_once? do
-      {:ok, next_block_number + 4}
+      {:ok, next_block_number + block_batch_size + 1}
     else
       {:ok, next_block_number + 1}
     end
