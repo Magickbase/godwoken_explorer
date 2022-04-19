@@ -254,7 +254,7 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
               end
           end
 
-          with {:ok, udt_id} <- Account.find_or_create_udt_account!(udt_script, udt_script_hash) do
+          with {:ok, udt_id} <- Account.find_or_create_udt_account!(udt_script, udt_script_hash, l1_block_number, tip_block_number) do
             DepositHistory.create_or_update_history!(%{
               layer1_block_number: l1_block_number,
               layer1_tx_hash: tx_hash,

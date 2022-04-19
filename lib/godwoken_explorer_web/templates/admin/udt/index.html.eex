@@ -70,7 +70,6 @@
               <td class="torch-actions">
                 <span><%= link "Show", to: Routes.admin_udt_path(@conn, :show, udt) %></span>
                 <span><%= link "Edit", to: Routes.admin_udt_path(@conn, :edit, udt) %></span>
-                <span><%= link "Delete", to: Routes.admin_udt_path(@conn, :delete, udt), method: :delete, data: [confirm: "Are you sure?"] %></span>
               </td>
             </tr>
           <% end %>

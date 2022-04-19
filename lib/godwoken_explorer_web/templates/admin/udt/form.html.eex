@@ -28,9 +28,9 @@
     </div>
 
     <div class="torch-form-group">
-      <%= label f, :bridge_account_id, "bridge_account_id(polyjuice contract id)" %>
-      <%= number_input f, :bridge_account_id %>
-      <%= error_tag f, :bridge_account_id %>
+      <%= label f, :bridge_account_eth_address, "bridge_account_eth_address(polyjuice contract eth address)" %>
+      <%= text_input f, :bridge_account_eth_address %>
+      <%= error_tag f, :bridge_account_eth_address %>
     </div>
 
     <div class="torch-form-group">

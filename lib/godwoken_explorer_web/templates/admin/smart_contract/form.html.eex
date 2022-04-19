@@ -8,6 +8,12 @@
     <% end %>
 
     <div class="torch-form-group">
+      <%= label f, :eth_address %>
+      <%= text_input f, :eth_address %>
+      <%= error_tag f, :eth_address %>
+    </div>
+
+    <div class="torch-form-group">
       <%= label f, :name %>
       <%= text_input f, :name %>
       <%= error_tag f, :name %>
@@ -32,12 +38,6 @@
           <%= error_tag f, :abi %>
       </div>
     <% end %>
-
-    <div class="torch-form-group">
-      <%= label f, :account_id %>
-      <%= number_input f, :account_id %>
-      <%= error_tag f, :account_id %>
-    </div>
 
     <div class="torch-form-group">
       <%= label f, :constructor_arguments %>

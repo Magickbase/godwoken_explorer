@@ -245,7 +245,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
 
   defp import_polyjuice(polyjuice_with_receipts) do
     inserted_polyjuice_params = filter_polyjuice_columns(polyjuice_with_receipts)
-    Repo.insert_all(Polyjuice, inserted_polyjuice_params, on_conflict: :nothing)
+    import_all_batch(Polyjuice, inserted_polyjuice_params)
   end
 
   defp import_withdrawal_requests(withdrawal_params) do
