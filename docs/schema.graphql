@@ -70,7 +70,6 @@ type AccountUdt {
   address_hash: String
   balance: Decimal
   id: Int
-  inputs: String
   udt: Udt
 }
 
@@ -195,6 +194,37 @@ scalar DateTime
 The `Decimal` scalar type represents signed double-precision fractional
 values parsed by the `Decimal` library.  The Decimal appears in a JSON
 response as a string to preserve precision.
+
+Formally:
+sign           ::=  '+' | '-'
+digit          ::=  '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' |
+                    '8' | '9'
+indicator      ::=  'e' | 'E'
+digits         ::=  digit [digit]...
+decimal-part   ::=  digits '.' [digits] | ['.'] digits
+exponent-part  ::=  indicator [sign] digits
+infinity       ::=  'Infinity' | 'Inf'
+nan            ::=  'NaN' [digits] | 'sNaN' [digits]
+numeric-value  ::=  decimal-part [exponent-part] | infinity
+numeric-string ::=  [sign] numeric-value | [sign] nan
+
+Examples:
+
+Some numeric strings are:
+
+    "0"          -- zero
+    "12"         -- a whole number
+    "-76"        -- a signed whole number
+    "12.70"      -- some decimal places
+    "+0.003"     -- a plus sign is allowed, too
+    "017."       -- the same as 17
+    ".5"         -- the same as 0.5
+    "4E+9"       -- exponential notation
+    "0.73e-7"    -- exponential notation, negative power
+    "Inf"        -- the same as Infinity
+    "-infinity"  -- the same as -Inf
+    "NaN"        -- not-a-Number
+    "NaN8275"    -- diagnostic NaN
 """
 scalar Decimal
 
@@ -916,7 +946,7 @@ type TokenTransfer {
   to_address_hash: String
   token_contract_address_hash: String
   token_id: Decimal
-  transaction: Block
+  transaction: Transaction
   transaction_hash: String
   udt: Udt
 }
