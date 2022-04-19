@@ -1,13 +1,7 @@
 defmodule GodwokenExplorer.UDT do
   use GodwokenExplorer, :schema
 
-  import Torch.Helpers, only: [sort: 1, paginate: 4]
-  import Filtrex.Type.Config
-
   alias GodwokenExplorer.KeyValue
-
-  @pagination [page_size: 15]
-  @pagination_distance 5
 
   @derive {Jason.Encoder, except: [:__meta__]}
   @primary_key {:id, :integer, autogenerate: false}
@@ -24,6 +18,7 @@ defmodule GodwokenExplorer.UDT do
     field(:value, :decimal)
     field(:price, :decimal)
     field(:bridge_account_id, :integer)
+    field(:bridge_account_eth_address, :binary, virtual: true)
     field :type, Ecto.Enum, values: [:bridge, :native]
 
     belongs_to(:account, Account, foreign_key: :bridge_account_id, references: :id, define_field: false)
@@ -47,6 +42,7 @@ defmodule GodwokenExplorer.UDT do
       :official_site,
       :type,
       :value,
+      :bridge_account_eth_address,
       :bridge_account_id
     ])
     |> unique_constraint(:id, name: :udts_pkey)
@@ -66,34 +62,6 @@ defmodule GodwokenExplorer.UDT do
 
   def count_holder(udt_id) do
     from(au in AccountUDT, where: au.udt_id == ^udt_id) |> Repo.aggregate(:count)
-  end
-
-  @spec paginate_udts(map) :: {:ok, map} | {:error, any}
-  def paginate_udts(params \\ %{}) do
-    params =
-      params
-      |> Map.put_new("sort_direction", "desc")
-      |> Map.put_new("sort_field", "inserted_at")
-
-    {:ok, sort_direction} = Map.fetch(params, "sort_direction")
-    {:ok, sort_field} = Map.fetch(params, "sort_field")
-
-    with {:ok, filter} <- Filtrex.parse_params(filter_config(:udts), params["udt"] || %{}),
-         %Scrivener.Page{} = page <- do_paginate_udts(filter, params) do
-      {:ok,
-       %{
-         udts: page.entries,
-         page_number: page.page_number,
-         page_size: page.page_size,
-         total_pages: page.total_pages,
-         total_entries: page.total_entries,
-         distance: @pagination_distance,
-         sort_field: sort_field,
-         sort_direction: sort_direction
-       }}
-    else
-      {:error, error} -> {:error, error}
-    end
   end
 
   def get_decimal(id) do
@@ -130,107 +98,6 @@ defmodule GodwokenExplorer.UDT do
     end
   end
 
-  defp do_paginate_udts(filter, params) do
-    UDT
-    |> Filtrex.query(filter)
-    |> order_by(^sort(params))
-    |> paginate(Repo, params, @pagination)
-  end
-
-  @doc """
-  Returns the list of udts.
-
-  ## Examples
-
-      iex> list_udts()
-      [%UDT{}, ...]
-
-  """
-  def list_udts do
-    Repo.all(UDT)
-  end
-
-  @doc """
-  Gets a single udt.
-
-  Raises `Ecto.NoResultsError` if the Udt does not exist.
-
-  ## Examples
-
-      iex> get_udt!(123)
-      %UDT{}
-
-      iex> get_udt!(456)
-      ** (Ecto.NoResultsError)
-
-  """
-  def get_udt!(id), do: Repo.get!(UDT, id)
-
-  @doc """
-  Creates a udt.
-
-  ## Examples
-
-      iex> create_udt(%{field: value})
-      {:ok, %UDT{}}
-
-      iex> create_udt(%{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def create_udt(attrs \\ %{}) do
-    %UDT{}
-    |> UDT.changeset(attrs)
-    |> Repo.insert()
-  end
-
-  @doc """
-  Updates a udt.
-
-  ## Examples
-
-      iex> update_udt(udt, %{field: new_value})
-      {:ok, %UDT{}}
-
-      iex> update_udt(udt, %{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def update_udt(%UDT{} = udt, attrs) do
-    udt
-    |> UDT.changeset(attrs)
-    |> Repo.update()
-  end
-
-  @doc """
-  Deletes a UDT.
-
-  ## Examples
-
-      iex> delete_udt(udt)
-      {:ok, %UDT{}}
-
-      iex> delete_udt(udt)
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def delete_udt(%UDT{} = udt) do
-    Repo.delete(udt)
-  end
-
-  @doc """
-  Returns an `%Ecto.Changeset{}` for tracking udt changes.
-
-  ## Examples
-
-      iex> change_udt(udt)
-      %Ecto.Changeset{source: %UDT{}}
-
-  """
-  def change_udt(%UDT{} = udt, attrs \\ %{}) do
-    UDT.changeset(udt, attrs)
-  end
-
   def ckb_account_id do
     if FastGlobal.get(:ckb_account_id) do
       FastGlobal.get(:ckb_account_id)
@@ -246,21 +113,6 @@ defmodule GodwokenExplorer.UDT do
     end
   end
 
-  def eth_account_id do
-    if FastGlobal.get(:eth_account_id) do
-      FastGlobal.get(:eth_account_id)
-    else
-      with eth_script_hash when is_binary(eth_script_hash) <-
-             Application.get_env(:godwoken_explorer, :eth_token_script_hash),
-           %__MODULE__{id: id} <- Repo.get_by(__MODULE__, script_hash: eth_script_hash) do
-        FastGlobal.put(:eth_account_id, id)
-        id
-      else
-        _ -> nil
-      end
-    end
-  end
-
   def find_by_name_or_token(keyword) do
     from(u in UDT,
       where:
@@ -268,18 +120,6 @@ defmodule GodwokenExplorer.UDT do
     )
     |> Repo.all()
     |> List.first()
-  end
-
-  defp filter_config(:udts) do
-    defconfig do
-      number(:decimal)
-      text(:name)
-      text(:symbol)
-      text(:icon)
-      # TODO add config for supply of type decimal
-      # TODO add config for type_script of type map
-      # TODO add config for script_hash of type binary
-    end
   end
 
   # TODO: current will calculate all deposits and withdrawals, after can calculate by incrementation

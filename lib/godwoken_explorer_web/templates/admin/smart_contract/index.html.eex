@@ -49,7 +49,6 @@
               <td class="torch-actions">
                 <span><%= link "Show", to: Routes.admin_smart_contract_path(@conn, :show, smart_contract) %></span>
                 <span><%= link "Edit", to: Routes.admin_smart_contract_path(@conn, :edit, smart_contract) %></span>
-                <span><%= link "Delete", to: Routes.admin_smart_contract_path(@conn, :delete, smart_contract), method: :delete, data: [confirm: "Are you sure?"] %></span>
               </td>
             </tr>
           <% end %>

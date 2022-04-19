@@ -20,6 +20,7 @@ defmodule GodwokenExplorer.SmartContract do
     field :compiler_version, :string
     field :compiler_file_format, :string
     field :other_info, :string
+    field(:eth_address, :binary, virtual: true)
 
     timestamps()
   end
