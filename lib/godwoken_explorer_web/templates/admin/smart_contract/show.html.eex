@@ -29,7 +29,7 @@
 
         <li>
           <div class="torch-show-label">Account:</div>
-          <div class="torch-show-data"><%= Map.get(@smart_contract.account, :short_address, nil) %></div>
+          <div class="torch-show-data"><%= Map.get(@smart_contract.account, :eth_address, nil) %></div>
         </li>
 
         <li>
