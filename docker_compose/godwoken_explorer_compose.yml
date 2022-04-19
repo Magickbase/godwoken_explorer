@@ -1,0 +1,13 @@
+version: "3.9"
+services:
+  godwoken_explorer:
+    image: godwoken_explorer:${DOCKER_TAG:-latest}
+    build:
+      context: ..
+      dockerfile: ./docker/Dockerfile
+    restart: always
+    command: '/app/_build/prod/rel/godwoken_explorer start'
+    ports:
+      - 4001:4001
+      - 5432:5432
+      - 25432:25432

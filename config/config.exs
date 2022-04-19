@@ -77,6 +77,10 @@ config :godwoken_explorer, Oban,
   ],
   queues: [default: 10]
 
+# compile time on off
+gwscan_graphiql_on_off = System.get_env("GWSCAN_GRAPHIQL_ON_OFF", "false") |> String.to_atom()
+config :godwoken_explorer, :on_off, graphiql: gwscan_graphiql_on_off
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
-import_config "#{Mix.env()}.exs"
+import_config "#{config_env()}.exs"

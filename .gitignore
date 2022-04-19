@@ -43,3 +43,8 @@ npm-debug.log
 
 native/*/target
 .elixir_ls
+
+dev.env
+prod.env
+prod_aggron.env
+prod_mainnet.env
