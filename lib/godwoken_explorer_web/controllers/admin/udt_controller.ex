@@ -1,13 +1,16 @@
 defmodule GodwokenExplorerWeb.Admin.UDTController do
   use GodwokenExplorerWeb, :controller
 
-  alias GodwokenExplorer.UDT
+  require IEx
+
+  alias GodwokenExplorer.Admin.UDT, as: Admin
+  alias GodwokenExplorer.{UDT, Account}
 
   plug(:put_root_layout, {GodwokenExplorerWeb.LayoutView, "torch.html"})
   plug(:put_layout, false)
 
   def index(conn, params) do
-    case UDT.paginate_udts(params) do
+    case Admin.paginate_udts(params) do
       {:ok, assigns} ->
         render(conn, "index.html", assigns)
 
@@ -19,7 +22,7 @@ defmodule GodwokenExplorerWeb.Admin.UDTController do
   end
 
   def new(conn, _params) do
-    changeset = UDT.change_udt(%UDT{})
+    changeset = Admin.change_udt(%UDT{})
     render(conn, "new.html", changeset: changeset)
   end
 
@@ -28,9 +31,34 @@ defmodule GodwokenExplorerWeb.Admin.UDTController do
       if udt_params["type"] == "native" do
         udt_params |> Map.merge(%{"bridge_account_id" => udt_params["id"]})
       else
+        with %Account{id: id, type: :polyjuice_contract} <-
+               udt_params["bridge_account_eth_address"]
+               |> String.downcase()
+               |> Account.search() do
+          udt_params
+          |> Map.merge(%{"bridge_account_id" => id})
+        else
+          _ -> udt_params
+        end
+      end
+
+    udt_params =
+      if is_nil(udt_params["decimal"]) do
+        decimal = UDT.eth_call_decimal(udt_params["bridge_account_eth_address"])
+        udt_params |> Map.merge(%{"decimal" => decimal})
+      else
         udt_params
       end
-    case UDT.create_udt(udt_params) do
+
+    udt_params =
+      if is_nil(udt_params["total_supply"]) do
+        supply = UDT.eth_call_decimal(udt_params["bridge_account_eth_address"])
+        udt_params |> Map.merge(%{"supply" => supply})
+      else
+        udt_params
+      end
+
+    case Admin.create_udt(udt_params) do
       {:ok, udt} ->
         conn
         |> put_flash(:info, "Udt created successfully.")
@@ -42,26 +70,54 @@ defmodule GodwokenExplorerWeb.Admin.UDTController do
   end
 
   def show(conn, %{"id" => id}) do
-    udt = UDT.get_udt!(id)
+    udt = Admin.get_udt!(id)
     render(conn, "show.html", udt: udt)
   end
 
   def edit(conn, %{"id" => id}) do
-    udt = UDT.get_udt!(id)
-    changeset = UDT.change_udt(udt)
+    udt = Admin.get_udt!(id)
+    changeset = Admin.change_udt(udt)
+
+    changeset =
+      Ecto.Changeset.put_change(changeset, :bridge_account_eth_address, udt.account.short_address)
+
     render(conn, "edit.html", udt: udt, changeset: changeset)
   end
 
   def update(conn, %{"id" => id, "udt" => udt_params}) do
-    udt = UDT.get_udt!(id)
+    udt = Admin.get_udt!(id)
+
     udt_params =
       if udt_params["type"] == "native" do
         udt_params |> Map.merge(%{"bridge_account_id" => id})
       else
+        with %Account{id: id, type: :polyjuice_contract} <-
+               udt_params["bridge_account_eth_address"]
+               |> String.downcase()
+               |> Account.search() do
+          udt_params |> Map.merge(%{"bridge_account_id" => id})
+        else
+          _ -> udt_params
+        end
+      end
+
+    udt_params =
+      if udt_params["decimal"] == "" do
+        decimal = UDT.eth_call_decimal(udt_params["bridge_account_eth_address"])
+        udt_params |> Map.merge(%{"decimal" => decimal})
+      else
         udt_params
       end
 
-    case UDT.update_udt(udt, udt_params) do
+    udt_params =
+      if udt_params["supply"] == "" do
+        supply = UDT.eth_call_total_supply(udt_params["bridge_account_eth_address"])
+        udt_params |> Map.merge(%{"supply" => supply})
+      else
+        udt_params
+      end
+
+    case Admin.update_udt(udt, udt_params) do
       {:ok, udt} ->
         conn
         |> put_flash(:info, "Udt updated successfully.")
@@ -70,14 +126,5 @@ defmodule GodwokenExplorerWeb.Admin.UDTController do
       {:error, %Ecto.Changeset{} = changeset} ->
         render(conn, "edit.html", udt: udt, changeset: changeset)
     end
-  end
-
-  def delete(conn, %{"id" => id}) do
-    udt = UDT.get_udt!(id)
-    {:ok, _udt} = UDT.delete_udt(udt)
-
-    conn
-    |> put_flash(:info, "Udt deleted successfully.")
-    |> redirect(to: Routes.admin_udt_path(conn, :index))
   end
 end

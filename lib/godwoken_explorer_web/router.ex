@@ -71,8 +71,8 @@ defmodule GodwokenExplorerWeb.Router do
     pipe_through(:browser)
 
     get("/", UDTController, :index)
-    resources("/udts", UDTController)
-    resources("/smart_contracts", SmartContractController)
+    resources("/udts", UDTController, except: [:delete])
+    resources("/smart_contracts", SmartContractController, except: [:delete])
   end
 
   # Other scopes may use custom stacks.
