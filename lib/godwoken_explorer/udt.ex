@@ -1,6 +1,8 @@
 defmodule GodwokenExplorer.UDT do
   use GodwokenExplorer, :schema
 
+  import GodwokenRPC.Util, only: [hex_to_number: 1]
+
   alias GodwokenExplorer.KeyValue
 
   @derive {Jason.Encoder, except: [:__meta__]}
@@ -177,6 +179,28 @@ defmodule GodwokenExplorer.UDT do
     else
       _ ->
         %{id: nil, name: "", decimal: 0, symbol: ""}
+    end
+  end
+
+  def eth_call_total_supply(contract_address) do
+    total_supply_method = "0x18160DDD"
+    case GodwokenRPC.eth_call(%{
+      to: contract_address,
+      data: total_supply_method
+    }) do
+      {:ok, hex_number} -> hex_to_number(hex_number)
+      _ -> 0
+    end
+  end
+
+  def eth_call_decimal(contract_address) do
+    decimals_method = "0x313CE567"
+    case GodwokenRPC.eth_call(%{
+      to: contract_address,
+      data: decimals_method
+    }) do
+      {:ok, hex_number} -> hex_to_number(hex_number)
+      _ -> 8
     end
   end
 end

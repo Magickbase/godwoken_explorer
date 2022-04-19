@@ -1,7 +1,7 @@
 defmodule GodwokenExplorerWeb.Admin.UDTController do
   use GodwokenExplorerWeb, :controller
 
-  import Ecto.Query, only: [preload: 2]
+  require IEx
 
   alias GodwokenExplorer.Admin.UDT, as: Admin
   alias GodwokenExplorer.{UDT, Account}
@@ -35,10 +35,27 @@ defmodule GodwokenExplorerWeb.Admin.UDTController do
                udt_params["bridge_account_eth_address"]
                |> String.downcase()
                |> Account.search() do
-          udt_params |> Map.merge(%{"bridge_account_id" => id})
+          udt_params
+          |> Map.merge(%{"bridge_account_id" => id})
         else
           _ -> udt_params
         end
+      end
+
+    udt_params =
+      if is_nil(udt_params["decimal"]) do
+        decimal = UDT.eth_call_decimal(udt_params["bridge_account_eth_address"])
+        udt_params |> Map.merge(%{"decimal" => decimal})
+      else
+        udt_params
+      end
+
+    udt_params =
+      if is_nil(udt_params["total_supply"]) do
+        supply = UDT.eth_call_decimal(udt_params["bridge_account_eth_address"])
+        udt_params |> Map.merge(%{"supply" => supply})
+      else
+        udt_params
       end
 
     case Admin.create_udt(udt_params) do
@@ -60,7 +77,10 @@ defmodule GodwokenExplorerWeb.Admin.UDTController do
   def edit(conn, %{"id" => id}) do
     udt = Admin.get_udt!(id)
     changeset = Admin.change_udt(udt)
-    changeset = Ecto.Changeset.put_change(changeset, :bridge_account_eth_address, udt.account.short_address)
+
+    changeset =
+      Ecto.Changeset.put_change(changeset, :bridge_account_eth_address, udt.account.short_address)
+
     render(conn, "edit.html", udt: udt, changeset: changeset)
   end
 
@@ -79,6 +99,22 @@ defmodule GodwokenExplorerWeb.Admin.UDTController do
         else
           _ -> udt_params
         end
+      end
+
+    udt_params =
+      if udt_params["decimal"] == "" do
+        decimal = UDT.eth_call_decimal(udt_params["bridge_account_eth_address"])
+        udt_params |> Map.merge(%{"decimal" => decimal})
+      else
+        udt_params
+      end
+
+    udt_params =
+      if udt_params["supply"] == "" do
+        supply = UDT.eth_call_total_supply(udt_params["bridge_account_eth_address"])
+        udt_params |> Map.merge(%{"supply" => supply})
+      else
+        udt_params
       end
 
     case Admin.update_udt(udt, udt_params) do
