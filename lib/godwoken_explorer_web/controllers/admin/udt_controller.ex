@@ -52,7 +52,7 @@ defmodule GodwokenExplorerWeb.Admin.UDTController do
             udt_params
           end
 
-        if udt_params["total_supply"] == "" do
+        if udt_params["supply"] == "" do
           supply = UDT.eth_call_total_supply(eth_address)
           udt_params |> Map.merge(%{"supply" => supply})
         else
@@ -114,7 +114,7 @@ defmodule GodwokenExplorerWeb.Admin.UDTController do
       end
 
     udt_params =
-        if udt_params["bridge_account_id"] != nil do
+      if udt_params["bridge_account_id"] != nil do
         %Account{eth_address: eth_address} = Repo.get(Account, udt_params["bridge_account_id"])
 
         udt_params =
@@ -125,7 +125,7 @@ defmodule GodwokenExplorerWeb.Admin.UDTController do
             udt_params
           end
 
-        if udt_params["total_supply"] == "" do
+        if udt_params["supply"] == "" do
           supply = UDT.eth_call_total_supply(eth_address)
           udt_params |> Map.merge(%{"supply" => supply})
         else
