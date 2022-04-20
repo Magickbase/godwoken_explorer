@@ -31,8 +31,8 @@ defmodule GodwokenExplorer.TokenTransfer do
     timestamps()
   end
 
-  @required_attrs ~w(block_number log_index from_address_hash to_address_hash token_contract_address_hash transaction_hash block_hash amounts token_ids)a
-  @optional_attrs ~w(amount token_id)a
+  @required_attrs ~w(block_number log_index from_address_hash to_address_hash token_contract_address_hash transaction_hash block_hash)a
+  @optional_attrs ~w(amount token_id amounts token_ids)a
 
   @doc false
   def changeset(%TokenTransfer{} = struct, params \\ %{}) do
