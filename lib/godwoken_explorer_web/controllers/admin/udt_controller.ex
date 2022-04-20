@@ -41,7 +41,7 @@ defmodule GodwokenExplorerWeb.Admin.UDTController do
       end
 
     udt_params =
-      if udt_params["bridge_account_id"] do
+      if udt_params["bridge_account_id"] != nil do
         %Account{eth_address: eth_address} = Repo.get(Account, udt_params["bridge_account_id"])
 
         udt_params =
@@ -114,7 +114,7 @@ defmodule GodwokenExplorerWeb.Admin.UDTController do
       end
 
     udt_params =
-      if udt_params["bridge_account_id"] do
+        if udt_params["bridge_account_id"] != nil do
         %Account{eth_address: eth_address} = Repo.get(Account, udt_params["bridge_account_id"])
 
         udt_params =
