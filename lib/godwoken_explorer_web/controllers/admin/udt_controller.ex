@@ -38,22 +38,29 @@ defmodule GodwokenExplorerWeb.Admin.UDTController do
           udt_params
           |> Map.merge(%{"bridge_account_id" => id})
         else
-          _ -> udt_params
+          _ -> udt_params |> Map.merge(%{"bridge_account_id" => nil})
         end
       end
 
     udt_params =
-      if is_nil(udt_params["decimal"]) do
-        decimal = UDT.eth_call_decimal(udt_params["bridge_account_eth_address"])
-        udt_params |> Map.merge(%{"decimal" => decimal})
-      else
-        udt_params
-      end
+      if udt_params["bridge_account_id"] do
+        %Account{short_address: short_address} =
+          Repo.get(Account, udt_params["bridge_account_id"])
 
-    udt_params =
-      if is_nil(udt_params["total_supply"]) do
-        supply = UDT.eth_call_decimal(udt_params["bridge_account_eth_address"])
-        udt_params |> Map.merge(%{"supply" => supply})
+        udt_params =
+          if udt_params["decimal"] == "" do
+            decimal = UDT.eth_call_decimal(short_address)
+            udt_params |> Map.merge(%{"decimal" => decimal})
+          else
+            udt_params
+          end
+
+        if udt_params["total_supply"] == "" do
+          supply = UDT.eth_call_decimal(short_address)
+          udt_params |> Map.merge(%{"supply" => supply})
+        else
+          udt_params
+        end
       else
         udt_params
       end
@@ -79,7 +86,15 @@ defmodule GodwokenExplorerWeb.Admin.UDTController do
     changeset = Admin.change_udt(udt)
 
     changeset =
-      Ecto.Changeset.put_change(changeset, :bridge_account_eth_address, udt.account.short_address)
+      if is_nil(udt.bridge_account_id) do
+        changeset
+      else
+        Ecto.Changeset.put_change(
+          changeset,
+          :bridge_account_eth_address,
+          udt.account.short_address
+        )
+      end
 
     render(conn, "edit.html", udt: udt, changeset: changeset)
   end
@@ -97,22 +112,29 @@ defmodule GodwokenExplorerWeb.Admin.UDTController do
                |> Account.search() do
           udt_params |> Map.merge(%{"bridge_account_id" => id})
         else
-          _ -> udt_params
+          _ -> udt_params |> Map.merge(%{"bridge_account_id" => nil})
         end
       end
 
     udt_params =
-      if udt_params["decimal"] == "" do
-        decimal = UDT.eth_call_decimal(udt_params["bridge_account_eth_address"])
-        udt_params |> Map.merge(%{"decimal" => decimal})
-      else
-        udt_params
-      end
+      if udt_params["bridge_account_id"] do
+        %Account{short_address: short_address} =
+          Repo.get(Account, udt_params["bridge_account_id"])
 
-    udt_params =
-      if udt_params["supply"] == "" do
-        supply = UDT.eth_call_total_supply(udt_params["bridge_account_eth_address"])
-        udt_params |> Map.merge(%{"supply" => supply})
+        udt_params =
+          if udt_params["decimal"] == "" do
+            decimal = UDT.eth_call_decimal(short_address)
+            udt_params |> Map.merge(%{"decimal" => decimal})
+          else
+            udt_params
+          end
+
+        if udt_params["total_supply"] == "" do
+          supply = UDT.eth_call_decimal(short_address)
+          udt_params |> Map.merge(%{"supply" => supply})
+        else
+          udt_params
+        end
       else
         udt_params
       end

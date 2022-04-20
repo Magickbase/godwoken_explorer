@@ -18,7 +18,7 @@
 
         <li>
           <div class="torch-show-label">Bridge Account eth addresss:</div>
-          <div class="torch-show-data"><%= Map.get(@udt.account, :short_address, nil) %></div>
+          <div class="torch-show-data"><%= Map.get(@udt.account || %{}, :short_address, nil) %></div>
         </li>
 
         <li>
@@ -45,11 +45,13 @@
           <div class="torch-show-label">Supply:</div>
           <div class="torch-show-data"><%= @udt.supply %></div>
         </li>
-        <%= for {key, value} <- @udt.type_script do %>
-          <li>
-            <div class="torch-show-label">Layer1 Type Script-<%= key %>:</div>
-            <div class="torch-show-data">  <%= value%></div>
-          </li>
+        <%= if @udt.type_script != nil do %>
+          <%= for {key, value} <- @udt.type_script do %>
+            <li>
+              <div class="torch-show-label">Layer1 Type Script-<%= key %>:</div>
+              <div class="torch-show-data">  <%= value%></div>
+            </li>
+          <% end %>
         <% end %>
 
         <li>
