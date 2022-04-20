@@ -25,11 +25,13 @@ defmodule GodwokenExplorer.TokenTransfer do
     field(:from_address_hash, :binary)
     field(:to_address_hash, :binary)
     field(:token_contract_address_hash, :binary)
+    field(:amounts, {:array, :decimal})
+    field(:token_ids, {:array, :decimal})
 
     timestamps()
   end
 
-  @required_attrs ~w(block_number log_index from_address_hash to_address_hash token_contract_address_hash transaction_hash block_hash)a
+  @required_attrs ~w(block_number log_index from_address_hash to_address_hash token_contract_address_hash transaction_hash block_hash amounts token_ids)a
   @optional_attrs ~w(amount token_id)a
 
   @doc false
