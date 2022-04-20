@@ -42,19 +42,18 @@ defmodule GodwokenExplorerWeb.Admin.UDTController do
 
     udt_params =
       if udt_params["bridge_account_id"] do
-        %Account{short_address: short_address} =
-          Repo.get(Account, udt_params["bridge_account_id"])
+        %Account{eth_address: eth_address} = Repo.get(Account, udt_params["bridge_account_id"])
 
         udt_params =
           if udt_params["decimal"] == "" do
-            decimal = UDT.eth_call_decimal(short_address)
+            decimal = UDT.eth_call_decimal(eth_address)
             udt_params |> Map.merge(%{"decimal" => decimal})
           else
             udt_params
           end
 
         if udt_params["total_supply"] == "" do
-          supply = UDT.eth_call_decimal(short_address)
+          supply = UDT.eth_call_total_supply(eth_address)
           udt_params |> Map.merge(%{"supply" => supply})
         else
           udt_params
@@ -116,19 +115,18 @@ defmodule GodwokenExplorerWeb.Admin.UDTController do
 
     udt_params =
       if udt_params["bridge_account_id"] do
-        %Account{short_address: short_address} =
-          Repo.get(Account, udt_params["bridge_account_id"])
+        %Account{eth_address: eth_address} = Repo.get(Account, udt_params["bridge_account_id"])
 
         udt_params =
           if udt_params["decimal"] == "" do
-            decimal = UDT.eth_call_decimal(short_address)
+            decimal = UDT.eth_call_decimal(eth_address)
             udt_params |> Map.merge(%{"decimal" => decimal})
           else
             udt_params
           end
 
         if udt_params["total_supply"] == "" do
-          supply = UDT.eth_call_decimal(short_address)
+          supply = UDT.eth_call_total_supply(eth_address)
           udt_params |> Map.merge(%{"supply" => supply})
         else
           udt_params
