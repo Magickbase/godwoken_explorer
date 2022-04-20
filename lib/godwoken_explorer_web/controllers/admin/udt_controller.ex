@@ -1,10 +1,8 @@
 defmodule GodwokenExplorerWeb.Admin.UDTController do
   use GodwokenExplorerWeb, :controller
 
-  require IEx
-
   alias GodwokenExplorer.Admin.UDT, as: Admin
-  alias GodwokenExplorer.{UDT, Account}
+  alias GodwokenExplorer.{UDT, Account, Repo}
 
   plug(:put_root_layout, {GodwokenExplorerWeb.LayoutView, "torch.html"})
   plug(:put_layout, false)
