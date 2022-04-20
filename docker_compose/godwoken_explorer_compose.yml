@@ -6,8 +6,48 @@ services:
       context: ..
       dockerfile: ./docker/Dockerfile
     restart: always
-    command: '/app/_build/prod/rel/godwoken_explorer start'
+    working_dir: /app
+    command: 'mix do ecto.create, ecto.migrate, phx.server'
+    # command: '/app/_build/prod/rel/godwoken_explorer/bin/godwoken_explorer start'
+    environment:
+      - MIX_ENV
+      - GWSCAN_GRAPHIQL_ON_OFF
+      - GWSCAN_ENDPOINT_HOST
+      - GWSCAN_ENDPOINT_PORT
+      - GWSCAN_ENDPOINT_SCHEME
+      - PG_USERNAME
+      - PG_PADDWORD
+      - PG_DATABASE
+      - PG_HOSTNAME
+      - PG_PORT
+      - PG_SHOW_SENSITIVE_DATA_ON_CONNECTION_ERROR
+      - PG_POOL_SIZE
+      - PG_QUEUE_TARGET
+      - PG_TIMEOUT
+      - DATABASE_URL
+      - GODWOKEN_SCAN_ENDPOINT_SECRET_KEY
+      - GWSCAN_ENDPOINT_LIVE_VIEW_SIGNING_SALT
+      - GWSCAN_BLOCK_SYNC_WORKER_ON_OFF
+      - GWSCAN_BLOCK_GLOBAL_STATE_WORKER_ON_OFF
+      - GWSCAN_BLOCK_BIND_L1_L2_WORKER_ON_OFF
+      - GWSCAN_BLOCK_SYNC_L1_BLOCK_WORKER_ON_OFF
+      - GWSCAN_DASHBOARD_USERNAME
+      - GWSCAN_DASHBOARD_PASSWORD
+      - GODWOKEN_JSON_RPC_URL
+      - GODWOKEN_MEMPOOL_RPC_URL
+      - CKB_INDEXER_URL
+      - CKB_RPC_URL
+      - GWSCAN_INTERVAL_SYNC_WORKER
+      - GWSCAN_INTERVAL_GLOBAL_STATE_WORKER
+      - GWSCAN_INTERVAL_BIND_L1_WORKER
+      - GWSCAN_INTERVAL_SYNC_DEPOSITION_WORKER
+      - GWSCAN_SENTRY_DSN
+      - GWSCAN_SENTRY_ENVIRONMENT_NAME
+      - GWSCAN_SENTRY_ENABLE_SOURCE_CODE_CONTEXT
+      - GWSCAN_SENTRY_INCLUDED_ENVIRONMENT
     ports:
       - 4001:4001
       - 5432:5432
       - 25432:25432
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'

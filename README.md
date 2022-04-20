@@ -27,9 +27,9 @@ For technology infrastructure, this project is inspired by [blockscout](https://
 ### Docker ([availability was waiting for this pr merge](https://github.com/nervosnet/godwoken_explorer/pull/394))
 1. use dockerfile to build the image
 `docker build . -f ./docker/Dockerfile` 
-2. use docker compose to build and running the
+2. [edit your custom docker environment file](./docs/docker_enviromnent.md)
+3. use docker compose to build and running the container
 `docker compose --env-file=./docker_compose/envs/[your_custom_env_file].env -f=./docker_compose/godwoken_explorer_compose.yml up`
-3. [edit your custom docker environment file](./docs/docker_enviromnent.md)
 
 ### Branch for godwoken version
 main: godwoken v0

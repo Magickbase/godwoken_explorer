@@ -31,44 +31,13 @@ config :phoenix, :stacktrace_depth, 20
 # Initialize plugs at runtime for faster development compilation
 config :phoenix, :plug_init_mode, :runtime
 
-pg_username = System.get_env("PG_USERNAME", "postgres")
-pg_password = System.get_env("PG_PADDWORD", "postgres")
-
-pg_database = System.get_env("PG_DATABASE", "godwoken_explorer_dev")
-pg_hostname = System.get_env("PG_HOSTNAME", "localhost")
-pg_port = System.get_env("PG_PORT", "5432")
-
-pg_url =
-  System.get_env(
-    "PG_DATABASE_URL",
-    "postgresql://#{pg_username}:@#{pg_hostname}:#{pg_port}/#{pg_database}"
-  )
-
-pg_show_sensitive_data_on_connection_error =
-  System.get_env("PG_SHOW_SENSITIVE_DATA_ON_CONNECTION_ERROR", "false") |> String.to_atom()
-
-pg_pool_size = System.get_env("PG_POOL_SIZE", "10") |> String.to_integer()
-pg_queue_target = System.get_env("PG_QUEUE_TARGET", "5000") |> String.to_integer()
-pg_timeout = System.get_env("PG_TIMEOUT", "60000") |> String.to_integer()
-
 chain =
   if is_nil(System.get_env("GODWOKEN_CHAIN")) do
-    "aggron"
+    "testnet"
   else
     System.get_env("GODWOKEN_CHAIN")
     |> String.trim()
     |> String.downcase()
   end
-
-config :godwoken_explorer, GodwokenExplorer.Repo,
-  username: pg_username,
-  password: pg_password,
-  database: pg_database,
-  hostname: pg_hostname,
-  port: pg_port,
-  show_sensitive_data_on_connection_error: pg_show_sensitive_data_on_connection_error,
-  pool_size: pg_pool_size,
-  queue_target: pg_queue_target,
-  timeout: pg_timeout
 
 import_config "dev/#{chain}.exs"

@@ -20,9 +20,40 @@ gwscan_endpoint_live_view_signing_salt =
 
 config :godwoken_explorer, GodwokenExplorerWeb.Endpoint,
   url: [host: gwscan_endpoint_host, port: gwscan_endpoint_port, scheme: gwscan_endpoint_scheme],
-  http: [ip:  {0, 0, 0, 0}, port: gwscan_endpoint_port],
+  http: [ip: {0, 0, 0, 0}, port: gwscan_endpoint_port],
   secret_key_base: gwscan_endpoint_secret_key,
   live_view: [signing_salt: gwscan_endpoint_live_view_signing_salt]
+
+pg_username = System.get_env("PG_USERNAME", "postgres")
+pg_password = System.get_env("PG_PADDWORD", "postgres")
+
+pg_database = System.get_env("PG_DATABASE", "godwoken_explorer_dev")
+pg_hostname = System.get_env("PG_HOSTNAME", "localhost")
+pg_port = System.get_env("PG_PORT", "5432")
+
+pg_show_sensitive_data_on_connection_error =
+  System.get_env("PG_SHOW_SENSITIVE_DATA_ON_CONNECTION_ERROR", "false") |> String.to_atom()
+
+pg_pool_size = System.get_env("PG_POOL_SIZE", "10") |> String.to_integer()
+pg_queue_target = System.get_env("PG_QUEUE_TARGET", "5000") |> String.to_integer()
+pg_timeout = System.get_env("PG_TIMEOUT", "10000") |> String.to_integer()
+
+database_url =
+  System.get_env("DATABASE_URL") ||
+    "ecto://#{pg_username}:#{pg_password}@#{pg_hostname}:#{pg_port}/#{pg_database}"
+
+maybe_ipv6 = if System.get_env("ECTO_IPV6"), do: [:inet6], else: []
+
+config :godwoken_explorer, GodwokenExplorer.Repo,
+  username: pg_username,
+  password: pg_password,
+  database: pg_database,
+  hostname: pg_hostname,
+  port: pg_port,
+  url: database_url,
+  pool_size: pg_pool_size,
+  timeout: pg_timeout,
+  socket_options: maybe_ipv6
 
 gwscan_block_sync_woker_on_off =
   System.get_env("GWSCAN_BLOCK_SYNC_WORKER_ON_OFF", "false") |> String.to_atom()
