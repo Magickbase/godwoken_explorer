@@ -53,7 +53,7 @@ defmodule GodwokenExplorerWeb.Admin.UDTController do
             udt_params
           end
 
-        if udt_params["total_supply"] == "" do
+        if udt_params["supply"] == "" do
           supply = UDT.eth_call_total_supply(short_address)
           udt_params |> Map.merge(%{"supply" => supply})
         else
@@ -127,7 +127,7 @@ defmodule GodwokenExplorerWeb.Admin.UDTController do
             udt_params
           end
 
-        if udt_params["total_supply"] == "" do
+        if udt_params["supply"] == "" do
           supply = UDT.eth_call_total_supply(short_address)
           udt_params |> Map.merge(%{"supply" => supply})
         else
