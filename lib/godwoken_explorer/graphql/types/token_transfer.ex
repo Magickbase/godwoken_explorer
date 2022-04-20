@@ -82,7 +82,7 @@ defmodule GodwokenExplorer.Graphql.Types.TokenTransfer do
       resolve(&Resolvers.TokenTransfer.block/3)
     end
 
-    field :transaction, :block do
+    field :transaction, :transaction do
       resolve(&Resolvers.TokenTransfer.transaction/3)
     end
   end
