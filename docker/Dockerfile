@@ -29,6 +29,12 @@ RUN mix local.hex --force && \
 # set build ENV
 ENV MIX_ENV="prod"
 
+ARG GODWOKEN_CHAIN
+ARG GWSCAN_GRAPHIQL
+
+ENV GODWOKEN_CHAIN=$GODWOKEN_CHAIN
+ENV GWSCAN_GRAPHIQL=$GWSCAN_GRAPHIQL
+
 # install mix dependencies
 COPY mix.exs mix.lock ./
 RUN mix deps.get --only $MIX_ENV

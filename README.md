@@ -24,11 +24,11 @@ For technology infrastructure, this project is inspired by [blockscout](https://
 ### Deploy
 [Local Deploy to Ubuntu](https://github.com/nervina-labs/godwoken_explorer/blob/main/docs/deploy_to_ubuntu.md)
 
-### Docker ([availability was waiting for this pr merge](https://github.com/nervosnet/godwoken_explorer/pull/394))
-1. use dockerfile to build the image
-`docker build . -f ./docker/Dockerfile` 
-2. [edit your custom docker environment file](./docs/docker_enviromnent.md)
-3. use docker compose to build and running the container
+### Docker Compose([availability was waiting for this pr merge](https://github.com/nervosnet/godwoken_explorer/pull/394))
+1. [edit your custom docker environment file](./docker_compose/envs/.env)
+2. use docker compose to build container
+`docker compose --env-file=./docker_compose/envs/[your_custom_env_file].env -f=./docker_compose/godwoken_explorer_compose.yml build --no-cache`
+3. use docker compose to run the container
 `docker compose --env-file=./docker_compose/envs/[your_custom_env_file].env -f=./docker_compose/godwoken_explorer_compose.yml up`
 
 ### Branch for godwoken version

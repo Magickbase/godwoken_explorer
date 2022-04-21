@@ -5,13 +5,19 @@ services:
     build:
       context: ..
       dockerfile: ./docker/Dockerfile
+      # these are available on build
+      args:
+        GODWOKEN_CHAIN: ${GODWOKEN_CHAIN}
+        GWSCAN_GRAPHIQL: ${GWSCAN_GRAPHIQL}
     restart: always
     working_dir: /app
-    command: 'mix do ecto.create, ecto.migrate, phx.server'
-    # command: '/app/_build/prod/rel/godwoken_explorer/bin/godwoken_explorer start'
+    command: "mix do ecto.create, ecto.migrate, phx.server"
+    # command: '/app/_build/prod/rel/godwoken_explorer/bin/godwoken_explorer eval "IO.inspect Application.get_env(:godwoken_explorer, :graphiql)"'
+    # these are available on run
     environment:
-      - MIX_ENV
-      - GWSCAN_GRAPHIQL_ON_OFF
+      - MIX_ENV=prod
+      - GODWOKEN_CHAIN
+      - GWSCAN_GRAPHIQL
       - GWSCAN_ENDPOINT_HOST
       - GWSCAN_ENDPOINT_PORT
       - GWSCAN_ENDPOINT_SCHEME
@@ -22,9 +28,9 @@ services:
       - PG_PORT
       - PG_SHOW_SENSITIVE_DATA_ON_CONNECTION_ERROR
       - PG_POOL_SIZE
-      - PG_QUEUE_TARGET
       - PG_TIMEOUT
-      - DATABASE_URL
+      - PG_QUEUE_TARGET
+      - PG_QUEUE_INTERVAL
       - GODWOKEN_SCAN_ENDPOINT_SECRET_KEY
       - GWSCAN_ENDPOINT_LIVE_VIEW_SIGNING_SALT
       - GWSCAN_BLOCK_SYNC_WORKER_ON_OFF
@@ -50,4 +56,4 @@ services:
       - 5432:5432
       - 25432:25432
     extra_hosts:
-      - 'host.docker.internal:host-gateway'
+      - "host.docker.internal:host-gateway"
