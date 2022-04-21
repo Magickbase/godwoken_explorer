@@ -189,3 +189,15 @@ config :sentry,
   enable_source_code_context: gwscan_sentry_enable_source_code_context,
   root_source_code_path: File.cwd!(),
   included_environments: [gwscan_sentry_included_environment]
+
+gwscan_scheduler_job = System.get_env("GWSCAN_SCHEDULER_JOB", "true") |> String.to_atom()
+
+gwscan_multiple_block_once =
+  System.get_env("GWSCAN_MULTIPLE_BLOCK_ONCE", "false") |> String.to_atom()
+
+gwscan_block_batch_size = System.get_env("GWSCAN_BLOCK_BATCH_SIZE", "1") |> String.to_integer()
+
+config :godwoken_explorer,
+  job: gwscan_scheduler_job,
+  multiple_block_once: gwscan_multiple_block_once,
+  block_batch_size: gwscan_block_batch_size

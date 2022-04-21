@@ -12,6 +12,7 @@ services:
     restart: always
     working_dir: /app
     command: "mix do ecto.create, ecto.migrate, phx.server"
+    # command: "/app/_build/prod/rel/godwoken_explorer/bin/godwoken_explorer start"
     # command: '/app/_build/prod/rel/godwoken_explorer/bin/godwoken_explorer eval "IO.inspect Application.get_env(:godwoken_explorer, :graphiql)"'
     # these are available on run
     environment:
@@ -51,6 +52,9 @@ services:
       - GWSCAN_SENTRY_ENVIRONMENT_NAME
       - GWSCAN_SENTRY_ENABLE_SOURCE_CODE_CONTEXT
       - GWSCAN_SENTRY_INCLUDED_ENVIRONMENT
+      - GWSCAN_SCHEDULER_JOB
+      - GWSCAN_MULTIPLE_BLOCK_ONCE
+      - GWSCAN_BLOCK_BATCH_SIZE
     ports:
       - 4001:4001
       - 5432:5432
