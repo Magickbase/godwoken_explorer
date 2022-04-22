@@ -4,7 +4,7 @@ defmodule GodwokenRPC do
   require Logger
 
   alias GodwokenRPC.{Blocks, Block, HTTP, Receipts, Contract}
-  alias GodwokenRPC.Web3.{FetchedTransactionReceipt, FetchedBlockByHash}
+  alias GodwokenRPC.Web3.{FetchedTransactionReceipt, FetchedBlockByHash, FetchedCodes}
   alias GodwokenRPC.Transaction.FetchedTransaction, as: FetchedGodwokenTransaction
 
   alias GodwokenRPC.CKBIndexer.{
@@ -288,6 +288,18 @@ defmodule GodwokenRPC do
       _ ->
         Logger.error("Failed to fetch tx receipt: #{tx_hash}")
         {:error, 0}
+    end
+  end
+
+  def fetch_codes(params) do
+    id_to_params = id_to_params(params)
+    options = Application.get_env(:godwoken_explorer, :json_rpc_named_arguments)
+
+    with {:ok, responses} <-
+           id_to_params
+           |> FetchedCodes.requests()
+           |> HTTP.json_rpc(options) do
+      {:ok, FetchedCodes.from_responses(responses, id_to_params)}
     end
   end
 
