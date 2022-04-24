@@ -6,6 +6,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
 
   require Logger
 
+  alias GodwokenIndexer.Worker.ImportContractCode
   alias GodwokenExplorer.Token.BalanceReader
   alias GodwokenIndexer.Transform.{TokenTransfers, TokenBalances}
   alias GodwokenRPC.{Blocks, Receipts}
@@ -88,7 +89,8 @@ defmodule GodwokenIndexer.Block.SyncWorker do
         {polyjuice_without_receipts, polyjuice_creator_params} =
           group_transaction_params(transactions_params_without_receipts)
 
-        handle_polyjuice_transactions(polyjuice_without_receipts)
+        {:ok, polyjuice_with_receipts} = handle_polyjuice_transactions(polyjuice_without_receipts)
+        async_contract_code(polyjuice_with_receipts)
         import_polyjuice_creator(polyjuice_creator_params)
 
         inserted_transactions = import_transactions(transactions_params_without_receipts)
@@ -121,7 +123,18 @@ defmodule GodwokenIndexer.Block.SyncWorker do
       import_token_transfers(logs)
       import_polyjuice(polyjuice_with_receipts)
       update_ckb_balance(polyjuice_without_receipts)
+      {:ok, polyjuice_with_receipts}
     end
+  end
+
+  defp async_contract_code(polyjuice_with_receipts) do
+    polyjuice_with_receipts
+    |> Enum.filter(fn attrs -> attrs[:created_contract_address_hash] != nil end)
+    |> Enum.each(fn attrs ->
+      %{block_quantity: attrs[:block_number], address: attrs[:created_contract_address_hash]}
+      |> ImportContractCode.new()
+      |> Oban.insert()
+    end)
   end
 
   defp group_transaction_params(transactions_params_without_receipts) do

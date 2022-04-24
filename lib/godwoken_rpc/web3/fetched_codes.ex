@@ -4,16 +4,21 @@ defmodule GodwokenRPC.Web3.FetchedCodes do
   """
 
   alias GodwokenRPC.Web3.FetchedCode
+  import GodwokenRPC.Util, only: [number_to_hex: 1]
 
   defstruct params_list: [],
             errors: []
 
-   @doc """
+  @doc """
   `eth_getCode` requests for `id_to_params`.
   """
   def requests(id_to_params) when is_map(id_to_params) do
     Enum.map(id_to_params, fn {id, %{block_quantity: block_quantity, address: address}} ->
-      FetchedCode.request(%{id: id, block_quantity: block_quantity, address: address})
+      FetchedCode.request(%{
+        id: id,
+        block_quantity: number_to_hex(block_quantity),
+        address: address
+      })
     end)
   end
 

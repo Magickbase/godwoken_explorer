@@ -66,13 +66,14 @@ config :jsonapi,
 # UTC
 config :godwoken_explorer, Oban,
   repo: GodwokenExplorer.Repo,
+  log: :error,
   plugins: [
-    Oban.Plugins.Pruner,
+    # Oban.Plugins.Pruner,
     {Oban.Plugins.Cron,
      crontab: [
        {"01 00 * * *", GodwokenIndexer.Worker.RefreshUDTSupply},
-       {"10 00 * * *", GodwokenIndexer.Worker.DailyStat},
-       {"*/2 * * * *", GodwokenIndexer.Worker.CheckAccount}
+       {"10 00 * * *", GodwokenIndexer.Worker.DailyStat}
+       #   {"*/2 * * * *", GodwokenIndexer.Worker.CheckAccount}
      ]}
   ],
   queues: [default: 10]
