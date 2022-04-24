@@ -66,7 +66,6 @@ config :jsonapi,
 # UTC
 config :godwoken_explorer, Oban,
   repo: GodwokenExplorer.Repo,
-  log: :error,
   plugins: [
     # Oban.Plugins.Pruner,
     {Oban.Plugins.Cron,
