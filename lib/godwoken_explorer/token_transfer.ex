@@ -135,7 +135,7 @@ defmodule GodwokenExplorer.TokenTransfer do
 
     from_condition =
       if token_transfer_count > @account_transfer_limit do
-        datetime = Timex.now() |> Timex.shift(days: -5)
+        datetime = Timex.now() |> Timex.shift(days: -3)
 
         dynamic(
           [tt],
@@ -150,7 +150,7 @@ defmodule GodwokenExplorer.TokenTransfer do
 
     to_condition =
       if token_transfer_count > @account_transfer_limit do
-        datetime = Timex.now() |> Timex.shift(days: -5)
+        datetime = Timex.now() |> Timex.shift(days: -3)
 
         dynamic(
           [tt],
@@ -258,13 +258,26 @@ defmodule GodwokenExplorer.TokenTransfer do
   end
 
   def list(%{udt_address: udt_address}, paging_options) do
-    datetime = Timex.now() |> Timex.shift(days: -5)
+    token_transfer_count =
+      case Account.search(udt_address) do
+        %Account{token_transfer_count: token_transfer_count} -> token_transfer_count || 0
+        nil -> Chain.address_to_token_transfer_count(udt_address)
+      end
 
     condition =
-      dynamic(
-        [tt],
-        tt.token_contract_address_hash == ^udt_address and tt.inserted_at > ^datetime
-      )
+      if token_transfer_count > @account_transfer_limit do
+        datetime = Timex.now() |> Timex.shift(days: -3)
+
+        dynamic(
+          [tt],
+          tt.token_contract_address_hash == ^udt_address and tt.inserted_at > ^datetime
+        )
+      else
+        dynamic(
+          [tt],
+          tt.from_address_hash == ^udt_address
+        )
+      end
 
     paginate_result = base_query_by(condition, paging_options)
 
