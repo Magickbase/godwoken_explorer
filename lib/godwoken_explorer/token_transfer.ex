@@ -64,7 +64,7 @@ defmodule GodwokenExplorer.TokenTransfer do
           (tt.from_address_hash == ^eth_address or tt.to_address_hash == ^eth_address)
       )
 
-    paginate_result = base_query_by(condition, Map.merge(paging_options, %{options: []}))
+    paginate_result = base_query_by(condition, paging_options)
 
     udt = UDT.get_by_contract_address(udt_address)
     udt_id = Integer.to_string(udt.id)
@@ -149,7 +149,7 @@ defmodule GodwokenExplorer.TokenTransfer do
       if token_transfer_count > @account_transfer_limit do
         paging_options |> Map.merge(%{options: [total_entries: @account_transfer_limit]})
       else
-        paging_options |> Map.merge(%{options: []})
+        paging_options
       end
 
     from_query =
@@ -267,7 +267,7 @@ defmodule GodwokenExplorer.TokenTransfer do
       if token_transfer_count > @account_transfer_limit do
         paging_options |> Map.merge(%{options: [total_entries: @account_transfer_limit]})
       else
-        paging_options |> Map.merge(%{options: []})
+        paging_options
       end
 
     paginate_result = base_query_by(condition, paging_options)
@@ -339,7 +339,7 @@ defmodule GodwokenExplorer.TokenTransfer do
         tt.transaction_hash == ^tx_hash
       )
 
-    paginate_result = base_query_by(condition, Map.merge(paging_options, %{options: []}))
+    paginate_result = base_query_by(condition, paging_options)
 
     init_query =
       from(tt in TokenTransfer,
@@ -451,7 +451,7 @@ defmodule GodwokenExplorer.TokenTransfer do
     |> Repo.paginate(
       page: paging_options[:page],
       page_size: paging_options[:page_size],
-      options: paging_options[:options]
+      options: paging_options[:options] || []
     )
   end
 end
