@@ -21,7 +21,9 @@ defmodule GodwokenRPC do
   alias GodwokenRPC.Account.{
     FetchedAccountID,
     FetchedScriptHash,
+    FetchedScriptHashes,
     FetchedScript,
+    FetchedScripts,
     FetchedNonce,
     FetchedBalance,
     FetchedBalances
@@ -180,7 +182,7 @@ defmodule GodwokenRPC do
   def fetch_script_hash(%{account_id: account_id}) do
     options = Application.get_env(:godwoken_explorer, :json_rpc_named_arguments)
 
-    case FetchedScriptHash.request(%{account_id: account_id})
+    case FetchedScriptHash.request(%{id: 0, account_id: account_id})
          |> HTTP.json_rpc(options) do
       {:ok, script_hash} ->
         {:ok, script_hash}
@@ -195,7 +197,7 @@ defmodule GodwokenRPC do
   def fetch_script_hash(%{short_address: short_address}) do
     options = Application.get_env(:godwoken_explorer, :json_rpc_named_arguments)
 
-    case FetchedScriptHash.request(%{short_address: short_address})
+    case FetchedScriptHash.request(%{id: 0, short_address: short_address})
          |> HTTP.json_rpc(options) do
       {:ok, script_hash} ->
         {:ok, script_hash}
@@ -207,10 +209,22 @@ defmodule GodwokenRPC do
     end
   end
 
+  def fetch_script_hashes(params) do
+    id_to_params = id_to_params(params)
+    options = Application.get_env(:godwoken_explorer, :json_rpc_named_arguments)
+
+    with {:ok, responses} <-
+           id_to_params
+           |> FetchedScriptHashes.requests()
+           |> HTTP.json_rpc(options) do
+      {:ok, FetchedScriptHashes.from_responses(responses, id_to_params)}
+    end
+  end
+
   def fetch_script(script_hash) do
     options = Application.get_env(:godwoken_explorer, :json_rpc_named_arguments)
 
-    case FetchedScript.request(%{script_hash: script_hash})
+    case FetchedScript.request(%{id: 0, script_hash: script_hash})
          |> HTTP.json_rpc(options) do
       {:ok, script} ->
         {:ok, script}
@@ -218,6 +232,18 @@ defmodule GodwokenRPC do
       {:error, msg} ->
         Logger.error("Failed to fetch script #{script_hash} : #{inspect(msg)}")
         {:error, :network_error}
+    end
+  end
+
+  def fetch_scripts(params) do
+    id_to_params = id_to_params(params)
+    options = Application.get_env(:godwoken_explorer, :json_rpc_named_arguments)
+
+    with {:ok, responses} <-
+           id_to_params
+           |> FetchedScripts.requests()
+           |> HTTP.json_rpc(options) do
+      {:ok, FetchedScripts.from_responses(responses, id_to_params)}
     end
   end
 

@@ -1,7 +1,7 @@
 defmodule GodwokenExplorer.Account do
   use GodwokenExplorer, :schema
 
-  import GodwokenRPC.Util, only: [script_to_hash: 1, balance_to_view: 2]
+  import GodwokenRPC.Util, only: [script_to_hash: 1, balance_to_view: 2, import_timestamps: 0]
 
   require Logger
 
@@ -460,6 +460,35 @@ defmodule GodwokenExplorer.Account do
          true -> {id, id}
        end}
     end)
+  end
+
+  def batch_import_accounts(ids) do
+    params = ids |> Enum.map(&%{account_id: &1})
+    {:ok, %{errors: [], params_list: script_hash_list}} = GodwokenRPC.fetch_script_hashes(params)
+    {:ok, %{errors: [], params_list: account_list}} = GodwokenRPC.fetch_scripts(script_hash_list)
+
+    account_attrs =
+      account_list
+      |> Enum.map(fn %{script_hash: script_hash, account_id: account_id, script: script} = account ->
+        short_address = String.slice(script_hash, 0, 42)
+        type = switch_account_type(script["code_hash"], script["args"])
+        eth_address = script_to_eth_adress(type, script["args"])
+        parsed_script = add_name_to_polyjuice_script(type, script)
+
+        account
+        |> Map.merge(%{
+          id: account_id,
+          short_address: short_address,
+          type: type,
+          nonce: 0,
+          eth_address: eth_address,
+          script: parsed_script
+        })
+        |> Map.drop([:account_id])
+        |> Map.merge(import_timestamps())
+      end)
+
+    Repo.insert_all(Account, account_attrs, on_conflict: :nothing)
   end
 
   def manual_create_account!(id) do
