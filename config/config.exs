@@ -71,7 +71,7 @@ config :godwoken_explorer, Oban,
     {Oban.Plugins.Cron,
      crontab: [
        {"01 00 * * *", GodwokenIndexer.Worker.RefreshUDTSupply},
-       {"10 00 * * *", GodwokenIndexer.Worker.DailyStat, args: DateTime.utc_now()},
+       {"10 00 * * *", GodwokenIndexer.Worker.DailyStat},
        {"*/2 * * * *", GodwokenIndexer.Worker.CheckAccount}
      ]}
   ],

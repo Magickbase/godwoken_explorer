@@ -47,6 +47,6 @@ defmodule GodwokenExplorer.Application do
   end
 
   defp oban_config do
-    Application.fetch_env!(:godwoken_explorer, :job)
+    Application.fetch_env!(:godwoken_explorer, Oban)
   end
 end
