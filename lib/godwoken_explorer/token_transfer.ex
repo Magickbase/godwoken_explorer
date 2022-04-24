@@ -260,7 +260,7 @@ defmodule GodwokenExplorer.TokenTransfer do
     condition =
       dynamic(
         [tt],
-        tt.from_address_hash == ^udt_address
+        tt.token_contract_address_hash == ^udt_address
       )
 
     paging_options =
