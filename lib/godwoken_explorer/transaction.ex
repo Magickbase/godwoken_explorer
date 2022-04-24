@@ -4,6 +4,7 @@ defmodule GodwokenExplorer.Transaction do
   import GodwokenRPC.Util, only: [stringify_and_unix_maps: 1]
 
   alias GodwokenExplorer.Chain.Cache.Transactions
+  alias GodwokenExplorer.Chain
 
   @tx_limit 500_000
   @account_tx_limit 100_000
@@ -85,7 +86,11 @@ defmodule GodwokenExplorer.Transaction do
         end)
 
       _ ->
-        case from(b in Block, where: b.transaction_count >= 10, order_by: [desc: b.number], limit: 1)
+        case from(b in Block,
+               where: b.transaction_count >= 10,
+               order_by: [desc: b.number],
+               limit: 1
+             )
              |> Repo.one() do
           %Block{number: number} ->
             list_tx_hash_by_transaction_query(dynamic([t], t.block_number >= ^number))
@@ -179,12 +184,13 @@ defmodule GodwokenExplorer.Transaction do
         paging_options
       )
       when type in [:meta_contract, :udt, :polyjuice_creator, :polyjuice_contract] do
-    condition =
+    condition = dynamic([t], t.to_account_id == ^account.id)
+
+    paging_options =
       if (account.transaction_count || 0) > @account_tx_limit do
-        datetime = Timex.now() |> Timex.shift(days: -5)
-        dynamic([t], t.to_account_id == ^account.id and t.inserted_at > ^datetime)
+        paging_options |> Map.merge(%{options: [total_entries: @account_tx_limit]})
       else
-        dynamic([t], t.to_account_id == ^account.id)
+        paging_options
       end
 
     tx_hashes =
@@ -199,48 +205,48 @@ defmodule GodwokenExplorer.Transaction do
         paging_options
       )
       when type in [:eth_user, :tron_user] do
-    condition =
+    condition = dynamic([t], t.from_account_id == ^account.id)
+
+    paging_options =
       if (account.transaction_count || 0) > @account_tx_limit do
-        datetime = Timex.now() |> Timex.shift(days: -5)
-        dynamic([t], t.from_account_id == ^account.id and t.inserted_at > ^datetime)
+        paging_options |> Map.merge(%{options: [total_entries: @account_tx_limit]})
       else
-        dynamic([t], t.from_account_id == ^account.id)
+        paging_options
       end
-
-    custom_order = [desc: dynamic([t], t.block_number), desc: dynamic([t], t.nonce)]
-
-    tx_hashes =
-      list_tx_hash_by_transaction_query(condition, custom_order)
-      |> limit(@account_tx_limit)
-
-    parse_result(tx_hashes, paging_options, custom_order)
-  end
-
-  def account_transactions_data(paging_options) do
-    datetime = Timex.now() |> Timex.shift(days: -5)
-    condition = dynamic([t], t.inserted_at > ^datetime)
 
     tx_hashes =
       list_tx_hash_by_transaction_query(condition)
+      |> limit(@account_tx_limit)
+
+    parse_result(tx_hashes, paging_options)
+  end
+
+  def account_transactions_data(paging_options) do
+    paging_options =
+      if Chain.transaction_estimated_count() > @tx_limit do
+        Map.merge(paging_options, %{options: [total_entries: @tx_limit]})
+      else
+        paging_options
+      end
+
+    tx_hashes =
+      list_tx_hash_by_transaction_query(true)
       |> limit(@tx_limit)
 
     parse_result(tx_hashes, paging_options)
   end
 
-  defp parse_result(tx_hashes, paging_options, custom_order \\ nil) do
+  defp parse_result(tx_hashes, paging_options) do
     tx_hashes_struct =
-      Repo.paginate(tx_hashes, page: paging_options[:page], page_size: paging_options[:page_size])
-
-    order_by =
-      if is_nil(custom_order) do
-        [desc: dynamic([t], t.block_number), desc: dynamic([t], t.index)]
-      else
-        custom_order
-      end
+      Repo.paginate(tx_hashes,
+        page: paging_options[:page],
+        page_size: paging_options[:page_size],
+        options: paging_options[:options] || []
+      )
 
     results =
       list_transaction_by_tx_hash(tx_hashes_struct.entries)
-      |> order_by(^order_by)
+      |> order_by([t], desc: t.block_number, desc: t.index)
       |> Repo.all()
 
     parsed_result =
@@ -257,22 +263,12 @@ defmodule GodwokenExplorer.Transaction do
     }
   end
 
-  def list_tx_hash_by_transaction_query(condition, custom_order \\ nil) do
-    order_by =
-      if is_nil(custom_order) do
-        [
-          desc: dynamic([t], t.block_number),
-          desc: dynamic([t], t.index)
-        ]
-      else
-        custom_order
-      end
-
+  def list_tx_hash_by_transaction_query(condition) do
     from(t in Transaction,
       select:
         fragment("CASE WHEN ? IS NOT NULL THEN ? ELSE ? END", t.eth_hash, t.eth_hash, t.hash),
       where: ^condition,
-      order_by: ^order_by
+      order_by: [desc: t.block_number, desc: t.index]
     )
   end
 

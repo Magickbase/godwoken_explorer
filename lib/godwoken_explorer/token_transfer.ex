@@ -134,33 +134,22 @@ defmodule GodwokenExplorer.TokenTransfer do
       end
 
     from_condition =
-      if token_transfer_count > @account_transfer_limit do
-        datetime = Timex.now() |> Timex.shift(days: -5)
-
-        dynamic(
-          [tt],
-          tt.from_address_hash == ^eth_address and tt.inserted_at > ^datetime
-        )
-      else
-        dynamic(
-          [tt],
-          tt.from_address_hash == ^eth_address
-        )
-      end
+      dynamic(
+        [tt],
+        tt.from_address_hash == ^eth_address
+      )
 
     to_condition =
-      if token_transfer_count > @account_transfer_limit do
-        datetime = Timex.now() |> Timex.shift(days: -5)
+      dynamic(
+        [tt],
+        tt.to_address_hash == ^eth_address
+      )
 
-        dynamic(
-          [tt],
-          tt.to_address_hash == ^eth_address and tt.inserted_at > ^datetime
-        )
+    paging_options =
+      if token_transfer_count > @account_transfer_limit do
+        paging_options |> Map.merge(%{options: [total_entries: @account_transfer_limit]})
       else
-        dynamic(
-          [tt],
-          tt.to_address_hash == ^eth_address
-        )
+        paging_options
       end
 
     from_query =
@@ -188,7 +177,11 @@ defmodule GodwokenExplorer.TokenTransfer do
     paginate_result =
       from(q in subquery(union_all(from_query, ^to_query)))
       |> order_by([tt], desc: tt.block_number, desc: tt.log_index)
-      |> Repo.paginate(page: paging_options[:page], page_size: paging_options[:page_size])
+      |> Repo.paginate(
+        page: paging_options[:page],
+        page_size: paging_options[:page_size],
+        options: paging_options[:options]
+      )
 
     init_query =
       from(tt in TokenTransfer,
@@ -258,13 +251,24 @@ defmodule GodwokenExplorer.TokenTransfer do
   end
 
   def list(%{udt_address: udt_address}, paging_options) do
-    datetime = Timex.now() |> Timex.shift(days: -5)
+    token_transfer_count =
+      case Account.search(udt_address) do
+        %Account{token_transfer_count: token_transfer_count} -> token_transfer_count || 0
+        nil -> Chain.address_to_token_transfer_count(udt_address)
+      end
 
     condition =
       dynamic(
         [tt],
-        tt.token_contract_address_hash == ^udt_address and tt.inserted_at > ^datetime
+        tt.token_contract_address_hash == ^udt_address
       )
+
+    paging_options =
+      if token_transfer_count > @account_transfer_limit do
+        paging_options |> Map.merge(%{options: [total_entries: @account_transfer_limit]})
+      else
+        paging_options
+      end
 
     paginate_result = base_query_by(condition, paging_options)
 
@@ -444,6 +448,10 @@ defmodule GodwokenExplorer.TokenTransfer do
       },
       order_by: [desc: tt.block_number, desc: tt.log_index]
     )
-    |> Repo.paginate(page: paging_options[:page], page_size: paging_options[:page_size])
+    |> Repo.paginate(
+      page: paging_options[:page],
+      page_size: paging_options[:page_size],
+      options: paging_options[:options] || []
+    )
   end
 end
