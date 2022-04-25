@@ -32,7 +32,7 @@ defmodule GodwokenExplorerWeb.Admin.UDTController do
 
     udt_params =
       if udt_params["type"] == "native" do
-        udt_params |> Map.merge(%{"bridge_account_id" => udt_params["id"]})
+        udt_params |> Map.merge(%{"bridge_account_id" => udt_id})
       else
         with %Account{id: id, type: :polyjuice_contract} <-
                udt_params["bridge_account_eth_address"]
