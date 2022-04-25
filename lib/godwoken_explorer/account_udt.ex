@@ -105,7 +105,7 @@ defmodule GodwokenExplorer.AccountUDT do
   def sync_balance!(%{script_hash: _script_hash, udt_id: nil}), do: {:error, :udt_not_exists}
   def sync_balance!(%{account_id: _account_id, udt_id: nil}), do: {:error, :udt_not_exists}
 
-  def sync_balance!(%{script_hash: script_hash, udt_id: udt_id})  do
+  def sync_balance!(%{script_hash: script_hash, udt_id: udt_id}) do
     with %Account{id: account_id, short_address: short_address} <-
            Repo.get_by(Account, script_hash: script_hash),
          %Account{short_address: udt_short_address} <- Repo.get(Account, udt_id) do
@@ -178,7 +178,12 @@ defmodule GodwokenExplorer.AccountUDT do
               eth_address: fragment("CASE WHEN ? = 'user' THEN encode(?, 'escape')
         ELSE encode(?, 'escape') END", a1.type, a1.eth_address, a1.short_address),
               balance: fragment("? / power(10, ?)::decimal", au.balance, ^decimal),
-              tx_count: a1.transaction_count
+              tx_count:
+                fragment(
+                  "CASE WHEN ? is null THEN 0 ELSE ? END",
+                  a1.transaction_count,
+                  a1.transaction_count
+                )
             },
             distinct: au.address_hash,
             order_by: [desc: au.updated_at]
@@ -205,7 +210,7 @@ defmodule GodwokenExplorer.AccountUDT do
 
         result
         |> Map.merge(%{
-          percentage: percentage,
+          percentage: percentage
         })
       end)
 
