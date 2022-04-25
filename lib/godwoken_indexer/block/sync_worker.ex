@@ -294,8 +294,8 @@ defmodule GodwokenIndexer.Block.SyncWorker do
   defp import_account(transactions_params) do
     account_ids = extract_account_ids(transactions_params)
 
-    not_exist_ids =
-      from(a in Account, where: a.id not in ^account_ids, select: a.id) |> Repo.all()
+    exist_ids = from(a in Account, where: a.id in ^account_ids, select: a.id) |> Repo.all()
+    not_exist_ids = account_ids -- exist_ids
 
     Account.batch_import_accounts(not_exist_ids)
 
