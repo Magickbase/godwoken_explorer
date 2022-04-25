@@ -134,11 +134,11 @@ defmodule GodwokenIndexer.Block.SyncWorker do
         GodwokenRPC.fetch_transaction_receipts(polyjuice_transaction)
 
       polyjuice_with_receipts = Receipts.put(polyjuice_transaction, receipts)
-      async_contract_code(polyjuice_with_receipts)
       import_logs(logs)
       import_token_transfers(logs)
       import_polyjuice(polyjuice_with_receipts ++ polyjuice_deploy_contract)
       update_ckb_balance(polyjuice_without_receipts)
+      async_contract_code(polyjuice_with_receipts)
     end
   end
 
