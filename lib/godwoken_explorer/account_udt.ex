@@ -146,7 +146,7 @@ defmodule GodwokenExplorer.AccountUDT do
   def sort_holder_list(udt_id, paging_options) do
     case Repo.get(UDT, udt_id) do
       %UDT{type: :native, supply: supply, decimal: decimal} = udt ->
-        token_contract_address_hashes = UDT.list_address_by_udt_id(udt)
+        token_contract_address_hashes = UDT.list_address_by_udt_id(udt_id)
 
         address_and_balances =
           from(au in AccountUDT,
@@ -166,7 +166,7 @@ defmodule GodwokenExplorer.AccountUDT do
         parse_holder_sort_results(address_and_balances, supply, decimal || 0)
 
       %UDT{type: :bridge, supply: supply, decimal: decimal} = udt ->
-        token_contract_address_hashes = UDT.list_address_by_udt_id(udt)
+        token_contract_address_hashes = UDT.list_address_by_udt_id(udt_id)
 
         sub_query =
           from(au in AccountUDT,
