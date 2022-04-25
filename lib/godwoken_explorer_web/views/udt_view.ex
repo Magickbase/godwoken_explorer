@@ -2,6 +2,8 @@ defmodule GodwokenExplorer.UDTView do
   use JSONAPI.View, type: "udt"
 
   import Ecto.Query, only: [from: 2]
+  import GodwokenRPC.Util, only: [balance_to_view: 2]
+
   alias GodwokenExplorer.{UDT, Repo, AccountUDT, Account}
 
   def fields do
@@ -32,12 +34,15 @@ defmodule GodwokenExplorer.UDTView do
     if is_nil(udt.supply) do
       ""
     else
-      Decimal.to_string(udt.supply, :normal)
+      balance_to_view(udt.supply, udt.decimal || 0)
     end
   end
 
   def holder_count(udt, _conn) do
-    token_contract_address_hashes = from(a in Account, where: a.id in [^udt.id, ^udt.bridge_account_id], select: a.short_address) |> Repo.all()
+    token_contract_address_hashes =
+      from(a in Account, where: a.id in [^udt.id, ^udt.bridge_account_id], select: a.short_address)
+      |> Repo.all()
+
     from(
       au in AccountUDT,
       where: au.token_contract_address_hash in ^token_contract_address_hashes and au.balance > 0
@@ -47,7 +52,9 @@ defmodule GodwokenExplorer.UDTView do
 
   def transfer_count(udt, _conn) do
     case Repo.get(Account, udt.bridge_account_id) do
-      %Account{token_transfer_count: token_transfer_count} -> token_transfer_count
+      %Account{token_transfer_count: token_transfer_count} ->
+        token_transfer_count
+
       _ ->
         0
     end
@@ -69,7 +76,7 @@ defmodule GodwokenExplorer.UDTView do
         from(
           u in UDT,
           preload: :account,
-          where: u.type == :bridge and not(is_nil(u.bridge_account_id)),
+          where: u.type == :bridge and not is_nil(u.bridge_account_id),
           select: map(u, ^select_fields()),
           order_by: [asc: :name]
         )
