@@ -89,8 +89,8 @@ defmodule GodwokenIndexer.Block.SyncWorker do
         {polyjuice_without_receipts, polyjuice_creator_params} =
           group_transaction_params(transactions_params_without_receipts)
 
-        {:ok, polyjuice_with_receipts} = handle_polyjuice_transactions(polyjuice_without_receipts)
-        async_contract_code(polyjuice_with_receipts)
+        handle_polyjuice_transactions(polyjuice_without_receipts)
+
         import_polyjuice_creator(polyjuice_creator_params)
 
         inserted_transactions = import_transactions(transactions_params_without_receipts)
@@ -123,7 +123,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
       import_token_transfers(logs)
       import_polyjuice(polyjuice_with_receipts)
       update_ckb_balance(polyjuice_without_receipts)
-      {:ok, polyjuice_with_receipts}
+      async_contract_code(polyjuice_with_receipts)
     end
   end
 
