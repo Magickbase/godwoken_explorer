@@ -353,7 +353,7 @@ defmodule GodwokenRPC do
         {:ok, response}
 
       {:error, msg} ->
-        Logger.error("Failed to eth call: #{msg} #{inspect(params)}")
+        Logger.error("Failed to eth call: #{inspect(msg)} #{inspect(params)}")
         {:error, :node_error}
     end
   end

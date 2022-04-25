@@ -143,16 +143,11 @@ defmodule GodwokenExplorer.Admin.UDT do
     UDT.changeset(udt, attrs)
   end
 
-
   defp filter_config(:udts) do
     defconfig do
-      number(:decimal)
       text(:name)
       text(:symbol)
-      text(:icon)
-      # TODO add config for supply of type decimal
-      # TODO add config for type_script of type map
-      # TODO add config for script_hash of type binary
+      text(:script_hash)
     end
   end
 end
