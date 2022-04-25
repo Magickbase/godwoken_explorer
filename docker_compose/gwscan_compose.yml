@@ -1,21 +1,18 @@
 version: "3.9"
 services:
-  godwoken_explorer:
-    image: godwoken_explorer:${DOCKER_TAG:-latest}
+  gwscan:
+    image: gwscan:${DOCKER_TAG:-latest}
     build:
       context: ..
       dockerfile: ./docker/Dockerfile
-      # these are available on build
       args:
         GODWOKEN_CHAIN: ${GODWOKEN_CHAIN}
         GWSCAN_GRAPHIQL: ${GWSCAN_GRAPHIQL}
-      target: builder
+      target: deploy
     restart: always
     working_dir: /app
-    command: "mix do ecto.create, ecto.migrate, phx.server"
-    # command: "/app/_build/prod/rel/godwoken_explorer/bin/godwoken_explorer start"
-    # command: '/app/_build/prod/rel/godwoken_explorer/bin/godwoken_explorer eval "IO.inspect Application.get_env(:godwoken_explorer, :graphiql)"'
-    # these are available on run
+    # command: "/app/bin/server"
+    command: sh -c "/app/bin/godwoken_explorer eval "GodwokenExplorer.Release.migrate" && /app/bin/server "
     environment:
       - MIX_ENV=prod
       - GODWOKEN_CHAIN
