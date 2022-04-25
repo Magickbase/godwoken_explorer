@@ -162,7 +162,7 @@ defmodule GodwokenExplorer.AccountUDT do
           )
           |> Repo.paginate(page: paging_options[:page], page_size: paging_options[:page_size])
 
-        parse_holder_sort_results(address_and_balances, supply)
+        parse_holder_sort_results(address_and_balances, supply, decimal || 0)
 
       %UDT{type: :bridge, bridge_account_id: bridge_account_id, supply: supply, decimal: decimal} ->
         udt_short_addresses =
