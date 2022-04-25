@@ -2,6 +2,8 @@ defmodule GodwokenExplorer.UDTView do
   use JSONAPI.View, type: "udt"
 
   import Ecto.Query, only: [from: 2]
+  import GodwokenRPC.Util, only: [balance_to_view: 2]
+
   alias GodwokenExplorer.{UDT, Repo, AccountUDT, Account}
 
   def fields do
@@ -32,7 +34,7 @@ defmodule GodwokenExplorer.UDTView do
     if is_nil(udt.supply) do
       ""
     else
-      Decimal.to_string(udt.supply, :normal)
+      balance_to_view(udt.supply, udt.decimal || 0)
     end
   end
 
