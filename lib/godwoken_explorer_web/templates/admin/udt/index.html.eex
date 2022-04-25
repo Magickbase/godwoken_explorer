@@ -15,6 +15,19 @@
             <%= filter_string_input(:udt, :name, @conn.params) %>
           </div>
 
+          <div class="field">
+            <label>Symbol</label>
+            <%= filter_select(:udt, :symbol, @conn.params) %>
+            <%= filter_string_input(:udt, :symbol, @conn.params) %>
+          </div>
+
+          <div class="field">
+            <label>Layer1 UDT Script Hash</label>
+            <%= filter_select(:udt, :script_hash, @conn.params) %>
+            <%= filter_string_input(:udt, :script_hash, @conn.params) %>
+          </div>
+
+
         <button type="submit" class="torch-button">Search</button>
         <%= link "Clear Filters", to: Routes.admin_udt_path(@conn, :index) %>
       <% end %>
@@ -27,17 +40,9 @@
         <thead>
           <tr>
 
-              <th><%= table_link(@conn, "ID", :id) %></th>
-
-              <th><%= table_link(@conn, "Decimal", :decimal) %></th>
-
               <th><%= table_link(@conn, "Name", :name) %></th>
 
               <th><%= table_link(@conn, "Symbol", :symbol) %></th>
-
-              <th><%= table_link(@conn, "Icon", :icon) %></th>
-
-              <th><%= table_link(@conn, "Supply", :supply) %></th>
 
               <th><%= table_link(@conn, "Script hash", :script_hash) %></th>
 
@@ -50,17 +55,9 @@
           <%= for udt <- @udts do %>
             <tr>
 
-                <td><%= udt.id %></td>
-
-                <td><%= udt.decimal %></td>
-
                 <td><%= udt.name %></td>
 
                 <td><%= udt.symbol %></td>
-
-                <td><%= udt.icon %></td>
-
-                <td><%= udt.supply %></td>
 
                 <td><%= udt.script_hash %></td>
 

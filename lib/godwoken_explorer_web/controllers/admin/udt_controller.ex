@@ -25,6 +25,11 @@ defmodule GodwokenExplorerWeb.Admin.UDTController do
   end
 
   def create(conn, %{"udt" => udt_params}) do
+    %Account{id: udt_id} =
+      udt_params["udt_address"]
+      |> String.downcase()
+      |> Account.search()
+
     udt_params =
       if udt_params["type"] == "native" do
         udt_params |> Map.merge(%{"bridge_account_id" => udt_params["id"]})
@@ -39,6 +44,7 @@ defmodule GodwokenExplorerWeb.Admin.UDTController do
           _ -> udt_params |> Map.merge(%{"bridge_account_id" => nil})
         end
       end
+      |> Map.merge(%{"id" => udt_id})
 
     udt_params =
       if udt_params["bridge_account_id"] != nil do
