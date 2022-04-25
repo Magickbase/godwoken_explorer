@@ -16,7 +16,7 @@ defmodule GodwokenExplorer.UDTView do
       :supply,
       :holder_count,
       :type,
-      :eth_address,
+      :short_address,
       :type_script,
       :official_site,
       :description,
@@ -26,7 +26,7 @@ defmodule GodwokenExplorer.UDTView do
     ]
   end
 
-  def eth_address(udt, _conn) do
+  def short_address(udt, _conn) do
     udt.account.eth_address
   end
 
