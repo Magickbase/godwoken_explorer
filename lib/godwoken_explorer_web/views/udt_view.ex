@@ -14,7 +14,7 @@ defmodule GodwokenExplorer.UDTView do
       :supply,
       :holder_count,
       :type,
-      :short_address,
+      :eth_address,
       :type_script,
       :official_site,
       :description,
@@ -24,8 +24,8 @@ defmodule GodwokenExplorer.UDTView do
     ]
   end
 
-  def short_address(udt, _conn) do
-    udt.account.short_address
+  def eth_address(udt, _conn) do
+    udt.account.eth_address
   end
 
   def supply(udt, _conn) do
@@ -36,18 +36,37 @@ defmodule GodwokenExplorer.UDTView do
     end
   end
 
+  # For udt type account, account_udt token_contract_address_hash is short_address
+  # For polyjuice_contract type account, account_udt token_contract_address_hash is eth_address
   def holder_count(udt, _conn) do
-    token_contract_address_hashes = from(a in Account, where: a.id in [^udt.id, ^udt.bridge_account_id], select: a.short_address) |> Repo.all()
+    token_contract_address_hashes =
+      if udt.type == :bridge do
+        %Account{short_address: short_address} = Repo.get(Account, udt.id)
+
+        with %{bridge_account_id: bridge_account_id} when bridge_account_id != nil <- udt,
+             %Account{eth_address: eth_address} <- Repo.get(Account, udt.bridge_account_id) do
+          [short_address, eth_address]
+        else
+          _ -> [short_address]
+        end
+      else
+        %Account{eth_address: eth_address} = Repo.get(Account, udt.id)
+        [eth_address]
+      end
+
     from(
       au in AccountUDT,
-      where: au.token_contract_address_hash in ^token_contract_address_hashes and au.balance > 0
+      where: au.token_contract_address_hash in ^token_contract_address_hashes and au.balance > 0,
+      distinct: au.address_hash
     )
     |> Repo.aggregate(:count)
   end
 
   def transfer_count(udt, _conn) do
     case Repo.get(Account, udt.bridge_account_id) do
-      %Account{token_transfer_count: token_transfer_count} -> token_transfer_count
+      %Account{token_transfer_count: token_transfer_count} ->
+        token_transfer_count
+
       _ ->
         0
     end
@@ -69,7 +88,7 @@ defmodule GodwokenExplorer.UDTView do
         from(
           u in UDT,
           preload: :account,
-          where: u.type == :bridge and not(is_nil(u.bridge_account_id)),
+          where: u.type == :bridge and not is_nil(u.bridge_account_id),
           select: map(u, ^select_fields()),
           order_by: [asc: :name]
         )
@@ -109,7 +128,7 @@ defmodule GodwokenExplorer.UDTView do
       :bridge_account_id
     ]
 
-    account_fields = [:short_address]
+    account_fields = [:eth_address]
 
     udt_fields ++ [account: account_fields]
   end
