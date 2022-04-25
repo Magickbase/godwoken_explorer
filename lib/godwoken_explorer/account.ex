@@ -22,7 +22,7 @@ defmodule GodwokenExplorer.Account do
     field(:token_transfer_count, :integer)
     field(:contract_code, :binary)
 
-    field :type, Ecto.Enum,
+    field(:type, Ecto.Enum,
       values: [
         :meta_contract,
         :udt,
@@ -33,6 +33,7 @@ defmodule GodwokenExplorer.Account do
         :eth_addr_reg,
         :unknown
       ]
+    )
 
     has_many(:account_udts, AccountUDT)
     has_one(:smart_contract, SmartContract)
@@ -142,8 +143,8 @@ defmodule GodwokenExplorer.Account do
           }
         }
 
-      %Account{type: type, short_address: short_address} when type in [:eth_user, :tron_user] ->
-        udt_list = AccountUDT.list_udt_by_eth_address(short_address)
+      %Account{type: type, eth_address: eth_address} when type in [:eth_user, :tron_user] ->
+        udt_list = AccountUDT.list_udt_by_eth_address(eth_address)
 
         %{
           user: %{
@@ -159,9 +160,9 @@ defmodule GodwokenExplorer.Account do
           }
         }
 
-      %Account{type: :polyjuice_contract, short_address: short_address} ->
+      %Account{type: :polyjuice_contract, eth_address: eth_address} ->
         account = account |> Repo.preload(:smart_contract)
-        udt_list = AccountUDT.list_udt_by_eth_address(short_address)
+        udt_list = AccountUDT.list_udt_by_eth_address(eth_address)
 
         case account.smart_contract do
           smart_contract = %SmartContract{} ->
@@ -398,15 +399,15 @@ defmodule GodwokenExplorer.Account do
     end
   end
 
-  def non_create_account_info(short_address) do
-    udt_list = AccountUDT.list_udt_by_eth_address(short_address)
+  def non_create_account_info(eth_address) do
+    udt_list = AccountUDT.list_udt_by_eth_address(eth_address)
 
     %{
       id: nil,
-      type: :user,
+      type: :unknown,
       ckb: "0",
       tx_count: 0,
-      eth_addr: short_address,
+      eth_addr: eth_address,
       user: %{
         nonce: 0,
         udt_list: udt_list

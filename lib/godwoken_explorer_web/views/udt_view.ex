@@ -41,20 +41,7 @@ defmodule GodwokenExplorer.UDTView do
   # For udt type account, account_udt token_contract_address_hash is short_address
   # For polyjuice_contract type account, account_udt token_contract_address_hash is eth_address
   def holder_count(udt, _conn) do
-    token_contract_address_hashes =
-      if udt.type == :bridge do
-        %Account{short_address: short_address} = Repo.get(Account, udt.id)
-
-        with %{bridge_account_id: bridge_account_id} when bridge_account_id != nil <- udt,
-             %Account{eth_address: eth_address} <- Repo.get(Account, udt.bridge_account_id) do
-          [short_address, eth_address]
-        else
-          _ -> [short_address]
-        end
-      else
-        %Account{eth_address: eth_address} = Repo.get(Account, udt.id)
-        [eth_address]
-      end
+    token_contract_address_hashes = UDT.list_address_by_udt_id(udt)
 
     from(
       au in AccountUDT,

@@ -5,14 +5,16 @@ defmodule GodwokenRPC.Account.FetchedBalance do
   def from_response(%{id: id, result: fetched_balance_quantity}, id_to_params)
       when is_map(id_to_params) do
     %{
-      short_address: short_address,
+      eth_address: eth_address,
       udt_id: udt_id,
+      account_id: account_id,
       token_contract_address_hash: token_contract_address_hash
     } = Map.fetch!(id_to_params, id)
 
     {:ok,
      %{
-       address_hash: short_address,
+       account_id: account_id,
+       address_hash: eth_address,
        udt_id: udt_id,
        token_contract_address_hash: token_contract_address_hash,
        balance: quantity_to_integer(fetched_balance_quantity)

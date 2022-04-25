@@ -89,8 +89,8 @@ defmodule GodwokenIndexer.Block.SyncWorker do
         {polyjuice_without_receipts, polyjuice_creator_params, _eth_addr_reg_params,
          _unknown_params} = group_transaction_params(transactions_params_without_receipts)
 
-        {:ok, polyjuice_with_receipts} = handle_polyjuice_transactions(polyjuice_without_receipts)
-        async_contract_code(polyjuice_with_receipts)
+        handle_polyjuice_transactions(polyjuice_without_receipts)
+
         import_polyjuice_creator(polyjuice_creator_params)
 
         inserted_transactions = import_transactions(transactions_params_without_receipts)
@@ -121,18 +121,24 @@ defmodule GodwokenIndexer.Block.SyncWorker do
       polyjuice_deploy_contract =
         polyjuice_deploy_contract
         |> Enum.map(fn x ->
-          x |> Map.merge(%{gas_used: 0, status: :succeed, transaction_index: nil, created_contract_address_hash: nil})
+          x
+          |> Map.merge(%{
+            gas_used: 0,
+            status: :succeed,
+            transaction_index: nil,
+            created_contract_address_hash: nil
+          })
         end)
 
       {:ok, %{logs: logs, receipts: receipts}} =
         GodwokenRPC.fetch_transaction_receipts(polyjuice_transaction)
 
       polyjuice_with_receipts = Receipts.put(polyjuice_transaction, receipts)
+      async_contract_code(polyjuice_with_receipts)
       import_logs(logs)
       import_token_transfers(logs)
       import_polyjuice(polyjuice_with_receipts ++ polyjuice_deploy_contract)
       update_ckb_balance(polyjuice_without_receipts)
-      {:ok, polyjuice_with_receipts}
     end
   end
 
@@ -226,7 +232,15 @@ defmodule GodwokenIndexer.Block.SyncWorker do
     {_count, returned_values} =
       Repo.insert_all(Transaction, inserted_transaction_params,
         on_conflict: :nothing,
-        returning: [:from_account_id, :to_account_id, :hash, :eth_hash, :type, :block_number, :inserted_at]
+        returning: [
+          :from_account_id,
+          :to_account_id,
+          :hash,
+          :eth_hash,
+          :type,
+          :block_number,
+          :inserted_at
+        ]
       )
 
     display_ids =
@@ -480,39 +494,57 @@ defmodule GodwokenIndexer.Block.SyncWorker do
   end
 
   defp update_ckb_balance(polyjuice_params) do
+    nil
+
     if length(polyjuice_params) > 0 do
       ckb_id = UDT.ckb_account_id()
+      nil
 
       if not is_nil(ckb_id) do
+        nil
+
         %Account{short_address: ckb_contract_address} = Repo.get(Account, ckb_id)
 
         account_ids =
           polyjuice_params
           |> Enum.filter(fn %{value: value} -> value > 0 end)
-          |> Enum.map(fn %{from_account_id: from_account_id} ->
-            from_account_id
+          |> Enum.flat_map(fn %{account_ids: account_ids} ->
+            account_ids
           end)
+          |> Enum.uniq()
 
         account_id_to_short_addresses =
-          from(a in Account, where: a.id in ^account_ids, select: a.short_address) |> Repo.all()
+          from(a in Account,
+            where: a.id in ^account_ids,
+            select: %{id: a.id, short_address: a.short_address, eth_address: a.eth_address}
+          )
+          |> Repo.all()
 
         params =
           account_id_to_short_addresses
-          |> Enum.reject(&is_nil/1)
-          |> Enum.map(fn address ->
+          |> Enum.reject(&is_nil(Map.fetch!(&1, :eth_address)))
+          |> Enum.map(fn account ->
             %{
-              short_address: address,
+              short_address: account.short_address,
+              eth_address: account.eth_address,
+              account_id: account.id,
               udt_id: ckb_id,
               token_contract_address_hash: ckb_contract_address
             }
           end)
 
+        nil
+
         {:ok, %GodwokenRPC.Account.FetchedBalances{params_list: import_account_udts}} =
           GodwokenRPC.fetch_balances(params)
+
+        nil
 
         import_account_udts =
           import_account_udts
           |> Enum.map(fn import_au -> import_au |> Map.merge(import_timestamps()) end)
+
+        nil
 
         Repo.insert_all(AccountUDT, import_account_udts,
           on_conflict: {:replace, [:balance, :updated_at]},

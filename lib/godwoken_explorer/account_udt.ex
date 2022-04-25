@@ -8,9 +8,9 @@ defmodule GodwokenExplorer.AccountUDT do
 
   @derive {Jason.Encoder, except: [:__meta__]}
   schema "account_udts" do
-    field :balance, :decimal
-    field :address_hash, :binary
-    field :token_contract_address_hash, :binary
+    field(:balance, :decimal)
+    field(:address_hash, :binary)
+    field(:token_contract_address_hash, :binary)
     belongs_to(:account, GodwokenExplorer.Account, foreign_key: :account_id, references: :id)
     belongs_to(:udt, GodwokenExplorer.UDT, foreign_key: :udt_id, references: :id)
 
@@ -106,14 +106,14 @@ defmodule GodwokenExplorer.AccountUDT do
   def sync_balance!(%{account_id: _account_id, udt_id: nil}), do: {:error, :udt_not_exists}
 
   def sync_balance!(%{script_hash: script_hash, udt_id: udt_id}) do
-    with %Account{id: account_id, short_address: short_address} <-
+    with %Account{id: account_id, eth_address: eth_address, short_address: short_address} <-
            Repo.get_by(Account, script_hash: script_hash),
          %Account{short_address: udt_short_address} <- Repo.get(Account, udt_id) do
       {:ok, balance} = GodwokenRPC.fetch_balance(short_address, udt_id)
 
       AccountUDT.create_or_update_account_udt!(%{
         account_id: account_id,
-        address_hash: short_address,
+        address_hash: eth_address,
         udt_id: udt_id,
         token_contract_address_hash: udt_short_address,
         balance: balance
@@ -125,13 +125,14 @@ defmodule GodwokenExplorer.AccountUDT do
   end
 
   def sync_balance!(%{account_id: account_id, udt_id: udt_id}) do
-    with %Account{short_address: short_address} <- Repo.get(Account, account_id),
+    with %Account{eth_address: eth_address, short_address: short_address} <-
+           Repo.get(Account, account_id),
          %Account{short_address: udt_short_address} <- Repo.get(Account, udt_id) do
       {:ok, balance} = GodwokenRPC.fetch_balance(short_address, udt_id)
 
       AccountUDT.create_or_update_account_udt!(%{
         account_id: account_id,
-        address_hash: short_address,
+        address_hash: eth_address,
         udt_id: udt_id,
         token_contract_address_hash: udt_short_address,
         balance: balance
@@ -144,18 +145,18 @@ defmodule GodwokenExplorer.AccountUDT do
 
   def sort_holder_list(udt_id, paging_options) do
     case Repo.get(UDT, udt_id) do
-      %UDT{type: :native, supply: supply, decimal: decimal} ->
-        %Account{short_address: short_address} = Repo.get(Account, udt_id)
+      %UDT{type: :native, supply: supply, decimal: decimal} = udt ->
+        token_contract_address_hashes = UDT.list_address_by_udt_id(udt)
 
         address_and_balances =
           from(au in AccountUDT,
             join: a1 in Account,
-            on: a1.short_address == au.address_hash,
-            where: au.token_contract_address_hash == ^short_address and au.balance > 0,
+            on: a1.eth_address == au.address_hash,
+            where:
+              au.token_contract_address_hash in ^token_contract_address_hashes and au.balance > 0,
             select: %{
-              eth_address: fragment("CASE WHEN ? = 'user' THEN encode(?, 'escape')
-        ELSE encode(?, 'escape') END", a1.type, a1.eth_address, a1.short_address),
-              balance: fragment("? / power(10, ?)::decimal", au.balance, ^decimal),
+              eth_address: a1.eth_address,
+              balance: au.balance,
               account_id: a1.id
             },
             order_by: [desc: au.balance]
@@ -164,19 +165,17 @@ defmodule GodwokenExplorer.AccountUDT do
 
         parse_holder_sort_results(address_and_balances, supply, decimal || 0)
 
-      %UDT{type: :bridge, bridge_account_id: bridge_account_id, supply: supply, decimal: decimal} ->
-        udt_short_addresses =
-          from(a in Account, select: a.short_address, where: a.id in [^udt_id, ^bridge_account_id])
-          |> Repo.all()
+      %UDT{type: :bridge, supply: supply, decimal: decimal} = udt ->
+        token_contract_address_hashes = UDT.list_address_by_udt_id(udt)
 
         sub_query =
           from(au in AccountUDT,
             join: a1 in Account,
             on: a1.short_address == au.address_hash,
-            where: au.token_contract_address_hash in ^udt_short_addresses and au.balance > 0,
+            where:
+              au.token_contract_address_hash in ^token_contract_address_hashes and au.balance > 0,
             select: %{
-              eth_address: fragment("CASE WHEN ? = 'user' THEN encode(?, 'escape')
-        ELSE encode(?, 'escape') END", a1.type, a1.eth_address, a1.short_address),
+              eth_address: a1.eth_address,
               balance: au.balance,
               tx_count:
                 fragment(

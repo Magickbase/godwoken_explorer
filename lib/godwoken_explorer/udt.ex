@@ -103,16 +103,19 @@ defmodule GodwokenExplorer.UDT do
   end
 
   def ckb_account_id do
+    ckb_script_hash = Application.get_env(:godwoken_explorer, :ckb_token_script_hash)
+
     if FastGlobal.get(:ckb_account_id) do
       FastGlobal.get(:ckb_account_id)
     else
-      with ckb_script_hash when is_binary(ckb_script_hash) <-
-             Application.get_env(:godwoken_explorer, :ckb_token_script_hash),
-           %__MODULE__{id: id} <- Repo.get_by(__MODULE__, script_hash: ckb_script_hash) do
+      with %__MODULE__{id: id} <- Repo.get_by(__MODULE__, script_hash: ckb_script_hash) do
         FastGlobal.put(:ckb_account_id, id)
         id
       else
-        _ -> nil
+        _ ->
+          {:ok, id} = Account.find_or_create_udt_account!(nil, ckb_script_hash)
+          FastGlobal.put(:ckb_account_id, id)
+          id
       end
     end
   end
@@ -158,6 +161,27 @@ defmodule GodwokenExplorer.UDT do
          }) do
       {:ok, hex_number} -> hex_to_number(hex_number)
       _ -> 8
+    end
+  end
+
+  def list_address_by_udt_id(udt) do
+    case udt do
+      %UDT{type: :bridge} ->
+        %Account{short_address: short_address} = Repo.get(Account, udt.id)
+
+        with %{bridge_account_id: bridge_account_id} when bridge_account_id != nil <- udt,
+             %Account{eth_address: eth_address} <- Repo.get(Account, udt.bridge_account_id) do
+          [short_address, eth_address]
+        else
+          _ -> [short_address]
+        end
+
+      %UDT{type: :native} ->
+        %Account{eth_address: eth_address} = Repo.get(Account, udt.id)
+        [eth_address]
+
+      nil ->
+        []
     end
   end
 end
