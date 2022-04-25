@@ -127,7 +127,7 @@ defmodule GodwokenExplorer.UDT do
   end
 
   def get_by_contract_address(contract_address) do
-    with %Account{id: id} <- Account |> Repo.get_by(short_address: contract_address),
+    with %Account{id: id} <- Account |> Repo.get_by(eth_address: contract_address),
          %UDT{} = udt <-
            from(u in UDT, where: u.id == ^id or u.bridge_account_id == ^id) |> Repo.one() do
       udt
