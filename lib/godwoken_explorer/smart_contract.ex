@@ -34,6 +34,7 @@ defmodule GodwokenExplorer.SmartContract do
     smart_contract
     |> cast(attrs, base_fields())
     |> validate_required([:name, :contract_source_code, :abi, :account_id])
+    |> unsafe_validate_unique(:account_id, Repo)
   end
 
   def reformat_abi(abi) do
