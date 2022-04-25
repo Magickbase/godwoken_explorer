@@ -40,6 +40,8 @@
         <thead>
           <tr>
 
+              <th><%= table_link(@conn, "ID", :id) %></th>
+
               <th><%= table_link(@conn, "Name", :name) %></th>
 
               <th><%= table_link(@conn, "Symbol", :symbol) %></th>
@@ -55,6 +57,8 @@
           <%= for udt <- @udts do %>
             <tr>
 
+                <td><%= udt.id %></td>
+
                 <td><%= udt.name %></td>
 
                 <td><%= udt.symbol %></td>
@@ -62,7 +66,6 @@
                 <td><%= udt.script_hash %></td>
 
                 <td><%= udt.type %></td>
-
 
               <td class="torch-actions">
                 <span><%= link "Show", to: Routes.admin_udt_path(@conn, :show, udt) %></span>
