@@ -1,5 +1,10 @@
 [
   import_deps: [:ecto, :phoenix],
-  inputs: ["*.{ex,exs}", "priv/*/seeds.exs", "{config,lib,test}/**/*.{ex,exs}"],
+  inputs: [
+    ".credo.exs",
+    ".formatter.exs",
+    "mix.exs",
+    "{config,lib,test}/**/*.{ex,exs}"
+  ],
   subdirectories: ["priv/*/migrations"]
 ]

@@ -18,5 +18,7 @@ config :godwoken_explorer, GodwokenExplorerWeb.Endpoint,
   http: [port: 4002],
   server: false
 
+config :my_app, Oban, testing: :inline
+
 # Print only warnings and errors during test
 config :logger, level: :warn

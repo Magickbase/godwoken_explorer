@@ -32,19 +32,22 @@ config :esbuild,
     env: %{"NODE_PATH" => Path.expand("../deps", __DIR__)}
   ]
 
-config :logger, backends:
-  [{LoggerFileBackend, :debug}, {LoggerFileBackend, :info}, {LoggerFileBackend, :warn}, {LoggerFileBackend, :error}]
+config :logger,
+  backends: [
+    {LoggerFileBackend, :debug},
+    {LoggerFileBackend, :info},
+    {LoggerFileBackend, :warn},
+    {LoggerFileBackend, :error}
+  ]
 
 config :godwoken_explorer, GodwokenExplorer.Counters.AccountsCounter,
   enabled: true,
   enable_consolidation: true,
-  update_interval_in_seconds:  30 * 6
+  update_interval_in_seconds: 30 * 6
 
-config :godwoken_explorer, GodwokenExplorer.Chain.Cache.Blocks,
-  ttl_check_interval: false
+config :godwoken_explorer, GodwokenExplorer.Chain.Cache.Blocks, ttl_check_interval: false
 
-config :godwoken_explorer, GodwokenExplorer.Chain.Cache.Transactions,
-  ttl_check_interval: false
+config :godwoken_explorer, GodwokenExplorer.Chain.Cache.Transactions, ttl_check_interval: false
 
 config :torch,
   otp_app: :godwoken_explorer,
@@ -61,13 +64,18 @@ config :jsonapi,
   remove_links: true
 
 # UTC
-config :godwoken_explorer, GodwokenExplorer.Scheduler,
-  storage: QuantumStoragePersistentEts,
-  jobs: [
-    {"01 00 * * *", {GodwokenExplorer.UDT, :refresh_supply, []}},
-    {"10 00 * * *", {GodwokenExplorer.DailyStat, :refresh_yesterday_data, [DateTime.utc_now]}},
-    {"*/2 * * * *", {GodwokenExplorer.Account, :check_account_and_create, []}}
-  ]
+config :godwoken_explorer, Oban,
+  repo: GodwokenExplorer.Repo,
+  plugins: [
+    # Oban.Plugins.Pruner,
+    {Oban.Plugins.Cron,
+     crontab: [
+       {"01 00 * * *", GodwokenIndexer.Worker.RefreshUDTSupply},
+       {"10 00 * * *", GodwokenIndexer.Worker.DailyStat}
+       #   {"*/2 * * * *", GodwokenIndexer.Worker.CheckAccount}
+     ]}
+  ],
+  queues: [default: 10]
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.

@@ -3,8 +3,6 @@ defmodule GodwokenExplorer.UDT do
 
   import GodwokenRPC.Util, only: [hex_to_number: 1]
 
-  alias GodwokenExplorer.KeyValue
-
   @derive {Jason.Encoder, except: [:__meta__]}
   @primary_key {:id, :integer, autogenerate: false}
   schema "udts" do
@@ -21,9 +19,13 @@ defmodule GodwokenExplorer.UDT do
     field(:price, :decimal)
     field(:bridge_account_id, :integer)
     field(:bridge_account_eth_address, :binary, virtual: true)
-    field :type, Ecto.Enum, values: [:bridge, :native]
+    field(:type, Ecto.Enum, values: [:bridge, :native])
 
-    belongs_to(:account, Account, foreign_key: :bridge_account_id, references: :id, define_field: false)
+    belongs_to(:account, Account,
+      foreign_key: :bridge_account_id,
+      references: :id,
+      define_field: false
+    )
 
     timestamps()
   end
@@ -124,53 +126,6 @@ defmodule GodwokenExplorer.UDT do
     |> List.first()
   end
 
-  # TODO: current will calculate all deposits and withdrawals, after can calculate by incrementation
-  def refresh_supply do
-    {key_value, start_time} =
-      case Repo.get_by(KeyValue, key: :last_udt_supply_at) do
-        nil ->
-          {:ok, key_value} =
-            %KeyValue{} |> KeyValue.changeset(%{key: :last_udt_supply_at}) |> Repo.insert()
-
-          {key_value, nil}
-
-        %KeyValue{value: value} = key_value when is_nil(value) ->
-          {key_value, nil}
-
-        %KeyValue{value: value} = key_value ->
-          {key_value, value |> Timex.parse!("{ISO:Extended}")}
-      end
-
-    end_time = Timex.beginning_of_day(Timex.now())
-
-    if start_time != end_time do
-      deposits = DepositHistory.group_udt_amount(start_time, end_time) |> Map.new()
-      withdrawals = WithdrawalHistory.group_udt_amount(start_time, end_time) |> Map.new()
-      udt_amounts = Map.merge(deposits, withdrawals, fn _k, v1, v2 -> D.add(v1, v2) end)
-      udt_ids = udt_amounts |> Map.keys()
-
-      Repo.transaction(fn ->
-        from(u in UDT, where: u.id in ^udt_ids)
-        |> Repo.all()
-        |> Enum.each(fn u ->
-          supply =
-            udt_amounts
-            |> Map.fetch!(u.id)
-            |> Decimal.div(Integer.pow(10, u.decimal || 0))
-            |> D.add(u.supply || D.new(0))
-
-          UDT.changeset(u, %{
-            supply: supply
-          })
-          |> Repo.update!()
-        end)
-
-        KeyValue.changeset(key_value, %{value: end_time |> Timex.format!("{ISO:Extended}")})
-        |> Repo.update!()
-      end)
-    end
-  end
-
   def get_by_contract_address(contract_address) do
     with %Account{id: id} <- Account |> Repo.get_by(short_address: contract_address),
          %UDT{} = udt <-
@@ -184,10 +139,11 @@ defmodule GodwokenExplorer.UDT do
 
   def eth_call_total_supply(contract_address) do
     total_supply_method = "0x18160DDD"
+
     case GodwokenRPC.eth_call(%{
-      to: contract_address,
-      data: total_supply_method
-    }) do
+           to: contract_address,
+           data: total_supply_method
+         }) do
       {:ok, hex_number} -> hex_to_number(hex_number)
       _ -> 0
     end
@@ -195,10 +151,11 @@ defmodule GodwokenExplorer.UDT do
 
   def eth_call_decimal(contract_address) do
     decimals_method = "0x313CE567"
+
     case GodwokenRPC.eth_call(%{
-      to: contract_address,
-      data: decimals_method
-    }) do
+           to: contract_address,
+           data: decimals_method
+         }) do
       {:ok, hex_number} -> hex_to_number(hex_number)
       _ -> 8
     end
