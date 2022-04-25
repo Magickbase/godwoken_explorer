@@ -64,7 +64,7 @@ defmodule GodwokenExplorer.UDTView do
     from(
       u in UDT,
       preload: :account,
-      where: u.id == ^id,
+      where: u.id == ^id or u.bridge_account_id == ^id,
       select: map(u, ^select_fields())
     )
     |> Repo.one()
