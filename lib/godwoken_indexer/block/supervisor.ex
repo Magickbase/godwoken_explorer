@@ -8,9 +8,9 @@ defmodule GodwokenIndexer.Block.Supervisor do
   def init(_) do
     children = [
       GodwokenIndexer.Block.SyncWorker
-      # GodwokenIndexer.Block.GlobalStateWorker,
-      # GodwokenIndexer.Block.BindL1L2Worker,
-      # GodwokenIndexer.Block.SyncL1BlockWorker
+      GodwokenIndexer.Block.GlobalStateWorker,
+      GodwokenIndexer.Block.BindL1L2Worker,
+      GodwokenIndexer.Block.SyncL1BlockWorker
     ]
 
     childs =
