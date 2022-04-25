@@ -180,7 +180,7 @@ defmodule GodwokenExplorer.TokenTransfer do
       |> Repo.paginate(
         page: paging_options[:page],
         page_size: paging_options[:page_size],
-        options: paging_options[:options]
+        options: paging_options[:options] || []
       )
 
     init_query =
