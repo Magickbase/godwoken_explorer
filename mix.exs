@@ -65,7 +65,6 @@ defmodule GodwokenExplorer.MixProject do
       {:gettext, "~> 0.11"},
       {:jason, "~> 1.0"},
       {:plug_cowboy, "~> 2.0"},
-
       {:httpoison, "~> 1.8"},
       {:rustler, "~> 0.22.0"},
       {:con_cache, "~> 0.13"},
@@ -89,7 +88,7 @@ defmodule GodwokenExplorer.MixProject do
       {:sentry, "~> 8.0"},
 
       # static code analysis tool
-      {:credo, "~> 1.5", only: [:dev, :test], runtime: false},
+      {:credo, "~> 1.6.4", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.0", only: [:dev], runtime: false},
       {:sobelow, "~> 0.8", only: :dev},
 
@@ -106,9 +105,8 @@ defmodule GodwokenExplorer.MixProject do
       {:timex, "~> 3.0"},
       {:retry, "~> 0.15"},
 
-      # cron
-      {:quantum, "~> 3.0"},
-      {:quantum_storage_persistent_ets, "~> 1.0"},
+      # cron job
+      {:oban, "~> 2.12"},
 
       # test
       {:ex_machina, "~> 2.7.0", only: [:test]},

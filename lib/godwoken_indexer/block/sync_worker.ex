@@ -1,11 +1,12 @@
 defmodule GodwokenIndexer.Block.SyncWorker do
   use GenServer
 
-  import GodwokenRPC.Util, only: [timestamps: 0]
+  import GodwokenRPC.Util, only: [import_timestamps: 0]
   import Ecto.Query, only: [from: 2]
 
   require Logger
 
+  alias GodwokenIndexer.Worker.ImportContractCode
   alias GodwokenExplorer.Token.BalanceReader
   alias GodwokenIndexer.Transform.{TokenTransfers, TokenBalances}
   alias GodwokenRPC.{Blocks, Receipts}
@@ -88,7 +89,8 @@ defmodule GodwokenIndexer.Block.SyncWorker do
         {polyjuice_without_receipts, polyjuice_creator_params} =
           group_transaction_params(transactions_params_without_receipts)
 
-        handle_polyjuice_transactions(polyjuice_without_receipts)
+        {:ok, polyjuice_with_receipts} = handle_polyjuice_transactions(polyjuice_without_receipts)
+        async_contract_code(polyjuice_with_receipts)
         import_polyjuice_creator(polyjuice_creator_params)
 
         inserted_transactions = import_transactions(transactions_params_without_receipts)
@@ -121,7 +123,18 @@ defmodule GodwokenIndexer.Block.SyncWorker do
       import_token_transfers(logs)
       import_polyjuice(polyjuice_with_receipts)
       update_ckb_balance(polyjuice_without_receipts)
+      {:ok, polyjuice_with_receipts}
     end
+  end
+
+  defp async_contract_code(polyjuice_with_receipts) do
+    polyjuice_with_receipts
+    |> Enum.filter(fn attrs -> attrs[:created_contract_address_hash] != nil end)
+    |> Enum.each(fn attrs ->
+      %{block_quantity: attrs[:block_number], address: attrs[:created_contract_address_hash]}
+      |> ImportContractCode.new()
+      |> Oban.insert()
+    end)
   end
 
   defp group_transaction_params(transactions_params_without_receipts) do
@@ -163,7 +176,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
     {_count, returned_values} =
       Repo.insert_all(
         Block,
-        blocks_params |> Enum.map(fn block -> Map.merge(block, timestamps()) end),
+        blocks_params |> Enum.map(fn block -> Map.merge(block, import_timestamps()) end),
         on_conflict: :nothing,
         returning: [:hash, :number, :transaction_count, :size, :inserted_at]
       )
@@ -181,7 +194,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
     end
 
     changesets
-    |> Enum.map(fn changeset -> Map.merge(changeset, timestamps()) end)
+    |> Enum.map(fn changeset -> Map.merge(changeset, import_timestamps()) end)
     |> Enum.chunk_every(5_000)
     |> Enum.with_index()
     |> Enum.reduce(Ecto.Multi.new(), reducer)
@@ -281,15 +294,27 @@ defmodule GodwokenIndexer.Block.SyncWorker do
   defp import_account(transactions_params) do
     account_ids = extract_account_ids(transactions_params)
 
-    if length(account_ids) > 0 do
-      exist_ids = from(a in Account, where: a.id in ^account_ids, select: a.id) |> Repo.all()
-      if length(exist_ids) > 0, do: Account.update_all_nonce!(exist_ids)
+    exist_ids = from(a in Account, where: a.id in ^account_ids, select: a.id) |> Repo.all()
+    not_exist_ids = account_ids -- exist_ids
 
-      (account_ids -- exist_ids)
-      |> Enum.each(fn account_id ->
-        Account.manual_create_account!(account_id)
+    if not_exist_ids != [], do: Account.batch_import_accounts(not_exist_ids)
+
+    update_from_accounts_nonce(transactions_params)
+  end
+
+  defp update_from_accounts_nonce(transactions_params) do
+    accounts_and_nonce_attrs =
+      transactions_params
+      |> Enum.map(fn %{from_account_id: from_account_id, nonce: nonce} ->
+        %{id: from_account_id, nonce: nonce} |> Map.merge(import_timestamps())
       end)
-    end
+      |> Enum.sort_by(&Map.fetch(&1, :nonce), &>=/2)
+      |> Enum.uniq_by(&Map.fetch(&1, :id))
+
+    Repo.insert_all(Account, accounts_and_nonce_attrs,
+      on_conflict: {:replace, [:nonce, :updated_at]},
+      conflict_target: :id
+    )
   end
 
   defp update_block_cache([]), do: :ok
@@ -334,7 +359,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
         block_hash: block_hash,
         index: index
       }
-      |> Map.merge(timestamps())
+      |> Map.merge(import_timestamps())
     end)
   end
 
@@ -366,7 +391,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
         transaction_index: transaction_index,
         created_contract_address_hash: created_contract_address_hash
       }
-      |> Map.merge(timestamps())
+      |> Map.merge(import_timestamps())
     end)
   end
 
@@ -388,13 +413,13 @@ defmodule GodwokenIndexer.Block.SyncWorker do
         fee_udt_id: fee_udt_id,
         tx_hash: hash
       }
-      |> Map.merge(timestamps())
+      |> Map.merge(import_timestamps())
     end)
   end
 
   @spec get_next_block_number :: integer
   defp get_next_block_number do
-    case Repo.one(from block in Block, order_by: [desc: block.number], limit: 1) do
+    case Repo.one(from(block in Block, order_by: [desc: block.number], limit: 1)) do
       %Block{number: number} -> number + 1
       nil -> 0
     end
@@ -420,7 +445,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
             token_contract_address_hash: token_contract_address_hash,
             balance: balance
           }
-          |> Map.merge(timestamps())
+          |> Map.merge(import_timestamps())
         else
           _ -> nil
         end
@@ -468,7 +493,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
 
         import_account_udts =
           import_account_udts
-          |> Enum.map(fn import_au -> import_au |> Map.merge(timestamps()) end)
+          |> Enum.map(fn import_au -> import_au |> Map.merge(import_timestamps()) end)
 
         Repo.insert_all(AccountUDT, import_account_udts,
           on_conflict: {:replace, [:balance, :updated_at]},

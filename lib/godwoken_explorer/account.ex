@@ -1,30 +1,31 @@
 defmodule GodwokenExplorer.Account do
   use GodwokenExplorer, :schema
 
-  import GodwokenRPC.Util, only: [script_to_hash: 1, balance_to_view: 2]
+  import GodwokenRPC.Util, only: [script_to_hash: 1, balance_to_view: 2, import_timestamps: 0]
 
   require Logger
 
   alias GodwokenRPC
   alias GodwokenExplorer.Chain.Events.Publisher
-  alias GodwokenExplorer.KeyValue
 
   @derive {Jason.Encoder, except: [:__meta__]}
   @primary_key {:id, :integer, autogenerate: false}
   schema "accounts" do
-    field :eth_address, :binary
-    field :script_hash, :binary
-    field :short_address, :binary
-    field :script, :map
-    field :nonce, :integer
+    field(:eth_address, :binary)
+    field(:script_hash, :binary)
+    field(:short_address, :binary)
+    field(:script, :map)
+    field(:nonce, :integer)
     field(:transaction_count, :integer)
     field(:token_transfer_count, :integer)
+    field(:contract_code, :binary)
 
-    field :type, Ecto.Enum,
+    field(:type, Ecto.Enum,
       values: [:meta_contract, :udt, :user, :polyjuice_root, :polyjuice_contract]
+    )
 
-    has_many :account_udts, AccountUDT
-    has_one :smart_contract, SmartContract
+    has_many(:account_udts, AccountUDT)
+    has_one(:smart_contract, SmartContract)
 
     timestamps()
   end
@@ -41,7 +42,8 @@ defmodule GodwokenExplorer.Account do
       :type,
       :short_address,
       :transaction_count,
-      :token_transfer_count
+      :token_transfer_count,
+      :contract_code
     ])
     |> validate_required([:id, :script_hash])
   end
@@ -460,6 +462,35 @@ defmodule GodwokenExplorer.Account do
     end)
   end
 
+  def batch_import_accounts(ids) do
+    params = ids |> Enum.map(&%{account_id: &1})
+    {:ok, %{errors: [], params_list: script_hash_list}} = GodwokenRPC.fetch_script_hashes(params)
+    {:ok, %{errors: [], params_list: account_list}} = GodwokenRPC.fetch_scripts(script_hash_list)
+
+    account_attrs =
+      account_list
+      |> Enum.map(fn %{script_hash: script_hash, account_id: account_id, script: script} = account ->
+        short_address = String.slice(script_hash, 0, 42)
+        type = switch_account_type(script["code_hash"], script["args"])
+        eth_address = script_to_eth_adress(type, script["args"])
+        parsed_script = add_name_to_polyjuice_script(type, script)
+
+        account
+        |> Map.merge(%{
+          id: account_id,
+          short_address: short_address,
+          type: type,
+          nonce: 0,
+          eth_address: eth_address,
+          script: parsed_script
+        })
+        |> Map.drop([:account_id])
+        |> Map.merge(import_timestamps())
+      end)
+
+    Repo.insert_all(Account, account_attrs, on_conflict: :nothing)
+  end
+
   def manual_create_account!(id) do
     with {:ok, script_hash}
          when script_hash != "0x0000000000000000000000000000000000000000000000000000000000000000" <-
@@ -512,46 +543,5 @@ defmodule GodwokenExplorer.Account do
       on_conflict: {:replace, [:nonce, :updated_at]},
       conflict_target: :id
     )
-  end
-
-  def check_account_and_create do
-    key_value =
-      case Repo.get_by(KeyValue, key: :last_account_total_count) do
-        nil ->
-          {:ok, key_value} =
-            %KeyValue{}
-            |> KeyValue.changeset(%{key: :last_account_total_count, value: "0"})
-            |> Repo.insert()
-
-          key_value
-
-        %KeyValue{} = key_value ->
-          key_value
-      end
-
-    last_count = key_value.value |> String.to_integer()
-
-    with %Account{script: script} when not is_nil(script) <- Account |> Repo.get(0),
-      account_count when account_count != nil <- get_in(script, ["account_merkle_state", "account_count"]) do
-      total_count =  account_count - 1
-
-      if last_count <= total_count do
-        database_ids =
-          from(a in GodwokenExplorer.Account,
-            where: a.id >= ^last_count,
-            select: a.id
-          )
-          |> GodwokenExplorer.Repo.all()
-
-        less_ids = ((last_count..total_count |> Enum.to_list()) -- database_ids) |> Enum.sort()
-
-        Repo.transaction(fn ->
-          less_ids |> Enum.each(fn x -> Account.manual_create_account!(x) end)
-
-          KeyValue.changeset(key_value, %{value: Integer.to_string(total_count + 1)})
-          |> Repo.update!()
-        end, timeout: :infinity)
-      end
-    end
   end
 end
