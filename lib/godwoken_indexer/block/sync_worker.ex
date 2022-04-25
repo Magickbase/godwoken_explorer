@@ -146,7 +146,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
     polyjuice_with_receipts
     |> Enum.filter(fn attrs -> attrs[:created_contract_address_hash] != nil end)
     |> Enum.each(fn attrs ->
-      %{block_quantity: attrs[:block_number], address: attrs[:created_contract_address_hash]}
+      %{block_number: attrs[:block_number], address: attrs[:created_contract_address_hash]}
       |> ImportContractCode.new()
       |> Oban.insert()
     end)
