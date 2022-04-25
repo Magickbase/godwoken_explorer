@@ -177,7 +177,7 @@ defmodule GodwokenExplorer.AccountUDT do
             select: %{
               eth_address: fragment("CASE WHEN ? = 'user' THEN encode(?, 'escape')
         ELSE encode(?, 'escape') END", a1.type, a1.eth_address, a1.short_address),
-              balance: fragment("? / power(10, ?)::decimal", au.balance, ^decimal),
+              balance: au.balance,
               tx_count:
                 fragment(
                   "CASE WHEN ? is null THEN 0 ELSE ? END",
@@ -193,11 +193,11 @@ defmodule GodwokenExplorer.AccountUDT do
           from(sq in subquery(sub_query), order_by: [desc: sq.balance])
           |> Repo.paginate(page: paging_options[:page], page_size: paging_options[:page_size])
 
-        parse_holder_sort_results(address_and_balances, supply)
+        parse_holder_sort_results(address_and_balances, supply, decimal || 0)
     end
   end
 
-  defp parse_holder_sort_results(address_and_balances, supply) do
+  defp parse_holder_sort_results(address_and_balances, supply, decimal) do
     results =
       address_and_balances.entries
       |> Enum.map(fn %{balance: balance} = result ->
@@ -210,7 +210,8 @@ defmodule GodwokenExplorer.AccountUDT do
 
         result
         |> Map.merge(%{
-          percentage: percentage
+          percentage: percentage,
+          balance: D.div(balance, Integer.pow(10, decimal))
         })
       end)
 

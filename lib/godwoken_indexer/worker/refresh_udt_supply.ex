@@ -38,7 +38,6 @@ defmodule GodwokenIndexer.Worker.RefreshUDTSupply do
           supply =
             udt_amounts
             |> Map.fetch!(u.id)
-            |> D.div(Integer.pow(10, u.decimal || 0))
             |> D.add(u.supply || D.new(0))
 
           UDT.changeset(u, %{
