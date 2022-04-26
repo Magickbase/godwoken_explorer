@@ -1,7 +1,14 @@
 defmodule GodwokenExplorer.Account do
   use GodwokenExplorer, :schema
 
-  import GodwokenRPC.Util, only: [script_to_hash: 1, balance_to_view: 2, import_timestamps: 0]
+  import GodwokenRPC.Util,
+    only: [
+      script_to_hash: 1,
+      balance_to_view: 2,
+      import_timestamps: 0,
+      integer_to_le_binary: 1,
+      pad_trailing: 3
+    ]
 
   require Logger
 
@@ -328,15 +335,35 @@ defmodule GodwokenExplorer.Account do
     end
   end
 
-  def find_by_short_address(short_address) do
-    case Repo.get_by(__MODULE__, %{short_address: short_address}) do
-      %__MODULE__{id: id} ->
-        {:ok, id}
+  def find_or_create_contract_by_eth_address(eth_address) do
+    case Repo.get_by(__MODULE__, %{eth_address: eth_address}) do
+      %__MODULE__{} = account ->
+        {:ok, account}
 
       nil ->
-        {:ok, script_hash} = GodwokenRPC.fetch_script_hash(%{short_address: short_address})
-        account_id = script_hash |> GodwokenRPC.fetch_account_id() |> elem(1)
-        {:ok, account_id}
+        polyjuice_validator_code_hash =
+          Application.get_env(:godwoken_explorer, :polyjuice_validator_code_hash)
+
+        rollup_type_hash = Application.get_env(:godwoken_explorer, :rollup_type_hash)
+        polyjuice_creator_id = Application.get_env(:godwoken_explorer, :polyjuice_creator_id)
+
+        le_hex_polyjuice_creator_id =
+          polyjuice_creator_id
+          |> integer_to_le_binary()
+          |> pad_trailing(4, 0)
+          |> Base.encode16(case: :lower)
+
+        account_script = %{
+          "code_hash" => polyjuice_validator_code_hash,
+          "hash_type" => "type",
+          "args" =>
+            rollup_type_hash <> le_hex_polyjuice_creator_id <> String.slice(eth_address, 2..-1)
+        }
+
+        script_hash = script_to_hash(account_script)
+        {:ok, account_id} = GodwokenRPC.fetch_account_id(script_hash)
+        account = Account.manual_create_account!(account_id)
+        {:ok, account}
     end
   end
 

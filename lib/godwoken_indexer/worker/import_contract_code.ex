@@ -18,8 +18,7 @@ defmodule GodwokenIndexer.Worker.ImportContractCode do
         account |> Account.changeset(%{contract_code: contract_code}) |> Repo.update()
 
       nil ->
-        {:ok, account_id} = Account.find_by_short_address(address)
-        {:ok, account} = Account.manual_create_account!(account_id)
+        {:ok, account} = Account.find_or_create_contract_by_eth_address(address)
         account |> Account.changeset(%{contract_code: contract_code}) |> Repo.update()
     end
 

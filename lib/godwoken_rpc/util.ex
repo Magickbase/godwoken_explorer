@@ -12,6 +12,29 @@ defmodule GodwokenRPC.Util do
     integer |> :binary.encode_unsigned(:little) |> Base.encode16() |> String.downcase()
   end
 
+  def integer_to_le_binary(integer) do
+    integer |> :binary.encode_unsigned(:little)
+  end
+
+  @spec pad_trailing(binary, non_neg_integer, byte) :: binary
+  def pad_trailing(binary, len, byte \\ 0)
+
+  # Return binary if it's already long enough
+  def pad_trailing(binary, len, byte)
+      when is_binary(binary) and is_integer(len) and is_integer(byte) and len > 0 and
+             byte_size(binary) >= len,
+      do: binary
+
+  def pad_trailing(binary, len, byte)
+      when is_binary(binary) and is_integer(len) and is_integer(byte) and len > 0 do
+    binary <> (<<byte>> |> copy(len - byte_size(binary)))
+  end
+
+  @spec copy(binary, non_neg_integer) :: binary
+  def copy(bin, n) when is_binary(bin) and is_integer(n) do
+    :binary.copy(bin, n)
+  end
+
   def parse_le_number(hex_string) do
     hex_string
     |> Base.decode16!(case: :lower)
@@ -73,7 +96,9 @@ defmodule GodwokenRPC.Util do
     header_length = @full_length_size + @offset_size * Enum.count(values)
 
     full_length =
-      <<header_length + (body |> String.length() |> Kernel.div(2))::32-little>> |> Base.encode16()
+      <<header_length + (body |> String.length() |> Kernel.div(2))::32-little>>
+      |> Base.encode16()
+      |> String.downcase()
 
     offset_base = values |> Enum.map(&(&1 |> String.length() |> Kernel.div(2)))
 
