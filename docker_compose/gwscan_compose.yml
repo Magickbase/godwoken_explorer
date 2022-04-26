@@ -55,7 +55,5 @@ services:
       - GWSCAN_BLOCK_BATCH_SIZE
     ports:
       - 4001:4001
-      - 5432:5432
-      - 25432:25432
     extra_hosts:
       - "host.docker.internal:host-gateway"
