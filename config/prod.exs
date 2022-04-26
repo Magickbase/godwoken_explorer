@@ -31,7 +31,7 @@ config :logger,
 
 chain =
   if is_nil(System.get_env("GODWOKEN_CHAIN")) do
-    raise "GODWOKEN_CHAIN environment variable is not set"
+    "testnet"
   else
     System.get_env("GODWOKEN_CHAIN")
     |> String.trim()

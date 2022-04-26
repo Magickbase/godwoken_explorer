@@ -79,7 +79,7 @@ config :godwoken_explorer, Oban,
 
 gwscan_graphiql =
   if is_nil(System.get_env("GWSCAN_GRAPHIQL")) do
-    raise "GWSCAN_GRAPHIQL is not set"
+    true
   else
     System.get_env("GWSCAN_GRAPHIQL") |> String.to_atom()
   end
