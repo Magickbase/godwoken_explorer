@@ -42,14 +42,10 @@ pg_password = System.get_env("PG_PADDWORD", "postgres")
 pg_database = System.get_env("PG_DATABASE", "godwoken_explorer_dev")
 pg_hostname = System.get_env("PG_HOSTNAME", "localhost")
 pg_port = System.get_env("PG_PORT", "5432") |> String.to_integer()
-
-pg_show_sensitive_data_on_connection_error =
-  System.get_env("PG_SHOW_SENSITIVE_DATA_ON_CONNECTION_ERROR", "false") |> String.to_atom()
-
-pg_pool_size = System.get_env("PG_POOL_SIZE", "10") |> String.to_integer()
-pg_timeout = System.get_env("PG_TIMEOUT", "10000") |> String.to_integer()
+pg_pool_size = System.get_env("PG_POOL_SIZE", "20") |> String.to_integer()
+pg_timeout = System.get_env("PG_TIMEOUT", "20000") |> String.to_integer()
+pg_connect_timeout = System.get_env("PG_CONNECT_TIMEOUT", "30000") |> String.to_integer()
 pg_queue_target = System.get_env("PG_QUEUE_TARGET", "5000") |> String.to_integer()
-pg_queue_interval = System.get_env("PG_QUEUE_INTERVAL", "2000") |> String.to_integer()
 
 # database_url =
 #   System.get_env("DATABASE_URL") ||
@@ -66,8 +62,8 @@ config :godwoken_explorer, GodwokenExplorer.Repo,
   # url: database_url,
   pool_size: pg_pool_size,
   queue_target: pg_queue_target,
-  queue_interval: pg_queue_interval,
   timeout: pg_timeout,
+  connect_timeout: pg_connect_timeout,
   socket_options: maybe_ipv6
 
 gwscan_block_sync_woker_on_off =
