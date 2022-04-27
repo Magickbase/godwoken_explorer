@@ -247,10 +247,6 @@ defmodule GodwokenIndexer.Block.SyncWorker do
       |> extract_account_ids()
       |> Account.display_ids()
 
-    tx = returned_values |> List.first()
-
-    %Block{timestamp: timestamp} = Repo.get_by(Block, number: tx.block_number)
-
     returned_values
     |> Enum.map(fn tx ->
       hash =
@@ -268,8 +264,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
         to_alias:
           display_ids
           |> Map.get(tx.to_account_id, {tx.to_account_id, tx.to_account_id})
-          |> elem(1),
-        timestamp: timestamp
+          |> elem(1)
       })
     end)
   end
@@ -308,7 +303,10 @@ defmodule GodwokenIndexer.Block.SyncWorker do
     home_transactions =
       Enum.map(inserted_transactions, fn tx ->
         tx
-        |> Map.take([:hash, :type, :from, :to, :to_alias, :timestamp])
+        |> Map.take([:hash, :type, :from, :to, :to_alias])
+        |> Map.merge(%{
+          timestamp: home_blocks |> List.first() |> Map.get(:timestamp)
+        })
       end)
 
     data = Chain.home_api_data(home_blocks, home_transactions)
