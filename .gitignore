@@ -43,3 +43,9 @@ npm-debug.log
 
 native/*/target
 .elixir_ls
+
+dev.env
+prod_mainnet.env
+prod_testnet.env
+staging_testnet.env
+staging_testnet_v1.env

@@ -77,6 +77,26 @@ config :godwoken_explorer, Oban,
   ],
   queues: [default: 10]
 
+gwscan_graphiql =
+  if is_nil(System.get_env("GWSCAN_GRAPHIQL")) do
+    true
+  else
+    System.get_env("GWSCAN_GRAPHIQL") |> String.to_atom()
+  end
+
+config :godwoken_explorer, :graphiql, gwscan_graphiql
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
-import_config "#{Mix.env()}.exs"
+import_config "#{config_env()}.exs"
+
+chain =
+  if is_nil(System.get_env("GODWOKEN_CHAIN")) do
+    "testnet"
+  else
+    System.get_env("GODWOKEN_CHAIN")
+    |> String.trim()
+    |> String.downcase()
+  end
+
+import_config "chains/#{chain}.exs"
