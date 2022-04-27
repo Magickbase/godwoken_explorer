@@ -45,6 +45,7 @@ native/*/target
 .elixir_ls
 
 dev.env
-prod.env
-prod_aggron.env
 prod_mainnet.env
+prod_testnet.env
+staging_testnet.env
+staging_testnet_v1.env
