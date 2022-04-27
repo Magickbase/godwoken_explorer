@@ -237,7 +237,9 @@ defmodule GodwokenIndexer.Block.SyncWorker do
           :to_account_id,
           :hash,
           :eth_hash,
-          :type
+          :type,
+          :block_number,
+          :inserted_at
         ]
       )
 
