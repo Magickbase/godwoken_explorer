@@ -93,7 +93,8 @@ defmodule GodwokenIndexer.Block.SyncWorker do
 
         import_polyjuice_creator(polyjuice_creator_params)
 
-        inserted_transactions = import_transactions(transactions_params_without_receipts)
+        inserted_transactions =
+          import_transactions(blocks_params, transactions_params_without_receipts)
 
         update_transactions_cache(inserted_transactions)
         {:ok, inserted_transactions}
@@ -104,6 +105,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
     import_withdrawal_requests(withdrawal_params)
     inserted_blocks = import_block(blocks_params)
     update_block_cache(inserted_blocks)
+
     broadcast_block_and_tx(inserted_blocks, inserted_transactions)
 
     if multiple_block_once? do
@@ -226,7 +228,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
     if length(token_transfers) > 0, do: update_erc20_balance(token_transfers)
   end
 
-  defp import_transactions(transactions_params_without_receipts) do
+  defp import_transactions(block_params, transactions_params_without_receipts) do
     inserted_transaction_params = filter_transaction_columns(transactions_params_without_receipts)
 
     {_count, returned_values} =
@@ -238,8 +240,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
           :hash,
           :eth_hash,
           :type,
-          :block_number,
-          :inserted_at
+          :block_number
         ]
       )
 
@@ -265,7 +266,8 @@ defmodule GodwokenIndexer.Block.SyncWorker do
         to_alias:
           display_ids
           |> Map.get(tx.to_account_id, {tx.to_account_id, tx.to_account_id})
-          |> elem(1)
+          |> elem(1),
+        timestamp: block_params |> List.first() |> Map.get(:timestamp)
       })
     end)
   end
