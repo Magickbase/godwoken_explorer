@@ -238,8 +238,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
           :hash,
           :eth_hash,
           :type,
-          :block_number,
-          :inserted_at
+          :block_number
         ]
       )
 
@@ -247,6 +246,10 @@ defmodule GodwokenIndexer.Block.SyncWorker do
       transactions_params_without_receipts
       |> extract_account_ids()
       |> Account.display_ids()
+
+    tx = returned_values |> List.first()
+
+    %Block{timestamp: timestamp} = Repo.get_by(Block, number: tx.block_number)
 
     returned_values
     |> Enum.map(fn tx ->
@@ -265,7 +268,8 @@ defmodule GodwokenIndexer.Block.SyncWorker do
         to_alias:
           display_ids
           |> Map.get(tx.to_account_id, {tx.to_account_id, tx.to_account_id})
-          |> elem(1)
+          |> elem(1),
+        timestamp: timestamp
       })
     end)
   end
