@@ -195,7 +195,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
         Block,
         blocks_params |> Enum.map(fn block -> Map.merge(block, import_timestamps()) end),
         on_conflict: :nothing,
-        returning: [:hash, :number, :transaction_count, :size, :inserted_at]
+        returning: [:hash, :number, :transaction_count, :size, :timestamp]
       )
 
     returned_values
@@ -302,16 +302,13 @@ defmodule GodwokenIndexer.Block.SyncWorker do
   defp broadcast_block_and_tx(inserted_blocks, inserted_transactions) do
     home_blocks =
       Enum.map(inserted_blocks, fn block ->
-        Map.take(block, [:hash, :number, :inserted_at, :transaction_count])
+        Map.take(block, [:hash, :number, :timestamp, :transaction_count])
       end)
 
     home_transactions =
       Enum.map(inserted_transactions, fn tx ->
         tx
-        |> Map.take([:hash, :type, :from, :to, :to_alias])
-        |> Map.merge(%{
-          timestamp: home_blocks |> List.first() |> Map.get(:inserted_at)
-        })
+        |> Map.take([:hash, :type, :from, :to, :to_alias, :timestamp])
       end)
 
     data = Chain.home_api_data(home_blocks, home_transactions)
