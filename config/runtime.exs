@@ -181,6 +181,7 @@ gwscan_sentry_environment_name = System.get_env("GWSCAN_SENTRY_ENVIRONMENT_NAME"
 gwscan_sentry_enable_source_code_context =
   System.get_env("GWSCAN_SENTRY_ENABLE_SOURCE_CODE_CONTEXT", "false") |> String.to_atom()
 
+gwscan_sentry_tags_environment = System.get_env("GWSCAN_SENTRY_TAGS_ENVIRONMENT", "")
 gwscan_sentry_included_environment = System.get_env("GWSCAN_SENTRY_INCLUDED_ENVIRONMENT", "")
 
 config :sentry,
@@ -188,6 +189,9 @@ config :sentry,
   environment_name: gwscan_sentry_environment_name,
   enable_source_code_context: gwscan_sentry_enable_source_code_context,
   root_source_code_path: File.cwd!(),
+  tags: %{
+    env: gwscan_sentry_tags_environment
+  },
   included_environments: [gwscan_sentry_included_environment]
 
 gwscan_scheduler_job = System.get_env("GWSCAN_SCHEDULER_JOB", "true") |> String.to_atom()

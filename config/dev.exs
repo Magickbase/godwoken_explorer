@@ -30,14 +30,3 @@ config :phoenix, :stacktrace_depth, 20
 
 # Initialize plugs at runtime for faster development compilation
 config :phoenix, :plug_init_mode, :runtime
-
-chain =
-  if is_nil(System.get_env("GODWOKEN_CHAIN")) do
-    "testnet"
-  else
-    System.get_env("GODWOKEN_CHAIN")
-    |> String.trim()
-    |> String.downcase()
-  end
-
-import_config "dev/#{chain}.exs"

@@ -28,14 +28,3 @@ config :logger,
     format: "$date $time $metadata[$level] $message\n",
     rotate: %{max_bytes: 52_428_800, keep: 19}
   ]
-
-chain =
-  if is_nil(System.get_env("GODWOKEN_CHAIN")) do
-    "testnet"
-  else
-    System.get_env("GODWOKEN_CHAIN")
-    |> String.trim()
-    |> String.downcase()
-  end
-
-import_config "prod/#{chain}.exs"
