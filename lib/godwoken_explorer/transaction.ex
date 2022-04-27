@@ -81,8 +81,7 @@ defmodule GodwokenExplorer.Transaction do
         txs
         |> Enum.map(fn t ->
           t
-          |> Map.take([:hash, :from, :to, :to_alias, :type])
-          |> Map.merge(%{timestamp: t.inserted_at})
+          |> Map.take([:hash, :from, :to, :to_alias, :type, :timestamp])
         end)
 
       _ ->
@@ -323,10 +322,10 @@ defmodule GodwokenExplorer.Transaction do
             a3.short_address
           ),
         status: b.status,
+        timestamp: b.timestamp,
         polyjuice_status: p.status,
         type: t.type,
         nonce: t.nonce,
-        inserted_at: t.inserted_at,
         fee: p.gas_price * p.gas_used,
         gas_price: p.gas_price,
         gas_used: p.gas_used,

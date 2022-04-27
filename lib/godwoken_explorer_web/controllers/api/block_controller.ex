@@ -38,7 +38,7 @@ defmodule GodwokenExplorerWeb.API.BlockController do
           finalize_state: block.status,
           tx_count: block.transaction_count,
           miner_hash: Block.miner_hash(block),
-          timestamp: block.inserted_at,
+          timestamp: block.timestamp,
           gas_limit: block.gas_limit,
           gas_used: block.gas_used,
           size: block.size,
