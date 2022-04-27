@@ -155,8 +155,13 @@ defmodule GodwokenExplorer.AccountUDT do
             select: %{
               eth_address: fragment("CASE WHEN ? = 'user' THEN encode(?, 'escape')
         ELSE encode(?, 'escape') END", a1.type, a1.eth_address, a1.short_address),
-              balance: fragment("? / power(10, ?)::decimal", au.balance, ^decimal),
-              account_id: a1.id
+              balance: au.balance,
+              tx_count:
+                fragment(
+                  "CASE WHEN ? is null THEN 0 ELSE ? END",
+                  a1.transaction_count,
+                  a1.transaction_count
+                )
             },
             order_by: [desc: au.balance]
           )
