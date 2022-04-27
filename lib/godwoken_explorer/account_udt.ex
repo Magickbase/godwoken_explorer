@@ -157,7 +157,6 @@ defmodule GodwokenExplorer.AccountUDT do
             select: %{
               eth_address: a1.eth_address,
               balance: au.balance,
-              account_id: a1.id,
               tx_count:
                 fragment(
                   "CASE WHEN ? is null THEN 0 ELSE ? END",
