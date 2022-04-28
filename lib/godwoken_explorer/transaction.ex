@@ -182,7 +182,7 @@ defmodule GodwokenExplorer.Transaction do
         %{type: type, account: account},
         paging_options
       )
-      when type in [:meta_contract, :udt, :polyjuice_creator, :polyjuice_contract] do
+      when type in [:meta_contract, :udt, :polyjuice_creator, :polyjuice_contract, :eth_addr_reg] do
     condition = dynamic([t], t.to_account_id == ^account.id)
 
     paging_options =
