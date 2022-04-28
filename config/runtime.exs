@@ -18,9 +18,25 @@ gwscan_endpoint_live_view_signing_salt =
     default_gwscan_endpoint_live_view_signing_salt
   )
 
+gwscan_endpoint_check_origin =
+  case System.get_env("GWSCAN_ENDPOINT_CHECK_ORIGIN", "false") do
+    "false" ->
+      false
+
+    check_origin when is_bitstring(check_origin) ->
+      check_origin
+      |> String.trim()
+      |> String.split(",")
+      |> Enum.map(&String.trim(&1))
+
+    _ ->
+      false
+  end
+
 config :godwoken_explorer, GodwokenExplorerWeb.Endpoint,
   url: [host: gwscan_endpoint_host, port: gwscan_endpoint_port, scheme: gwscan_endpoint_scheme],
   http: [ip: {0, 0, 0, 0}, port: gwscan_endpoint_port],
+  check_origin: gwscan_endpoint_check_origin,
   secret_key_base: gwscan_endpoint_secret_key,
   live_view: [signing_salt: gwscan_endpoint_live_view_signing_salt]
 
