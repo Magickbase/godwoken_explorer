@@ -138,11 +138,11 @@ defmodule GodwokenExplorer.UDT do
   end
 
   def eth_call_total_supply(contract_address) do
-    total_supply_method = "0x18160DDD"
+    method_sig = "0x18160DDD"
 
     case GodwokenRPC.eth_call(%{
            to: contract_address,
-           data: total_supply_method
+           data: method_sig
          }) do
       {:ok, hex_number} -> hex_to_number(hex_number)
       _ -> 0
@@ -150,14 +150,50 @@ defmodule GodwokenExplorer.UDT do
   end
 
   def eth_call_decimal(contract_address) do
-    decimals_method = "0x313CE567"
+    method_sig = "0x313CE567"
 
     case GodwokenRPC.eth_call(%{
            to: contract_address,
-           data: decimals_method
+           data: method_sig
          }) do
       {:ok, hex_number} -> hex_to_number(hex_number)
       _ -> 8
+    end
+  end
+
+  def eth_call_name(contract_address) do
+    method_sig = "0x06FDDE03"
+
+    case GodwokenRPC.eth_call(%{
+           to: contract_address,
+           data: method_sig
+         }) do
+      {:ok, hex_name} ->
+        ABI.decode(
+          "name(string)",
+          hex_name |> String.slice(2..-1) |> Base.decode16!(case: :lower)
+        )
+
+      _ ->
+        ""
+    end
+  end
+
+  def eth_call_symbol(contract_address) do
+    method_sig = "0x95D89B41"
+
+    case GodwokenRPC.eth_call(%{
+           to: contract_address,
+           data: method_sig
+         }) do
+      {:ok, hex_symbol} ->
+        ABI.decode(
+          "name(string)",
+          hex_symbol |> String.slice(2..-1) |> Base.decode16!(case: :lower)
+        )
+
+      _ ->
+        ""
     end
   end
 end
