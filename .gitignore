@@ -43,6 +43,7 @@ npm-debug.log
 
 native/*/target
 .elixir_ls
+.vscode/
 
 dev.env
 prod_mainnet.env

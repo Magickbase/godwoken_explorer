@@ -114,9 +114,6 @@ defmodule GodwokenExplorer.MixProject do
       {:mock, "~> 0.3.7", only: [:test], runtime: false},
       {:mox, "~> 1.0.1", only: [:test]},
 
-      # deployment
-      {:distillery, "~> 2.1", warn_missing: false},
-
       # graphql
       {:absinthe, "~> 1.7"},
       {:absinthe_plug, "~> 1.5"},

@@ -14,6 +14,7 @@ config :godwoken_explorer,
 # Configures the endpoint
 config :godwoken_explorer, GodwokenExplorerWeb.Endpoint,
   url: [host: "localhost"],
+  check_origin: false,
   secret_key_base: "RyKusGni7iTLOYLtHal3FRI4uKsV4mD/v25fyKBfVsxdrYChqL0IVTd07VvZoLx9",
   render_errors: [view: GodwokenExplorerWeb.ErrorView, accepts: ~w(html json), layout: false],
   pubsub_server: GodwokenExplorer.PubSub,
