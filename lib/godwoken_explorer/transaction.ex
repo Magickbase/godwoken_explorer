@@ -243,7 +243,7 @@ defmodule GodwokenExplorer.Transaction do
     from(t in Transaction,
       select: t.hash,
       where: ^condition,
-      order_by: [desc: t.block_number, desc: t.index, desc: t.inserted_at]
+      order_by: [desc: t.inserted_at, desc: t.block_number, desc: t.index]
     )
   end
 
