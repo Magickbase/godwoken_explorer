@@ -173,6 +173,7 @@ defmodule GodwokenExplorer.UDT do
           "name(string)",
           hex_name |> String.slice(2..-1) |> Base.decode16!(case: :lower)
         )
+        |> List.first()
 
       _ ->
         ""
@@ -191,6 +192,7 @@ defmodule GodwokenExplorer.UDT do
           "name(string)",
           hex_symbol |> String.slice(2..-1) |> Base.decode16!(case: :lower)
         )
+        |> List.first()
 
       _ ->
         ""
