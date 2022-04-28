@@ -23,5 +23,5 @@ config :godwoken_explorer,
     hash_type: "type",
     args: "0x4cc2e6526204ae6a2e8fcf12f7ad472f41a1606d5b9624beebd215d780809f6a"
   },
-  init_godwoken_l1_block_number: 3_614_780,
+  init_godwoken_l1_block_number: 2_286_200,
   ckb_token_script_hash: "0x0000000000000000000000000000000000000000000000000000000000000000"
