@@ -77,7 +77,7 @@ config :godwoken_explorer, Oban,
        {"*/10 * * * *", GodwokenIndexer.Worker.CheckContractCode}
      ]}
   ],
-  queues: [default: 10]
+  queues: [default: 3]
 
 gwscan_graphiql =
   if is_nil(System.get_env("GWSCAN_GRAPHIQL")) do
