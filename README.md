@@ -16,20 +16,17 @@ For technology infrastructure, this project is inspired by [blockscout](https://
 - Rust
 
 ### Run local development
-1. `$ mix ecto.setup`
-2. Update `config/dev.per.exs` with your chain configuration
+1. export your enviroment: [reference](./docker_compose/envs/.env)
+2. `$ mix ecto.setup`
 3. `$ mix phx.server`
 4. Visit `http://localhost:4001`
 
 ### Deploy
-[Local Deploy to Ubuntu](https://github.com/nervina-labs/godwoken_explorer/blob/main/docs/deploy_to_ubuntu.md)
+[Local Deploy to Ubuntu](./docs/deploy_to_ubuntu.md)
 
-### Docker ([availability was waiting for this pr merge](https://github.com/nervosnet/godwoken_explorer/pull/394))
-1. use dockerfile to build the image
-`docker build . -f ./docker/Dockerfile` 
-2. use docker compose to build and running the
-`docker compose --env-file=./docker_compose/envs/[your_custom_env_file].env -f=./docker_compose/godwoken_explorer_compose.yml up`
-3. [edit your custom docker environment file](./docs/docker_enviromnent.md)
+### Docker Compose
+1. [Install Docker Desktop](https://www.docker.com/products/docker-desktop/)
+2. [Docker README](docs/docker-compose.md)
 
 ### Branch for godwoken version
 main: godwoken v0

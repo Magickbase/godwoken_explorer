@@ -35,7 +35,7 @@ defmodule GodwokenExplorer.MixProject do
   defp releases() do
     [
       godwoken_explorer: [
-        applications: [godwoken_explorer: :permanent],
+        applications: [godwoken_explorer: :permanent, runtime_tools: :permanent],
         include_erts: true,
         steps: [:assemble, :tar]
       ]
@@ -66,7 +66,7 @@ defmodule GodwokenExplorer.MixProject do
       {:jason, "~> 1.0"},
       {:plug_cowboy, "~> 2.0"},
       {:httpoison, "~> 1.8"},
-      {:rustler, "~> 0.22.0"},
+      {:rustler, "~> 0.25.0"},
       {:con_cache, "~> 0.13"},
       {:scrivener_ecto, "~> 2.0"},
       {:decimal, "~> 2.0"},
@@ -93,7 +93,7 @@ defmodule GodwokenExplorer.MixProject do
       {:sobelow, "~> 0.8", only: :dev},
 
       # web3 tool
-      {:ex_abi, "~> 0.5.8"},
+      {:ex_abi, "~> 0.5.11"},
 
       # database_history
       {:ex_audit, "~> 0.9"},
@@ -113,9 +113,6 @@ defmodule GodwokenExplorer.MixProject do
       {:excoveralls, "~> 0.14.4", only: [:test]},
       {:mock, "~> 0.3.7", only: [:test], runtime: false},
       {:mox, "~> 1.0.1", only: [:test]},
-
-      # deployment
-      {:distillery, "~> 2.1", warn_missing: false},
 
       # graphql
       {:absinthe, "~> 1.7"},
@@ -138,7 +135,8 @@ defmodule GodwokenExplorer.MixProject do
       setup: ["deps.get", "ecto.setup", "cmd npm install --prefix assets"],
       "ecto.setup": ["ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
       "ecto.reset": ["ecto.drop", "ecto.setup"],
-      test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"]
+      test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"],
+      "assets.deploy": ["esbuild default --minify", "phx.digest"]
     ]
   end
 end

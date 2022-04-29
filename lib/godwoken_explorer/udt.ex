@@ -140,30 +140,6 @@ defmodule GodwokenExplorer.UDT do
     end
   end
 
-  def eth_call_total_supply(contract_address) do
-    total_supply_method = "0x18160DDD"
-
-    case GodwokenRPC.eth_call(%{
-           to: contract_address,
-           data: total_supply_method
-         }) do
-      {:ok, hex_number} -> hex_to_number(hex_number)
-      _ -> 0
-    end
-  end
-
-  def eth_call_decimal(contract_address) do
-    decimals_method = "0x313CE567"
-
-    case GodwokenRPC.eth_call(%{
-           to: contract_address,
-           data: decimals_method
-         }) do
-      {:ok, hex_number} -> hex_to_number(hex_number)
-      _ -> 8
-    end
-  end
-
   def list_address_by_udt_id(udt_id) do
     case Repo.get(UDT, udt_id) do
       %UDT{type: :bridge} = udt ->
@@ -182,6 +158,68 @@ defmodule GodwokenExplorer.UDT do
 
       nil ->
         []
+    end
+  end
+
+  def eth_call_total_supply(contract_address) do
+    method_sig = "0x18160DDD"
+
+    case GodwokenRPC.eth_call(%{
+           to: contract_address,
+           data: method_sig
+         }) do
+      {:ok, hex_number} -> hex_to_number(hex_number)
+      _ -> 0
+    end
+  end
+
+  def eth_call_decimal(contract_address) do
+    method_sig = "0x313CE567"
+
+    case GodwokenRPC.eth_call(%{
+           to: contract_address,
+           data: method_sig
+         }) do
+      {:ok, hex_number} -> hex_to_number(hex_number)
+      _ -> 8
+    end
+  end
+
+  def eth_call_name(contract_address) do
+    method_sig = "0x06FDDE03"
+
+    case GodwokenRPC.eth_call(%{
+           to: contract_address,
+           data: method_sig
+         }) do
+      {:ok, hex_name} ->
+        ABI.decode(
+          "name(string)",
+          hex_name |> String.slice(2..-1) |> Base.decode16!(case: :lower)
+        )
+        |> List.first()
+
+      _ ->
+        ""
+    end
+  end
+
+  def eth_call_symbol(contract_address) do
+    method_sig = "0x95D89B41"
+
+    case GodwokenRPC.eth_call(%{
+           to: contract_address,
+           data: method_sig
+         }) do
+      {:ok, hex_symbol} ->
+        ABI.decode(
+          "name(string)",
+          hex_symbol |> String.slice(2..-1) |> Base.decode16!(case: :lower)
+        )
+        |> List.first()
+
+      _ ->
+        ""
     end
   end
 end

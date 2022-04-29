@@ -267,7 +267,7 @@ defmodule GodwokenExplorer.Transaction do
       select:
         fragment("CASE WHEN ? IS NOT NULL THEN ? ELSE ? END", t.eth_hash, t.eth_hash, t.hash),
       where: ^condition,
-      order_by: [desc: t.block_number, desc: t.index]
+      order_by: [desc: t.inserted_at, desc: t.block_number, desc: t.index]
     )
   end
 

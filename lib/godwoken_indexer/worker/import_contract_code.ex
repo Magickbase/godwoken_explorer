@@ -13,15 +13,26 @@ defmodule GodwokenIndexer.Worker.ImportContractCode do
        ]
      }} = GodwokenRPC.fetch_codes([%{block_quantity: block_number, address: address}])
 
-    case Account.search(address) do
-      %Account{} = account ->
-        account |> Account.changeset(%{contract_code: contract_code}) |> Repo.update()
+    account =
+      case Account.search(address) do
+        %Account{} = account ->
+          account |> Account.changeset(%{contract_code: contract_code}) |> Repo.update()
 
-      nil ->
-        {:ok, account} = Account.find_or_create_contract_by_eth_address(address)
-        account |> Account.changeset(%{contract_code: contract_code}) |> Repo.update()
-    end
+        nil ->
+          {:ok, account} = Account.find_or_create_contract_by_eth_address(address)
+          account |> Account.changeset(%{contract_code: contract_code}) |> Repo.update()
+      end
 
+    compare_with_yok_contract(contract_code, account.id)
     :ok
+  end
+
+  defp compare_with_yok_contract(contract_code, account_id) do
+    if System.get_env("GODWOKEN_CHAIN") == "mainnet" &&
+         Account.yok_contract_code() == contract_code do
+      %{account_id: account_id}
+      |> GodwokenIndexer.Worker.GenerateYokSeriesContract.new()
+      |> Oban.insert()
+    end
   end
 end

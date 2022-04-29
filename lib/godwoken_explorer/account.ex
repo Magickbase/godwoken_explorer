@@ -16,6 +16,7 @@ defmodule GodwokenExplorer.Account do
   alias GodwokenExplorer.Chain.Events.Publisher
 
   @polyjuice_creator_args_length 82
+  @yok_mainnet_account_id 12119
 
   @derive {Jason.Encoder, except: [:__meta__]}
   @primary_key {:id, :integer, autogenerate: false}
@@ -616,5 +617,15 @@ defmodule GodwokenExplorer.Account do
       on_conflict: {:replace, [:nonce, :updated_at]},
       conflict_target: :id
     )
+  end
+
+  def yok_contract_code do
+    if FastGlobal.get(:yok_contract_code) do
+      FastGlobal.get(:yok_contract_code)
+    else
+      account = Repo.get(Account, @yok_mainnet_account_id)
+      FastGlobal.put(:yok_contract_code, account.contract_code)
+      account.contract_code
+    end
   end
 end

@@ -6,7 +6,7 @@ defmodule GodwokenExplorerWeb.Router do
 
   pipeline :browser do
     plug(:accepts, ["html"])
-    plug(:basic_auth, Application.compile_env(:godwoken_explorer, :basic_auth))
+    plug(:basic_auth, Application.get_env(:godwoken_explorer, :basic_auth))
     plug(:fetch_session)
     plug(:fetch_flash)
     plug(:protect_from_forgery)
@@ -25,7 +25,7 @@ defmodule GodwokenExplorerWeb.Router do
   scope "/graphql" do
     pipe_through([:graphql_api])
 
-    if Mix.env() in [:dev, :stg] do
+    if Application.get_env(:godwoken_explorer, :graphiql) do
       get("/", Absinthe.Plug.GraphiQL,
         schema: GodwokenExplorer.Graphql.Schemas.Graphql,
         interface: :playground,
