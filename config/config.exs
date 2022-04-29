@@ -68,15 +68,16 @@ config :jsonapi,
 config :godwoken_explorer, Oban,
   repo: GodwokenExplorer.Repo,
   plugins: [
-    # Oban.Plugins.Pruner,
+    Oban.Plugins.Pruner,
     {Oban.Plugins.Cron,
      crontab: [
        {"01 00 * * *", GodwokenIndexer.Worker.RefreshUDTSupply},
-       {"10 00 * * *", GodwokenIndexer.Worker.DailyStat}
-       #   {"*/2 * * * *", GodwokenIndexer.Worker.CheckAccount}
+       {"10 00 * * *", GodwokenIndexer.Worker.DailyStat},
+       {"*/2 * * * *", GodwokenIndexer.Worker.CheckLostAccount},
+       {"*/10 * * * *", GodwokenIndexer.Worker.CheckContractCode}
      ]}
   ],
-  queues: [default: 10]
+  queues: [default: 3]
 
 gwscan_graphiql =
   if is_nil(System.get_env("GWSCAN_GRAPHIQL")) do
