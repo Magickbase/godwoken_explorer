@@ -7,7 +7,9 @@ defmodule GodwokenExplorer.Counters.AccountsCounter do
 
   use GenServer
 
-  alias GodwokenExplorer.Account
+  import Ecto.Query, only: [from: 2]
+
+  alias GodwokenExplorer.{Account, Repo}
 
   @table :accounts_counter
 
@@ -104,7 +106,12 @@ defmodule GodwokenExplorer.Counters.AccountsCounter do
   Consolidates the info by populating the `:ets` table with the current database information.
   """
   def consolidate do
-    counter = Account.count()
+    counter =
+      from(
+        a in Account,
+        select: fragment("COUNT(*)")
+      )
+      |> Repo.one(timeout: :infinity)
 
     insert_counter({cache_key(), counter})
   end
