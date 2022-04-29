@@ -25,31 +25,14 @@ defmodule GodwokenExplorer.Graphql.Resolvers.AccountUDT do
 
   def account_udts(_parent, %{input: input} = _args, _resolution) do
     address_hashes = Map.get(input, :address_hashes)
-
-    query =
-      from(au in AccountUDT)
-      |> query_with_token_contract_address_hash(input)
-      |> where(
-        [au],
-        au.address_hash in ^address_hashes
-      )
+    token_contract_address_hash = Map.get(input, :token_contract_address_hash)
 
     if length(address_hashes) > @addresses_max_limit do
       {:error, :too_many_inputs}
     else
+      query = search_account_udts(address_hashes, token_contract_address_hash)
       return = Repo.all(query)
       {:ok, return}
-    end
-  end
-
-  defp query_with_token_contract_address_hash(query, input) do
-    token_contract_address_hash = Map.get(input, :token_contract_address_hash)
-
-    if is_nil(token_contract_address_hash) do
-      query
-    else
-      query
-      |> where([au], au.token_contract_address_hash == ^token_contract_address_hash)
     end
   end
 
@@ -81,19 +64,34 @@ defmodule GodwokenExplorer.Graphql.Resolvers.AccountUDT do
   defp do_account_ckbs(address_hashes, ckb_account_id) do
     %Account{short_address: token_contract_address_hash} = Repo.get(Account, ckb_account_id)
 
-    query =
-      from(au in AccountUDT)
-      |> where(
-        [au],
-        au.token_contract_address_hash == ^token_contract_address_hash and
-          au.address_hash in ^address_hashes
-      )
-
     if length(address_hashes) > @addresses_max_limit do
       {:error, :too_many_addresses}
     else
+      query = search_account_udts(address_hashes, token_contract_address_hash)
       return = Repo.all(query)
       {:ok, return}
+    end
+  end
+
+  defp search_account_udts(address_hashes, token_contract_address_hash) do
+    squery =
+      from(a in Account)
+      |> where([a], a.eth_address in ^address_hashes or a.short_address in ^address_hashes)
+
+    query =
+      from(au in AccountUDT)
+      |> join(:inner, [au], a in subquery(squery),
+        on: au.address_hash == a.short_address or au.address_hash == a.eth_address
+      )
+      |> select([au, _a], au)
+      |> order_by([au], au.updated_at)
+      |> distinct([au], [au.address_hash, au.token_contract_address_hash])
+
+    if is_nil(token_contract_address_hash) do
+      query
+    else
+      query
+      |> where([au], au.token_contract_address_hash == ^token_contract_address_hash)
     end
   end
 end

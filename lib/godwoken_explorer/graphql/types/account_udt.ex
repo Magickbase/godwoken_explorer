@@ -131,7 +131,7 @@ defmodule GodwokenExplorer.Graphql.Types.AccountUDT do
     field :id, :integer
     field :balance, :decimal
     field :address_hash, :string
-
+    field :token_contract_address_hash, :string
     field :udt, :udt do
       resolve(&Resolvers.AccountUDT.udt/3)
     end

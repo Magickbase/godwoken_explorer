@@ -1,12 +1,10 @@
 defmodule GodwokenExplorerWeb.Router do
   use GodwokenExplorerWeb, :router
-
-  import Plug.BasicAuth
   import Phoenix.LiveDashboard.Router
 
   pipeline :browser do
     plug(:accepts, ["html"])
-    plug(:basic_auth, Application.get_env(:godwoken_explorer, :basic_auth))
+    plug(:auth)
     plug(:fetch_session)
     plug(:fetch_flash)
     plug(:protect_from_forgery)
@@ -95,5 +93,9 @@ defmodule GodwokenExplorerWeb.Router do
       metrics: GodwokenExplorerWeb.Telemetry,
       ecto_repos: [GodwokenExplorer.Repo]
     )
+  end
+
+  defp auth(conn, _opts) do
+    Plug.BasicAuth.basic_auth(conn, Application.get_env(:godwoken_explorer, :basic_auth))
   end
 end
