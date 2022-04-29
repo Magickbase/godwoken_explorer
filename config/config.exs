@@ -68,12 +68,13 @@ config :jsonapi,
 config :godwoken_explorer, Oban,
   repo: GodwokenExplorer.Repo,
   plugins: [
-    # Oban.Plugins.Pruner,
+    Oban.Plugins.Pruner,
     {Oban.Plugins.Cron,
      crontab: [
        {"01 00 * * *", GodwokenIndexer.Worker.RefreshUDTSupply},
        {"10 00 * * *", GodwokenIndexer.Worker.DailyStat},
-       {"*/2 * * * *", GodwokenIndexer.Worker.CheckLostAccount}
+       {"*/2 * * * *", GodwokenIndexer.Worker.CheckLostAccount},
+       {"*/10 * * * *", GodwokenIndexer.Worker.CheckContractCode}
      ]}
   ],
   queues: [default: 10]
