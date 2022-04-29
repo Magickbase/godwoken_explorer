@@ -88,7 +88,7 @@ defmodule GodwokenExplorer.TokenTransfer do
           from:
             fragment(
               "CASE WHEN ? IS NULL THEN encode(?, 'escape')
-          WHEN ? in ('user', 'polyjuice_contract') THEN encode(?, 'escape')
+          WHEN ? in ('user') THEN encode(?, 'escape')
         ELSE encode(?, 'escape') END",
               a1,
               tt.from_address_hash,
@@ -99,7 +99,7 @@ defmodule GodwokenExplorer.TokenTransfer do
           to:
             fragment(
               "CASE WHEN ? IS NULL THEN encode(?, 'escape')
-          WHEN ? in ('user', 'polyjuice_contract') THEN encode(?, 'escape')
+          WHEN ? in ('user') THEN encode(?, 'escape')
         ELSE encode(?, 'escape') END",
               a2,
               tt.to_address_hash,
@@ -206,7 +206,7 @@ defmodule GodwokenExplorer.TokenTransfer do
           from:
             fragment(
               "CASE WHEN ? IS NULL THEN encode(?, 'escape')
-          WHEN ? in ('user', 'polyjuice_contract') THEN encode(?, 'escape')
+          WHEN ? in ('user') THEN encode(?, 'escape')
         ELSE encode(?, 'escape') END",
               a1,
               tt.from_address_hash,
@@ -217,7 +217,7 @@ defmodule GodwokenExplorer.TokenTransfer do
           to:
             fragment(
               "CASE WHEN ? IS NULL THEN encode(?, 'escape')
-          WHEN ? in ('user', 'polyjuice_contract') THEN encode(?, 'escape')
+          WHEN ? in ('user') THEN encode(?, 'escape')
         ELSE encode(?, 'escape') END",
               a2,
               tt.to_address_hash,
@@ -294,7 +294,7 @@ defmodule GodwokenExplorer.TokenTransfer do
           from:
             fragment(
               "CASE WHEN ? IS NULL THEN encode(?, 'escape')
-          WHEN ? in ('user', 'polyjuice_contract') THEN encode(?, 'escape')
+          WHEN ? in ('user') THEN encode(?, 'escape')
         ELSE encode(?, 'escape') END",
               a1,
               tt.from_address_hash,
@@ -305,7 +305,7 @@ defmodule GodwokenExplorer.TokenTransfer do
           to:
             fragment(
               "CASE WHEN ? IS NULL THEN encode(?, 'escape')
-          WHEN ? in ('user', 'polyjuice_contract') THEN encode(?, 'escape')
+          WHEN ? in ('user') THEN encode(?, 'escape')
         ELSE encode(?, 'escape') END",
               a2,
               tt.to_address_hash,
@@ -362,7 +362,7 @@ defmodule GodwokenExplorer.TokenTransfer do
           from:
             fragment(
               "CASE WHEN ? IS NULL THEN encode(?, 'escape')
-          WHEN ? in ('user', 'polyjuice_contract') THEN encode(?, 'escape')
+          WHEN ? in ('user') THEN encode(?, 'escape')
         ELSE encode(?, 'escape') END",
               a1,
               tt.from_address_hash,
@@ -373,7 +373,7 @@ defmodule GodwokenExplorer.TokenTransfer do
           to:
             fragment(
               "CASE WHEN ? IS NULL THEN encode(?, 'escape')
-          WHEN ? in ('user', 'polyjuice_contract') THEN encode(?, 'escape')
+          WHEN ? in ('user') THEN encode(?, 'escape')
         ELSE encode(?, 'escape') END",
               a2,
               tt.to_address_hash,
