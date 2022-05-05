@@ -95,7 +95,7 @@ defmodule GodwokenExplorerWeb.Admin.UDTController do
         Ecto.Changeset.put_change(
           changeset,
           :bridge_account_eth_address,
-          udt.account.short_address
+          udt.account.eth_address
         )
       end
 

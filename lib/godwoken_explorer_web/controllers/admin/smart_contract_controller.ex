@@ -65,7 +65,7 @@ defmodule GodwokenExplorerWeb.Admin.SmartContractController do
 
     changeset =
       Admin.change_smart_contract(smart_contract)
-      |> Ecto.Changeset.put_change(:eth_address, smart_contract.account.short_address)
+      |> Ecto.Changeset.put_change(:eth_address, smart_contract.account.eth_address)
 
     render(conn, "edit.html", smart_contract: smart_contract, changeset: changeset)
   end
@@ -97,7 +97,7 @@ defmodule GodwokenExplorerWeb.Admin.SmartContractController do
       _ ->
         changeset =
           Admin.change_smart_contract(smart_contract)
-          |> Ecto.Changeset.put_change(:eth_address, smart_contract.account.short_address)
+          |> Ecto.Changeset.put_change(:eth_address, smart_contract.account.eth_address)
           |> Ecto.Changeset.add_error(:eth_address, "can't find this account")
 
         render(conn, "edit.html",

@@ -14,10 +14,10 @@ defmodule GodwokenIndexer.Worker.GenerateYokSeriesContract do
          udt when is_nil(udt) <- Repo.get(UDT, account_id),
          smart_contract when is_nil(smart_contract) <- Repo.get(SmartContract, account_id) do
       Repo.transaction(fn ->
-        decimal = UDT.eth_call_decimal(account.short_address)
-        supply = UDT.eth_call_total_supply(account.short_address)
-        name = UDT.eth_call_name(account.short_address)
-        symbol = UDT.eth_call_symbol(account.short_address)
+        decimal = UDT.eth_call_decimal(account.eth_address)
+        supply = UDT.eth_call_total_supply(account.eth_address)
+        name = UDT.eth_call_name(account.eth_address)
+        symbol = UDT.eth_call_symbol(account.eth_address)
 
         Repo.insert!(%UDT{
           name: name,
