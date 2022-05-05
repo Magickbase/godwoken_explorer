@@ -69,7 +69,41 @@ defmodule GodwokenExplorer.Graphql.Resolvers.AccountUDT do
     else
       query = search_account_udts(address_hashes, token_contract_address_hash)
       return = Repo.all(query)
-      {:ok, return}
+
+      return_account_udts =
+        Enum.map(return, fn au -> %{address_hash: au.address_hash, balance: au.balance} end)
+
+      filted_address_hashes =
+        Enum.filter(address_hashes, fn address_hash ->
+          not Enum.any?(return, fn au ->
+            au.account.short_address == address_hash or au.account.eth_address == address_hash
+          end)
+        end)
+
+      need_rpc_fetched_address_hashes =
+        filted_address_hashes
+        |> Enum.map(fn address_hash -> fetch_account_cks(address_hash) end)
+        |> Enum.filter(&(not is_nil(&1)))
+
+      {:ok, return_account_udts ++ need_rpc_fetched_address_hashes}
+    end
+  end
+
+  defp fetch_account_cks(address_hash) do
+    with account when not is_nil(account) <-
+           Repo.one(
+             from a in Account,
+               where: ^address_hash == a.short_address or ^address_hash == a.eth_address
+           ),
+         udt_id when is_integer(udt_id) <- UDT.ckb_account_id(),
+         {:ok, balance} <- GodwokenRPC.fetch_balance(account.short_address, udt_id) do
+      %{
+        address_hash: address_hash,
+        # be string for graphql custom decimal type
+        balance: Decimal.new(balance)
+      }
+    else
+      _ -> nil
     end
   end
 
@@ -81,17 +115,20 @@ defmodule GodwokenExplorer.Graphql.Resolvers.AccountUDT do
     query =
       from(au in AccountUDT)
       |> join(:inner, [au], a in subquery(squery),
-        on: au.address_hash == a.short_address or au.address_hash == a.eth_address
+        on: au.address_hash in [a.short_address, a.eth_address]
       )
       |> select([au, _a], au)
       |> order_by([au], au.updated_at)
       |> distinct([au], [au.address_hash, au.token_contract_address_hash])
 
-    if is_nil(token_contract_address_hash) do
-      query
-    else
-      query
-      |> where([au], au.token_contract_address_hash == ^token_contract_address_hash)
-    end
+    query =
+      if is_nil(token_contract_address_hash) do
+        query
+      else
+        query
+        |> where([au], au.token_contract_address_hash == ^token_contract_address_hash)
+      end
+
+    preload(query, [:account])
   end
 end
