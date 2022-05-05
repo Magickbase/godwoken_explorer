@@ -52,30 +52,32 @@ defmodule GodwokenExplorer.AccountUDT do
 
   def list_udt_by_eth_address(eth_address) do
     from(au in AccountUDT,
-      join: a in Account,
-      on: a.short_address == au.token_contract_address_hash,
-      left_join: u1 in UDT,
-      on: u1.bridge_account_id == a.id,
-      left_join: u2 in UDT,
-      on: u2.id == a.id,
+      left_join: a1 in Account,
+      on: a1.short_address == au.token_contract_address_hash,
+      left_join: a2 in Account,
+      on: a2.eth_address == au.token_contract_address_hash,
+      left_join: u3 in UDT,
+      on: u3.id == a1.id,
+      left_join: u4 in UDT,
+      on: u4.bridge_account_id == a2.id,
       where: au.address_hash == ^eth_address and au.balance != 0,
       select: %{
-        id: fragment("CASE WHEN ? IS NULL THEN ? ELSE ? END", u1, u2.id, u1.id),
-        type: fragment("CASE WHEN ? IS NULL THEN ? ELSE ? END", u1, u2.type, u1.type),
-        name: fragment("CASE WHEN ? IS NULL THEN ? ELSE ? END", u1, u2.name, u1.name),
-        symbol: fragment("CASE WHEN ? IS NULL THEN ? ELSE ? END", u1, u2.symbol, u1.symbol),
-        icon: fragment("CASE WHEN ? IS NULL THEN ? ELSE ? END", u1, u2.icon, u1.icon),
+        id: fragment("CASE WHEN ? IS NULL THEN ? ELSE ? END", u3, u4.id, u3.id),
+        type: fragment("CASE WHEN ? IS NULL THEN ? ELSE ? END", u3, u4.type, u3.type),
+        name: fragment("CASE WHEN ? IS NULL THEN ? ELSE ? END", u3, u4.name, u3.name),
+        symbol: fragment("CASE WHEN ? IS NULL THEN ? ELSE ? END", u3, u4.symbol, u3.symbol),
+        icon: fragment("CASE WHEN ? IS NULL THEN ? ELSE ? END", u3, u4.icon, u3.icon),
         balance:
           fragment(
             "CASE WHEN ? IS NOT NULL THEN ? / power(10, ?)::decimal
           WHEN ? IS NOT NULL THEN ? / power(10, ?)::decimal
           ELSE ? END",
-            u1.decimal,
+            u3.decimal,
             au.balance,
-            u1.decimal,
-            u2.decimal,
+            u3.decimal,
+            u4.decimal,
             au.balance,
-            u2.decimal,
+            u4.decimal,
             au.balance
           ),
         updated_at: au.updated_at
@@ -176,7 +178,7 @@ defmodule GodwokenExplorer.AccountUDT do
         sub_query =
           from(au in AccountUDT,
             join: a1 in Account,
-            on: a1.short_address == au.address_hash,
+            on: a1.eth_address == au.address_hash,
             where:
               au.token_contract_address_hash in ^token_contract_address_hashes and au.balance > 0,
             select: %{

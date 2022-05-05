@@ -21,7 +21,7 @@ defmodule GodwokenExplorer.SmartContractView do
   end
 
   def short_address(smart_contract, _conn) do
-    smart_contract.account.short_address
+    smart_contract.account.eth_address
   end
 
   def balance(smart_contract, _conn) do
