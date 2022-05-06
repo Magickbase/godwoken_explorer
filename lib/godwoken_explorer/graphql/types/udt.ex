@@ -1,6 +1,7 @@
 defmodule GodwokenExplorer.Graphql.Types.UDT do
   use Absinthe.Schema.Notation
   alias GodwokenExplorer.Graphql.Resolvers, as: Resolvers
+  alias GodwokenExplorer.Graphql.Middleware.Downcase, as: MDowncase
 
   object :udt_querys do
     @desc """
@@ -36,6 +37,7 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
     """
     field :udt, :udt do
       arg(:input, non_null(:smart_contract_input))
+      middleware(MDowncase, [:contract_address])
       resolve(&Resolvers.UDT.udt/3)
     end
 

@@ -1,6 +1,7 @@
 defmodule GodwokenExplorer.Graphql.Types.Account do
   use Absinthe.Schema.Notation
   alias GodwokenExplorer.Graphql.Resolvers, as: Resolvers
+  alias GodwokenExplorer.Graphql.Middleware.Downcase, as: MDowncase
 
   object :account_querys do
     @desc """
@@ -80,6 +81,7 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
     """
     field :account, :account do
       arg(:input, non_null(:account_input))
+      middleware(MDowncase, [:address])
       resolve(&Resolvers.Account.account/3)
     end
   end

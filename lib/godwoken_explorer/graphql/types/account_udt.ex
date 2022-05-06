@@ -1,6 +1,7 @@
 defmodule GodwokenExplorer.Graphql.Types.AccountUDT do
   use Absinthe.Schema.Notation
   alias GodwokenExplorer.Graphql.Resolvers, as: Resolvers
+  alias GodwokenExplorer.Graphql.Middleware.Downcase, as: MDowncase
 
   object :account_udt_querys do
     @desc """
@@ -45,6 +46,7 @@ defmodule GodwokenExplorer.Graphql.Types.AccountUDT do
     """
     field :account_udts, list_of(:account_udt) do
       arg(:input, non_null(:account_udts_input))
+      middleware(MDowncase, [:address_hashes, :token_contract_address_hash])
       resolve(&Resolvers.AccountUDT.account_udts/3)
     end
 
@@ -74,6 +76,7 @@ defmodule GodwokenExplorer.Graphql.Types.AccountUDT do
     """
     field :account_ckbs, list_of(:account_ckb) do
       arg(:input, non_null(:account_ckbs_input))
+      middleware(MDowncase, [:address_hashes])
       resolve(&Resolvers.AccountUDT.account_ckbs/3)
     end
 
@@ -118,6 +121,7 @@ defmodule GodwokenExplorer.Graphql.Types.AccountUDT do
     """
     field :account_udts_by_contract_address, list_of(:account_udt) do
       arg(:input, non_null(:account_udt_contract_address_input))
+      middleware(MDowncase, [:token_contract_address_hash])
       resolve(&Resolvers.AccountUDT.account_udts_by_contract_address/3)
     end
   end
@@ -132,6 +136,7 @@ defmodule GodwokenExplorer.Graphql.Types.AccountUDT do
     field :balance, :decimal
     field :address_hash, :string
     field :token_contract_address_hash, :string
+
     field :udt, :udt do
       resolve(&Resolvers.AccountUDT.udt/3)
     end

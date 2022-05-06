@@ -1,9 +1,9 @@
 defmodule GodwokenExplorer.Graphql.Types.TokenTransfer do
   use Absinthe.Schema.Notation
   alias GodwokenExplorer.Graphql.Resolvers, as: Resolvers
+  alias GodwokenExplorer.Graphql.Middleware.Downcase, as: MDowncase
 
   object :token_transfer_querys do
-
     @desc """
     function: get list of token transfers by filter
 
@@ -47,6 +47,14 @@ defmodule GodwokenExplorer.Graphql.Types.TokenTransfer do
     """
     field :token_transfers, list_of(:token_transfer) do
       arg(:input, non_null(:token_transfer_input))
+
+      middleware(MDowncase, [
+        :transaction_hash,
+        :from_address_hash,
+        :to_address_hash,
+        :token_contract_address_hash
+      ])
+
       resolve(&Resolvers.TokenTransfer.token_transfers/3)
     end
   end
