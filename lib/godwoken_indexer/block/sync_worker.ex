@@ -306,7 +306,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
     accounts_and_nonce_attrs =
       transactions_params
       |> Enum.map(fn %{from_account_id: from_account_id, nonce: nonce} ->
-        %{id: from_account_id, nonce: nonce} |> Map.merge(import_timestamps())
+        %{id: from_account_id, nonce: nonce + 1} |> Map.merge(import_timestamps())
       end)
       |> Enum.sort_by(&Map.fetch(&1, :nonce), &>=/2)
       |> Enum.uniq_by(&Map.fetch(&1, :id))
