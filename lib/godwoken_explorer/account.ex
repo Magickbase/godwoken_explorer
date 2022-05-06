@@ -404,7 +404,7 @@ defmodule GodwokenExplorer.Account do
         :eth_addr_reg
 
       _ ->
-        :unkonw
+        :unknown
     end
   end
 

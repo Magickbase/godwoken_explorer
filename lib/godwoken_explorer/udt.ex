@@ -161,6 +161,7 @@ defmodule GodwokenExplorer.UDT do
     end
   end
 
+  # Refactor: use contract module's eth_call_request method
   def eth_call_total_supply(contract_address) do
     method_sig = "0x18160DDD"
 
