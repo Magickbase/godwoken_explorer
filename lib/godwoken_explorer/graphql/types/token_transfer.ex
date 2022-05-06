@@ -2,6 +2,7 @@ defmodule GodwokenExplorer.Graphql.Types.TokenTransfer do
   use Absinthe.Schema.Notation
   alias GodwokenExplorer.Graphql.Resolvers, as: Resolvers
   alias GodwokenExplorer.Graphql.Middleware.Downcase, as: MDowncase
+  alias GodwokenExplorer.Graphql.Middleware.TermRange, as: MTermRange
 
   object :token_transfer_querys do
     @desc """
@@ -55,6 +56,7 @@ defmodule GodwokenExplorer.Graphql.Types.TokenTransfer do
         :token_contract_address_hash
       ])
 
+      middleware(MTermRange, MTermRange.page_and_size_default_config())
       resolve(&Resolvers.TokenTransfer.token_transfers/3)
     end
   end

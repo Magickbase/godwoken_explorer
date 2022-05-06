@@ -1,10 +1,12 @@
 defmodule GodwokenExplorer.Graphql.Types.History do
   use Absinthe.Schema.Notation
   alias GodwokenExplorer.Graphql.Resolvers, as: Resolvers
+  alias GodwokenExplorer.Graphql.Middleware.TermRange, as: MTermRange
 
   object :history_querys do
     field :withdrawal_deposit_histories, list_of(:withdrawal_deposit_history) do
       arg(:input, :withdrawal_deposit_history_input)
+      middleware(MTermRange, MTermRange.page_and_size_default_config())
       resolve(&Resolvers.History.withdrawal_deposit_histories/3)
     end
   end

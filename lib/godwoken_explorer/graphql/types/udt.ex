@@ -2,6 +2,7 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
   use Absinthe.Schema.Notation
   alias GodwokenExplorer.Graphql.Resolvers, as: Resolvers
   alias GodwokenExplorer.Graphql.Middleware.Downcase, as: MDowncase
+  alias GodwokenExplorer.Graphql.Middleware.TermRange, as: MTermRange
 
   object :udt_querys do
     @desc """
@@ -91,6 +92,7 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         default_value: %{type: :bridge, page: 1, page_size: 10, sort_type: :asc}
       )
 
+      middleware(MTermRange, MTermRange.page_and_size_default_config())
       resolve(&Resolvers.UDT.udts/3)
     end
   end
