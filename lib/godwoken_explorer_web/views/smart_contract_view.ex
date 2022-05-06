@@ -61,7 +61,7 @@ defmodule GodwokenExplorer.SmartContractView do
       :other_info
     ]
 
-    account_fields = [:eth_address]
+    account_fields = [:eth_address, :short_address]
 
     smart_contract_fields ++ [account: account_fields]
   end
