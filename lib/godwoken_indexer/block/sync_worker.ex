@@ -463,6 +463,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
   defp update_erc20_balance(token_transfers) do
     address_token_balances =
       TokenBalances.params_set(%{token_transfers_params: token_transfers})
+      |> Enum.sort_by(&Map.fetch(&1, :block_number), &>=/2)
       |> Enum.uniq_by(fn map -> {map[:address_hash], map[:token_contract_address_hash]} end)
 
     balances = BalanceReader.get_balances_of(address_token_balances)

@@ -14,9 +14,16 @@ defmodule GodwokenRPC.Web3.FetchedCodes do
   """
   def requests(id_to_params) when is_map(id_to_params) do
     Enum.map(id_to_params, fn {id, %{block_quantity: block_quantity, address: address}} ->
+      block_number =
+        if is_integer(block_quantity) do
+          number_to_hex(block_quantity)
+        else
+          block_quantity
+        end
+
       FetchedCode.request(%{
         id: id,
-        block_quantity: number_to_hex(block_quantity),
+        block_quantity: block_number,
         address: address
       })
     end)

@@ -1,4 +1,4 @@
-defmodule GodwokenIndexer.Worker.CheckAccount do
+defmodule GodwokenIndexer.Worker.CheckLostAccount do
   use Oban.Worker, queue: :default
 
   import Ecto.Query, only: [from: 2]
