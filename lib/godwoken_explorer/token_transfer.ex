@@ -111,7 +111,7 @@ defmodule GodwokenExplorer.TokenTransfer do
           udt_name: ^udt.name,
           udt_symbol: ^udt.symbol,
           transfer_value: fragment("
-        ? / power(10, ?)::decimal
+          trim_scale(? / power(10, ?)::decimal)
         ", tt.amount, ^udt.decimal),
           status: b.status,
           polyjuice_status: p.status,
@@ -230,7 +230,7 @@ defmodule GodwokenExplorer.TokenTransfer do
           udt_symbol: u5.symbol,
           transfer_value:
             fragment(
-              "CASE WHEN ? IS NOT NULL THEN ? / power(10, ?)::decimal
+              "CASE WHEN ? IS NOT NULL THEN trim_scale(? / power(10, ?)::decimal)
             ELSE ? END",
               u5.decimal,
               tt.amount,
@@ -317,7 +317,7 @@ defmodule GodwokenExplorer.TokenTransfer do
           udt_name: ^udt.name,
           udt_symbol: ^udt.symbol,
           transfer_value: fragment("
-        ? / power(10, ?)::decimal
+          trim_scale(? / power(10, ?)::decimal)
         ", tt.amount, ^udt.decimal),
           status: b.status,
           polyjuice_status: p.status,
@@ -386,7 +386,7 @@ defmodule GodwokenExplorer.TokenTransfer do
           udt_symbol: u5.symbol,
           transfer_value:
             fragment(
-              "CASE WHEN ? IS NULL THEN ? ELSE ? / power(10, ?)::decimal END",
+              "CASE WHEN ? IS NULL THEN ? ELSE trim_scale(? / power(10, ?)::decimal) END",
               u5,
               tt.amount,
               tt.amount,
