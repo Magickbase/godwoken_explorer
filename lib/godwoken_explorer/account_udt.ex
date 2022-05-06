@@ -69,8 +69,8 @@ defmodule GodwokenExplorer.AccountUDT do
         icon: fragment("CASE WHEN ? IS NULL THEN ? ELSE ? END", u3, u4.icon, u3.icon),
         balance:
           fragment(
-            "CASE WHEN ? IS NOT NULL THEN ? / power(10, ?)::decimal
-          WHEN ? IS NOT NULL THEN ? / power(10, ?)::decimal
+            "CASE WHEN ? IS NOT NULL THEN trim_scale(? / power(10, ?)::decimal)
+          WHEN ? IS NOT NULL THEN trim_scale(? / power(10, ?)::decimal)
           ELSE ? END",
             u3.decimal,
             au.balance,
