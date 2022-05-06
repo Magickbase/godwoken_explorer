@@ -2,10 +2,8 @@ defmodule GodwokenExplorer.Graphql.Middleware.Downcase do
   @behaviour Absinthe.Middleware
 
   def call(resolution, config) when is_list(config) do
-    IO.inspect(resolution.arguments)
-    IO.inspect(config)
     arguments = resolution.arguments
-    input = resolution.arguments[:input]
+    input = arguments[:input]
 
     if is_nil(input) do
       resolution
@@ -16,8 +14,7 @@ defmodule GodwokenExplorer.Graphql.Middleware.Downcase do
   end
 
   defp downcase(input, config) do
-    config
-    |> Enum.reduce(input, fn field, acc ->
+    Enum.reduce(config, input, fn field, acc ->
       case acc[field] do
         acc_field when is_bitstring(acc_field) ->
           Map.put(acc, field, String.downcase(acc_field))

@@ -1,6 +1,7 @@
 defmodule GodwokenExplorer.Graphql.Types.Block do
   use Absinthe.Schema.Notation
   alias GodwokenExplorer.Graphql.Resolvers, as: Resolvers
+  alias GodwokenExplorer.Graphql.Middleware.TermRange, as: MTermRange
 
   object :block_querys do
     @desc """
@@ -105,6 +106,7 @@ defmodule GodwokenExplorer.Graphql.Types.Block do
     """
     field :blocks, list_of(:block) do
       arg(:input, :blocks_input, default_value: %{page: 1, page_size: 10, sort_type: :desc})
+      middleware(MTermRange, MTermRange.page_and_size_default_config())
       resolve(&Resolvers.Block.blocks/3)
     end
   end
@@ -139,6 +141,7 @@ defmodule GodwokenExplorer.Graphql.Types.Block do
 
     field :transactions, list_of(:transaction) do
       arg(:input, :page_and_size_input, default_value: %{page: 1, page_size: 5})
+      middleware(MTermRange, MTermRange.page_and_size_default_config())
       resolve(&Resolvers.Block.transactions/3)
     end
   end
