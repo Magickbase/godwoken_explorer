@@ -1,6 +1,7 @@
 defmodule GodwokenExplorer.Graphql.Types.SmartContract do
   use Absinthe.Schema.Notation
   alias GodwokenExplorer.Graphql.Resolvers, as: Resolvers
+  alias GodwokenExplorer.Graphql.Middleware.Downcase, as: MDowncase
 
   object :smart_contract_querys do
     @desc """
@@ -32,6 +33,7 @@ defmodule GodwokenExplorer.Graphql.Types.SmartContract do
     """
     field :smart_contract, :smart_contract do
       arg(:input, non_null(:smart_contract_input))
+      middleware(MDowncase, [:contract_address])
       resolve(&Resolvers.SmartContract.smart_contract/3)
     end
 

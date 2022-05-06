@@ -1,6 +1,7 @@
 defmodule GodwokenExplorer.Graphql.Types.Log do
   use Absinthe.Schema.Notation
   alias GodwokenExplorer.Graphql.Resolvers, as: Resolvers
+  alias GodwokenExplorer.Graphql.Middleware.Downcase, as: MDowncase
 
   object :log_querys do
     @desc """
@@ -40,6 +41,16 @@ defmodule GodwokenExplorer.Graphql.Types.Log do
     """
     field :logs, list_of(:log) do
       arg(:input, non_null(:log_input))
+
+      middleware(MDowncase, [
+        :transaction_hash,
+        :first_topic,
+        :second_topic,
+        :third_topic,
+        :fourth_topic,
+        :address_hash
+      ])
+
       resolve(&Resolvers.Log.logs/3)
     end
   end
