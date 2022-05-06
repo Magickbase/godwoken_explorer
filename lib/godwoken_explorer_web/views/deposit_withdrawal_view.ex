@@ -58,13 +58,13 @@ defmodule GodwokenExplorer.DepositWithdrawalView do
         eth_address: a2.eth_address,
         value: fragment("
         CASE WHEN ? IS NULL THEN ?
-        ELSE ? / power(10, ?)::decimal
+        ELSE trim_scale(? / power(10, ?)::decimal)
         END ", u.decimal, w.amount, w.amount, u.decimal),
         owner_lock_hash: w.owner_lock_hash,
         payment_lock_hash: w.payment_lock_hash,
         sell_value: fragment("
         CASE WHEN ? IS NULL THEN ?
-        ELSE ? / power(10, ?)::decimal
+        ELSE trim_scale(? / power(10, ?)::decimal)
         END ", u.decimal, w.sell_amount, w.sell_amount, u.decimal),
         sell_capacity: w.sell_capacity,
         sudt_script_hash: w.udt_script_hash,
@@ -97,7 +97,7 @@ defmodule GodwokenExplorer.DepositWithdrawalView do
         eth_address: a2.eth_address,
         value: fragment("
         CASE WHEN ? IS NULL THEN ?
-        ELSE ? / power(10, ?)::decimal
+        ELSE trim_scale(? / power(10, ?)::decimal)
         END ", u.decimal, d.amount, d.amount, u.decimal),
         owner_lock_hash: nil,
         payment_lock_hash: nil,
