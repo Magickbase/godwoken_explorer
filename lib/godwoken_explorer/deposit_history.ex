@@ -11,6 +11,7 @@ defmodule GodwokenExplorer.DepositHistory do
     field :layer1_output_index, :integer
     field :ckb_lock_hash, :binary
     field :timestamp, :utc_datetime_usec
+    field :capacity, :decimal
 
     belongs_to(:udt, UDT, foreign_key: :udt_id, references: :id, define_field: false)
 
@@ -28,7 +29,8 @@ defmodule GodwokenExplorer.DepositHistory do
       :script_hash,
       :layer1_output_index,
       :ckb_lock_hash,
-      :timestamp
+      :timestamp,
+      :capacity
     ])
     |> validate_required([
       :layer1_block_number,
@@ -38,7 +40,8 @@ defmodule GodwokenExplorer.DepositHistory do
       :script_hash,
       :layer1_output_index,
       :ckb_lock_hash,
-      :timestamp
+      :timestamp,
+      :capacity
     ])
     |> unique_constraint([:layer1_tx_hash, :layer1_block_number, :layer1_output_index])
   end

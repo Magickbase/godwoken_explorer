@@ -18,6 +18,7 @@ defmodule GodwokenExplorer.WithdrawalHistory do
     field :udt_id, :integer
     field :timestamp, :utc_datetime_usec
     field :state, Ecto.Enum, values: [:pending, :available, :succeed]
+    field :capacity, :decimal
 
     belongs_to(:udt, UDT, foreign_key: :udt_id, references: :id, define_field: false)
 
@@ -42,7 +43,8 @@ defmodule GodwokenExplorer.WithdrawalHistory do
       :amount,
       :udt_id,
       :timestamp,
-      :state
+      :state,
+      :capacity
     ])
     |> validate_required([
       :layer1_block_number,
@@ -58,7 +60,8 @@ defmodule GodwokenExplorer.WithdrawalHistory do
       :payment_lock_hash,
       :amount,
       :udt_id,
-      :timestamp
+      :timestamp,
+      :capacity
     ])
     |> unique_constraint([:layer1_tx_hash, :layer1_block_number, :layer1_output_index])
   end
