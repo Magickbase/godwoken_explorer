@@ -80,7 +80,8 @@ defmodule GodwokenExplorer.DepositWithdrawalView do
         layer1_output_index: w.layer1_output_index,
         ckb_lock_hash: nil,
         state: w.state,
-        type: "withdrawal"
+        type: "withdrawal",
+        capacity: w.capacity
       }
     )
   end
@@ -116,7 +117,8 @@ defmodule GodwokenExplorer.DepositWithdrawalView do
         layer1_output_index: d.layer1_output_index,
         ckb_lock_hash: d.ckb_lock_hash,
         state: "succeed",
-        type: "deposit"
+        type: "deposit",
+        capacity: d.capacity
       }
     )
   end
