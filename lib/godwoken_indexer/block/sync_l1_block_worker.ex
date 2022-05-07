@@ -18,7 +18,8 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
     Block,
     DepositHistory,
     AccountUDT,
-    WithdrawalHistory
+    WithdrawalHistory,
+    UDT
   }
 
   @default_worker_interval 5
@@ -73,8 +74,7 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
     header = response["header"]
     block_hash = header["hash"]
 
-    timestamp =
-      header["timestamp"] |> hex_to_number() |> timestamp_to_datetime
+    timestamp = header["timestamp"] |> hex_to_number() |> timestamp_to_datetime
 
     if forked?(header["parent_hash"], check_info) do
       Logger.error("!!!!!!forked!!!!!!#{block_number}")
@@ -97,8 +97,10 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
         if output["lock"]["code_hash"] == deposition_lock.code_hash &&
              output["lock"]["hash_type"] == deposition_lock.hash_type &&
              String.starts_with?(output["lock"]["args"], deposition_lock.args) &&
-             (is_nil(Map.get(output, "type")) && hex_to_number(output["capacity"]) >= @smallest_ckb_capacity ||
-             not(is_nil(Map.get(output, "type"))) && hex_to_number(output["capacity"]) >= @smallest_udt_ckb_capacity) do
+             ((is_nil(Map.get(output, "type")) &&
+                 hex_to_number(output["capacity"]) >= @smallest_ckb_capacity) ||
+                (not is_nil(Map.get(output, "type")) &&
+                   hex_to_number(output["capacity"]) >= @smallest_udt_ckb_capacity)) do
           parse_lock_args_and_bind(%{
             output: output,
             index: index,
@@ -154,9 +156,16 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
       payment_lock_hash
     } = parse_withdrawal_lock_args(args)
 
-    {udt_script, udt_script_hash, amount} = parse_udt_script(output, output_data)
+    capacity = hex_to_number(output["capacity"])
+    {udt_script, udt_script_hash, amount} = parse_udt_script(output, output_data, capacity)
 
-    with {:ok, udt_id} <- Account.find_or_create_udt_account!(udt_script, udt_script_hash, block_number, l1_tip_number) do
+    with {:ok, udt_id} <-
+           Account.find_or_create_udt_account!(
+             udt_script,
+             udt_script_hash,
+             block_number,
+             l1_tip_number
+           ) do
       WithdrawalHistory.create_or_update_history!(%{
         layer1_block_number: block_number,
         layer1_tx_hash: tx_hash,
@@ -171,7 +180,8 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
         payment_lock_hash: "0x" <> payment_lock_hash,
         timestamp: timestamp,
         udt_id: udt_id,
-        amount: amount
+        amount: amount,
+        capacity: capacity
       })
     end
   end
@@ -185,8 +195,9 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
          output_data: output_data,
          tip_block_number: tip_block_number
        }) do
+    capacity = hex_to_number(output["capacity"])
     [script_hash, l1_lock_hash] = parse_lock_args(output["lock"]["args"])
-    {udt_script, udt_script_hash, amount} = parse_udt_script(output, output_data)
+    {udt_script, udt_script_hash, amount} = parse_udt_script(output, output_data, capacity)
 
     case GodwokenRPC.fetch_account_id(script_hash) do
       {:error, :account_slow} ->
@@ -224,9 +235,11 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
               case Repo.get(Account, account_id) do
                 account = %Account{script_hash: wrong_script_hash} ->
                   {:ok, new_account_id} = GodwokenRPC.fetch_account_id(wrong_script_hash)
+
                   Logger.error(
                     "Account id is changed!!!!old id:#{account_id}, new id: #{new_account_id}, script_hash: #{wrong_script_hash}"
                   )
+
                   Ecto.Changeset.change(account, %{id: new_account_id}) |> Repo.update!()
 
                   Account.create_or_update_account!(%{
@@ -252,7 +265,13 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
               end
           end
 
-          with {:ok, udt_id} <- Account.find_or_create_udt_account!(udt_script, udt_script_hash, l1_block_number, tip_block_number) do
+          with {:ok, udt_id} <-
+                 Account.find_or_create_udt_account!(
+                   udt_script,
+                   udt_script_hash,
+                   l1_block_number,
+                   tip_block_number
+                 ) do
             DepositHistory.create_or_update_history!(%{
               layer1_block_number: l1_block_number,
               layer1_tx_hash: tx_hash,
@@ -261,20 +280,23 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
               udt_id: udt_id,
               amount: amount,
               ckb_lock_hash: l1_lock_hash,
-              script_hash: script_hash
+              script_hash: script_hash,
+              capacity: capacity
             })
 
-            AccountUDT.sync_balance!(%{account_id: account_id, udt_id: udt_id})
+            if udt_id != UDT.ckb_account_id(),
+              do: AccountUDT.sync_balance!(%{account_id: account_id, udt_id: udt_id})
+
+            AccountUDT.sync_balance!(%{account_id: account_id, udt_id: UDT.ckb_account_id()})
           end
         end)
     end
   end
 
-  defp parse_udt_script(output, output_data) do
+  defp parse_udt_script(output, output_data, capacity) do
     case Map.get(output, "type") do
       nil ->
-        {nil, "0x0000000000000000000000000000000000000000000000000000000000000000",
-         hex_to_number(output["capacity"])}
+        {nil, "0x0000000000000000000000000000000000000000000000000000000000000000", capacity}
 
       %{} = udt_script ->
         {udt_script, script_to_hash(udt_script),
