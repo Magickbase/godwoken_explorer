@@ -298,7 +298,7 @@ defmodule GodwokenExplorer.Transaction do
             "CASE WHEN ? IS NOT NULL THEN ? ELSE ? END",
             a3.eth_address,
             a3.eth_address,
-            a3.short_address
+            a3.script_hash
           ),
         to_alias:
           fragment(
@@ -313,13 +313,13 @@ defmodule GodwokenExplorer.Transaction do
             a3.type,
             s4.name,
             s4.name,
-            a3.short_address,
+            a3.script_hash,
             a3.type,
             s4.name,
             s4.name,
             a3.eth_address,
             a3.type,
-            a3.short_address
+            a3.script_hash
           ),
         status: b.status,
         timestamp: b.timestamp,

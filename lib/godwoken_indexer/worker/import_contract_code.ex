@@ -1,5 +1,5 @@
 defmodule GodwokenIndexer.Worker.ImportContractCode do
-  use Oban.Worker, queue: :default
+  use Oban.Worker, queue: :default, unique: [period: 300, states: Oban.Job.states()]
 
   alias GodwokenExplorer.{Repo, Account}
 
@@ -13,7 +13,7 @@ defmodule GodwokenIndexer.Worker.ImportContractCode do
        ]
      }} = GodwokenRPC.fetch_codes([%{block_quantity: block_number, address: address}])
 
-    account =
+    {:ok, %Account{id: id}} =
       case Account.search(address) do
         %Account{} = account ->
           account |> Account.changeset(%{contract_code: contract_code}) |> Repo.update()
@@ -23,7 +23,7 @@ defmodule GodwokenIndexer.Worker.ImportContractCode do
           account |> Account.changeset(%{contract_code: contract_code}) |> Repo.update()
       end
 
-    compare_with_yok_contract(contract_code, account.id)
+    compare_with_yok_contract(contract_code, id)
     :ok
   end
 

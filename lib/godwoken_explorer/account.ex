@@ -270,7 +270,7 @@ defmodule GodwokenExplorer.Account do
       from(a in Account,
         where:
           a.eth_address == ^keyword or a.script_hash == ^keyword or
-            a.short_address == ^keyword,
+            (a.short_address == ^keyword and a.type == :polyjuice_contract),
         order_by: a.id
       )
       |> Repo.all()
@@ -452,6 +452,7 @@ defmodule GodwokenExplorer.Account do
              type: a.type,
              eth_address: a.eth_address,
              short_address: a.short_address,
+             script_hash: a.script_hash,
              contract_name: s.name
            }
          )
@@ -460,14 +461,15 @@ defmodule GodwokenExplorer.Account do
         type: type,
         eth_address: eth_address,
         short_address: short_address,
-        contract_name: contract_name
+        contract_name: contract_name,
+        script_hash: script_hash
       } ->
         cond do
           type in [:eth_user, :tron_user, :polyjuice_contract] -> {eth_address, eth_address}
-          type == :udt -> {short_address, contract_name || short_address}
-          type == :polyjuice_creator -> {short_address, "Deploy Contract"}
-          type == :meta_contract -> {short_address, "Meta Contract"}
-          type == :eth_addr_reg -> {short_address, "Eth Address Registry"}
+          type == :udt -> {script_hash, contract_name || script_hash}
+          type == :polyjuice_creator -> {script_hash, "Deploy Contract"}
+          type == :meta_contract -> {script_hash, "Meta Contract"}
+          type == :eth_addr_reg -> {script_hash, "Eth Address Registry"}
           true -> {id, id}
         end
 
@@ -491,6 +493,9 @@ defmodule GodwokenExplorer.Account do
             type == :eth_addr_reg ->
               {short_address, "Eth Address Registry"}
 
+            type == :udt ->
+              {script_hash, script_hash}
+
             true ->
               {id, id}
           end
@@ -511,7 +516,8 @@ defmodule GodwokenExplorer.Account do
           type: a.type,
           eth_address: a.eth_address,
           short_address: a.short_address,
-          contract_name: s.name
+          contract_name: s.name,
+          script_hash: a.script_hash
         }
       )
       |> Repo.all()
@@ -522,15 +528,16 @@ defmodule GodwokenExplorer.Account do
                            type: type,
                            eth_address: eth_address,
                            short_address: short_address,
-                           contract_name: contract_name
+                           contract_name: contract_name,
+                           script_hash: script_hash
                          } ->
       {id,
        cond do
          type in [:eth_user, :tron_user, :polyjuice_contract] -> {eth_address, eth_address}
-         type == :udt -> {short_address, contract_name || short_address}
-         type == :polyjuice_creator -> {short_address, "Deploy Contract"}
-         type == :meta_contract -> {short_address, "Meta Contract"}
-         type == :eth_addr_reg -> {short_address, "Eth Address Registry"}
+         type == :udt -> {script_hash, contract_name || script_hash}
+         type == :polyjuice_creator -> {script_hash, "Deploy Contract"}
+         type == :meta_contract -> {script_hash, "Meta Contract"}
+         type == :eth_addr_reg -> {script_hash, "Eth Address Registry"}
          true -> {id, id}
        end}
     end)

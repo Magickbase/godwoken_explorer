@@ -1,5 +1,5 @@
 defmodule GodwokenIndexer.Worker.GenerateYokSeriesContract do
-  use Oban.Worker, queue: :default
+  use Oban.Worker, queue: :default, unique: [period: 300, states: Oban.Job.states()]
 
   import Ecto.Query, only: [preload: 2]
 
