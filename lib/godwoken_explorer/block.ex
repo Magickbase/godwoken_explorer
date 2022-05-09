@@ -248,7 +248,7 @@ defmodule GodwokenExplorer.Block do
   end
 
   def miner_hash(block) do
-    if block.account.type in [:eth_user, :tron_user] do
+    if block.account.type in [:eth_user] do
       block.account.eth_address
     else
       block.account.script_hash

@@ -35,7 +35,6 @@ defmodule GodwokenExplorer.Account do
         :meta_contract,
         :udt,
         :eth_user,
-        :tron_user,
         :polyjuice_creator,
         :polyjuice_contract,
         :eth_addr_reg,
@@ -151,7 +150,7 @@ defmodule GodwokenExplorer.Account do
           }
         }
 
-      %Account{type: type, eth_address: eth_address} when type in [:eth_user, :tron_user] ->
+      %Account{type: type, eth_address: eth_address} when type == :eth_user ->
         udt_list = AccountUDT.list_udt_by_eth_address(eth_address)
 
         %{
@@ -249,11 +248,11 @@ defmodule GodwokenExplorer.Account do
         ckb: balance_to_view(account.ckb, 8)
       })
 
-    case Kernel.get_in(account, [:eth_user, :tron_user, :udt_list]) do
+    case Kernel.get_in(account, [:eth_user, :udt_list]) do
       udt_list when not is_nil(udt_list) ->
         Kernel.put_in(
           account,
-          [:eth_user, :tron_user, :udt_list],
+          [:eth_user, :udt_list],
           udt_list
           |> Enum.map(fn udt ->
             %{udt | balance: udt.balance |> D.to_string(:normal)}
@@ -374,8 +373,6 @@ defmodule GodwokenExplorer.Account do
     meta_contract_validator_type_hash =
       Application.get_env(:godwoken_explorer, :meta_contract_validator_type_hash)
 
-    tron_eoa_type_hash = Application.get_env(:godwoken_explorer, :tron_eoa_type_hash)
-
     eth_addr_reg_type_hash =
       Application.get_env(:godwoken_explorer, :eth_addr_reg_validator_script_type_hash)
 
@@ -395,9 +392,6 @@ defmodule GodwokenExplorer.Account do
       ^eth_eoa_type_hash ->
         :eth_user
 
-      ^tron_eoa_type_hash ->
-        :tron_user
-
       ^eth_addr_reg_type_hash ->
         :eth_addr_reg
 
@@ -409,7 +403,7 @@ defmodule GodwokenExplorer.Account do
   def script_to_eth_adress(type, args) do
     rollup_type_hash = Application.get_env(:godwoken_explorer, :rollup_type_hash)
 
-    if type in [:eth_user, :tron_user, :polyjuice_contract] &&
+    if type in [:eth_user, :polyjuice_contract] &&
          args |> String.slice(0, 66) == rollup_type_hash do
       "0x" <> String.slice(args, -40, 40)
     else
@@ -461,7 +455,7 @@ defmodule GodwokenExplorer.Account do
         script_hash: script_hash
       } ->
         cond do
-          type in [:eth_user, :tron_user, :polyjuice_contract] -> {eth_address, eth_address}
+          type in [:eth_user, :polyjuice_contract] -> {eth_address, eth_address}
           type == :udt -> {script_hash, contract_name || script_hash}
           type == :polyjuice_creator -> {script_hash, "Deploy Contract"}
           type == :meta_contract -> {script_hash, "Meta Contract"}
@@ -476,7 +470,7 @@ defmodule GodwokenExplorer.Account do
           short_address = script_hash |> String.slice(0, 42)
 
           cond do
-            type in [:eth_user, :tron_user, :polyjuice_contract] ->
+            type in [:eth_user, :polyjuice_contract] ->
               {Account.script_to_eth_adress(type, script["args"]),
                Account.script_to_eth_adress(type, script["args"])}
 
@@ -527,7 +521,7 @@ defmodule GodwokenExplorer.Account do
                          } ->
       {id,
        cond do
-         type in [:eth_user, :tron_user, :polyjuice_contract] -> {eth_address, eth_address}
+         type in [:eth_user, :polyjuice_contract] -> {eth_address, eth_address}
          type == :udt -> {script_hash, contract_name || script_hash}
          type == :polyjuice_creator -> {script_hash, "Deploy Contract"}
          type == :meta_contract -> {script_hash, "Meta Contract"}

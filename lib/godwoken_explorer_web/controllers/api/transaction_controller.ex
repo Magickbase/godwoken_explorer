@@ -10,7 +10,7 @@ defmodule GodwokenExplorerWeb.API.TransactionController do
   # TODO: Remove after safepal is no longer used
   def index(conn, %{"eth_address" => "0x" <> _, "contract_address" => "0x" <> _} = params) do
     results =
-      with %Account{type: type} = account when type in [:eth_user, :tron_user] <-
+      with %Account{type: type} = account when type in [:eth_user] <-
              Account |> Repo.get_by(eth_address: String.downcase(params["eth_address"])),
            %Account{type: :polyjuice_contract} = contract <-
              Repo.get_by(Account, eth_address: params["contract_address"]) do

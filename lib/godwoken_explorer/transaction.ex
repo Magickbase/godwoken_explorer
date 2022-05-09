@@ -143,7 +143,7 @@ defmodule GodwokenExplorer.Transaction do
         type: type,
         account_id: account_id
       })
-      when type in [:eth_user, :tron_user] do
+      when type in [:eth_user] do
     from(t in Transaction,
       where: t.from_account_id == ^account_id,
       select: t.hash
@@ -203,7 +203,7 @@ defmodule GodwokenExplorer.Transaction do
         %{type: type, account: account},
         paging_options
       )
-      when type in [:eth_user, :tron_user] do
+      when type in [:eth_user] do
     condition = dynamic([t], t.from_account_id == ^account.id)
 
     paging_options =
