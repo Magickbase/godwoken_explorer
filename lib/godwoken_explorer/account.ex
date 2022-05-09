@@ -268,9 +268,7 @@ defmodule GodwokenExplorer.Account do
   def search(keyword) do
     results =
       from(a in Account,
-        where:
-          a.eth_address == ^keyword or a.script_hash == ^keyword or
-            (a.short_address == ^keyword and a.type == :polyjuice_contract),
+        where: a.eth_address == ^keyword or a.script_hash == ^keyword,
         order_by: a.id
       )
       |> Repo.all()
@@ -451,7 +449,6 @@ defmodule GodwokenExplorer.Account do
            select: %{
              type: a.type,
              eth_address: a.eth_address,
-             short_address: a.short_address,
              script_hash: a.script_hash,
              contract_name: s.name
            }
@@ -460,7 +457,6 @@ defmodule GodwokenExplorer.Account do
       %{
         type: type,
         eth_address: eth_address,
-        short_address: short_address,
         contract_name: contract_name,
         script_hash: script_hash
       } ->
@@ -515,7 +511,6 @@ defmodule GodwokenExplorer.Account do
           id: a.id,
           type: a.type,
           eth_address: a.eth_address,
-          short_address: a.short_address,
           contract_name: s.name,
           script_hash: a.script_hash
         }
@@ -527,7 +522,6 @@ defmodule GodwokenExplorer.Account do
                            id: id,
                            type: type,
                            eth_address: eth_address,
-                           short_address: short_address,
                            contract_name: contract_name,
                            script_hash: script_hash
                          } ->

@@ -251,7 +251,7 @@ defmodule GodwokenExplorer.Block do
     if block.account.type in [:eth_user, :tron_user] do
       block.account.eth_address
     else
-      block.account.short_address
+      block.account.script_hash
     end
   end
 end

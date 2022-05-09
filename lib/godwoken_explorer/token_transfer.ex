@@ -194,7 +194,7 @@ defmodule GodwokenExplorer.TokenTransfer do
             tt.from_address_hash,
             a1.type,
             a1.eth_address,
-            a1.short_address
+            a1.script_hash
           ),
         to:
           fragment(
@@ -205,7 +205,7 @@ defmodule GodwokenExplorer.TokenTransfer do
             tt.to_address_hash,
             a2.type,
             a2.eth_address,
-            a2.short_address
+            a2.script_hash
           ),
         udt_id: u5.id,
         udt_name: u5.name,
