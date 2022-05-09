@@ -268,9 +268,18 @@ defmodule GodwokenExplorer.Transaction do
         block_number: b.number,
         l1_block_number: b.layer1_block_number,
         from: a2.eth_address,
-        to: fragment("
+        to:
+          fragment(
+            "
           CASE WHEN ? = 'user' THEN encode(?, 'escape')
-           ELSE encode(?, 'escape') END", a3.type, a3.eth_address, a3.short_address),
+          WHEN ? = 'polyjuice_contract' THEN encode(?, 'escape')
+           ELSE encode(?, 'escape') END",
+            a3.type,
+            a3.eth_address,
+            a3.type,
+            a3.short_address,
+            a3.script_hash
+          ),
         to_alias:
           fragment(
             "
@@ -284,13 +293,13 @@ defmodule GodwokenExplorer.Transaction do
             a3.type,
             s4.name,
             s4.name,
-            a3.short_address,
+            a3.script_hash,
             a3.type,
             s4.name,
             s4.name,
             a3.short_address,
             a3.type,
-            a3.short_address
+            a3.script_hash
           ),
         status: b.status,
         polyjuice_status: p.status,
