@@ -16,12 +16,12 @@ defmodule GodwokenIndexer.Worker.ImportContractCode do
     {:ok, %Account{id: id}} =
       case Account.search(address) do
         %Account{} = account ->
-          account |> Account.changeset(%{contract_code: contract_code}) |> Repo.update!()
+          account |> Account.changeset(%{contract_code: contract_code}) |> Repo.update()
 
         nil ->
           {:ok, account_id} = Account.find_by_short_address(address)
           {:ok, account} = Account.manual_create_account!(account_id)
-          account |> Account.changeset(%{contract_code: contract_code}) |> Repo.update!()
+          account |> Account.changeset(%{contract_code: contract_code}) |> Repo.update()
       end
 
     compare_with_yok_contract(contract_code, id)
