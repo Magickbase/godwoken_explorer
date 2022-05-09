@@ -246,7 +246,7 @@ defmodule GodwokenExplorer.Account do
       from(a in Account,
         where:
           a.eth_address == ^keyword or a.script_hash == ^keyword or
-            a.short_address == ^keyword,
+            (a.short_address == ^keyword and a.type in [:polyjuice_contract, :udt]),
         order_by: a.id
       )
       |> Repo.all()
