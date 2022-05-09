@@ -18,7 +18,8 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
     Block,
     DepositHistory,
     AccountUDT,
-    WithdrawalHistory
+    WithdrawalHistory,
+    UDT
   }
 
   @default_worker_interval 5
@@ -154,7 +155,8 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
         owner_lock_hash
       } = parse_withdrawal_lock_args(String.slice(args, 0..271))
 
-      {udt_script, udt_script_hash, amount} = parse_udt_script(output, output_data)
+      capacity = hex_to_number(output["capacity"])
+      {udt_script, udt_script_hash, amount} = parse_udt_script(output, output_data, capacity)
 
       with {:ok, udt_id} <-
              Account.find_or_create_udt_account!(
@@ -174,7 +176,8 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
           owner_lock_hash: "0x" <> owner_lock_hash,
           timestamp: timestamp,
           udt_id: udt_id,
-          amount: amount
+          amount: amount,
+          capacity: capacity
         })
       end
     rescue
@@ -193,7 +196,8 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
        }) do
     try do
       [script_hash, l1_lock_hash] = parse_lock_args(output["lock"]["args"])
-      {udt_script, udt_script_hash, amount} = parse_udt_script(output, output_data)
+      capacity = hex_to_number(output["capacity"])
+      {udt_script, udt_script_hash, amount} = parse_udt_script(output, output_data, capacity)
 
       case GodwokenRPC.fetch_account_id(script_hash) do
         {:error, :account_slow} ->
@@ -276,10 +280,14 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
                 udt_id: udt_id,
                 amount: amount,
                 ckb_lock_hash: l1_lock_hash,
-                script_hash: script_hash
+                script_hash: script_hash,
+                capacity: capacity
               })
 
-              AccountUDT.sync_balance!(%{account_id: account_id, udt_id: udt_id})
+              if udt_id != UDT.ckb_account_id(),
+                do: AccountUDT.sync_balance!(%{account_id: account_id, udt_id: udt_id})
+
+              AccountUDT.sync_balance!(%{account_id: account_id, udt_id: UDT.ckb_account_id()})
             end
           end)
       end
@@ -290,11 +298,10 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
     end
   end
 
-  defp parse_udt_script(output, output_data) do
+  defp parse_udt_script(output, output_data, capacity) do
     case Map.get(output, "type") do
       nil ->
-        {nil, "0x0000000000000000000000000000000000000000000000000000000000000000",
-         hex_to_number(output["capacity"])}
+        {nil, "0x0000000000000000000000000000000000000000000000000000000000000000", capacity}
 
       %{} = udt_script ->
         {udt_script, script_to_hash(udt_script),
