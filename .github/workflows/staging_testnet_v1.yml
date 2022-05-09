@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - "compatibility-breaking-changes"
+      - "godwoken-v1.1"
 
 jobs:
   staging-testnet-v1-build-run:
