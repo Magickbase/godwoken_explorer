@@ -2,13 +2,12 @@ name: gwscan build and run
 on:
   push:
     branches:
-      - "github-action"
-      - "develop"
+      - "main"
 
 jobs:
-  staging-testnet-build-run:
-    runs-on: [self-hosted, staging_testnet]
-    environment: staging_testnet
+  prod-testnet-build-run:
+    runs-on: [self-hosted, prod_testnet]
+    environment: prod_testnet
     env:
       ENV_FILE_PATH: ${{secrets.ENV_FILE_PATH}}
     steps:
