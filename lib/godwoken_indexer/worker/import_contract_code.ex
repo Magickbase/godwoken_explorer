@@ -1,5 +1,5 @@
 defmodule GodwokenIndexer.Worker.ImportContractCode do
-  use Oban.Worker, queue: :default
+  use Oban.Worker, queue: :default, unique: [period: 300, states: Oban.Job.states()]
 
   alias GodwokenExplorer.{Repo, Account}
 
