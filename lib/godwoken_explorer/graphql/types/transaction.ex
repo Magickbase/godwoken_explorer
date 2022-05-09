@@ -1,6 +1,8 @@
 defmodule GodwokenExplorer.Graphql.Types.Transaction do
   use Absinthe.Schema.Notation
   alias GodwokenExplorer.Graphql.Resolvers, as: Resolvers
+  alias GodwokenExplorer.Graphql.Middleware.Downcase, as: MDowncase
+  alias GodwokenExplorer.Graphql.Middleware.TermRange, as: MTermRange
 
   object :transaction_querys do
     @desc """
@@ -35,6 +37,7 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
     """
     field :transaction, :transaction do
       arg(:input, non_null(:transaction_hash_input))
+      middleware(MDowncase, [:transaction_hash])
       resolve(&Resolvers.Transaction.transaction/3)
     end
 
@@ -76,6 +79,8 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
     """
     field :transactions, list_of(:transaction) do
       arg(:input, non_null(:transaction_input))
+      middleware(MDowncase, [:address])
+      middleware(MTermRange, MTermRange.page_and_size_default_config())
       resolve(&Resolvers.Transaction.transactions/3)
     end
   end

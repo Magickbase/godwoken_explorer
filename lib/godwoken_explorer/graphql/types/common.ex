@@ -11,6 +11,7 @@ defmodule GodwokenExplorer.Graphql.Types.Common do
     argument: the page of query result, the relations of postgres offset: offset = (page - 1) * page_size
 
     default: 1
+    limit: > 0
     """
     field :page, :integer, default_value: 1
 
@@ -18,6 +19,7 @@ defmodule GodwokenExplorer.Graphql.Types.Common do
     argument: the page_size of query result, it's the same of postgres limit
 
     default: 20
+    limit: > 0
     """
     field :page_size, :integer, default_value: 20
   end

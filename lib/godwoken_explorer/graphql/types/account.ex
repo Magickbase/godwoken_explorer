@@ -1,6 +1,8 @@
 defmodule GodwokenExplorer.Graphql.Types.Account do
   use Absinthe.Schema.Notation
   alias GodwokenExplorer.Graphql.Resolvers, as: Resolvers
+  alias GodwokenExplorer.Graphql.Middleware.Downcase, as: MDowncase
+  alias GodwokenExplorer.Graphql.Middleware.TermRange, as: MTermRange
 
   object :account_querys do
     @desc """
@@ -11,7 +13,7 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
       account(input: {address: "0xbfbe23681d99a158f632e64a31288946770c7a9e"}){
         id
         type
-        account_udts{
+        account_udts(input: {page: 1, page_size: 2}){
         	id
           balance
           udt{
@@ -80,6 +82,7 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
     """
     field :account, :account do
       arg(:input, non_null(:account_input))
+      middleware(MDowncase, [:address])
       resolve(&Resolvers.Account.account/3)
     end
   end
@@ -103,6 +106,7 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
         default_value: %{page: 1, page_size: 20, sort_type: :desc}
       )
 
+      middleware(MTermRange, MTermRange.page_and_size_default_config())
       resolve(&Resolvers.Account.account_udts/3)
     end
 

@@ -1,6 +1,8 @@
 defmodule GodwokenExplorer.Graphql.Types.SmartContract do
   use Absinthe.Schema.Notation
   alias GodwokenExplorer.Graphql.Resolvers, as: Resolvers
+  alias GodwokenExplorer.Graphql.Middleware.Downcase, as: MDowncase
+  alias GodwokenExplorer.Graphql.Middleware.TermRange, as: MTermRange
 
   object :smart_contract_querys do
     @desc """
@@ -32,6 +34,7 @@ defmodule GodwokenExplorer.Graphql.Types.SmartContract do
     """
     field :smart_contract, :smart_contract do
       arg(:input, non_null(:smart_contract_input))
+      middleware(MDowncase, [:contract_address])
       resolve(&Resolvers.SmartContract.smart_contract/3)
     end
 
@@ -65,7 +68,8 @@ defmodule GodwokenExplorer.Graphql.Types.SmartContract do
     }
     """
     field :smart_contracts, list_of(:smart_contract) do
-      arg(:input, :page_and_size_input, default_value: %{page: 1, page_size: 20, sort_type: :asc})
+      arg(:input, :smart_contracts_input, default_value: %{page: 1, page_size: 20, sort_type: :asc})
+      middleware(MTermRange, MTermRange.page_and_size_default_config())
       resolve(&Resolvers.SmartContract.smart_contracts/3)
     end
   end
