@@ -1,0 +1,86 @@
+name: Godwoken Explorer Release
+on:
+  push:
+    branches:
+      - "github-action"
+
+# env:
+#   REGISTRY: ghcr.io
+#   IMAGE_NAME: ${{ github.repository }}
+
+  # env:
+  # GODWOKEN_CHAIN: ${{secrets.GODWOKEN_CHAIN}}
+  # GWSCAN_GRAPHIQL: ${{secrets.GWSCAN_GRAPHIQL}}
+  # GODWOKEN_JSON_RPC_URL: ${{secrets.GODWOKEN_JSON_RPC_URL}}
+  # GODWOKEN_MEMPOOL_RPC_URL: ${{secrets.GODWOKEN_MEMPOOL_RPC_URL}}
+  # CKB_INDEXER_URL: ${{secrets.CKB_INDEXER_URL}}
+  # CKB_RPC_URL: ${{secrets.CKB_RPC_URL}}
+  # GWSCAN_ENDPOINT_HOST: ${{secrets.GWSCAN_ENDPOINT_HOST}}
+  # GWSCAN_ENDPOINT_PORT: ${{secrets.GWSCAN_ENDPOINT_PORT}}
+  # GWSCAN_ENDPOINT_SCHEME: ${{secrets.GWSCAN_ENDPOINT_SCHEME}}
+  # GWSCAN_ENDPOINT_CHECK_ORIGIN: ${{secrets.GWSCAN_ENDPOINT_CHECK_ORIGIN}}
+  # GWSCAN_LOGER_LEVEL: ${{secrets.GWSCAN_LOGER_LEVEL}}
+  # PG_USERNAME: ${{secrets.PG_USERNAME}}
+  # PG_PADDWORD: ${{secrets.PG_PADDWORD}}
+  # PG_DATABASE: ${{secrets.PG_DATABASE}}
+  # PG_HOSTNAME: ${{secrets.PG_HOSTNAME}}
+  # PG_PORT: ${{secrets.PG_PORT}}
+  # PG_POOL_SIZE: ${{secrets.PG_POOL_SIZE}}
+  # PG_TIMEOUT: ${{secrets.PG_TIMEOUT}}
+  # PG_CONNECT_TIMEOUT: ${{secrets.PG_CONNECT_TIMEOUT}}
+  # PG_QUEUE_TARGET: ${{secrets.PG_QUEUE_TARGET}}
+  # GODWOKEN_SCAN_ENDPOINT_SECRET_KEY: ${{secrets.GODWOKEN_SCAN_ENDPOINT_SECRET_KEY}}
+  # GWSCAN_ENDPOINT_LIVE_VIEW_SIGNING_SALT: ${{secrets.GWSCAN_ENDPOINT_LIVE_VIEW_SIGNING_SALT}}
+  # GWSCAN_BLOCK_SYNC_WORKER_ON_OFF: ${{secrets.GWSCAN_BLOCK_SYNC_WORKER_ON_OFF}}
+  # GWSCAN_BLOCK_GLOBAL_STATE_WORKER_ON_OFF: ${{secrets.GWSCAN_BLOCK_GLOBAL_STATE_WORKER_ON_OFF}}
+  # GWSCAN_BLOCK_BIND_L1_L2_WORKER_ON_OFF: ${{secrets.GWSCAN_BLOCK_BIND_L1_L2_WORKER_ON_OFF}}
+  # GWSCAN_BLOCK_SYNC_L1_BLOCK_WORKER_ON_OFF: ${{secrets.GWSCAN_BLOCK_SYNC_L1_BLOCK_WORKER_ON_OFF}}
+  # GWSCAN_DASHBOARD_USERNAME: ${{secrets.GWSCAN_DASHBOARD_USERNAME}}
+  # GWSCAN_DASHBOARD_PASSWORD: ${{secrets.GWSCAN_DASHBOARD_PASSWORD}}
+  # GWSCAN_INTERVAL_SYNC_WORKER: ${{secrets.GWSCAN_INTERVAL_SYNC_WORKER}}
+  # GWSCAN_INTERVAL_GLOBAL_STATE_WORKER: ${{secrets.GWSCAN_INTERVAL_GLOBAL_STATE_WORKER}}
+  # GWSCAN_INTERVAL_BIND_L1_WORKER: ${{secrets.GWSCAN_INTERVAL_BIND_L1_WORKER}}
+  # GWSCAN_INTERVAL_SYNC_DEPOSITION_WORKER: ${{secrets.GWSCAN_INTERVAL_SYNC_DEPOSITION_WORKER}}
+  # GWSCAN_SENTRY_DSN: ${{secrets.GWSCAN_SENTRY_DSN}}
+  # GWSCAN_SENTRY_ENVIRONMENT_NAME: ${{secrets.GWSCAN_SENTRY_ENVIRONMENT_NAME}}
+  # GWSCAN_SENTRY_ENABLE_SOURCE_CODE_CONTEXT: ${{secrets.GWSCAN_SENTRY_ENABLE_SOURCE_CODE_CONTEXT}}
+  # GWSCAN_SENTRY_INCLUDED_ENVIRONMENT: ${{secrets.GWSCAN_SENTRY_INCLUDED_ENVIRONMENT}}
+  # GWSCAN_SCHEDULER_JOB: ${{secrets.GWSCAN_SCHEDULER_JOB}}
+  # GWSCAN_MULTIPLE_BLOCK_ONCE: ${{secrets.GWSCAN_MULTIPLE_BLOCK_ONCE}}
+  # GWSCAN_BLOCK_BATCH_SIZE: ${{secrets.GWSCAN_BLOCK_BATCH_SIZE}}
+
+jobs:
+  docker-compose-build:
+    # runs-on: staging_testnet
+    runs-on: self-hosted
+    # permissions:
+    #   contents: read
+    #   packages: write
+
+    environment: staging_testnet
+
+    env:
+      # GODWOKEN_CHAIN: ${{secrets.GODWOKEN_CHAIN}}
+      # GWSCAN_GRAPHIQL: ${{secrets.GWSCAN_GRAPHIQL}}
+      ENV_FILE_PATH: ${{secrets.ENV_FILE_PATH}}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      # - name: Log in to the Container registry
+      #   uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
+      #   with:
+      #     registry: ${{ env.REGISTRY }}
+      #     username: ${{ github.actor }}
+      #     password: ${{ secrets.GITHUB_TOKEN }}
+
+      # - name: Extract metadata (tags, labels) for Docker
+      #   id: meta
+      #   uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
+      #   with:
+      #     images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+
+      - name: Docker Compose build
+        run: docker-compose -f ./docker_compose/gwscan_compose.yml --env-file ${{secrets.ENV_FILE_PATH}} build gwscan
+
