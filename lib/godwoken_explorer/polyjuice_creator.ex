@@ -10,6 +10,7 @@ defmodule GodwokenExplorer.PolyjuiceCreator do
     field(:script_args, :binary)
     field(:tx_hash, :binary)
     field(:fee_amount, :decimal)
+    field(:fee_registry_id, :integer)
 
     belongs_to(:transaction, GodwokenExplorer.Transaction,
       foreign_key: :tx_hash,
@@ -23,8 +24,8 @@ defmodule GodwokenExplorer.PolyjuiceCreator do
   @doc false
   def changeset(polyjuice_creator, attrs) do
     polyjuice_creator
-    |> cast(attrs, [:code_hash, :hash_type, :script_args, :fee_amount])
-    |> validate_required([:code_hash, :hash_type, :script_args, :fee_amount])
+    |> cast(attrs, [:code_hash, :hash_type, :script_args, :fee_amount, :fee_registry_id])
+    |> validate_required([:code_hash, :hash_type, :script_args, :fee_amount, :fee_registry_id])
     |> unique_constraint(:tx_hash)
   end
 

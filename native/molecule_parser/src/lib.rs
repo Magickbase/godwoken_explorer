@@ -17,23 +17,25 @@ mod atoms {
     }
 }
 
-// table CreateAccount {
-//     script: Script,
-//     fee: Uint64,
-// }
 #[rustler::nif]
-fn parse_meta_contract_args(arg: String) -> ((String, String, String), String)  {
+fn parse_meta_contract_args(arg: String) -> ((String, String, String), (u32, String))  {
     let decoded_meat_contract = hex::decode(arg).unwrap();
     let meta_contract_args = MetaContractArgs::from_slice(&decoded_meat_contract).unwrap().to_enum();
+
     let script = CreateAccount::from_slice(meta_contract_args.as_slice()).unwrap().script();
     let code_hash = hex::encode(script.as_reader().code_hash().raw_data());
     let hash_type = hex::encode(script.as_reader().hash_type().as_slice());
     let args = hex::encode(script.as_reader().args().raw_data());
+
     let fee = CreateAccount::from_slice(meta_contract_args.as_slice()).unwrap().fee();
-    let amount = hex::encode(fee.as_slice());
+    let registry_id = fee.registry_id();
+    let mut registry_id_buf = [0u8; 4];
+    registry_id_buf.copy_from_slice(registry_id.as_slice());
+    let amount = hex::encode(fee.amount().as_slice());
+
     (
         (code_hash, hash_type, args),
-        amount
+        (u32::from_le_bytes(registry_id_buf), amount)
     )
 }
 

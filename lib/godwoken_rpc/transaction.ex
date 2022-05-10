@@ -24,7 +24,8 @@ defmodule GodwokenRPC.Transaction do
          }, index}
       )
       when to_account_id == "0x0" do
-    {{code_hash, hash_type, script_args}, fee_amount_hex_string} = parse_meta_contract_args(args)
+    {{code_hash, hash_type, script_args}, {registry_id, fee_amount_hex_string}} =
+      parse_meta_contract_args(args)
 
     fee_amount = fee_amount_hex_string |> parse_le_number()
     from_account_id = hex_to_number(from_account_id)
@@ -43,6 +44,7 @@ defmodule GodwokenRPC.Transaction do
       code_hash: "0x" <> code_hash,
       hash_type: transform_hash_type(hash_type),
       fee_amount: fee_amount,
+      fee_registry_id: registry_id,
       script_args: script_args,
       account_ids: [from_account_id]
     }
