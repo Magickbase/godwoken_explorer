@@ -27,7 +27,6 @@ defmodule GodwokenExplorerWeb.API.TransactionControllerTest do
         number: 14,
         timestamp: ~U[2021-10-31 05:39:38.000000Z],
         status: :finalized,
-        aggregator_id: 0,
         transaction_count: 1
       })
 
@@ -127,17 +126,18 @@ defmodule GodwokenExplorerWeb.API.TransactionControllerTest do
       type: "function"
     })
 
-    {:ok, tx} =Repo.insert(%Transaction{
-      block_hash: block.hash,
-      block_number: block.number,
-      from_account_id: 468,
-      hash: "0x5d71c8a372aab6a326c31e02a50829b65be278913cb0d0eb990e5714a1b38ff5",
-      nonce: 78,
-      args:
-        "0xffffff504f4c59000000000100000000010000000000000000000000000000000000000000000000000000000000000044000000a9059cbb000000000000000000000000fa2ae9de22bbca35fc44f20efe7a3d2789556d4c000000000000000000000000000000000000000000000000158059d80c7ac463",
-      to_account_id: 12119,
-      type: :polyjuice
-    })
+    {:ok, tx} =
+      Repo.insert(%Transaction{
+        block_hash: block.hash,
+        block_number: block.number,
+        from_account_id: 468,
+        hash: "0x5d71c8a372aab6a326c31e02a50829b65be278913cb0d0eb990e5714a1b38ff5",
+        nonce: 78,
+        args:
+          "0xffffff504f4c59000000000100000000010000000000000000000000000000000000000000000000000000000000000044000000a9059cbb000000000000000000000000fa2ae9de22bbca35fc44f20efe7a3d2789556d4c000000000000000000000000000000000000000000000000158059d80c7ac463",
+        to_account_id: 12119,
+        type: :polyjuice
+      })
 
     Repo.insert(%Polyjuice{
       tx_hash: "0x5d71c8a372aab6a326c31e02a50829b65be278913cb0d0eb990e5714a1b38ff5",
@@ -186,7 +186,8 @@ defmodule GodwokenExplorerWeb.API.TransactionControllerTest do
                      "hash" =>
                        "0x5d71c8a372aab6a326c31e02a50829b65be278913cb0d0eb990e5714a1b38ff5",
                      "nonce" => 78,
-                     "timestamp" => tx.inserted_at |> DateTime.from_naive!("Etc/UTC") |> DateTime.to_unix(),
+                     "timestamp" =>
+                       tx.inserted_at |> DateTime.from_naive!("Etc/UTC") |> DateTime.to_unix(),
                      "udt_id" => 12119,
                      "udt_symbol" => "YOK",
                      "udt_icon" => nil,
@@ -229,7 +230,8 @@ defmodule GodwokenExplorerWeb.API.TransactionControllerTest do
                      "hash" =>
                        "0x5d71c8a372aab6a326c31e02a50829b65be278913cb0d0eb990e5714a1b38ff5",
                      "nonce" => 78,
-                     "timestamp" => tx.inserted_at |> DateTime.from_naive!("Etc/UTC") |> DateTime.to_unix(),
+                     "timestamp" =>
+                       tx.inserted_at |> DateTime.from_naive!("Etc/UTC") |> DateTime.to_unix(),
                      "udt_id" => 12119,
                      "udt_symbol" => "YOK",
                      "udt_icon" => nil,
@@ -295,7 +297,8 @@ defmodule GodwokenExplorerWeb.API.TransactionControllerTest do
                      "hash" =>
                        "0x5d71c8a372aab6a326c31e02a50829b65be278913cb0d0eb990e5714a1b38ff5",
                      "nonce" => 78,
-                     "timestamp" => tx.inserted_at |> DateTime.from_naive!("Etc/UTC") |> DateTime.to_unix(),
+                     "timestamp" =>
+                       tx.inserted_at |> DateTime.from_naive!("Etc/UTC") |> DateTime.to_unix(),
                      "udt_id" => 12119,
                      "udt_symbol" => "YOK",
                      "udt_icon" => nil,
@@ -362,7 +365,8 @@ defmodule GodwokenExplorerWeb.API.TransactionControllerTest do
                  "gas_used" => 44483,
                  "hash" => "0x5d71c8a372aab6a326c31e02a50829b65be278913cb0d0eb990e5714a1b38ff5",
                  "nonce" => 78,
-                 "timestamp" => tx.inserted_at |> DateTime.from_naive!("Etc/UTC") |> DateTime.to_unix(),
+                 "timestamp" =>
+                   tx.inserted_at |> DateTime.from_naive!("Etc/UTC") |> DateTime.to_unix(),
                  "udt_id" => 12119,
                  "udt_symbol" => "YOK",
                  "udt_icon" => nil,

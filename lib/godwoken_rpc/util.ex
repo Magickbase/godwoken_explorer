@@ -192,4 +192,12 @@ defmodule GodwokenRPC.Util do
     now = NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
     %{inserted_at: now, updated_at: now}
   end
+
+  # registry_id (4 bytes) | address len (4 bytes) | address (n bytes)
+  def parse_block_producer(block_producer) do
+    registry_id = block_producer |> String.slice(0..7) |> parse_le_number()
+    address_len_bytes = block_producer |> String.slice(8..15) |> parse_le_number()
+    address = block_producer |> String.slice(16, address_len_bytes * 2)
+    {registry_id, address}
+  end
 end

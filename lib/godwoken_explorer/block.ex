@@ -12,7 +12,8 @@ defmodule GodwokenExplorer.Block do
     :number,
     :timestamp,
     :status,
-    :aggregator_id,
+    :registry_id,
+    :producer_address,
     :transaction_count,
     :layer1_tx_hash,
     :layer1_block_number,
@@ -27,8 +28,9 @@ defmodule GodwokenExplorer.Block do
     :number,
     :timestamp,
     :status,
-    :aggregator_id,
-    :transaction_count
+    :transaction_count,
+    :registry_id,
+    :producer_address
   ]
 
   @derive {Jason.Encoder, except: [:__meta__]}
@@ -38,7 +40,6 @@ defmodule GodwokenExplorer.Block do
     field :parent_hash, :binary
     field :timestamp, :utc_datetime_usec
     field :status, Ecto.Enum, values: [:committed, :finalized], default: :committed
-    field :aggregator_id, :integer
     field :transaction_count, :integer
     field :layer1_tx_hash, :binary
     field :layer1_block_number, :integer
@@ -52,8 +53,9 @@ defmodule GodwokenExplorer.Block do
     field :sha3_uncles, :binary
     field :state_root, :binary
     field :extra_data, :binary
+    field :registry_id, :integer
+    field :producer_address, :binary
 
-    has_one :account, Account, foreign_key: :id, references: :aggregator_id
     has_many :transactions, GodwokenExplorer.Transaction, foreign_key: :block_hash
 
     timestamps()
@@ -245,13 +247,5 @@ defmodule GodwokenExplorer.Block do
   def rollback!(hash) do
     Repo.get(__MODULE__, hash) |> Repo.delete!()
     from(t in Transaction, where: t.block_hash == ^hash) |> Repo.delete_all()
-  end
-
-  def miner_hash(block) do
-    if block.account.type in [:eth_user] do
-      block.account.eth_address
-    else
-      block.account.script_hash
-    end
   end
 end

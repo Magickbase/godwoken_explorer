@@ -1,8 +1,7 @@
 defmodule GodwokenRPC.Block do
-  import GodwokenRPC.Util, only: [hex_to_number: 1]
+  import GodwokenRPC.Util, only: [hex_to_number: 1, parse_block_producer: 1]
 
   require Logger
-  require IEx
 
   @eth_addr_reg_id Application.get_env(:godwoken_explorer, :eth_addr_reg_id)
 
@@ -31,12 +30,15 @@ defmodule GodwokenRPC.Block do
           "parent_block_hash" => parent_hash,
           "number" => number,
           "timestamp" => timestamp,
-          "block_producer_id" => aggregator_id,
+          "block_producer" => block_producer,
           "submit_transactions" => %{
             "tx_count" => tx_count
           }
         }
       }) do
+    {registry_id, producer_address} =
+      block_producer |> String.slice(2..-1) |> parse_block_producer()
+
     case GodwokenRPC.fetch_eth_block_by_hash(hash) do
       {:ok,
        %{
@@ -51,7 +53,8 @@ defmodule GodwokenRPC.Block do
           number: hex_to_number(number),
           timestamp:
             timestamp |> hex_to_number() |> Kernel.*(1000) |> DateTime.from_unix!(:microsecond),
-          aggregator_id: hex_to_number(aggregator_id),
+          registry_id: registry_id,
+          producer_address: producer_address,
           transaction_count: tx_count |> hex_to_number(),
           size: size |> hex_to_number(),
           logs_bloom: logs_bloom,
@@ -68,7 +71,8 @@ defmodule GodwokenRPC.Block do
           timestamp:
             timestamp |> hex_to_number() |> Kernel.*(1000) |> DateTime.from_unix!(:microsecond),
           status: :committed,
-          aggregator_id: hex_to_number(aggregator_id),
+          registry_id: registry_id,
+          producer_address: producer_address,
           transaction_count: tx_count |> hex_to_number()
         }
     end

@@ -37,7 +37,7 @@ defmodule GodwokenExplorerWeb.API.BlockController do
           l1_tx_hash: block.layer1_tx_hash,
           finalize_state: block.status,
           tx_count: block.transaction_count,
-          miner_hash: Block.miner_hash(block),
+          miner_hash: block.producer_address,
           timestamp: block.timestamp,
           gas_limit: block.gas_limit,
           gas_used: block.gas_used,

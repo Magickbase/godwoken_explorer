@@ -17,7 +17,6 @@ defmodule GodwokenExplorerWeb.API.DepositWithdrawalControllerTest do
       number: 68738,
       timestamp: ~U[2021-10-31 05:39:38.000000Z],
       status: :finalized,
-      aggregator_id: 0,
       transaction_count: 1
     })
 

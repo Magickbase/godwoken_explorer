@@ -38,13 +38,14 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Block do
     {:ok, return}
   end
 
-  def account(%Block{aggregator_id: aggregator_id}, _args, _resolution) do
-    return = Repo.get(Account, aggregator_id)
+  def account(%Block{producer_address: producer_address}, _args, _resolution) do
+    return = Repo.get_by(Account, eth_address: producer_address)
     {:ok, return}
   end
 
   def transactions(%Block{hash: hash}, %{input: input} = _args, _resolution) do
     IO.inspect(input)
+
     return =
       from(t in Transaction)
       |> where([t], t.block_hash == ^hash)

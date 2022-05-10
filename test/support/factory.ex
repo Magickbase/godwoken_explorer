@@ -18,7 +18,6 @@ defmodule GodwokenExplorer.Factory do
       number: 14,
       timestamp: ~U[2021-10-31 05:39:38.000000Z],
       status: :finalized,
-      aggregator_id: 0,
       transaction_count: 1,
       gas_limit: D.new(12_500_000),
       gas_used: D.new(0),

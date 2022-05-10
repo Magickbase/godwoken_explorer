@@ -30,7 +30,7 @@ defmodule GodwokenExplorer.BlockView do
   end
 
   def miner_hash(block, _conn) do
-    Block.miner_hash(block)
+    block.producer_address
   end
 
   def timestamp(block, _conn) do

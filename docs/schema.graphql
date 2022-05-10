@@ -127,7 +127,8 @@ input AccountUdtsInput {
 
 type Block {
   account: Account
-  aggregator_id: Int
+  registry_id: Int
+  producer_address: String
   difficulty: Decimal
   extra_data: String
   gas_limit: Decimal
