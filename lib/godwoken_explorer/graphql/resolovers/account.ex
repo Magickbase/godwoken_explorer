@@ -13,7 +13,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Account do
       |> where(
         [a],
         a.eth_address == ^address or
-          a.short_address == ^address or
+          a.registry_address == ^address or
           a.script_hash == ^address
       )
       |> Repo.one()

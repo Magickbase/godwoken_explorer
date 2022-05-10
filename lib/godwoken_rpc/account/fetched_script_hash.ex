@@ -9,14 +9,6 @@ defmodule GodwokenRPC.Account.FetchedScriptHash do
     })
   end
 
-  def request(%{id: id, short_address: short_address}) do
-    GodwokenRPC.request(%{
-      id: id,
-      method: "gw_get_script_hash_by_short_address",
-      params: [short_address]
-    })
-  end
-
   def from_response(%{id: id, result: script_hash}, id_to_params)
       when is_map(id_to_params) do
     %{account_id: account_id} = Map.fetch!(id_to_params, id)

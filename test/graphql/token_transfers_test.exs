@@ -8,12 +8,12 @@ defmodule GodwokenExplorer.Graphql.TokenTransfersTest do
       block_number
       to_account{
         id
-        short_address
+        registry_address
       }
       to_address_hash
       from_account{
         id
-        short_address
+        registry_address
       }
     }
   }

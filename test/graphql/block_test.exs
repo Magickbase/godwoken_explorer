@@ -11,7 +11,7 @@ defmodule GodwokenExplorer.Graphql.BlockTest do
       gas_limit
       account{
         id
-        short_address
+        registry_address
       }
       transactions (input: {page: 1, page_size: 2}) {
         type
@@ -32,7 +32,7 @@ defmodule GodwokenExplorer.Graphql.BlockTest do
       gas_limit
       account{
         id
-        short_address
+        registry_address
       }
       transactions (input: {page: 1, page_size: 2}) {
         type

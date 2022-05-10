@@ -23,18 +23,18 @@ defmodule GodwokenRPC.Account.FetchedBalance do
 
   def from_response(%{id: id, error: %{code: code, message: message} = error}, id_to_params)
       when is_integer(code) and is_binary(message) and is_map(id_to_params) do
-    %{short_address: short_address, udt_id: udt_id} = Map.fetch!(id_to_params, id)
+    %{registry_address: registry_address, udt_id: udt_id} = Map.fetch!(id_to_params, id)
 
-    annotated_error = Map.put(error, :data, %{short_address: short_address, udt_id: udt_id})
+    annotated_error = Map.put(error, :data, %{registry_address: registry_address, udt_id: udt_id})
 
     {:error, annotated_error}
   end
 
-  def request(%{id: id, short_address: short_address, udt_id: udt_id}) do
+  def request(%{id: id, registry_address: registry_address, udt_id: udt_id}) do
     GodwokenRPC.request(%{
       id: id,
       method: "gw_get_balance",
-      params: [short_address, number_to_hex(udt_id)]
+      params: [registry_address, number_to_hex(udt_id)]
     })
   end
 end

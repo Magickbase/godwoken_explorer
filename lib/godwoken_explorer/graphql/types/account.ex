@@ -94,7 +94,7 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
     field :id, :integer
     field :eth_address, :string
     field :script_hash, :string
-    field :short_address, :string
+    field :registry_address, :string
     field :script, :json
     field :nonce, :integer
     field :type, :account_type
@@ -125,7 +125,7 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
 
   input_object :account_input do
     @desc """
-    argument: account address(eth_address or short_address)
+    argument: account address(eth_address or registry_address)
     example-1: "0x15ca4f2165ff0e798d9c7434010eaacc4d768d85"
     example-2: "0xc5e133e6b01b2c335055576c51a53647b1b9b624"
     """

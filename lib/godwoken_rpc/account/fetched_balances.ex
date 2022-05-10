@@ -26,8 +26,8 @@ defmodule GodwokenRPC.Account.FetchedBalances do
   end
 
   def requests(id_to_params) when is_map(id_to_params) do
-    Enum.map(id_to_params, fn {id, %{short_address: short_address, udt_id: udt_id}} ->
-      FetchedBalance.request(%{id: id, short_address: short_address, udt_id: udt_id})
+    Enum.map(id_to_params, fn {id, %{registry_address: registry_address, udt_id: udt_id}} ->
+      FetchedBalance.request(%{id: id, registry_address: registry_address, udt_id: udt_id})
     end)
   end
 end

@@ -67,7 +67,7 @@ defmodule GodwokenRPC.Util do
       parsed_value =
         case parsed_key do
           d when d in @stringify_ckb_decimal_keys ->
-            balance_to_view(v, 8)
+            balance_to_view(v, 18)
 
           u when u in @utc_unix_keys ->
             utc_to_unix(v)
@@ -199,5 +199,31 @@ defmodule GodwokenRPC.Util do
     address_len_bytes = block_producer |> String.slice(8..15) |> parse_le_number()
     address = block_producer |> String.slice(16, address_len_bytes * 2)
     {registry_id, address}
+  end
+
+  def parse_registry_address(registry_address_struct) do
+    if is_nil(registry_address_struct) do
+      nil
+    else
+      le_registry_id_hex =
+        registry_address_struct["registry_id"]
+        |> hex_to_number()
+        |> integer_to_le_binary()
+        |> pad_trailing(4)
+        |> Base.encode16(case: :lower)
+
+      address_len =
+        registry_address_struct["address"]
+        |> String.slice(2..-1)
+        |> String.length()
+        |> Kernel.div(2)
+        |> integer_to_le_binary()
+        |> pad_trailing(4)
+        |> Base.encode16(case: :lower)
+
+      "0x" <>
+        le_registry_id_hex <>
+        address_len <> String.slice(registry_address_struct["address"], 2..-1)
+    end
   end
 end

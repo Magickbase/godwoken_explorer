@@ -1,5 +1,5 @@
 defmodule GodwokenRPC do
-  import GodwokenRPC.Util, only: [hex_to_number: 1]
+  import GodwokenRPC.Util, only: [hex_to_number: 1, parse_registry_address: 1]
 
   require Logger
 
@@ -22,6 +22,8 @@ defmodule GodwokenRPC do
     FetchedAccountID,
     FetchedScriptHash,
     FetchedScriptHashes,
+    FetchedRegistryAddress,
+    FetchedRegistryAddresses,
     FetchedScript,
     FetchedScripts,
     FetchedNonce,
@@ -194,21 +196,6 @@ defmodule GodwokenRPC do
     end
   end
 
-  def fetch_script_hash(%{short_address: short_address}) do
-    options = Application.get_env(:godwoken_explorer, :json_rpc_named_arguments)
-
-    case FetchedScriptHash.request(%{id: 0, short_address: short_address})
-         |> HTTP.json_rpc(options) do
-      {:ok, script_hash} ->
-        {:ok, script_hash}
-
-      {:error, msg} ->
-        Logger.error("Failed to fetch #{short_address} script_hash: #{inspect(msg)}")
-
-        {:error, :network_error}
-    end
-  end
-
   def fetch_script_hashes(params) do
     id_to_params = id_to_params(params)
     options = Application.get_env(:godwoken_explorer, :json_rpc_named_arguments)
@@ -218,6 +205,33 @@ defmodule GodwokenRPC do
            |> FetchedScriptHashes.requests()
            |> HTTP.json_rpc(options) do
       {:ok, FetchedScriptHashes.from_responses(responses, id_to_params)}
+    end
+  end
+
+  def fetch_registry_address(script_hash) do
+    options = Application.get_env(:godwoken_explorer, :json_rpc_named_arguments)
+
+    case FetchedRegistryAddress.request(%{id: 0, script_hash: script_hash})
+         |> HTTP.json_rpc(options) do
+      {:ok, registry_address} ->
+        {:ok, parse_registry_address(registry_address)}
+
+      {:error, msg} ->
+        Logger.error("Failed to fetch #{script_hash} registry_address: #{inspect(msg)}")
+
+        {:error, :network_error}
+    end
+  end
+
+  def fetch_registry_addresses(params) do
+    id_to_params = id_to_params(params)
+    options = Application.get_env(:godwoken_explorer, :json_rpc_named_arguments)
+
+    with {:ok, responses} <-
+           id_to_params
+           |> FetchedRegistryAddresses.requests()
+           |> HTTP.json_rpc(options) do
+      {:ok, FetchedRegistryAddresses.from_responses(responses, id_to_params)}
     end
   end
 
@@ -288,10 +302,10 @@ defmodule GodwokenRPC do
   end
 
   @spec fetch_balance(any, integer) :: {:error, 0} | {:ok, integer}
-  def fetch_balance(short_address, udt_id) do
+  def fetch_balance(registry_address, udt_id) do
     options = Application.get_env(:godwoken_explorer, :json_rpc_named_arguments)
 
-    case FetchedBalance.request(%{id: 0, short_address: short_address, udt_id: udt_id})
+    case FetchedBalance.request(%{id: 0, registry_address: registry_address, udt_id: udt_id})
          |> HTTP.json_rpc(options) do
       {:ok, balance} -> {:ok, balance |> hex_to_number()}
       {:error, _error} -> {:error, 0}

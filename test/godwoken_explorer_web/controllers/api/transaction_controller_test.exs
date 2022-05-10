@@ -16,7 +16,7 @@ defmodule GodwokenExplorerWeb.API.TransactionControllerTest do
     Account.create_or_update_account!(%{
       id: 1,
       type: :udt,
-      short_address: "0x9e9c54293c3211259de788e97a31b5b3a66cd535",
+      registry_address: "0x9e9c54293c3211259de788e97a31b5b3a66cd535",
       script_hash: "0x9e9c54293c3211259de788e97a31b5b3a66cd53564f8d39dfabdc8e96cdf5ea4"
     })
 
@@ -34,7 +34,7 @@ defmodule GodwokenExplorerWeb.API.TransactionControllerTest do
       id: 0,
       nonce: 0,
       script_hash: "0x5c84fc6078725df72052cc858dffc6f352a069706c9023a82eeff3b2a1a9ccd1",
-      short_address: "0x5c84fc6078725df72052cc858dffc6f352a06970",
+      registry_address: "0x5c84fc6078725df72052cc858dffc6f352a06970",
       type: :meta_contract
     })
 
@@ -72,7 +72,7 @@ defmodule GodwokenExplorerWeb.API.TransactionControllerTest do
         "hash_type" => "type"
       },
       script_hash: "0xfa2ae9de22bbca35fc44f20efe7a3d2789556d4c50a7c2b4e460269f13b77c58",
-      short_address: "0xfa2ae9de22bbca35fc44f20efe7a3d2789556d4c",
+      registry_address: "0xfa2ae9de22bbca35fc44f20efe7a3d2789556d4c",
       eth_address: "0x085a61d7164735fc5378e590b5ed1448561e1a48",
       type: :eth_user
     })
@@ -89,7 +89,7 @@ defmodule GodwokenExplorerWeb.API.TransactionControllerTest do
       },
       eth_address: "0x25919d91b3d11e8d802ceec30b63298e1a603285",
       script_hash: "0xb02c930c2825a960a50ba4ab005e8264498b64a0f1a07ccb17ff4852987b5e7b",
-      short_address: "0xb02c930c2825a960a50ba4ab005e8264498b64a0",
+      registry_address: "0xb02c930c2825a960a50ba4ab005e8264498b64a0",
       type: :polyjuice_contract
     })
 

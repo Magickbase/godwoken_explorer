@@ -9,7 +9,7 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
       type
       supply
       account{
-        short_address
+        registry_address
       }
     }
   }
@@ -24,7 +24,7 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
       supply
       account{
         eth_address
-        short_address
+        registry_address
       }
     }
   }

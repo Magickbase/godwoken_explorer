@@ -506,7 +506,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
       if not is_nil(ckb_id) do
         nil
 
-        %Account{short_address: ckb_contract_address} = Repo.get(Account, ckb_id)
+        %Account{registry_address: ckb_contract_address} = Repo.get(Account, ckb_id)
 
         account_ids =
           polyjuice_params
@@ -516,19 +516,19 @@ defmodule GodwokenIndexer.Block.SyncWorker do
           end)
           |> Enum.uniq()
 
-        account_id_to_short_addresses =
+        account_id_to_registry_addresses =
           from(a in Account,
             where: a.id in ^account_ids,
-            select: %{id: a.id, short_address: a.short_address, eth_address: a.eth_address}
+            select: %{id: a.id, registry_address: a.registry_address, eth_address: a.eth_address}
           )
           |> Repo.all()
 
         params =
-          account_id_to_short_addresses
+          account_id_to_registry_addresses
           |> Enum.reject(&is_nil(Map.fetch!(&1, :eth_address)))
           |> Enum.map(fn account ->
             %{
-              short_address: account.short_address,
+              registry_address: account.registry_address,
               eth_address: account.eth_address,
               account_id: account.id,
               udt_id: ckb_id,

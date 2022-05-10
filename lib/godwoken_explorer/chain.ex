@@ -32,23 +32,23 @@ defmodule GodwokenExplorer.Chain do
 
   def address_to_transaction_count(account) do
     case account do
-      %Account{type: type, short_address: short_address}
+      %Account{type: type, registry_address: registry_address}
       when type in [:polyjuice_contract, :meta_contract, :polyjuice_creator, :eth_addr_reg] ->
-        incoming_transaction_count = address_to_incoming_transaction_count(short_address)
+        incoming_transaction_count = address_to_incoming_transaction_count(registry_address)
 
         if incoming_transaction_count == 0 do
-          total_transactions_sent_by_address(short_address)
+          total_transactions_sent_by_address(registry_address)
         else
           incoming_transaction_count
         end
 
       _ ->
-        total_transactions_sent_by_address(account.short_address)
+        total_transactions_sent_by_address(account.registry_address)
     end
   end
 
-  def address_to_incoming_transaction_count(short_address) do
-    with %Account{id: id} <- Repo.get_by(Account, short_address: short_address) do
+  def address_to_incoming_transaction_count(registry_address) do
+    with %Account{id: id} <- Repo.get_by(Account, registry_address: registry_address) do
       to_address_query =
         from(
           transaction in Transaction,
@@ -59,9 +59,9 @@ defmodule GodwokenExplorer.Chain do
     end
   end
 
-  def total_transactions_sent_by_address(short_address) do
+  def total_transactions_sent_by_address(registry_address) do
     last_nonce =
-      with %Account{id: id} <- Repo.get_by(Account, short_address: short_address) do
+      with %Account{id: id} <- Repo.get_by(Account, registry_address: registry_address) do
         id
         |> Transaction.last_nonce_by_address_query()
         |> Repo.one(timeout: :infinity)
@@ -73,14 +73,14 @@ defmodule GodwokenExplorer.Chain do
     end
   end
 
-  def address_to_token_transfer_count(short_address) do
-    %Account{eth_address: eth_address} = Repo.get_by(Account, short_address: short_address)
+  def address_to_token_transfer_count(registry_address) do
+    %Account{eth_address: eth_address} = Repo.get_by(Account, registry_address: registry_address)
 
     udt_type? =
       from(u in UDT,
         join: a in Account,
         on: a.id == u.bridge_account_id,
-        where: a.short_address == ^short_address
+        where: a.registry_address == ^registry_address
       )
       |> Repo.exists?()
 
@@ -93,8 +93,8 @@ defmodule GodwokenExplorer.Chain do
       else
         from(
           token_transfer in TokenTransfer,
-          where: token_transfer.to_address_hash == ^(eth_address || short_address),
-          or_where: token_transfer.from_address_hash == ^(eth_address || short_address)
+          where: token_transfer.to_address_hash == ^(eth_address || registry_address),
+          or_where: token_transfer.from_address_hash == ^(eth_address || registry_address)
         )
       end
 

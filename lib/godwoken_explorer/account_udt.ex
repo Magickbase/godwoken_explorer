@@ -53,7 +53,7 @@ defmodule GodwokenExplorer.AccountUDT do
   def list_udt_by_eth_address(eth_address) do
     from(au in AccountUDT,
       left_join: a1 in Account,
-      on: a1.short_address == au.token_contract_address_hash,
+      on: a1.registry_address == au.token_contract_address_hash,
       left_join: a2 in Account,
       on: a2.eth_address == au.token_contract_address_hash,
       left_join: u3 in UDT,
@@ -108,16 +108,16 @@ defmodule GodwokenExplorer.AccountUDT do
   def sync_balance!(%{account_id: _account_id, udt_id: nil}), do: {:error, :udt_not_exists}
 
   def sync_balance!(%{script_hash: script_hash, udt_id: udt_id}) do
-    with %Account{id: account_id, eth_address: eth_address, short_address: short_address} <-
+    with %Account{id: account_id, eth_address: eth_address, registry_address: registry_address} <-
            Repo.get_by(Account, script_hash: script_hash),
-         %Account{short_address: udt_short_address} <- Repo.get(Account, udt_id) do
-      {:ok, balance} = GodwokenRPC.fetch_balance(short_address, udt_id)
+         %Account{script_hash: script_hash} <- Repo.get(Account, udt_id) do
+      {:ok, balance} = GodwokenRPC.fetch_balance(registry_address, udt_id)
 
       AccountUDT.create_or_update_account_udt!(%{
         account_id: account_id,
         address_hash: eth_address,
         udt_id: udt_id,
-        token_contract_address_hash: udt_short_address,
+        token_contract_address_hash: script_hash,
         balance: balance
       })
     else
@@ -127,16 +127,16 @@ defmodule GodwokenExplorer.AccountUDT do
   end
 
   def sync_balance!(%{account_id: account_id, udt_id: udt_id}) do
-    with %Account{eth_address: eth_address, short_address: short_address} <-
+    with %Account{eth_address: eth_address, registry_address: registry_address} <-
            Repo.get(Account, account_id),
-         %Account{short_address: udt_short_address} <- Repo.get(Account, udt_id) do
-      {:ok, balance} = GodwokenRPC.fetch_balance(short_address, udt_id)
+         %Account{script_hash: script_hash} <- Repo.get(Account, udt_id) do
+      {:ok, balance} = GodwokenRPC.fetch_balance(registry_address, udt_id)
 
       AccountUDT.create_or_update_account_udt!(%{
         account_id: account_id,
         address_hash: eth_address,
         udt_id: udt_id,
-        token_contract_address_hash: udt_short_address,
+        token_contract_address_hash: script_hash,
         balance: balance
       })
     else

@@ -22,20 +22,19 @@ defmodule GodwokenExplorer.WithdrawalRequestView do
   end
 
   def ckb(withdrawal_request, _connn) do
-    balance_to_view(withdrawal_request.capacity, 8)
+    balance_to_view(withdrawal_request.capacity, 18)
   end
 
   def sell_ckb(withdrawal_request, _connn) do
-    balance_to_view(withdrawal_request.sell_capacity, 8)
+    balance_to_view(withdrawal_request.sell_capacity, 18)
   end
 
   def value(withdrawal_request, _connn) do
-     balance_to_view(withdrawal_request.amount, UDT.get_decimal(withdrawal_request.udt_id))
-
+    balance_to_view(withdrawal_request.amount, UDT.get_decimal(withdrawal_request.udt_id))
   end
 
   def sell_value(withdrawal_request, _connn) do
-     balance_to_view(withdrawal_request.sell_amount, UDT.get_decimal(withdrawal_request.udt_id))
+    balance_to_view(withdrawal_request.sell_amount, UDT.get_decimal(withdrawal_request.udt_id))
   end
 
   def relationships do

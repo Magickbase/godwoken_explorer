@@ -62,7 +62,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.AccountUDT do
   end
 
   defp do_account_ckbs(address_hashes, ckb_account_id) do
-    %Account{short_address: token_contract_address_hash} = Repo.get(Account, ckb_account_id)
+    %Account{registry_address: token_contract_address_hash} = Repo.get(Account, ckb_account_id)
 
     if length(address_hashes) > @addresses_max_limit do
       {:error, :too_many_addresses}
@@ -76,7 +76,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.AccountUDT do
       filted_address_hashes =
         Enum.filter(address_hashes, fn address_hash ->
           not Enum.any?(return, fn au ->
-            au.account.short_address == address_hash or au.account.eth_address == address_hash
+            au.account.registry_address == address_hash or au.account.eth_address == address_hash
           end)
         end)
 
@@ -93,10 +93,10 @@ defmodule GodwokenExplorer.Graphql.Resolvers.AccountUDT do
     with account when not is_nil(account) <-
            Repo.one(
              from a in Account,
-               where: ^address_hash == a.short_address or ^address_hash == a.eth_address
+               where: ^address_hash == a.registry_address or ^address_hash == a.eth_address
            ),
          udt_id when is_integer(udt_id) <- UDT.ckb_account_id(),
-         {:ok, balance} <- GodwokenRPC.fetch_balance(account.short_address, udt_id) do
+         {:ok, balance} <- GodwokenRPC.fetch_balance(account.registry_address, udt_id) do
       %{
         address_hash: address_hash,
         # be string for graphql custom decimal type
@@ -110,12 +110,12 @@ defmodule GodwokenExplorer.Graphql.Resolvers.AccountUDT do
   defp search_account_udts(address_hashes, token_contract_address_hash) do
     squery =
       from(a in Account)
-      |> where([a], a.eth_address in ^address_hashes or a.short_address in ^address_hashes)
+      |> where([a], a.eth_address in ^address_hashes or a.registry_address in ^address_hashes)
 
     query =
       from(au in AccountUDT)
       |> join(:inner, [au], a in subquery(squery),
-        on: au.address_hash in [a.short_address, a.eth_address]
+        on: au.address_hash in [a.registry_address, a.eth_address]
       )
       |> select([au, _a], au)
       |> order_by([au], au.updated_at)

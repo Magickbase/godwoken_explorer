@@ -23,7 +23,7 @@ defmodule GodwokenExplorer.Account do
   schema "accounts" do
     field(:eth_address, :binary)
     field(:script_hash, :binary)
-    field(:short_address, :binary)
+    field(:registry_address, :binary)
     field(:script, :map)
     field(:nonce, :integer)
     field(:transaction_count, :integer)
@@ -58,7 +58,7 @@ defmodule GodwokenExplorer.Account do
       :script,
       :nonce,
       :type,
-      :short_address,
+      :registry_address,
       :transaction_count,
       :token_transfer_count,
       :contract_code
@@ -123,7 +123,7 @@ defmodule GodwokenExplorer.Account do
 
     ckb_balance =
       with udt_id when is_integer(udt_id) <- UDT.ckb_account_id(),
-           {:ok, balance} <- GodwokenRPC.fetch_balance(account.short_address, udt_id) do
+           {:ok, balance} <- GodwokenRPC.fetch_balance(account.registry_address, udt_id) do
         balance
       else
         _ -> ""
@@ -245,7 +245,7 @@ defmodule GodwokenExplorer.Account do
   def account_to_view(account) do
     account =
       Map.merge(account, %{
-        ckb: balance_to_view(account.ckb, 8)
+        ckb: balance_to_view(account.ckb, 18)
       })
 
     case Kernel.get_in(account, [:eth_user, :udt_list]) do
@@ -301,7 +301,6 @@ defmodule GodwokenExplorer.Account do
         }
 
         l2_udt_script_hash = script_to_hash(account_script)
-        short_address = String.slice(l2_udt_script_hash, 0, 42)
 
         case GodwokenRPC.fetch_account_id(l2_udt_script_hash) do
           {:error, :account_slow} ->
@@ -324,7 +323,6 @@ defmodule GodwokenExplorer.Account do
               id: udt_account_id,
               script: account_script,
               script_hash: l2_udt_script_hash,
-              short_address: short_address,
               type: "udt"
             })
 
@@ -411,14 +409,6 @@ defmodule GodwokenExplorer.Account do
     end
   end
 
-  def add_name_to_polyjuice_script(type, script) do
-    if type in [:polyjuice_contract, :polyjuice_creator] do
-      script |> Map.merge(%{"name" => "validator"})
-    else
-      script
-    end
-  end
-
   def non_create_account_info(eth_address) do
     udt_list = AccountUDT.list_udt_by_eth_address(eth_address)
 
@@ -467,7 +457,14 @@ defmodule GodwokenExplorer.Account do
         with {:ok, script_hash} <- GodwokenRPC.fetch_script_hash(%{account_id: id}),
              {:ok, script} <- GodwokenRPC.fetch_script(script_hash) do
           type = switch_account_type(script["code_hash"], script["args"])
-          short_address = script_hash |> String.slice(0, 42)
+
+          registry_address =
+            if type in [:eth_user, :polyjuice_contract] do
+              {:ok, registry_address} = GodwokenRPC.fetch_registry_address(script_hash)
+              registry_address
+            else
+              nil
+            end
 
           cond do
             type in [:eth_user, :polyjuice_contract] ->
@@ -475,13 +472,13 @@ defmodule GodwokenExplorer.Account do
                Account.script_to_eth_adress(type, script["args"])}
 
             type == :polyjuice_creator ->
-              {short_address, "Deploy Contract"}
+              {registry_address, "Deploy Contract"}
 
             type == :meta_contract ->
-              {short_address, "Meta Contract"}
+              {registry_address, "Meta Contract"}
 
             type == :eth_addr_reg ->
-              {short_address, "Eth Address Registry"}
+              {registry_address, "Eth Address Registry"}
 
             type == :udt ->
               {script_hash, script_hash}
@@ -534,24 +531,34 @@ defmodule GodwokenExplorer.Account do
   def batch_import_accounts(ids) do
     params = ids |> Enum.map(&%{account_id: &1})
     {:ok, %{errors: [], params_list: script_hash_list}} = GodwokenRPC.fetch_script_hashes(params)
-    {:ok, %{errors: [], params_list: account_list}} = GodwokenRPC.fetch_scripts(script_hash_list)
+    {:ok, %{errors: [], params_list: script_list}} = GodwokenRPC.fetch_scripts(script_hash_list)
+
+    {:ok, %{errors: [], params_list: registry_address_list}} =
+      GodwokenRPC.fetch_registry_addresses(script_hash_list)
+
+    account_list =
+      (script_hash_list ++ script_list ++ registry_address_list)
+      |> Enum.group_by(&Map.get(&1, :script_hash))
+      |> Enum.map(fn {_, list} ->
+        Enum.concat(list)
+        |> Enum.into(%{})
+      end)
 
     account_attrs =
       account_list
-      |> Enum.map(fn %{script_hash: script_hash, account_id: account_id, script: script} = account ->
-        short_address = String.slice(script_hash, 0, 42)
+      |> Enum.map(fn %{
+                       account_id: account_id,
+                       script: script
+                     } = account ->
         type = switch_account_type(script["code_hash"], script["args"])
         eth_address = script_to_eth_adress(type, script["args"])
-        parsed_script = add_name_to_polyjuice_script(type, script)
 
         account
         |> Map.merge(%{
           id: account_id,
-          short_address: short_address,
           type: type,
           nonce: 0,
-          eth_address: eth_address,
-          script: parsed_script
+          eth_address: eth_address
         })
         |> Map.drop([:account_id])
         |> Map.merge(import_timestamps())
@@ -565,17 +572,24 @@ defmodule GodwokenExplorer.Account do
          when script_hash != "0x0000000000000000000000000000000000000000000000000000000000000000" <-
            GodwokenRPC.fetch_script_hash(%{account_id: id}) do
       nonce = GodwokenRPC.fetch_nonce(id)
-      short_address = String.slice(script_hash, 0, 42)
       {:ok, script} = GodwokenRPC.fetch_script(script_hash)
       type = switch_account_type(script["code_hash"], script["args"])
+
+      registry_address =
+        if type in [:eth_user, :polyjuice_contract] do
+          {:ok, registry_address} = GodwokenRPC.fetch_registry_address(script_hash)
+          registry_address
+        else
+          nil
+        end
+
       eth_address = script_to_eth_adress(type, script["args"])
-      parsed_script = add_name_to_polyjuice_script(type, script)
 
       attrs = %{
         id: id,
-        script: parsed_script,
+        script: script,
         script_hash: script_hash,
-        short_address: short_address,
+        registry_address: registry_address,
         type: type,
         nonce: nonce,
         eth_address: eth_address

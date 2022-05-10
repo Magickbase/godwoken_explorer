@@ -6,13 +6,13 @@ defmodule GodwokenExplorerWeb.API.TransferController do
   action_fallback GodwokenExplorerWeb.API.FallbackController
 
   def index(conn, %{"eth_address" => "0x" <> _, "udt_address" => "0x" <> _} = params) do
-    with %Account{eth_address: eth_address, short_address: short_address} <-
+    with %Account{eth_address: eth_address, registry_address: registry_address} <-
            Account |> Repo.get_by(eth_address: String.downcase(params["eth_address"])),
          %Account{eth_address: udt_address} <-
            Repo.get_by(Account, eth_address: String.downcase(params["udt_address"])) do
       results =
         TokenTransfer.list(
-          %{eth_address: eth_address || short_address, udt_address: udt_address},
+          %{eth_address: eth_address || registry_address, udt_address: udt_address},
           %{
             page: conn.params["page"] || 1,
             page_size: conn.assigns.page_size
@@ -27,10 +27,10 @@ defmodule GodwokenExplorerWeb.API.TransferController do
   end
 
   def index(conn, %{"eth_address" => "0x" <> _} = params) do
-    with %Account{eth_address: eth_address, short_address: short_address} <-
+    with %Account{eth_address: eth_address, registry_address: registry_address} <-
            Account.search(String.downcase(params["eth_address"])) do
       results =
-        TokenTransfer.list(%{eth_address: eth_address || short_address}, %{
+        TokenTransfer.list(%{eth_address: eth_address || registry_address}, %{
           page: conn.params["page"] || 1,
           page_size: conn.assigns.page_size
         })

@@ -10,10 +10,11 @@ defmodule GodwokenExplorerWeb.API.DepositHistoryControllerTest do
       script_hash: "0x0000000000000000000000000000000000000000000000000000000000000000",
       type: :bridge
     })
+
     Account.create_or_update_account!(%{
       id: 1,
       type: :udt,
-      short_address: "0x9e9c54293c3211259de788e97a31b5b3a66cd535",
+      registry_address: "0x9e9c54293c3211259de788e97a31b5b3a66cd535",
       script_hash: "0x9e9c54293c3211259de788e97a31b5b3a66cd53564f8d39dfabdc8e96cdf5ea4"
     })
 
@@ -27,21 +28,22 @@ defmodule GodwokenExplorerWeb.API.DepositHistoryControllerTest do
         "hash_type" => "type"
       },
       script_hash: "0xfa2ae9de22bbca35fc44f20efe7a3d2789556d4c50a7c2b4e460269f13b77c58",
-      short_address: "0xfa2ae9de22bbca35fc44f20efe7a3d2789556d4c",
+      registry_address: "0xfa2ae9de22bbca35fc44f20efe7a3d2789556d4c",
       eth_address: "0x085a61d7164735fc5378e590b5ed1448561e1a48",
       type: :eth_user
     })
 
-    deposit = DepositHistory.create_or_update_history!(%{
-      amount: D.new(40_000_000_000),
-      ckb_lock_hash: "0xe6c7befcbf4697f1a7f8f04ffb8de71f5304826af7bfce3e4d396483e935820a",
-      layer1_block_number: 5_744_914,
-      layer1_output_index: 0,
-      layer1_tx_hash: "0x41876f5c3ea0d96219c42ea5b4e6cedba61c59fa39bf163765a302f6e43c3847",
-      script_hash: "0xfa2ae9de22bbca35fc44f20efe7a3d2789556d4c50a7c2b4e460269f13b77c58",
-      timestamp: ~U[2021-12-02 22:39:39.585000Z],
-      udt_id: 1
-    })
+    deposit =
+      DepositHistory.create_or_update_history!(%{
+        amount: D.new(40_000_000_000),
+        ckb_lock_hash: "0xe6c7befcbf4697f1a7f8f04ffb8de71f5304826af7bfce3e4d396483e935820a",
+        layer1_block_number: 5_744_914,
+        layer1_output_index: 0,
+        layer1_tx_hash: "0x41876f5c3ea0d96219c42ea5b4e6cedba61c59fa39bf163765a302f6e43c3847",
+        script_hash: "0xfa2ae9de22bbca35fc44f20efe7a3d2789556d4c50a7c2b4e460269f13b77c58",
+        timestamp: ~U[2021-12-02 22:39:39.585000Z],
+        udt_id: 1
+      })
 
     %{deposit: deposit}
   end
@@ -88,7 +90,7 @@ defmodule GodwokenExplorerWeb.API.DepositHistoryControllerTest do
                        "official_site" => nil,
                        "script_hash" =>
                          "0x0000000000000000000000000000000000000000000000000000000000000000",
-                       "short_address" => "0x9e9c54293c3211259de788e97a31b5b3a66cd535",
+                       "registry_address" => "0x9e9c54293c3211259de788e97a31b5b3a66cd535",
                        "supply" => "",
                        "symbol" => nil,
                        "transfer_count" => 0,

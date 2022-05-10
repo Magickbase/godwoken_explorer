@@ -9,7 +9,7 @@ type Account {
   nonce: Int
   script: Json
   script_hash: String
-  short_address: String
+  registry_address: String
   smart_contract: SmartContract
   token_transfer_count: Int
   transaction_count: Int
@@ -50,7 +50,7 @@ input AccountCkbsInput {
 
 input AccountInput {
   """
-  argument: account address(eth_address or short_address)
+  argument: account address(eth_address or registry_address)
   example-1: "0x15ca4f2165ff0e798d9c7434010eaacc4d768d85"
   example-2: "0xc5e133e6b01b2c335055576c51a53647b1b9b624"
   """
@@ -531,7 +531,7 @@ type RootQueryType {
       gas_limit
       account{
         id
-        short_address
+        registry_address
       }
       transactions (input: {page: 1, page_size: 2}) {
         type
@@ -547,7 +547,7 @@ type RootQueryType {
       "block": {
         "account": {
           "id": 2,
-          "short_address": "0x68f5cea51fa6fcfdcc10f6cddcafa13bf6717436"
+          "registry_address": "0x68f5cea51fa6fcfdcc10f6cddcafa13bf6717436"
         },
         "gas_limit": "981000000",
         "gas_used": "95240385",
@@ -585,7 +585,7 @@ type RootQueryType {
       gas_limit
       account{
         id
-        short_address
+        registry_address
       }
       transactions (input: {page: 1, page_size: 2}) {
         type
@@ -602,7 +602,7 @@ type RootQueryType {
         {
           "account": {
             "id": 2,
-            "short_address": "0x68f5cea51fa6fcfdcc10f6cddcafa13bf6717436"
+            "registry_address": "0x68f5cea51fa6fcfdcc10f6cddcafa13bf6717436"
           },
           "gas_limit": "12500000",
           "gas_used": "0",
@@ -727,12 +727,12 @@ type RootQueryType {
       block_number
       to_account{
         id
-        short_address
+        registry_address
       }
       to_address_hash
       from_account{
         id
-        short_address
+        registry_address
       }
     }
   }
@@ -745,11 +745,11 @@ type RootQueryType {
           "block_number": 344620,
           "from_account": {
             "id": 53057,
-            "short_address": "0x3770f660a5b6fde2dadd765c0f336543ff285097"
+            "registry_address": "0x3770f660a5b6fde2dadd765c0f336543ff285097"
           },
           "to_account": {
             "id": 53057,
-            "short_address": "0x3770f660a5b6fde2dadd765c0f336543ff285097"
+            "registry_address": "0x3770f660a5b6fde2dadd765c0f336543ff285097"
           },
           "to_address_hash": "0x3770f660a5b6fde2dadd765c0f336543ff285097",
           "transaction_hash": "0xf6caf10b0a43adaabd08ef00fde03aa6d25310a1872dd08e7a7a4a4d3bd82301"
@@ -841,7 +841,7 @@ type RootQueryType {
       type
       supply
       account{
-        short_address
+        registry_address
       }
     }
   }
@@ -851,7 +851,7 @@ type RootQueryType {
     "data": {
       "udt": {
         "account": {
-          "short_address": "0xbf1f27daea43849b67f839fd101569daaa321e2c"
+          "registry_address": "0xbf1f27daea43849b67f839fd101569daaa321e2c"
         },
         "id": "1",
         "name": "Nervos Token",
@@ -875,7 +875,7 @@ type RootQueryType {
       supply
       account{
         eth_address
-        short_address
+        registry_address
       }
     }
   }
@@ -887,7 +887,7 @@ type RootQueryType {
         {
           "account": {
             "eth_address": null,
-            "short_address": "0xbf1f27daea43849b67f839fd101569daaa321e2c"
+            "registry_address": "0xbf1f27daea43849b67f839fd101569daaa321e2c"
           },
           "id": "1",
           "name": "Nervos Token",
@@ -897,7 +897,7 @@ type RootQueryType {
         {
           "account": {
             "eth_address": null,
-            "short_address": "0x21ad25fab1d759da1a419a589c0f36dee5e7fe3d"
+            "registry_address": "0x21ad25fab1d759da1a419a589c0f36dee5e7fe3d"
           },
           "id": "17",
           "name": null,

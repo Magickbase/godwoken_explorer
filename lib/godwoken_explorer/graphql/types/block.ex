@@ -17,7 +17,7 @@ defmodule GodwokenExplorer.Graphql.Types.Block do
         gas_limit
         account{
           id
-          short_address
+          registry_address
         }
         transactions (input: {page: 1, page_size: 2}) {
           type
@@ -33,7 +33,7 @@ defmodule GodwokenExplorer.Graphql.Types.Block do
         "block": {
           "account": {
             "id": 2,
-            "short_address": "0x68f5cea51fa6fcfdcc10f6cddcafa13bf6717436"
+            "registry_address": "0x68f5cea51fa6fcfdcc10f6cddcafa13bf6717436"
           },
           "gas_limit": "981000000",
           "gas_used": "95240385",
@@ -74,7 +74,7 @@ defmodule GodwokenExplorer.Graphql.Types.Block do
         gas_limit
         account{
           id
-          short_address
+          registry_address
         }
         transactions (input: {page: 1, page_size: 2}) {
           type
@@ -91,7 +91,7 @@ defmodule GodwokenExplorer.Graphql.Types.Block do
           {
             "account": {
               "id": 2,
-              "short_address": "0x68f5cea51fa6fcfdcc10f6cddcafa13bf6717436"
+              "registry_address": "0x68f5cea51fa6fcfdcc10f6cddcafa13bf6717436"
             },
             "gas_limit": "12500000",
             "gas_used": "0",

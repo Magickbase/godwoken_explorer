@@ -7,7 +7,7 @@ defmodule GodwokenExplorerWeb.API.UDTController do
   plug JSONAPI.QueryParser, view: UDTView
   action_fallback GodwokenExplorerWeb.API.FallbackController
 
-  # fields[udt]=id,name,symbol,supply,holders,type,short_address
+  # fields[udt]=id,name,symbol,supply,holders,type,registry_address
   def index(conn, _params) do
     results = UDTView.list(conn.params["type"], conn.params["page"] || 1)
 
@@ -30,6 +30,7 @@ defmodule GodwokenExplorerWeb.API.UDTController do
         case UDTView.get_udt(id) do
           nil ->
             {:error, :not_found}
+
           udt = %{name: _name} ->
             result = JSONAPI.Serializer.serialize(UDTView, udt, conn)
             json(conn, result)
@@ -44,6 +45,7 @@ defmodule GodwokenExplorerWeb.API.UDTController do
     case UDTView.get_udt(id) do
       nil ->
         {:error, :not_found}
+
       udt = %{name: _name} ->
         account = Repo.get(Account, udt.bridge_account_id)
         fetch_transfer_and_transaction_count(account)

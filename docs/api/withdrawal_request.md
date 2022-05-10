@@ -63,7 +63,7 @@ Status: 200 OK
         name: "Nervos Token",
         official_site: null,
         script_hash: "0x0000000000000000000000000000000000000000000000000000000000000000",
-        short_address: null,
+        registry_address: null,
         supply: "240000000000",
         symbol: "CKB",
         transfer_count: 0,

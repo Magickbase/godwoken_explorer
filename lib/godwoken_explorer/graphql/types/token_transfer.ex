@@ -15,12 +15,12 @@ defmodule GodwokenExplorer.Graphql.Types.TokenTransfer do
         block_number
         to_account{
           id
-          short_address
+          registry_address
         }
         to_address_hash
         from_account{
           id
-          short_address
+          registry_address
         }
       }
     }
@@ -33,11 +33,11 @@ defmodule GodwokenExplorer.Graphql.Types.TokenTransfer do
             "block_number": 344620,
             "from_account": {
               "id": 53057,
-              "short_address": "0x3770f660a5b6fde2dadd765c0f336543ff285097"
+              "registry_address": "0x3770f660a5b6fde2dadd765c0f336543ff285097"
             },
             "to_account": {
               "id": 53057,
-              "short_address": "0x3770f660a5b6fde2dadd765c0f336543ff285097"
+              "registry_address": "0x3770f660a5b6fde2dadd765c0f336543ff285097"
             },
             "to_address_hash": "0x3770f660a5b6fde2dadd765c0f336543ff285097",
             "transaction_hash": "0xf6caf10b0a43adaabd08ef00fde03aa6d25310a1872dd08e7a7a4a4d3bd82301"

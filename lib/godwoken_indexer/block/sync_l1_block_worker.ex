@@ -8,6 +8,7 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
     only: [hex_to_number: 1, script_to_hash: 1, parse_le_number: 1, timestamp_to_datetime: 1]
 
   require Logger
+  require IEx
 
   alias GodwkenRPC
 
@@ -199,98 +200,75 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
       capacity = hex_to_number(output["capacity"])
       {udt_script, udt_script_hash, amount} = parse_udt_script(output, output_data, capacity)
 
-      case GodwokenRPC.fetch_account_id(script_hash) do
-        {:error, :account_slow} ->
-          if l1_block_number + @biggest_buffer_block_for_create_account > tip_block_number do
-            raise "account #{script_hash} may not created now at #{l1_block_number} #{tx_hash} #{index}"
-          end
-
-        {:error, :network_error} ->
-          raise "account #{script_hash} fetch account_id network error"
-
-        {:ok, account_id} ->
-          nonce = GodwokenRPC.fetch_nonce(account_id)
-          short_address = String.slice(script_hash, 0, 42)
-          {:ok, script} = GodwokenRPC.fetch_script(script_hash)
-          type = Account.switch_account_type(script["code_hash"], script["args"])
-          eth_address = Account.script_to_eth_adress(type, script["args"])
-          parsed_script = Account.add_name_to_polyjuice_script(type, script)
-
-          Repo.transaction(fn ->
-            case Repo.get_by(Account, script_hash: script_hash) do
-              %Account{id: id} ->
-                if id != account_id do
-                  Logger.error(
-                    "Account id is changed!!!!old id:#{id}, new id: #{account_id}, script_hash: #{script_hash}"
-                  )
+      account =
+        case Repo.get_by(Account, script_hash: script_hash) do
+          nil ->
+            case GodwokenRPC.fetch_account_id(script_hash) do
+              {:error, :account_slow} ->
+                if l1_block_number + @biggest_buffer_block_for_create_account > tip_block_number do
+                  raise "account #{script_hash} may not created now at #{l1_block_number} #{tx_hash} #{index}"
                 end
 
-                Account.create_or_update_account!(%{
-                  id: account_id,
-                  script_hash: script_hash,
-                  nonce: nonce
-                })
+              {:error, :network_error} ->
+                raise "account #{script_hash} fetch account_id network error"
 
-              nil ->
-                case Repo.get(Account, account_id) do
-                  account = %Account{script_hash: wrong_script_hash} ->
-                    {:ok, new_account_id} = GodwokenRPC.fetch_account_id(wrong_script_hash)
+              {:ok, account_id} ->
+                nonce = GodwokenRPC.fetch_nonce(account_id)
+                {:ok, script} = GodwokenRPC.fetch_script(script_hash)
+                type = Account.switch_account_type(script["code_hash"], script["args"])
 
-                    Logger.error(
-                      "Account id is changed!!!!old id:#{account_id}, new id: #{new_account_id}, script_hash: #{wrong_script_hash}"
-                    )
+                registry_address =
+                  if type in [:eth_user, :polyjuice_contract] do
+                    {:ok, registry_address} = GodwokenRPC.fetch_registry_address(script_hash)
+                    registry_address
+                  else
+                    nil
+                  end
 
-                    Ecto.Changeset.change(account, %{id: new_account_id}) |> Repo.update!()
+                eth_address = Account.script_to_eth_adress(type, script["args"])
 
-                    Account.create_or_update_account!(%{
-                      id: account_id,
-                      script: parsed_script,
-                      script_hash: script_hash,
-                      short_address: short_address,
-                      type: type,
-                      nonce: nonce,
-                      eth_address: eth_address
-                    })
+                {:ok, account} =
+                  Account.create_or_update_account!(%{
+                    id: account_id,
+                    script: script,
+                    script_hash: script_hash,
+                    registry_address: registry_address,
+                    type: type,
+                    nonce: nonce,
+                    eth_address: eth_address
+                  })
 
-                  nil ->
-                    Account.create_or_update_account!(%{
-                      id: account_id,
-                      script: parsed_script,
-                      script_hash: script_hash,
-                      short_address: short_address,
-                      type: type,
-                      nonce: nonce,
-                      eth_address: eth_address
-                    })
-                end
+                account
             end
 
-            with {:ok, udt_id} <-
-                   Account.find_or_create_udt_account!(
-                     udt_script,
-                     udt_script_hash,
-                     l1_block_number,
-                     tip_block_number
-                   ) do
-              DepositHistory.create_or_update_history!(%{
-                layer1_block_number: l1_block_number,
-                layer1_tx_hash: tx_hash,
-                layer1_output_index: index,
-                timestamp: timestamp,
-                udt_id: udt_id,
-                amount: amount,
-                ckb_lock_hash: l1_lock_hash,
-                script_hash: script_hash,
-                capacity: capacity
-              })
+          {:ok, account} ->
+            account
+        end
 
-              if udt_id != UDT.ckb_account_id(),
-                do: AccountUDT.sync_balance!(%{account_id: account_id, udt_id: udt_id})
+      {:ok, udt_id} =
+        Account.find_or_create_udt_account!(
+          udt_script,
+          udt_script_hash,
+          l1_block_number,
+          tip_block_number
+        )
 
-              AccountUDT.sync_balance!(%{account_id: account_id, udt_id: UDT.ckb_account_id()})
-            end
-          end)
-      end
+      DepositHistory.create_or_update_history!(%{
+        layer1_block_number: l1_block_number,
+        layer1_tx_hash: tx_hash,
+        layer1_output_index: index,
+        timestamp: timestamp,
+        udt_id: udt_id,
+        amount: amount,
+        ckb_lock_hash: l1_lock_hash,
+        script_hash: script_hash,
+        capacity: capacity
+      })
+
+      if udt_id != UDT.ckb_account_id(),
+        do: AccountUDT.sync_balance!(%{account_id: account.id, udt_id: udt_id})
+
+      AccountUDT.sync_balance!(%{account_id: account.id, udt_id: UDT.ckb_account_id()})
     rescue
       ErlangError ->
         Logger.error("DepositLockArgs parse error: #{tx_hash} #{index}")

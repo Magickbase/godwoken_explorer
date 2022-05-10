@@ -38,7 +38,7 @@ defmodule GodwokenExplorer.UDTView do
     end
   end
 
-  # For udt type account, account_udt token_contract_address_hash is short_address
+  # For udt type account, account_udt token_contract_address_hash is registry_address
   # For polyjuice_contract type account, account_udt token_contract_address_hash is eth_address
   def holder_count(udt, _conn) do
     token_contract_address_hashes = UDT.list_address_by_udt_id(udt.id)

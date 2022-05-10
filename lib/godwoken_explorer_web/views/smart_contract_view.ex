@@ -9,7 +9,7 @@ defmodule GodwokenExplorer.SmartContractView do
   def fields do
     [
       :id,
-      :short_address,
+      :registry_address,
       :name,
       :compiler_version,
       :compiler_file_format,
@@ -20,14 +20,15 @@ defmodule GodwokenExplorer.SmartContractView do
     ]
   end
 
-  def short_address(smart_contract, _conn) do
+  def registry_address(smart_contract, _conn) do
     smart_contract.account.eth_address
   end
 
   def balance(smart_contract, _conn) do
     with udt_id when is_integer(udt_id) <- UDT.ckb_account_id(),
-         {:ok, balance} <- GodwokenRPC.fetch_balance(smart_contract.account.short_address, udt_id) do
-      balance_to_view(balance, 8)
+         {:ok, balance} <-
+           GodwokenRPC.fetch_balance(smart_contract.account.registry_address, udt_id) do
+      balance_to_view(balance, 18)
     else
       _ -> 0
     end
@@ -61,7 +62,7 @@ defmodule GodwokenExplorer.SmartContractView do
       :other_info
     ]
 
-    account_fields = [:eth_address, :short_address]
+    account_fields = [:eth_address, :registry_address]
 
     smart_contract_fields ++ [account: account_fields]
   end
