@@ -241,7 +241,7 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
                 account
             end
 
-          {:ok, account} ->
+          account when account != nil ->
             account
         end
 
