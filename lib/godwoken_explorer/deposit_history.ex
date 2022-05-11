@@ -79,7 +79,7 @@ defmodule GodwokenExplorer.DepositHistory do
     end)
   end
 
-  def group_udt_amount(start_time, end_time) do
+  def distinct_udt(start_time, end_time) do
     condition =
       if start_time do
         dynamic([dh], dh.inserted_at >= ^start_time and dh.inserted_at < ^end_time)
@@ -89,8 +89,8 @@ defmodule GodwokenExplorer.DepositHistory do
 
     from(dh in DepositHistory,
       where: ^condition,
-      group_by: dh.udt_id,
-      select: {dh.udt_id, sum(dh.amount)}
+      distinct: dh.udt_id,
+      select: dh.udt_id
     )
     |> Repo.all()
   end

@@ -96,7 +96,7 @@ defmodule GodwokenExplorer.WithdrawalHistory do
     |> Repo.update_all(set: [state: :available])
   end
 
-  def group_udt_amount(start_time, end_time) do
+  def distinct_udt(start_time, end_time) do
     condition =
       if start_time do
         dynamic(
@@ -109,8 +109,8 @@ defmodule GodwokenExplorer.WithdrawalHistory do
 
     from(wh in WithdrawalHistory,
       where: ^condition,
-      group_by: wh.udt_id,
-      select: {wh.udt_id, -sum(wh.amount)}
+      distinct: wh.udt_id,
+      select: wh.udt_id
     )
     |> Repo.all()
   end

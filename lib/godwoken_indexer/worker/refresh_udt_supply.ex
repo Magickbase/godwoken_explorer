@@ -4,7 +4,6 @@ defmodule GodwokenIndexer.Worker.RefreshUDTSupply do
   import Ecto.Query, only: [from: 2]
 
   alias GodwokenExplorer.{Repo, KeyValue, DepositHistory, WithdrawalHistory, UDT}
-  alias Decimal, as: D
 
   @impl Oban.Worker
   def perform(%Oban.Job{}) do
@@ -26,19 +25,20 @@ defmodule GodwokenIndexer.Worker.RefreshUDTSupply do
     end_time = Timex.beginning_of_day(Timex.now())
 
     if start_time != end_time do
-      deposits = DepositHistory.group_udt_amount(start_time, end_time) |> Map.new()
-      withdrawals = WithdrawalHistory.group_udt_amount(start_time, end_time) |> Map.new()
-      udt_amounts = Map.merge(deposits, withdrawals, fn _k, v1, v2 -> D.add(v1, v2) end)
-      udt_ids = udt_amounts |> Map.keys()
+      deposit_udt_ids = DepositHistory.distinct_udt(start_time, end_time)
+      withdrawal_udt_ids = WithdrawalHistory.distinct_udt(start_time, end_time)
+      udt_ids = deposit_udt_ids ++ withdrawal_udt_ids
 
       Repo.transaction(fn ->
-        from(u in UDT, where: u.id in ^udt_ids)
+        from(u in UDT,
+          join: a in Account,
+          on: a.id == u.bridge_account_id,
+          where: u.id in ^udt_ids,
+          select: {u, a.eth_address}
+        )
         |> Repo.all()
-        |> Enum.each(fn u ->
-          supply =
-            udt_amounts
-            |> Map.fetch!(u.id)
-            |> D.add(u.supply || D.new(0))
+        |> Enum.each(fn {u, eth_address} ->
+          supply = UDT.eth_call_total_supply(eth_address)
 
           UDT.changeset(u, %{
             supply: supply
