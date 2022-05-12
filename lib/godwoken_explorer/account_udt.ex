@@ -53,7 +53,7 @@ defmodule GodwokenExplorer.AccountUDT do
   def list_udt_by_eth_address(eth_address) do
     from(au in AccountUDT,
       left_join: a1 in Account,
-      on: a1.registry_address == au.token_contract_address_hash,
+      on: a1.id == au.udt_id,
       left_join: a2 in Account,
       on: a2.eth_address == au.token_contract_address_hash,
       left_join: u3 in UDT,

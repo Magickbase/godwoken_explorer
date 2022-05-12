@@ -143,13 +143,13 @@ defmodule GodwokenExplorer.UDT do
   def list_address_by_udt_id(udt_id) do
     case Repo.get(UDT, udt_id) do
       %UDT{type: :bridge} = udt ->
-        %Account{registry_address: registry_address} = Repo.get(Account, udt.id)
+        %Account{script_hash: script_hash} = Repo.get(Account, udt.id)
 
         with %{bridge_account_id: bridge_account_id} when bridge_account_id != nil <- udt,
              %Account{eth_address: eth_address} <- Repo.get(Account, udt.bridge_account_id) do
-          [registry_address, eth_address]
+          [script_hash, eth_address]
         else
-          _ -> [registry_address]
+          _ -> [script_hash]
         end
 
       %UDT{type: :native} = udt ->
