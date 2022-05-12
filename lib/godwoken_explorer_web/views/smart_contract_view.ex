@@ -16,7 +16,8 @@ defmodule GodwokenExplorer.SmartContractView do
       :deployment_tx_hash,
       :other_info,
       :balance,
-      :tx_count
+      :tx_count,
+      :creator_address
     ]
   end
 
@@ -37,6 +38,21 @@ defmodule GodwokenExplorer.SmartContractView do
     case Repo.get(Account, smart_contract.account_id) do
       %Account{transaction_count: transaction_count} -> transaction_count || 0
       nil -> 0
+    end
+  end
+
+  def creator_address(smart_contract, _conn) do
+    if smart_contract.deployment_tx_hash != nil do
+      from(t in Transaction,
+        join: a in Account,
+        on: a.id == t.from_account_id,
+        where: t.hash == ^smart_contract.deployment_tx_hash,
+        select: a.eth_address
+      )
+      |> limit(1)
+      |> Repo.one()
+    else
+      nil
     end
   end
 
