@@ -1,7 +1,7 @@
 defmodule GodwokenExplorer.SmartContractView do
   use JSONAPI.View, type: "smart_contract"
 
-  import Ecto.Query, only: [from: 2, limit: 3]
+  import Ecto.Query, only: [from: 2, limit: 2]
   import GodwokenRPC.Util, only: [balance_to_view: 2]
 
   alias GodwokenExplorer.{SmartContract, Repo, UDT, Account}
