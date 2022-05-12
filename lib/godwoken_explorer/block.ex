@@ -79,8 +79,6 @@ defmodule GodwokenExplorer.Block do
     downcase_param = String.downcase(param)
 
     from(b in Block,
-      join: a in assoc(b, :account),
-      preload: [account: a],
       where: b.hash == ^downcase_param
     )
     |> Repo.one()
@@ -88,8 +86,6 @@ defmodule GodwokenExplorer.Block do
 
   def find_by_number_or_hash(number) when is_binary(number) or is_integer(number) do
     from(b in Block,
-      join: a in assoc(b, :account),
-      preload: [account: a],
       where: b.number == ^number
     )
     |> Repo.one()
