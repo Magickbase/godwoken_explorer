@@ -51,7 +51,7 @@ defmodule GodwokenExplorer.Counters.AddressTokenTransfersCounter do
       update_cache(address)
     end
 
-    address_hash_string = to_string(address.registry_address)
+    address_hash_string = to_string(address.scritp_hash)
     fetch_from_cache("hash_#{address_hash_string}")
   end
 
@@ -59,7 +59,7 @@ defmodule GodwokenExplorer.Counters.AddressTokenTransfersCounter do
 
   defp cache_expired?(address) do
     cache_period = address_token_transfers_counter_cache_period()
-    address_hash_string = to_string(address.registry_address)
+    address_hash_string = to_string(address.scritp_hash)
     updated_at = fetch_from_cache("hash_#{address_hash_string}_#{@last_update_key}")
 
     cond do
@@ -70,9 +70,9 @@ defmodule GodwokenExplorer.Counters.AddressTokenTransfersCounter do
   end
 
   defp update_cache(address) do
-    address_hash_string = to_string(address.registry_address)
+    address_hash_string = to_string(address.script_hash)
     put_into_cache("hash_#{address_hash_string}_#{@last_update_key}", current_time())
-    new_data = Chain.address_to_token_transfer_count(address.registry_address)
+    new_data = Chain.address_to_token_transfer_count(address.script_hash)
     put_into_cache("hash_#{address_hash_string}", new_data)
     put_into_db(address, new_data)
   end
