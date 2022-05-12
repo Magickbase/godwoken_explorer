@@ -66,6 +66,21 @@ defmodule GodwokenExplorer.SmartContract do
     end
   end
 
+  def creator_address(smart_contract) do
+    if smart_contract.deployment_tx_hash != nil do
+      from(t in Transaction,
+        join: a in Account,
+        on: a.id == t.from_account_id,
+        where: t.hash == ^smart_contract.deployment_tx_hash,
+        select: a.eth_address
+      )
+      |> limit(1)
+      |> Repo.one()
+    else
+      nil
+    end
+  end
+
   defp map_abi(x) do
     case {x["name"], x["type"]} do
       {nil, "constructor"} -> {:constructor, x}
