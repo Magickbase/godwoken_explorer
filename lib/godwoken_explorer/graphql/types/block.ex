@@ -66,15 +66,15 @@ defmodule GodwokenExplorer.Graphql.Types.Block do
 
     request-example:
     query {
-      blocks(input: {page: 1, page_size: 1}){
+      block(input: {number: 14938}){
         hash
         parent_hash
         number
         gas_used
         gas_limit
+				producer_address
         account{
-          id
-          registry_address
+          eth_address
         }
         transactions (input: {page: 1, page_size: 2}) {
           type
@@ -87,20 +87,16 @@ defmodule GodwokenExplorer.Graphql.Types.Block do
     result-example:
     {
       "data": {
-        "blocks": [
-          {
-            "account": {
-              "id": 2,
-              "registry_address": "0x68f5cea51fa6fcfdcc10f6cddcafa13bf6717436"
-            },
-            "gas_limit": "12500000",
-            "gas_used": "0",
-            "hash": "0xba8cf2630dfb02bebb208aa674d835073c9a0ff61c881689622e7e07490669e5",
-            "number": 346124,
-            "parent_hash": "0x4a35f2a925a51aeb3f780afbd485226ec9603fceb2a2c77a04c9b49657b5ead4",
-            "transactions": []
-          }
-        ]
+        "block": {
+          "account": null,
+          "gas_limit": "12500000",
+          "gas_used": "0",
+          "hash": "0x089f36f4f1eb1060e12ade101e4a6326423fa6cd11915d9bf1ef4bacafdbe663",
+          "number": 14938,
+          "parent_hash": "0xa552df86bad0233d0acb183056b095ac50abfa93161ff6b62ebe52bac2e53776",
+          "producer_address": "715ab282b873b79a7be8b0e8c13c4e8966a52040",
+          "transactions": []
+        }
       }
     }
     """
@@ -120,7 +116,6 @@ defmodule GodwokenExplorer.Graphql.Types.Block do
     field :parent_hash, :string
     field :timestamp, :datetime
     field :status, :block_status
-    field :aggregator_id, :integer
     field :transaction_count, :integer
     field :layer1_tx_hash, :string
     field :layer1_block_number, :integer
@@ -134,6 +129,8 @@ defmodule GodwokenExplorer.Graphql.Types.Block do
     field :sha3_uncles, :string
     field :state_root, :string
     field :extra_data, :string
+    field :registry_id, :integer
+    field :producer_address, :string
 
     field :account, :account do
       resolve(&Resolvers.Block.account/3)

@@ -8,15 +8,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Account do
   def account(_parent, %{input: input} = _args, _resolution) do
     address = Map.get(input, :address)
 
-    return =
-      from(a in Account)
-      |> where(
-        [a],
-        a.eth_address == ^address or
-          a.registry_address == ^address or
-          a.script_hash == ^address
-      )
-      |> Repo.one()
+    return = Account.search(address)
 
     {:ok, return}
   end

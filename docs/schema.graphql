@@ -4,12 +4,13 @@ schema {
 
 type Account {
   account_udts(input: AccountChildAccountUdtsInput = {page: 1, page_size: 20, sort_type: DESC}): [AccountUdt]
+  contract_code: String
   eth_address: String
   id: Int
   nonce: Int
+  registry_address: String
   script: Json
   script_hash: String
-  registry_address: String
   smart_contract: SmartContract
   token_transfer_count: Int
   transaction_count: Int
@@ -21,6 +22,7 @@ input AccountChildAccountUdtsInput {
   argument: the page of query result, the relations of postgres offset: offset = (page - 1) * page_size
   
   default: 1
+  limit: > 0
   """
   page: Int = 1
 
@@ -28,6 +30,7 @@ input AccountChildAccountUdtsInput {
   argument: the page_size of query result, it's the same of postgres limit
   
   default: 20
+  limit: > 0
   """
   page_size: Int = 20
 
@@ -50,19 +53,20 @@ input AccountCkbsInput {
 
 input AccountInput {
   """
-  argument: account address(eth_address or registry_address)
-  example-1: "0x15ca4f2165ff0e798d9c7434010eaacc4d768d85"
-  example-2: "0xc5e133e6b01b2c335055576c51a53647b1b9b624"
+  argument: account address(eth_address)
+  example: "0x59b670e9fa9d0a427751af201d676719a970857b"
   """
   address: String!
 }
 
 enum AccountType {
+  ETH_ADDR_REG
+  ETH_USER
   META_CONTRACT
   POLYJUICE_CONTRACT
   POLYJUICE_CREATOR
   UDT
-  USER
+  UNKNOWN
 }
 
 type AccountUdt {
@@ -70,6 +74,7 @@ type AccountUdt {
   address_hash: String
   balance: Decimal
   id: Int
+  token_contract_address_hash: String
   udt: Udt
 }
 
@@ -78,6 +83,7 @@ input AccountUdtContractAddressInput {
   argument: the page of query result, the relations of postgres offset: offset = (page - 1) * page_size
   
   default: 1
+  limit: > 0
   """
   page: Int = 1
 
@@ -85,6 +91,7 @@ input AccountUdtContractAddressInput {
   argument: the page_size of query result, it's the same of postgres limit
   
   default: 20
+  limit: > 0
   """
   page_size: Int = 20
 
@@ -108,6 +115,7 @@ input AccountUdtsInput {
   argument: the page of query result, the relations of postgres offset: offset = (page - 1) * page_size
   
   default: 1
+  limit: > 0
   """
   page: Int = 1
 
@@ -115,6 +123,7 @@ input AccountUdtsInput {
   argument: the page_size of query result, it's the same of postgres limit
   
   default: 20
+  limit: > 0
   """
   page_size: Int = 20
 
@@ -127,8 +136,6 @@ input AccountUdtsInput {
 
 type Block {
   account: Account
-  registry_id: Int
-  producer_address: String
   difficulty: Decimal
   extra_data: String
   gas_limit: Decimal
@@ -140,6 +147,8 @@ type Block {
   nonce: String
   number: Int
   parent_hash: String
+  producer_address: String
+  registry_id: Int
   sha3_uncles: String
   size: Int
   state_root: String
@@ -160,6 +169,7 @@ input BlocksInput {
   argument: the page of query result, the relations of postgres offset: offset = (page - 1) * page_size
   
   default: 1
+  limit: > 0
   """
   page: Int = 1
 
@@ -167,6 +177,7 @@ input BlocksInput {
   argument: the page_size of query result, it's the same of postgres limit
   
   default: 20
+  limit: > 0
   """
   page_size: Int = 20
 
@@ -261,6 +272,7 @@ input LogInput {
   argument: the page of query result, the relations of postgres offset: offset = (page - 1) * page_size
   
   default: 1
+  limit: > 0
   """
   page: Int = 1
 
@@ -268,6 +280,7 @@ input LogInput {
   argument: the page_size of query result, it's the same of postgres limit
   
   default: 20
+  limit: > 0
   """
   page_size: Int = 20
   second_topic: String
@@ -290,6 +303,7 @@ input PageAndSizeInput {
   argument: the page of query result, the relations of postgres offset: offset = (page - 1) * page_size
   
   default: 1
+  limit: > 0
   """
   page: Int = 1
 
@@ -297,6 +311,7 @@ input PageAndSizeInput {
   argument: the page_size of query result, it's the same of postgres limit
   
   default: 20
+  limit: > 0
   """
   page_size: Int = 20
 }
@@ -333,59 +348,37 @@ type RootQueryType {
   """
   function: get account by account addresses
   
-  request-example-1:
+  request-example:
   query {
-    account(input: {address: "0xbfbe23681d99a158f632e64a31288946770c7a9e"}){
-      id
+    account(input: {address: "0x59b670e9fa9d0a427751af201d676719a970857b"}){
       type
-      account_udts{
-      	id
-        balance
-        udt{
-          name
-          type
-        }
-      }
+      eth_address
     }
   }
   
-  result-example-1:
+  result-example:
   {
     "data": {
       "account": {
-        "account_udts": [
-          {
-            "balance": "1352700556596252988061",
-            "id": 22651,
-            "udt": {
-              "name": "Yokai",
-              "type": "NATIVE"
-            }
-          },
-          {
-            "balance": "950876407191",
-            "id": 21837,
-            "udt": {
-              "name": "Nervos Token",
-              "type": "BRIDGE"
-            }
-          }
-        ],
-        "id": 51118,
-        "type": "USER"
+        "eth_address": "0x59b670e9fa9d0a427751af201d676719a970857b",
+        "type": "POLYJUICE_CONTRACT"
       }
     }
   }
   
   request-example-2:
   query {
-    account(input: {address: "0xc5e133e6b01b2c335055576c51a53647b1b9b624"}){
-      id
+    account(input: {address: "0xcae7ac7ea158326cc16b4a5f1668924966419455"}){
       type
-      smart_contract{
+      eth_address
+      account_udts {
         id
-        name
-        deployment_tx_hash
+        balance
+        udt {
+          id
+          name
+          decimal
+        }
       }
     }
   }
@@ -394,13 +387,28 @@ type RootQueryType {
   {
     "data": {
       "account": {
-        "id": 3014,
-        "smart_contract": {
-          "deployment_tx_hash": "0x0000000000",
-          "id": 1,
-          "name": "YOKAI"
-        },
-        "type": "POLYJUICE_CONTRACT"
+        "account_udts": [
+          {
+            "balance": "2599999999999999997122",
+            "id": 527,
+            "udt": {
+              "decimal": null,
+              "id": "80",
+              "name": null
+            }
+          },
+          {
+            "balance": "2299999999989999656533",
+            "id": 524,
+            "udt": {
+              "decimal": null,
+              "id": "1",
+              "name": null
+            }
+          }
+        ],
+        "eth_address": "0xcae7ac7ea158326cc16b4a5f1668924966419455",
+        "type": "ETH_USER"
       }
     }
   }
@@ -577,15 +585,15 @@ type RootQueryType {
   
   request-example:
   query {
-    blocks(input: {page: 1, page_size: 1}){
+    block(input: {number: 14938}){
       hash
       parent_hash
       number
       gas_used
       gas_limit
+  producer_address
       account{
-        id
-        registry_address
+        eth_address
       }
       transactions (input: {page: 1, page_size: 2}) {
         type
@@ -598,20 +606,16 @@ type RootQueryType {
   result-example:
   {
     "data": {
-      "blocks": [
-        {
-          "account": {
-            "id": 2,
-            "registry_address": "0x68f5cea51fa6fcfdcc10f6cddcafa13bf6717436"
-          },
-          "gas_limit": "12500000",
-          "gas_used": "0",
-          "hash": "0xba8cf2630dfb02bebb208aa674d835073c9a0ff61c881689622e7e07490669e5",
-          "number": 346124,
-          "parent_hash": "0x4a35f2a925a51aeb3f780afbd485226ec9603fceb2a2c77a04c9b49657b5ead4",
-          "transactions": []
-        }
-      ]
+      "block": {
+        "account": null,
+        "gas_limit": "12500000",
+        "gas_used": "0",
+        "hash": "0x089f36f4f1eb1060e12ade101e4a6326423fa6cd11915d9bf1ef4bacafdbe663",
+        "number": 14938,
+        "parent_hash": "0xa552df86bad0233d0acb183056b095ac50abfa93161ff6b62ebe52bac2e53776",
+        "producer_address": "715ab282b873b79a7be8b0e8c13c4e8966a52040",
+        "transactions": []
+      }
     }
   }
   """
@@ -622,8 +626,8 @@ type RootQueryType {
   
   request-example:
   query {
-    logs(input: {first_topic: "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0",end_block_number:
-  346283, page: 1, page_size: 1}) {
+    logs(input: {first_topic: "0x95e0325a2d4f803db1237b0e454f7d9a09ec46941e478e3e98c510d8f1506031",end_block_number:
+  9988, page: 1, page_size: 1}) {
       transaction_hash
       block_number
       address_hash
@@ -640,14 +644,14 @@ type RootQueryType {
     "data": {
       "logs": [
         {
-          "address_hash": "0x2406a7233d72540291ff0627c397b26fd73dc3d9",
-          "block_number": 346283,
-          "data": "0x0000000000000000000000000000000000000000000000000000000000000000",
-          "first_topic": "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0",
+          "address_hash": "0x6589f40e144a03da53234dc98a47da36160dbf77",
+          "block_number": 9988,
+          "data": "0x00000000000000000000000000000000000000000000000000000000000027040000000000000000000000000000000000000000000000000000000000000000",
+          "first_topic": "0x95e0325a2d4f803db1237b0e454f7d9a09ec46941e478e3e98c510d8f1506031",
           "fourth_topic": null,
-          "second_topic": "0x0000000000000000000000000000000000000000000000000000000000000000",
-          "third_topic": "0x000000000000000000000000b3a91e71f67c29ae9ed5e164e8a1daa4c9e71361",
-          "transaction_hash": "0x835eadb22bd55661717b0829b6bb29fb461facdbdc21f803752f9e7383577581"
+          "second_topic": null,
+          "third_topic": null,
+          "transaction_hash": "0xeaf751c7eb86b679b7138fac22c603fccb0ca397bccce5a74e5372da7ea12c22"
         }
       ]
     }
@@ -660,7 +664,7 @@ type RootQueryType {
   
   request-example:
   query {
-    smart_contract(input: {contract_address: "0x21c814bf216ec7b988d872c56bf948d9cc1638a2"}) {
+    smart_contract(input: {contract_address: "0xcae7ac7ea158326cc16b4a5f1668924966419455"}) {
       name
       account_id
       account {
@@ -672,13 +676,7 @@ type RootQueryType {
   result-example:
   {
     "data": {
-      "smart_contract": {
-        "account": {
-          "eth_address": "0x21c814bf216ec7b988d872c56bf948d9cc1638a2"
-        },
-        "account_id": "3014",
-        "name": "YOKAI"
-      }
+      "smart_contract": null
     }
   }
   """
@@ -689,7 +687,7 @@ type RootQueryType {
   
   request-example:
   query {
-    smart_contracts {
+    smart_contracts(input: {page: 1, page_size: 2}) {
       name
       account_id
       account {
@@ -701,38 +699,28 @@ type RootQueryType {
   result-example:
   {
     "data": {
-      "smart_contracts": [
-        {
-          "account": {
-            "eth_address": "0x21c814bf216ec7b988d872c56bf948d9cc1638a2"
-          },
-          "account_id": "3014",
-          "name": "YOKAI"
-        }
-      ]
+      "smart_contracts": []
     }
   }
   """
-  smart_contracts(input: PageAndSizeInput = {page: 1, page_size: 20}): [SmartContract]
+  smart_contracts(input: SmartContractsInput = {page: 1, page_size: 20, sort_type: ASC}): [SmartContract]
 
   """
   function: get list of token transfers by filter
   
   request-example:
   query {
-    token_transfers(input: {from_address_hash:
-  "0x3770f660a5b6fde2dadd765c0f336543ff285097", start_block_number: 300000,
-  end_block_number:344620, page: 1, page_size: 1, sort_type: DESC}) {
+    token_transfers(input: {from_address:
+  "0x966b30e576a4d6731996748b48dd67c94ef29067", start_block_number: 1,
+  end_block_number:11904, page: 1, page_size: 1, sort_type: DESC}) {
       transaction_hash
       block_number
       to_account{
-        id
-        registry_address
+        eth_address
       }
-      to_address_hash
+      to_address
       from_account{
-        id
-        registry_address
+        eth_address
       }
     }
   }
@@ -742,17 +730,15 @@ type RootQueryType {
     "data": {
       "token_transfers": [
         {
-          "block_number": 344620,
+          "block_number": 11904,
           "from_account": {
-            "id": 53057,
-            "registry_address": "0x3770f660a5b6fde2dadd765c0f336543ff285097"
+            "eth_address": "0x966b30e576a4d6731996748b48dd67c94ef29067"
           },
           "to_account": {
-            "id": 53057,
-            "registry_address": "0x3770f660a5b6fde2dadd765c0f336543ff285097"
+            "eth_address": "0xbd6250d17fc557dfe39a9eb3882c421d4c7f6413"
           },
-          "to_address_hash": "0x3770f660a5b6fde2dadd765c0f336543ff285097",
-          "transaction_hash": "0xf6caf10b0a43adaabd08ef00fde03aa6d25310a1872dd08e7a7a4a4d3bd82301"
+          "to_address": "0xbd6250d17fc557dfe39a9eb3882c421d4c7f6413",
+          "transaction_hash": "0x2c70095a3a15a173517fc8d95c505add5242c3287da72907f5ffa1c0b6cc9578"
         }
       ]
     }
@@ -765,7 +751,7 @@ type RootQueryType {
   
   request-example:
   query {
-    transaction (input: {transaction_hash: "0x21d6428f5325fc3632fb4762d40a1833a4e739329ca5bcb1de0a91fb519cf8a4"}) {
+    transaction (input: {transaction_hash: "0xc7ab89121ab5727b09e007cc04176216e4d5fab1fb0ebe33320b7075e7e54533"}) {
       hash
       block_hash
       block_number
@@ -779,11 +765,11 @@ type RootQueryType {
   {
     "data": {
       "transaction": {
-        "block_hash": "0x47d74ac830a8da437da48d95844a9f60c71eaaeffa9e0547738dd49ffe5417cf",
-        "block_number": 341275,
-        "from_account_id": 27455,
-        "hash": "0x21d6428f5325fc3632fb4762d40a1833a4e739329ca5bcb1de0a91fb519cf8a4",
-        "to_account_id": 3014,
+        "block_hash": "0x08b5d6747151e7cc0a2ffd81505d3db39af268c9c1c753a22e7c80890e3b94c5",
+        "block_number": 81,
+        "from_account_id": 5,
+        "hash": "0xc7ab89121ab5727b09e007cc04176216e4d5fab1fb0ebe33320b7075e7e54533",
+        "to_account_id": 4,
         "type": "POLYJUICE"
       }
     }
@@ -796,8 +782,9 @@ type RootQueryType {
   
   request-example:
   query {
-    transactions (input: {address: "0xc5e133e6b01b2c335055576c51a53647b1b9b624", 
-  page: 1, page_size: 2, start_block_number: 335796, end_block_number: 341275}) {
+    transactions (input: {address:
+  "0x3076d0e71c44b89c58692cf6f474a28c7dd697b3977cfb91116c35da39cbf24b",  page:
+  1, page_size: 2, end_block_number: 15408}) {
       block_hash
       block_number
       type
@@ -811,17 +798,17 @@ type RootQueryType {
     "data": {
       "transactions": [
         {
-          "block_hash": "0x47d74ac830a8da437da48d95844a9f60c71eaaeffa9e0547738dd49ffe5417cf",
-          "block_number": 341275,
-          "from_account_id": 27455,
-          "to_account_id": 3014,
+          "block_hash": "0x50505f785e5bfa7b5b13a440eea7b4701368fd539a405d50a03f114ea886e41a",
+          "block_number": 15408,
+          "from_account_id": 5,
+          "to_account_id": 1003,
           "type": "POLYJUICE"
         },
         {
-          "block_hash": "0xb68eee6a72bfd54a06101bedb264e1026af2228250b82dd7c3f06beb35f5d865",
-          "block_number": 335796,
-          "from_account_id": 172581,
-          "to_account_id": 3014,
+          "block_hash": "0x50505f785e5bfa7b5b13a440eea7b4701368fd539a405d50a03f114ea886e41a",
+          "block_number": 15408,
+          "from_account_id": 5,
+          "to_account_id": 4,
           "type": "POLYJUICE"
         }
       ]
@@ -929,6 +916,31 @@ input SmartContractInput {
   contract_address: String!
 }
 
+input SmartContractsInput {
+  """
+  argument: the page of query result, the relations of postgres offset: offset = (page - 1) * page_size
+  
+  default: 1
+  limit: > 0
+  """
+  page: Int = 1
+
+  """
+  argument: the page_size of query result, it's the same of postgres limit
+  
+  default: 20
+  limit: > 0
+  """
+  page_size: Int = 20
+
+  """
+  argument: the sort of type by custom condition
+  
+  default: desc
+  """
+  sort_type: SortType = DESC
+}
+
 enum SortType {
   ASC
   DESC
@@ -940,11 +952,11 @@ type TokenTransfer {
   block_hash: String
   block_number: Int
   from_account: Account
-  from_address_hash: String
+  from_address: String
   log_index: Int
   polyjuice: Polyjuice
   to_account: Account
-  to_address_hash: String
+  to_address: String
   token_contract_address_hash: String
   token_id: Decimal
   transaction: Transaction
@@ -955,12 +967,13 @@ type TokenTransfer {
 input TokenTransferInput {
   """argument: the end of block number(inclusive) for search query"""
   end_block_number: Int
-  from_address_hash: String
+  from_address: String
 
   """
   argument: the page of query result, the relations of postgres offset: offset = (page - 1) * page_size
   
   default: 1
+  limit: > 0
   """
   page: Int = 1
 
@@ -968,6 +981,7 @@ input TokenTransferInput {
   argument: the page_size of query result, it's the same of postgres limit
   
   default: 20
+  limit: > 0
   """
   page_size: Int = 20
 
@@ -980,7 +994,7 @@ input TokenTransferInput {
 
   """argument: the start of block number(inclusive) for search query"""
   start_block_number: Int
-  to_address_hash: String
+  to_address: String
   token_contract_address_hash: String
   transaction_hash: String
 }
@@ -990,9 +1004,11 @@ type Transaction {
   block: Block
   block_hash: String
   block_number: Int
+  eth_hash: String
   from_account: Account
   from_account_id: Int
   hash: String
+  index: Int
   nonce: Int
   polyjuice: Polyjuice
   polyjuice_creator: PolyjuiceCreator
@@ -1015,6 +1031,7 @@ input TransactionInput {
   argument: the page of query result, the relations of postgres offset: offset = (page - 1) * page_size
   
   default: 1
+  limit: > 0
   """
   page: Int = 1
 
@@ -1022,6 +1039,7 @@ input TransactionInput {
   argument: the page_size of query result, it's the same of postgres limit
   
   default: 20
+  limit: > 0
   """
   page_size: Int = 20
   sort: SortType
@@ -1038,8 +1056,10 @@ input TransactionInput {
 }
 
 enum TransactionType {
+  ETH_ADDRESS_REGISTRY
   POLYJUICE
   POLYJUICE_CREATOR
+  UNKNOWN
 }
 
 type Udt {
@@ -1065,6 +1085,7 @@ input UdtsInput {
   argument: the page of query result, the relations of postgres offset: offset = (page - 1) * page_size
   
   default: 1
+  limit: > 0
   """
   page: Int = 1
 
@@ -1072,6 +1093,7 @@ input UdtsInput {
   argument: the page_size of query result, it's the same of postgres limit
   
   default: 20
+  limit: > 0
   """
   page_size: Int = 20
 

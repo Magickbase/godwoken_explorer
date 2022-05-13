@@ -26,9 +26,17 @@ defmodule GodwokenExplorer.Graphql.Resolvers.TokenTransfer do
     end
   end
 
+  def from_address(%TokenTransfer{from_address_hash: from_address_hash}, _args, _resolution) do
+    {:ok, from_address_hash}
+  end
+
+  def to_address(%TokenTransfer{to_address_hash: to_address_hash}, _args, _resolution) do
+    {:ok, to_address_hash}
+  end
+
   def from_account(%TokenTransfer{from_address_hash: from_address_hash}, _args, _resolution) do
     if from_address_hash do
-      return = from(a in Account, where: a.registry_address == ^from_address_hash) |> Repo.one()
+      return = Account.search(from_address_hash)
       {:ok, return}
     else
       {:ok, nil}
@@ -37,7 +45,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.TokenTransfer do
 
   def to_account(%TokenTransfer{to_address_hash: to_address_hash}, _args, _resolution) do
     if to_address_hash do
-      return = from(a in Account, where: a.registry_address == ^to_address_hash) |> Repo.one()
+      return = Account.search(to_address_hash)
       {:ok, return}
     else
       {:ok, nil}
@@ -65,10 +73,10 @@ defmodule GodwokenExplorer.Graphql.Resolvers.TokenTransfer do
           {:transaction_hash, value} ->
             dynamic([tt], ^acc and tt.transaction_hash == ^value)
 
-          {:from_address_hash, value} ->
+          {:from_address, value} ->
             dynamic([tt], ^acc and tt.from_address_hash == ^value)
 
-          {:to_address_hash, value} ->
+          {:to_address, value} ->
             dynamic([tt], ^acc and tt.to_address_hash == ^value)
 
           {:token_contract_address_hash, value} ->

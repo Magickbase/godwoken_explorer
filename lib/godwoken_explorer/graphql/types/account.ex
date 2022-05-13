@@ -8,59 +8,37 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
     @desc """
     function: get account by account addresses
 
-    request-example-1:
+    request-example:
     query {
-      account(input: {address: "0xbfbe23681d99a158f632e64a31288946770c7a9e"}){
-        id
+      account(input: {address: "0x59b670e9fa9d0a427751af201d676719a970857b"}){
         type
-        account_udts(input: {page: 1, page_size: 2}){
-        	id
-          balance
-          udt{
-            name
-            type
-          }
-        }
+        eth_address
       }
     }
 
-    result-example-1:
+    result-example:
     {
       "data": {
         "account": {
-          "account_udts": [
-            {
-              "balance": "1352700556596252988061",
-              "id": 22651,
-              "udt": {
-                "name": "Yokai",
-                "type": "NATIVE"
-              }
-            },
-            {
-              "balance": "950876407191",
-              "id": 21837,
-              "udt": {
-                "name": "Nervos Token",
-                "type": "BRIDGE"
-              }
-            }
-          ],
-          "id": 51118,
-          "type": "USER"
+          "eth_address": "0x59b670e9fa9d0a427751af201d676719a970857b",
+          "type": "POLYJUICE_CONTRACT"
         }
       }
     }
 
     request-example-2:
     query {
-      account(input: {address: "0xc5e133e6b01b2c335055576c51a53647b1b9b624"}){
-        id
+      account(input: {address: "0xcae7ac7ea158326cc16b4a5f1668924966419455"}){
         type
-        smart_contract{
+        eth_address
+        account_udts {
           id
-          name
-          deployment_tx_hash
+          balance
+          udt {
+            id
+            name
+            decimal
+          }
         }
       }
     }
@@ -69,13 +47,28 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
     {
       "data": {
         "account": {
-          "id": 3014,
-          "smart_contract": {
-            "deployment_tx_hash": "0x0000000000",
-            "id": 1,
-            "name": "YOKAI"
-          },
-          "type": "POLYJUICE_CONTRACT"
+          "account_udts": [
+            {
+              "balance": "2599999999999999997122",
+              "id": 527,
+              "udt": {
+                "decimal": null,
+                "id": "80",
+                "name": null
+              }
+            },
+            {
+              "balance": "2299999999989999656533",
+              "id": 524,
+              "udt": {
+                "decimal": null,
+                "id": "1",
+                "name": null
+              }
+            }
+          ],
+          "eth_address": "0xcae7ac7ea158326cc16b4a5f1668924966419455",
+          "type": "ETH_USER"
         }
       }
     }
@@ -97,9 +90,10 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
     field :registry_address, :string
     field :script, :json
     field :nonce, :integer
-    field :type, :account_type
     field :transaction_count, :integer
     field :token_transfer_count, :integer
+    field :contract_code, :string
+    field :type, :account_type
 
     field :account_udts, list_of(:account_udt) do
       arg(:input, :account_child_account_udts_input,
@@ -118,16 +112,17 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
   enum :account_type do
     value(:meta_contract)
     value(:udt)
-    value(:user)
+    value(:eth_user)
     value(:polyjuice_creator)
     value(:polyjuice_contract)
+    value(:eth_addr_reg)
+    value(:unknown)
   end
 
   input_object :account_input do
     @desc """
-    argument: account address(eth_address or registry_address)
-    example-1: "0x15ca4f2165ff0e798d9c7434010eaacc4d768d85"
-    example-2: "0xc5e133e6b01b2c335055576c51a53647b1b9b624"
+    argument: account address(eth_address)
+    example: "0x59b670e9fa9d0a427751af201d676719a970857b"
     """
     field :address, non_null(:string)
   end

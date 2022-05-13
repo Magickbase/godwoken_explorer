@@ -10,17 +10,15 @@ defmodule GodwokenExplorer.Graphql.Types.TokenTransfer do
 
     request-example:
     query {
-      token_transfers(input: {from_address_hash: "0x3770f660a5b6fde2dadd765c0f336543ff285097", start_block_number: 300000, end_block_number:344620, page: 1, page_size: 1, sort_type: DESC}) {
+      token_transfers(input: {from_address: "0x966b30e576a4d6731996748b48dd67c94ef29067", start_block_number: 1, end_block_number:11904, page: 1, page_size: 1, sort_type: DESC}) {
         transaction_hash
         block_number
         to_account{
-          id
-          registry_address
+          eth_address
         }
-        to_address_hash
+        to_address
         from_account{
-          id
-          registry_address
+          eth_address
         }
       }
     }
@@ -30,17 +28,15 @@ defmodule GodwokenExplorer.Graphql.Types.TokenTransfer do
       "data": {
         "token_transfers": [
           {
-            "block_number": 344620,
+            "block_number": 11904,
             "from_account": {
-              "id": 53057,
-              "registry_address": "0x3770f660a5b6fde2dadd765c0f336543ff285097"
+              "eth_address": "0x966b30e576a4d6731996748b48dd67c94ef29067"
             },
             "to_account": {
-              "id": 53057,
-              "registry_address": "0x3770f660a5b6fde2dadd765c0f336543ff285097"
+              "eth_address": "0xbd6250d17fc557dfe39a9eb3882c421d4c7f6413"
             },
-            "to_address_hash": "0x3770f660a5b6fde2dadd765c0f336543ff285097",
-            "transaction_hash": "0xf6caf10b0a43adaabd08ef00fde03aa6d25310a1872dd08e7a7a4a4d3bd82301"
+            "to_address": "0xbd6250d17fc557dfe39a9eb3882c421d4c7f6413",
+            "transaction_hash": "0x2c70095a3a15a173517fc8d95c505add5242c3287da72907f5ffa1c0b6cc9578"
           }
         ]
       }
@@ -68,8 +64,15 @@ defmodule GodwokenExplorer.Graphql.Types.TokenTransfer do
     field :block_hash, :string
     field :log_index, :integer
     field :token_id, :decimal
-    field :from_address_hash, :string
-    field :to_address_hash, :string
+
+    field :from_address, :string do
+      resolve(&Resolvers.TokenTransfer.from_address/3)
+    end
+
+    field :to_address, :string do
+      resolve(&Resolvers.TokenTransfer.to_address/3)
+    end
+
     field :token_contract_address_hash, :string
 
     field :polyjuice, :polyjuice do
@@ -99,8 +102,8 @@ defmodule GodwokenExplorer.Graphql.Types.TokenTransfer do
 
   input_object :token_transfer_input do
     field :transaction_hash, :string
-    field :from_address_hash, :string
-    field :to_address_hash, :string
+    field :from_address, :string
+    field :to_address, :string
     field :token_contract_address_hash, :string
     import_fields(:page_and_size_input)
     import_fields(:block_range_input)

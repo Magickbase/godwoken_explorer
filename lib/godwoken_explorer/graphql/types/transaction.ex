@@ -10,7 +10,7 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
 
     request-example:
     query {
-      transaction (input: {transaction_hash: "0x21d6428f5325fc3632fb4762d40a1833a4e739329ca5bcb1de0a91fb519cf8a4"}) {
+      transaction (input: {transaction_hash: "0xc7ab89121ab5727b09e007cc04176216e4d5fab1fb0ebe33320b7075e7e54533"}) {
         hash
         block_hash
         block_number
@@ -24,11 +24,11 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
     {
       "data": {
         "transaction": {
-          "block_hash": "0x47d74ac830a8da437da48d95844a9f60c71eaaeffa9e0547738dd49ffe5417cf",
-          "block_number": 341275,
-          "from_account_id": 27455,
-          "hash": "0x21d6428f5325fc3632fb4762d40a1833a4e739329ca5bcb1de0a91fb519cf8a4",
-          "to_account_id": 3014,
+          "block_hash": "0x08b5d6747151e7cc0a2ffd81505d3db39af268c9c1c753a22e7c80890e3b94c5",
+          "block_number": 81,
+          "from_account_id": 5,
+          "hash": "0xc7ab89121ab5727b09e007cc04176216e4d5fab1fb0ebe33320b7075e7e54533",
+          "to_account_id": 4,
           "type": "POLYJUICE"
         }
       }
@@ -46,7 +46,7 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
 
     request-example:
     query {
-      transactions (input: {address: "0xc5e133e6b01b2c335055576c51a53647b1b9b624",  page: 1, page_size: 2, start_block_number: 335796, end_block_number: 341275}) {
+      transactions (input: {address: "0x3076d0e71c44b89c58692cf6f474a28c7dd697b3977cfb91116c35da39cbf24b",  page: 1, page_size: 2, end_block_number: 15408}) {
         block_hash
         block_number
         type
@@ -60,17 +60,17 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
       "data": {
         "transactions": [
           {
-            "block_hash": "0x47d74ac830a8da437da48d95844a9f60c71eaaeffa9e0547738dd49ffe5417cf",
-            "block_number": 341275,
-            "from_account_id": 27455,
-            "to_account_id": 3014,
+            "block_hash": "0x50505f785e5bfa7b5b13a440eea7b4701368fd539a405d50a03f114ea886e41a",
+            "block_number": 15408,
+            "from_account_id": 5,
+            "to_account_id": 1003,
             "type": "POLYJUICE"
           },
           {
-            "block_hash": "0xb68eee6a72bfd54a06101bedb264e1026af2228250b82dd7c3f06beb35f5d865",
-            "block_number": 335796,
-            "from_account_id": 172581,
-            "to_account_id": 3014,
+            "block_hash": "0x50505f785e5bfa7b5b13a440eea7b4701368fd539a405d50a03f114ea886e41a",
+            "block_number": 15408,
+            "from_account_id": 5,
+            "to_account_id": 4,
             "type": "POLYJUICE"
           }
         ]
@@ -97,6 +97,8 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
     field :type, :transaction_type
     field :block_number, :integer
     field :block_hash, :string
+    field :eth_hash, :string
+    field(:index, :integer)
 
     field :polyjuice, :polyjuice do
       resolve(&Resolvers.Transaction.polyjuice/3)
@@ -122,6 +124,8 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
   enum :transaction_type do
     value(:polyjuice_creator)
     value(:polyjuice)
+    value(:eth_address_registry)
+    value(:unknown)
   end
 
   input_object :transaction_hash_input do
