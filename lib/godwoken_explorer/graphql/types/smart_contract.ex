@@ -10,7 +10,7 @@ defmodule GodwokenExplorer.Graphql.Types.SmartContract do
 
     request-example:
     query {
-      smart_contract(input: {contract_address: "0x21c814bf216ec7b988d872c56bf948d9cc1638a2"}) {
+      smart_contract(input: {contract_address: "0xcae7ac7ea158326cc16b4a5f1668924966419455"}) {
         name
         account_id
         account {
@@ -22,13 +22,7 @@ defmodule GodwokenExplorer.Graphql.Types.SmartContract do
     result-example:
     {
       "data": {
-        "smart_contract": {
-          "account": {
-            "eth_address": "0x21c814bf216ec7b988d872c56bf948d9cc1638a2"
-          },
-          "account_id": "3014",
-          "name": "YOKAI"
-        }
+        "smart_contract": null
       }
     }
     """
@@ -43,7 +37,7 @@ defmodule GodwokenExplorer.Graphql.Types.SmartContract do
 
     request-example:
     query {
-      smart_contracts {
+      smart_contracts(input: {page: 1, page_size: 2}) {
         name
         account_id
         account {
@@ -55,15 +49,7 @@ defmodule GodwokenExplorer.Graphql.Types.SmartContract do
     result-example:
     {
       "data": {
-        "smart_contracts": [
-          {
-            "account": {
-              "eth_address": "0x21c814bf216ec7b988d872c56bf948d9cc1638a2"
-            },
-            "account_id": "3014",
-            "name": "YOKAI"
-          }
-        ]
+        "smart_contracts": []
       }
     }
     """

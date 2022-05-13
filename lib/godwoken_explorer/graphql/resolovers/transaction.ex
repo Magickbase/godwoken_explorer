@@ -32,12 +32,18 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
       account = Account.search(address)
 
       case account do
-        %Account{type: :user} ->
+        %Account{type: :eth_user} ->
           query
           |> where([t], t.from_account_id == ^account.id)
 
         %Account{type: type}
-        when type in [:meta_contract, :udt, :polyjuice_creator, :polyjuice_contract, :eth_addr_reg] ->
+        when type in [
+               :meta_contract,
+               :udt,
+               :polyjuice_creator,
+               :polyjuice_contract,
+               :eth_addr_reg
+             ] ->
           query
           |> where([t], t.to_account_id == ^account.id)
 

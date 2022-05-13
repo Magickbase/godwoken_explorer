@@ -10,7 +10,7 @@ defmodule GodwokenExplorer.Graphql.Types.Log do
 
     request-example:
     query {
-      logs(input: {first_topic: "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0",end_block_number: 346283, page: 1, page_size: 1}) {
+      logs(input: {first_topic: "0x95e0325a2d4f803db1237b0e454f7d9a09ec46941e478e3e98c510d8f1506031",end_block_number: 9988, page: 1, page_size: 1}) {
         transaction_hash
         block_number
         address_hash
@@ -27,14 +27,14 @@ defmodule GodwokenExplorer.Graphql.Types.Log do
       "data": {
         "logs": [
           {
-            "address_hash": "0x2406a7233d72540291ff0627c397b26fd73dc3d9",
-            "block_number": 346283,
-            "data": "0x0000000000000000000000000000000000000000000000000000000000000000",
-            "first_topic": "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0",
+            "address_hash": "0x6589f40e144a03da53234dc98a47da36160dbf77",
+            "block_number": 9988,
+            "data": "0x00000000000000000000000000000000000000000000000000000000000027040000000000000000000000000000000000000000000000000000000000000000",
+            "first_topic": "0x95e0325a2d4f803db1237b0e454f7d9a09ec46941e478e3e98c510d8f1506031",
             "fourth_topic": null,
-            "second_topic": "0x0000000000000000000000000000000000000000000000000000000000000000",
-            "third_topic": "0x000000000000000000000000b3a91e71f67c29ae9ed5e164e8a1daa4c9e71361",
-            "transaction_hash": "0x835eadb22bd55661717b0829b6bb29fb461facdbdc21f803752f9e7383577581"
+            "second_topic": null,
+            "third_topic": null,
+            "transaction_hash": "0xeaf751c7eb86b679b7138fac22c603fccb0ca397bccce5a74e5372da7ea12c22"
           }
         ]
       }
