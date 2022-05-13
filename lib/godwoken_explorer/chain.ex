@@ -74,7 +74,14 @@ defmodule GodwokenExplorer.Chain do
   end
 
   def address_to_token_transfer_count(script_hash) do
-    %Account{eth_address: eth_address} = Repo.get_by(Account, script_hash: script_hash)
+    eth_address =
+      case Repo.get_by(Account, script_hash: script_hash) do
+        %Account{eth_address: eth_address} ->
+          eth_address
+
+        nil ->
+          script_hash
+      end
 
     udt_type? =
       from(u in UDT,
@@ -93,8 +100,8 @@ defmodule GodwokenExplorer.Chain do
       else
         from(
           token_transfer in TokenTransfer,
-          where: token_transfer.to_address_hash == ^(eth_address || script_hash),
-          or_where: token_transfer.from_address_hash == ^(eth_address || script_hash)
+          where: token_transfer.to_address_hash == ^eth_address,
+          or_where: token_transfer.from_address_hash == ^eth_address
         )
       end
 
