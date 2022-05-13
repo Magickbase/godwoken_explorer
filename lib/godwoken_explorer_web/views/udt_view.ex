@@ -27,7 +27,11 @@ defmodule GodwokenExplorer.UDTView do
   end
 
   def eth_address(udt, _conn) do
-    udt.account.eth_address
+    if is_nil(udt.account) do
+      ""
+    else
+      udt.account.eth_address
+    end
   end
 
   def supply(udt, _conn) do
@@ -52,12 +56,16 @@ defmodule GodwokenExplorer.UDTView do
   end
 
   def transfer_count(udt, _conn) do
-    case Repo.get(Account, udt.bridge_account_id) do
-      %Account{token_transfer_count: token_transfer_count} ->
-        token_transfer_count
+    if udt.account != nil do
+      case Repo.get(Account, udt.bridge_account_id) do
+        %Account{token_transfer_count: token_transfer_count} ->
+          token_transfer_count
 
-      _ ->
-        0
+        _ ->
+          0
+      end
+    else
+      0
     end
   end
 

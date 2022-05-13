@@ -47,8 +47,10 @@ defmodule GodwokenExplorerWeb.API.UDTController do
         {:error, :not_found}
 
       udt = %{name: _name} ->
-        account = Repo.get(Account, udt.bridge_account_id)
-        fetch_transfer_and_transaction_count(account)
+        if udt.bridge_account_id != nil do
+          account = Repo.get(Account, udt.bridge_account_id)
+          fetch_transfer_and_transaction_count(account)
+        end
 
         result = JSONAPI.Serializer.serialize(UDTView, udt, conn)
         json(conn, result)
