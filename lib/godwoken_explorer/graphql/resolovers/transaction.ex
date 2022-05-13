@@ -6,9 +6,27 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
   import GodwokenExplorer.Graphql.Common, only: [page_and_size: 2, sort_type: 3]
 
   def transaction(_parent, %{input: input} = _args, _resolution) do
-    transaction_hash = Map.get(input, :transaction_hash)
-    Repo.get(Transaction, transaction_hash)
-    {:ok, Repo.get(Transaction, transaction_hash)}
+    query = query_with_eth_hash_or_tx_hash(input)
+    return = Repo.one(query)
+    {:ok, return}
+  end
+
+  defp query_with_eth_hash_or_tx_hash(input) do
+    conditions =
+      Enum.reduce(input, true, fn arg, acc ->
+        case arg do
+          {:transaction_hash, value} ->
+            dynamic([t], ^acc and t.hash == ^value)
+
+          {:eth_hash, value} ->
+            dynamic([t], ^acc and t.eth_hash == ^value)
+
+          _ ->
+            acc
+        end
+      end)
+
+    from(t in Transaction, where: ^conditions)
   end
 
   def transactions(_parent, %{input: input} = _args, _resolution) do
