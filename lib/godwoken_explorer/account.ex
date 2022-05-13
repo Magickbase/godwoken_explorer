@@ -186,6 +186,7 @@ defmodule GodwokenExplorer.Account do
                 compiler_version: smart_contract.compiler_version,
                 compiler_file_format: smart_contract.compiler_file_format,
                 other_info: smart_contract.other_info,
+                creator_address: SmartContract.creator_address(smart_contract),
                 udt_list: udt_list
               }
             }

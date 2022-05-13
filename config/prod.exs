@@ -17,13 +17,13 @@ config :logger,
 # Do not print debug messages in production
 config :logger,
   info: [
-    path: "log/info.log",
+    path: "/etc/logs_data/gwscan/info.log",
     level: :info,
     format: "$date $time $metadata[$level] $message\n",
     rotate: %{max_bytes: 52_428_800, keep: 19}
   ],
   error: [
-    path: "log/error.log",
+    path: "/etc/logs_data/gwscan/error.log",
     level: :error,
     format: "$date $time $metadata[$level] $message\n",
     rotate: %{max_bytes: 52_428_800, keep: 19}
