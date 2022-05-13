@@ -336,7 +336,8 @@ defmodule GodwokenExplorer.Transaction do
         udt_symbol: fragment("CASE WHEN ? IS NULL THEN ? ELSE ? END", u6, "", u6.symbol),
         udt_icon: fragment("CASE WHEN ? IS NULL THEN ? ELSE ? END", u6, "", u6.icon),
         input: p.input,
-        to_account_id: t.to_account_id
+        to_account_id: t.to_account_id,
+        created_contract_address_hash: p.created_contract_address_hash
       }
     )
   end
