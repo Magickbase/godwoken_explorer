@@ -1,6 +1,8 @@
 defmodule GodwokenExplorer.AccountUDT do
   use GodwokenExplorer, :schema
 
+  import GodwokenRPC.Util, only: [balance_to_view: 2]
+
   require Logger
 
   alias GodwokenRPC
@@ -65,24 +67,18 @@ defmodule GodwokenExplorer.AccountUDT do
         name: fragment("CASE WHEN ? IS NULL THEN ? ELSE ? END", u1, u2.name, u1.name),
         symbol: fragment("CASE WHEN ? IS NULL THEN ? ELSE ? END", u1, u2.symbol, u1.symbol),
         icon: fragment("CASE WHEN ? IS NULL THEN ? ELSE ? END", u1, u2.icon, u1.icon),
-        balance:
-          fragment(
-            "CASE WHEN ? IS NOT NULL THEN trim_scale(? / power(10, ?)::decimal)
-          WHEN ? IS NOT NULL THEN trim_scale(? / power(10, ?)::decimal)
-          ELSE ? END",
-            u1.decimal,
-            au.balance,
-            u1.decimal,
-            u2.decimal,
-            au.balance,
-            u2.decimal,
-            au.balance
-          ),
+        balance: au.balance,
+        udt_decimal:
+          fragment("CASE WHEN ? IS NULL THEN ? ELSE ? END", u1, u2.decimal, u1.decimal),
         updated_at: au.updated_at
       }
     )
     |> Repo.all()
     |> unique_account_udts()
+    |> Enum.map(fn record ->
+      record
+      |> Map.merge(%{balance: balance_to_view(record[:balance], record[:udt_decimal] || 0)})
+    end)
   end
 
   def unique_account_udts(results) do
