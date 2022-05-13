@@ -774,8 +774,36 @@ type RootQueryType {
       }
     }
   }
+  
+  request-example-2:
+  query {
+    transaction (input: {eth_hash: "0xcdbda9ec578e73e886446d3bd5ca070d77a908be4187fc0e835c7c1598a3fcfa"}) {
+      hash
+      eth_hash
+      block_hash
+      block_number
+      type
+      from_account_id
+      to_account_id
+    }
+  }
+  
+  result-example-2:
+  {
+    "data": {
+      "transaction": {
+        "block_hash": "0x08b5d6747151e7cc0a2ffd81505d3db39af268c9c1c753a22e7c80890e3b94c5",
+        "block_number": 81,
+        "eth_hash": "0xcdbda9ec578e73e886446d3bd5ca070d77a908be4187fc0e835c7c1598a3fcfa",
+        "from_account_id": 5,
+        "hash": "0xc7ab89121ab5727b09e007cc04176216e4d5fab1fb0ebe33320b7075e7e54533",
+        "to_account_id": 4,
+        "type": "POLYJUICE"
+      }
+    }
+  }
   """
-  transaction(input: TransactionHashInput!): Transaction
+  transaction(input: TransactionInput!): Transaction
 
   """
   function: list transactions by account address
@@ -815,7 +843,7 @@ type RootQueryType {
     }
   }
   """
-  transactions(input: TransactionInput!): [Transaction]
+  transactions(input: TransactionsInput!): [Transaction]
 
   """
   function: get udt by contract address
@@ -1017,11 +1045,12 @@ type Transaction {
   type: TransactionType
 }
 
-input TransactionHashInput {
-  transaction_hash: String!
+input TransactionInput {
+  eth_hash: String
+  transaction_hash: String
 }
 
-input TransactionInput {
+input TransactionsInput {
   address: String!
 
   """argument: the end of block number(inclusive) for search query"""
