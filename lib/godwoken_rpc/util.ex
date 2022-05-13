@@ -1,6 +1,5 @@
 defmodule GodwokenRPC.Util do
   alias Blake2.Blake2b
-  alias GodwokenExplorer.UDT
 
   @type decimal() :: Decimal.t()
   @stringify_ckb_decimal_keys ~w(gas_price fee value)a
@@ -45,9 +44,6 @@ defmodule GodwokenRPC.Util do
 
           u when u in @utc_unix_keys ->
             utc_to_unix(v)
-
-          :transfer_value ->
-            balance_to_view(v, UDT.get_decimal(original_map.to_account_id))
 
           _ ->
             v
