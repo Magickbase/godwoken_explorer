@@ -75,6 +75,8 @@ config :godwoken_explorer, Oban,
        {"10 00 * * *", GodwokenIndexer.Worker.DailyStat},
        {"*/2 * * * *", GodwokenIndexer.Worker.CheckLostAccount},
        {"*/10 * * * *", GodwokenIndexer.Worker.CheckContractCode}
+       {"* */4 * * *", GodwokenIndexer.Worker.RefreshNativeUDTSupply}
+
      ]}
   ],
   queues: [default: 3]
