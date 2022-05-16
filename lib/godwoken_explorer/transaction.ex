@@ -22,7 +22,6 @@ defmodule GodwokenExplorer.Transaction do
     )
 
     field(:block_number, :integer)
-    field(:block_hash, :binary)
     field(:eth_hash, :binary)
     field(:index, :integer)
 
