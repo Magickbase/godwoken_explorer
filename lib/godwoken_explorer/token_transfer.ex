@@ -240,7 +240,8 @@ defmodule GodwokenExplorer.TokenTransfer do
           transfer
           |> Map.put(:timestamp, utc_to_unix(transfer[:inserted_at]))
           |> Map.merge(%{
-            transfer_value: balance_to_view(transfer[:transfer_value], transfer[:udt_decimal])
+            transfer_value:
+              balance_to_view(transfer[:transfer_value], transfer[:udt_decimal] || 0)
           })
           |> Map.delete(:inserted_at)
         end)
