@@ -3,7 +3,7 @@ defmodule GodwokenExplorerWeb.API.TransferController do
 
   alias GodwokenExplorer.{Account, Repo, TokenTransfer}
 
-  action_fallback GodwokenExplorerWeb.API.FallbackController
+  action_fallback(GodwokenExplorerWeb.API.FallbackController)
 
   def index(conn, %{"eth_address" => "0x" <> _, "udt_address" => "0x" <> _} = params) do
     with %Account{short_address: short_address} <-
@@ -69,5 +69,9 @@ defmodule GodwokenExplorerWeb.API.TransferController do
       })
 
     json(conn, results)
+  end
+
+  def index(_conn, _) do
+    {:error, :not_found}
   end
 end
