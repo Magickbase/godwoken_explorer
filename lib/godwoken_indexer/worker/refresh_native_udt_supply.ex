@@ -1,7 +1,7 @@
 defmodule GodwokenIndexer.Worker.RefreshNativeUDTSupply do
   use Oban.Worker, queue: :default
 
-  import Ecto.Query, only: [from: 2, where: 3, select: 3, preload: 3]
+  import Ecto.Query, only: [from: 2, where: 3, select: 3]
 
   alias GodwokenExplorer.{Repo, UDT, Account}
 
