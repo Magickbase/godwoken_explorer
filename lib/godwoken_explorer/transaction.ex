@@ -19,8 +19,9 @@ defmodule GodwokenExplorer.Transaction do
     field(:type, Ecto.Enum, values: [:polyjuice_creator, :polyjuice, :unknown])
     field(:block_number, :integer)
     field(:index, :integer)
+    field(:block_hash, :binary)
 
-    belongs_to(:block, Block, foreign_key: :block_hash, references: :hash)
+    belongs_to(:block, Block, foreign_key: :block_hash, references: :hash, define_field: false)
 
     timestamps()
   end
