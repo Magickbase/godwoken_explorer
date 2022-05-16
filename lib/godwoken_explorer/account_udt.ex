@@ -71,7 +71,7 @@ defmodule GodwokenExplorer.AccountUDT do
         icon: fragment("CASE WHEN ? IS NULL THEN ? ELSE ? END", u3, u4.icon, u3.icon),
         balance: au.balance,
         udt_decimal:
-          fragment("CASE WHEN ? IS NULL THEN ? ELSE ? END", u3, u4.decimal, u3.decimal)
+          fragment("CASE WHEN ? IS NULL THEN ? ELSE ? END", u3, u4.decimal, u3.decimal),
         updated_at: au.updated_at
       }
     )
