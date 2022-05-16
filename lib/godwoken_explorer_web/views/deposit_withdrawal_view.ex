@@ -14,8 +14,8 @@ defmodule GodwokenExplorer.DepositWithdrawalView do
       |> Enum.map(fn struct ->
         struct
         |> Map.merge(%{
-          value: balance_to_view(struct[:value], struct[:udt_decimal]),
-          sell_value: balance_to_view(struct[:sell_value], struct[:udt_decimal])
+          value: balance_to_view(struct[:value], struct[:udt_decimal] || 0),
+          sell_value: balance_to_view(struct[:sell_value], struct[:udt_decimal] || 0)
         })
       end)
 
@@ -56,8 +56,8 @@ defmodule GodwokenExplorer.DepositWithdrawalView do
       |> Enum.map(fn struct ->
         struct
         |> Map.merge(%{
-          value: balance_to_view(struct[:value], struct[:udt_decimal]),
-          sell_value: balance_to_view(struct[:sell_value], struct[:udt_decimal])
+          value: balance_to_view(struct[:value], struct[:udt_decimal] || 0),
+          sell_value: balance_to_view(struct[:sell_value], struct[:udt_decimal] || 0)
         })
       end)
 

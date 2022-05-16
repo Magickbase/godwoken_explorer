@@ -30,11 +30,14 @@ defmodule GodwokenExplorer.WithdrawalRequestView do
   end
 
   def value(withdrawal_request, _connn) do
-    balance_to_view(withdrawal_request.amount, UDT.get_decimal(withdrawal_request.udt_id))
+    balance_to_view(withdrawal_request.amount, UDT.get_decimal(withdrawal_request.udt_id) || 0)
   end
 
   def sell_value(withdrawal_request, _connn) do
-    balance_to_view(withdrawal_request.sell_amount, UDT.get_decimal(withdrawal_request.udt_id))
+    balance_to_view(
+      withdrawal_request.sell_amount,
+      UDT.get_decimal(withdrawal_request.udt_id) || 0
+    )
   end
 
   def relationships do
