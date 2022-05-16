@@ -1,7 +1,7 @@
 defmodule GodwokenExplorer.TokenTransfer do
   use GodwokenExplorer, :schema
 
-  import GodwokenRPC.Util, only: [utc_to_unix: 1]
+  import GodwokenRPC.Util, only: [utc_to_unix: 1, balance_to_view: 2]
 
   alias GodwokenExplorer.Chain
 
@@ -210,15 +210,8 @@ defmodule GodwokenExplorer.TokenTransfer do
         udt_id: u5.id,
         udt_name: u5.name,
         udt_symbol: u5.symbol,
-        transfer_value:
-          fragment(
-            "CASE WHEN ? IS NOT NULL THEN trim_scale(? / power(10, ?)::decimal)
-        ELSE ? END",
-            u5.decimal,
-            tt.amount,
-            u5.decimal,
-            tt.amount
-          ),
+        transfer_value: tt.amount,
+        udt_decimal: u5.decimal,
         status: b.status,
         polyjuice_status: p.status,
         gas_limit: p.gas_limit,
@@ -252,6 +245,9 @@ defmodule GodwokenExplorer.TokenTransfer do
         |> Enum.map(fn transfer ->
           transfer
           |> Map.put(:timestamp, utc_to_unix(transfer[:inserted_at]))
+          |> Map.merge(%{
+            transfer_value: balance_to_view(transfer[:transfer_value], transfer[:udt_decimal])
+          })
           |> Map.delete(:inserted_at)
         end)
 

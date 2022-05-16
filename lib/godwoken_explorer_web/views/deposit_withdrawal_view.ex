@@ -1,16 +1,28 @@
 defmodule GodwokenExplorer.DepositWithdrawalView do
   use GodwokenExplorer, :schema
 
+  import GodwokenRPC.Util, only: [balance_to_view: 2]
+
   def list_by_block_number(block_number, page) do
     parsed_struct =
       withdrawal_base_query(dynamic([w], w.block_number == ^block_number))
       |> order_by(desc: :inserted_at)
       |> Repo.paginate(page: page)
 
+    parsed_entries =
+      parsed_struct.entries
+      |> Enum.map(fn struct ->
+        struct
+        |> Map.merge(%{
+          value: balance_to_view(struct[:value], struct[:udt_decimal]),
+          sell_value: balance_to_view(struct[:sell_value], struct[:udt_decimal])
+        })
+      end)
+
     %{
       page: parsed_struct.page_number,
       total_count: parsed_struct.total_entries,
-      data: parsed_struct.entries
+      data: parsed_entries
     }
   end
 
@@ -39,10 +51,20 @@ defmodule GodwokenExplorer.DepositWithdrawalView do
   def parse_struct(original_struct, page) do
     parsed_struct = Repo.paginate(original_struct, page: page)
 
+    parsed_entries =
+      parsed_struct.entries
+      |> Enum.map(fn struct ->
+        struct
+        |> Map.merge(%{
+          value: balance_to_view(struct[:value], struct[:udt_decimal]),
+          sell_value: balance_to_view(struct[:sell_value], struct[:udt_decimal])
+        })
+      end)
+
     %{
       page: Integer.to_string(parsed_struct.page_number),
       total_count: Integer.to_string(parsed_struct.total_entries),
-      data: parsed_struct.entries
+      data: parsed_entries
     }
   end
 
@@ -56,22 +78,17 @@ defmodule GodwokenExplorer.DepositWithdrawalView do
       select: %{
         script_hash: w.l2_script_hash,
         eth_address: a2.eth_address,
-        value: fragment("
-        CASE WHEN ? IS NULL THEN ?
-        ELSE trim_scale(? / power(10, ?)::decimal)
-        END ", u.decimal, w.amount, w.amount, u.decimal),
+        value: w.amount,
         owner_lock_hash: w.owner_lock_hash,
         payment_lock_hash: w.payment_lock_hash,
-        sell_value: fragment("
-        CASE WHEN ? IS NULL THEN ?
-        ELSE trim_scale(? / power(10, ?)::decimal)
-        END ", u.decimal, w.sell_amount, w.sell_amount, u.decimal),
+        sell_value: w.sell_amount,
         sell_capacity: w.sell_capacity,
         sudt_script_hash: w.udt_script_hash,
         udt_id: w.udt_id,
         udt_name: u.name,
         udt_symbol: u.symbol,
         udt_icon: u.icon,
+        udt_decimal: u.decimal,
         block_hash: w.block_hash,
         block_number: w.block_number,
         timestamp: w.timestamp,
@@ -96,10 +113,7 @@ defmodule GodwokenExplorer.DepositWithdrawalView do
       select: %{
         script_hash: d.script_hash,
         eth_address: a2.eth_address,
-        value: fragment("
-        CASE WHEN ? IS NULL THEN ?
-        ELSE trim_scale(? / power(10, ?)::decimal)
-        END ", u.decimal, d.amount, d.amount, u.decimal),
+        value: d.amount,
         owner_lock_hash: nil,
         payment_lock_hash: nil,
         sell_value: nil,
@@ -109,6 +123,7 @@ defmodule GodwokenExplorer.DepositWithdrawalView do
         udt_name: u.name,
         udt_symbol: u.symbol,
         udt_icon: u.icon,
+        udt_decimal: u.decimal,
         block_hash: nil,
         block_number: nil,
         timestamp: d.timestamp,
