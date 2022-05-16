@@ -26,7 +26,7 @@ defmodule GodwokenExplorer.Transaction do
     field(:eth_hash, :binary)
     field(:index, :integer)
 
-    belongs_to(:block, Block, foreign_key: :block_hash, references: :hash, define_field: false)
+    belongs_to(:block, Block, foreign_key: :block_hash, references: :hash)
 
     timestamps()
   end
