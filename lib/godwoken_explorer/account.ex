@@ -257,7 +257,7 @@ defmodule GodwokenExplorer.Account do
           [:eth_user, :tron_user, :udt_list],
           udt_list
           |> Enum.map(fn udt ->
-            %{udt | balance: udt.balance |> D.to_string(:normal)}
+            %{udt | balance: udt.balance}
           end)
         )
 
