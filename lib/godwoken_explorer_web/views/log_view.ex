@@ -12,9 +12,12 @@ defmodule GodwokenExplorer.LogView do
       :first_topic,
       :second_topic,
       :third_topic,
-      :fourth_topic
+      :fourth_topic,
+      :abi
     ]
   end
+
+  def id(%{index: index}), do: index
 
   def list_by_tx_hash(transaction_hash, page, page_size) do
     from(
@@ -26,12 +29,13 @@ defmodule GodwokenExplorer.LogView do
       where: l.transaction_hash == ^transaction_hash,
       select: %{
         data: l.data,
+        index: l.index,
         address_hash: l.address_hash,
         first_topic: l.first_topic,
         second_topic: l.second_topic,
         third_topic: l.third_topic,
         fourth_topic: l.fourth_topic,
-        smart_contract: s.abi
+        abi: s.abi
       },
       order_by: [desc: :block_number, desc: :index]
     )
