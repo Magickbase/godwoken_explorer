@@ -6,7 +6,6 @@ defmodule GodwokenRPC.Util do
   @utc_unix_keys ~w(timestamp inserted_at)a
   @full_length_size 4
   @offset_size 4
-
   def parse_le_number(hex_string) do
     hex_string
     |> Base.decode16!(case: :lower)
@@ -61,11 +60,13 @@ defmodule GodwokenRPC.Util do
       [script["code_hash"], hash_type, serialized_args(String.slice(script["args"], 2..-1))]
       |> Enum.map(fn value -> String.slice(value, 2..-1) end)
 
-    body = values |> Enum.join()
+    body = values |> Enum.join() |> String.downcase()
     header_length = @full_length_size + @offset_size * Enum.count(values)
 
     full_length =
-      <<header_length + (body |> String.length() |> Kernel.div(2))::32-little>> |> Base.encode16()
+      <<header_length + (body |> String.length() |> Kernel.div(2))::32-little>>
+      |> Base.encode16()
+      |> String.downcase()
 
     offset_base = values |> Enum.map(&(&1 |> String.length() |> Kernel.div(2)))
 
