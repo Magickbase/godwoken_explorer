@@ -212,7 +212,8 @@ defmodule GodwokenExplorer.TokenTransfer do
         transfer_value: tt.amount,
         udt_decimal: u5.decimal,
         status: b.status,
-        polyjuice_status: p.status
+        polyjuice_status: p.status,
+        log_index: tt.log_index
       }
     )
   end
