@@ -66,7 +66,8 @@ defmodule GodwokenExplorer.LogView do
         fourth_topic: l.fourth_topic,
         abi: s.abi
       },
-      order_by: [desc: :block_number, desc: :index]
+      order_by: [desc: :block_number, desc: :index],
+      limit: 25
     )
     |> Repo.paginate(page: page, page_size: page_size)
   end
