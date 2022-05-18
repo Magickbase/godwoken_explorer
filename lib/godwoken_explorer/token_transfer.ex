@@ -218,7 +218,8 @@ defmodule GodwokenExplorer.TokenTransfer do
         gas_price: p.gas_price,
         gas_used: p.gas_used,
         transfer_count: tt.amount,
-        nonce: t.nonce
+        nonce: t.nonce,
+        log_index: tt.log_index
       }
     )
   end

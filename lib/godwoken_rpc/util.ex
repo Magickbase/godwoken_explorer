@@ -87,7 +87,7 @@ defmodule GodwokenRPC.Util do
       [script["code_hash"], hash_type, serialized_args(String.slice(script["args"], 2..-1))]
       |> Enum.map(fn value -> String.slice(value, 2..-1) end)
 
-    body = values |> Enum.join()
+    body = values |> Enum.join() |> String.downcase()
     header_length = @full_length_size + @offset_size * Enum.count(values)
 
     full_length =
