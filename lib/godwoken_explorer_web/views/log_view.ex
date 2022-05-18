@@ -44,7 +44,7 @@ defmodule GodwokenExplorer.LogView do
     |> Repo.paginate(page: page, page_size: page_size)
   end
 
-  def list_by_address_hash(address_hash, page, page_size) do
+  def list_by_address_hash(address_hash) do
     from(
       l in Log,
       left_join: a in Account,
@@ -69,6 +69,6 @@ defmodule GodwokenExplorer.LogView do
       order_by: [desc: :block_number, desc: :index],
       limit: 25
     )
-    |> Repo.paginate(page: page, page_size: page_size)
+    |> Repo.all()
   end
 end
