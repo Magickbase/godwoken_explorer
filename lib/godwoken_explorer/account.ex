@@ -14,6 +14,7 @@ defmodule GodwokenExplorer.Account do
 
   alias GodwokenRPC
   alias GodwokenExplorer.Chain.Events.Publisher
+  alias GodwokenExplorer.Counters.{AddressTokenTransfersCounter, AddressTransactionsCounter}
 
   @polyjuice_creator_args_length 82
   @yok_mainnet_account_id 12119
@@ -637,5 +638,19 @@ defmodule GodwokenExplorer.Account do
       FastGlobal.put(:yok_contract_code, account.contract_code)
       account.contract_code
     end
+  end
+
+  def async_fetch_transfer_and_transaction_count(nil) do
+    :ok
+  end
+
+  def async_fetch_transfer_and_transaction_count(account) do
+    Task.async(fn ->
+      AddressTokenTransfersCounter.fetch(account)
+    end)
+
+    Task.async(fn ->
+      AddressTransactionsCounter.fetch(account)
+    end)
   end
 end

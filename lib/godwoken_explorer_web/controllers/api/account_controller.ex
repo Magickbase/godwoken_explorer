@@ -4,14 +4,13 @@ defmodule GodwokenExplorerWeb.API.AccountController do
   action_fallback GodwokenExplorerWeb.API.FallbackController
 
   alias GodwokenExplorer.{Repo, Account}
-  alias GodwokenExplorer.Counters.{AddressTokenTransfersCounter, AddressTransactionsCounter}
 
   def show(conn, %{"id" => "0x" <> _} = params) do
     downcase_id = params["id"] |> String.downcase()
 
     case Account.search(downcase_id) do
       %Account{id: id} = account ->
-        fetch_transfer_and_transaction_count(account)
+        Account.async_fetch_transfer_and_transaction_count(account)
 
         result =
           id
@@ -55,15 +54,5 @@ defmodule GodwokenExplorerWeb.API.AccountController do
       _ ->
         {:error, :not_found}
     end
-  end
-
-  defp fetch_transfer_and_transaction_count(account) do
-    Task.async(fn ->
-      AddressTokenTransfersCounter.fetch(account)
-    end)
-
-    Task.async(fn ->
-      AddressTransactionsCounter.fetch(account)
-    end)
   end
 end

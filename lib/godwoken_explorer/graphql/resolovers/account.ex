@@ -7,8 +7,8 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Account do
 
   def account(_parent, %{input: input} = _args, _resolution) do
     address = Map.get(input, :address)
-
     return = Account.search(address)
+    Account.async_fetch_transfer_and_transaction_count(return)
 
     {:ok, return}
   end
