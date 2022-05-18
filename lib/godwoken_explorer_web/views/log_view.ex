@@ -3,7 +3,7 @@ defmodule GodwokenExplorer.LogView do
 
   import Ecto.Query, only: [from: 2]
 
-  alias GodwokenExplorer.{Log, Repo, Account, SmartContract}
+  alias GodwokenExplorer.{Account, Log, Repo, SmartContract, Transaction}
 
   def fields do
     [
