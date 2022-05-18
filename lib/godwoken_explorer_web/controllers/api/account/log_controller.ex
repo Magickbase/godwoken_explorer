@@ -8,18 +8,9 @@ defmodule GodwokenExplorerWeb.API.Account.LogController do
   plug JSONAPI.QueryParser, view: LogView
 
   def index(conn, %{"address" => "0x" <> _} = params) do
-    results =
-      LogView.list_by_address_hash(
-        params["address"],
-        conn.params["page"] || 1,
-        conn.assigns.page_size
-      )
+    results = LogView.list_by_address_hash(params["address"])
 
-    data =
-      JSONAPI.Serializer.serialize(LogView, results.entries, conn, %{
-        total_page: results.total_pages,
-        current_page: results.page_number
-      })
+    data = JSONAPI.Serializer.serialize(LogView, results, conn, %{})
 
     json(conn, data)
   end
