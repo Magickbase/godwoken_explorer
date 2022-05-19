@@ -47,8 +47,8 @@ defmodule GodwokenExplorer.Graphql.Types.TokenTransfer do
 
       middleware(MDowncase, [
         :transaction_hash,
-        :from_address_hash,
-        :to_address_hash,
+        :from_address,
+        :to_address,
         :token_contract_address_hash
       ])
 
