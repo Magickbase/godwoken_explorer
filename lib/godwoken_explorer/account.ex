@@ -7,15 +7,16 @@ defmodule GodwokenExplorer.Account do
 
   alias GodwokenRPC
   alias GodwokenExplorer.Chain.Events.Publisher
+  alias GodwokenExplorer.Chain.Hash
 
   @yok_mainnet_account_id 12119
 
   @derive {Jason.Encoder, except: [:__meta__]}
   @primary_key {:id, :integer, autogenerate: false}
   schema "accounts" do
-    field(:eth_address, :binary)
-    field(:script_hash, :binary)
-    field(:short_address, :binary)
+    field(:eth_address, Hash.Address)
+    field(:script_hash, Hash.Full)
+    field(:short_address, Hash.Address)
     field(:script, :map)
     field(:nonce, :integer)
     field(:transaction_count, :integer)

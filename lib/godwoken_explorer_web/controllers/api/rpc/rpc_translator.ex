@@ -14,12 +14,11 @@ defmodule GodwokenExplorerWeb.API.RPC.RPCTranslator do
   """
 
   require Logger
-  require IEx
 
   import Plug.Conn
   import Phoenix.Controller, only: [put_view: 2]
 
-  alias GodwokenExplorerWeb.AccessHelpers
+  #  alias GodwokenExplorerWeb.AccessHelpers
   alias GodwokenExplorerWeb.API.APILogger
   alias GodwokenExplorerWeb.API.RPC.RPCView
   alias Phoenix.Controller
@@ -65,8 +64,8 @@ defmodule GodwokenExplorerWeb.API.RPC.RPCTranslator do
         |> Controller.render(:error, error: "Something went wrong.")
         |> halt()
 
-      :rate_limit_reached ->
-        AccessHelpers.handle_rate_limit_deny(conn)
+      # :rate_limit_reached ->
+      #   AccessHelpers.handle_rate_limit_deny(conn)
 
       _ ->
         conn

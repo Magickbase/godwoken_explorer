@@ -5,6 +5,7 @@ defmodule GodwokenExplorer.Chain do
 
   alias GodwokenExplorer.Counters.{AccountsCounter, AverageBlockTime}
   alias GodwokenExplorer.Chain.Cache.{BlockCount, TransactionCount}
+  alias GodwokenExplorer.Chain.Hash
 
   def extract_db_name(db_url) do
     if db_url == nil do
@@ -162,5 +163,37 @@ defmodule GodwokenExplorer.Chain do
         average_block_time: AverageBlockTime.average_block_time() |> Timex.Duration.to_seconds()
       }
     }
+  end
+
+  @spec string_to_address_hash(String.t()) :: {:ok, Hash.Address.t()} | :error
+  def string_to_address_hash(string) when is_binary(string) do
+    Hash.Address.cast(string)
+  end
+
+  def string_to_address_hash(_), do: :error
+
+  def hashes_to_addresses(hashes) when is_list(hashes) do
+    query =
+      from(
+        account in Account,
+        where: account.short_address in ^hashes or account.eth_address in ^hashes,
+        select: [account.eth_address, account.short_address]
+      )
+
+    results = Repo.all(query)
+
+    hashes
+    |> Enum.map(fn hash ->
+      result = results |> Enum.find(fn result -> hash in result end)
+
+      short_address =
+        if is_nil(result) do
+          nil
+        else
+          List.last(result)
+        end
+
+      %{hash: hash, short_address: short_address}
+    end)
   end
 end

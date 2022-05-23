@@ -9,7 +9,8 @@ defmodule GodwokenExplorer.UDTFactory do
           name: "CKB",
           decimal: 8,
           script_hash: "0x0000000000000000000000000000000000000000000000000000000000000000",
-          type: :bridge
+          type: :bridge,
+          bridge_account_id: 247
         }
       end
     end

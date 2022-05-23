@@ -63,7 +63,6 @@ defmodule GodwokenExplorer.MixProject do
       {:telemetry_metrics, "~> 0.6.1"},
       {:telemetry_poller, "~> 1.0.0"},
       {:gettext, "~> 0.11"},
-      {:jason, "~> 1.0"},
       {:plug_cowboy, "~> 2.0"},
       {:httpoison, "~> 1.8"},
       {:rustler, "~> 0.25.0"},
@@ -76,6 +75,10 @@ defmodule GodwokenExplorer.MixProject do
 
       # live dashboard ecto stats
       {:ecto_psql_extras, "~> 0.6"},
+
+      # encoder
+      {:jason, "~> 1.0"},
+      {:poison, "~> 5.0"},
 
       # admin dashboard
       {:torch, "~> 3.8"},

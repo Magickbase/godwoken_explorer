@@ -1,5 +1,5 @@
 defmodule GodwokenExplorer.AccountFactory do
-  alias GodwokenExplorer.Account
+  alias GodwokenExplorer.{Account, Chain.Hash}
 
   defmacro __using__(_opts) do
     quote do
@@ -20,6 +20,56 @@ defmodule GodwokenExplorer.AccountFactory do
           short_address: "0x9e9c54293c3211259de788e97a31b5b3a66cd535",
           script_hash: "0x9e9c54293c3211259de788e97a31b5b3a66cd53564f8d39dfabdc8e96cdf5ea4"
         }
+      end
+
+      def ckb_contract_account_factory do
+        %Account{
+          id: 247,
+          type: :polyjuice_contract,
+          short_address: "0x9d9599c41383d7009c2093319d576aa6f89a4449",
+          script_hash: "0x9d9599c41383d7009c2093319d576aa6f89a4449467441966352bb62e12001d3"
+        }
+      end
+
+      def user_factory do
+        %Account{
+          id: sequence(:id, & &1, start_at: 1000),
+          eth_address: address_hash(),
+          script_hash: block_hash(),
+          short_address: address_hash(),
+          type: :user
+        }
+      end
+
+      def polyjuice_contract_factory do
+        %Account{
+          id: sequence(:id, & &1, start_at: 2000),
+          script_hash: block_hash(),
+          short_address: address_hash(),
+          type: :polyjuice_contract
+        }
+      end
+
+      def address_hash do
+        {:ok, address_hash} =
+          "address_hash"
+          |> sequence(& &1)
+          |> Hash.Address.cast()
+
+        if to_string(address_hash) == "0x0000000000000000000000000000000000000000" do
+          address_hash()
+        else
+          address_hash
+        end
+      end
+
+      def block_hash do
+        {:ok, block_hash} =
+          "block_hash"
+          |> sequence(& &1)
+          |> Hash.Full.cast()
+
+        block_hash
       end
     end
   end

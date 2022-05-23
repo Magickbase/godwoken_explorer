@@ -25,7 +25,7 @@ defmodule GodwokenExplorer.Log do
   `address_hash` and `transaction_hash` are converted to `t:Explorer.Chain.Hash.t/0`.  The allowed values for `type`
   are currently unknown, so it is left as a `t:String.t/0`.
 
-      iex> changeset = Explorer.Chain.Log.changeset(
+      iex> changeset =GodwokenExplorer.Chain.Log.changeset(
       ...>   %Explorer.Chain.Log{},
       ...>   %{
       ...>     address_hash: "0x8bf38d4764929064f2d4d3a56520a76ab3df415b",
