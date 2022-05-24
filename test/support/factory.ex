@@ -1,8 +1,12 @@
 defmodule GodwokenExplorer.Factory do
   use ExMachina.Ecto, repo: GodwokenExplorer.Repo
+
+  use GodwokenExplorer.UtilFactory
   use GodwokenExplorer.AccountFactory
   use GodwokenExplorer.AccountUDTFactory
   use GodwokenExplorer.BlockFactory
+  use GodwokenExplorer.PolyjuiceFactory
+  use GodwokenExplorer.TokenTransferFactory
   use GodwokenExplorer.TransactionFactory
   use GodwokenExplorer.UDTFactory
 

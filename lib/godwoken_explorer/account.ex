@@ -243,12 +243,30 @@ defmodule GodwokenExplorer.Account do
     end
   end
 
-  def search(keyword) do
+  @spec search(Hash.Address.t()) :: map()
+  def search(%Hash{byte_count: unquote(Hash.Address.byte_count())} = keyword) do
     results =
       from(a in Account,
         where:
-          a.eth_address == ^keyword or a.script_hash == ^keyword or
+          a.eth_address == ^keyword or
             (a.short_address == ^keyword and a.type == :polyjuice_contract),
+        order_by: a.id
+      )
+      |> Repo.all()
+
+    if length(results) > 1 do
+      Logger.error("Same keyword Error: #{keyword}")
+      nil
+    else
+      results |> List.first()
+    end
+  end
+
+  @spec search(Hash.Full.t()) :: map()
+  def search(%Hash{byte_count: unquote(Hash.Full.byte_count())} = keyword) do
+    results =
+      from(a in Account,
+        where: a.script_hash == ^keyword,
         order_by: a.id
       )
       |> Repo.all()

@@ -13,6 +13,18 @@ defmodule GodwokenExplorer.UDTFactory do
           bridge_account_id: 247
         }
       end
+
+      def udt_factory do
+        id = sequence(:id, & &1)
+
+        %UDT{
+          id: id,
+          script_hash: block_hash(),
+          type: :native,
+          name: sequence("UDT", &"UDT#{&1}"),
+          bridge_account_id: id
+        }
+      end
     end
   end
 end

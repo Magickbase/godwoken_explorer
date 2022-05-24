@@ -1,21 +1,32 @@
 defmodule GodwokenExplorer.TransactionFactory do
-  alias GodwokenExplorer.Transaction
+  alias GodwokenExplorer.{Transaction, Repo}
 
   defmacro __using__(_opts) do
     quote do
       def transaction_factory do
         %Transaction{
-          args: "0x01000000060000001600000000000000000000000000000001000000000000000000000000000000",
-          from_account_id: 2,
-          hash:
-            sequence(:hash, &"0x#{&1}b6c0a6f68c929453197ca43b06b4735e4c04b105b9418954aae9240bfa7330",
-              start_at: 100
-            ),
-          block_number: sequence(:block_number, & &1, start_at: 100),
-          nonce: sequence(:nonce, & &1, start_at: 0),
-          to_account_id: 6,
-          type: :sudt
+          from_account: build(:user),
+          to_account: build(:polyjuice_contract),
+          args:
+            "0x01000000060000001600000000000000000000000000000001000000000000000000000000000000",
+          hash: transaction_hash(),
+          nonce: Enum.random(1..1_000),
+          type: :polyjuice
         }
+      end
+
+      def with_polyjuice(%Transaction{} = transaction) do
+        insert(:polyjuice, transaction: transaction)
+        transaction
+      end
+
+      def with_block(%Transaction{index: nil} = transaction) do
+        {:ok, block} = insert(:block)
+
+        transaction
+        |> Transaction.changeset(%{block_hash: block.hash, block_number: block.number})
+        |> Repo.update!()
+        |> Repo.preload(:block)
       end
     end
   end

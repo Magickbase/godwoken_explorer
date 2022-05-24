@@ -5,6 +5,7 @@ defmodule GodwokenExplorer.Block do
 
   alias GodwokenExplorer.Chain.Cache.Blocks
   alias GodwokenExplorer.Chain.Events.Publisher
+  alias GodwokenExplorer.Chain.Hash
 
   @fields [
     :hash,
@@ -32,13 +33,12 @@ defmodule GodwokenExplorer.Block do
   ]
 
   @derive {Jason.Encoder, except: [:__meta__]}
-  @primary_key {:hash, :binary, autogenerate: false}
+  @primary_key {:hash, Hash.Full, autogenerate: false}
   schema "blocks" do
     field :number, :integer
-    field :parent_hash, :binary
+    field :parent_hash, Hash.Full
     field :timestamp, :utc_datetime_usec
     field :status, Ecto.Enum, values: [:committed, :finalized], default: :committed
-    field :aggregator_id, :integer
     field :transaction_count, :integer
     field :layer1_tx_hash, :binary
     field :layer1_block_number, :integer
@@ -53,7 +53,14 @@ defmodule GodwokenExplorer.Block do
     field :state_root, :binary
     field :extra_data, :binary
 
-    has_one :account, Account, foreign_key: :id, references: :aggregator_id
+    belongs_to(
+      :aggregator,
+      Account,
+      foreign_key: :aggregator_id,
+      references: :id,
+      type: :integer
+    )
+
     has_many :transactions, GodwokenExplorer.Transaction, foreign_key: :block_hash
 
     timestamps()

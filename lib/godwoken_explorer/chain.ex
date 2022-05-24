@@ -196,4 +196,26 @@ defmodule GodwokenExplorer.Chain do
       %{hash: hash, short_address: short_address}
     end)
   end
+
+  @spec check_address_exists(Hash.Address.t()) :: :ok | :not_found
+  def check_address_exists(address_hash) do
+    address_hash
+    |> address_exists?()
+    |> boolean_to_check_result()
+  end
+
+  @spec address_exists?(Hash.Address.t()) :: boolean()
+  def address_exists?(address_hash) do
+    query =
+      from(
+        a in Account,
+        where: a.eth_address == ^address_hash or a.short_address == ^address_hash
+      )
+
+    Repo.exists?(query)
+  end
+
+  defp boolean_to_check_result(true), do: :ok
+
+  defp boolean_to_check_result(false), do: :not_found
 end

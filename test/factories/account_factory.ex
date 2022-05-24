@@ -1,5 +1,5 @@
 defmodule GodwokenExplorer.AccountFactory do
-  alias GodwokenExplorer.{Account, Chain.Hash}
+  alias GodwokenExplorer.Account
 
   defmacro __using__(_opts) do
     quote do
@@ -48,28 +48,6 @@ defmodule GodwokenExplorer.AccountFactory do
           short_address: address_hash(),
           type: :polyjuice_contract
         }
-      end
-
-      def address_hash do
-        {:ok, address_hash} =
-          "address_hash"
-          |> sequence(& &1)
-          |> Hash.Address.cast()
-
-        if to_string(address_hash) == "0x0000000000000000000000000000000000000000" do
-          address_hash()
-        else
-          address_hash
-        end
-      end
-
-      def block_hash do
-        {:ok, block_hash} =
-          "block_hash"
-          |> sequence(& &1)
-          |> Hash.Full.cast()
-
-        block_hash
       end
     end
   end

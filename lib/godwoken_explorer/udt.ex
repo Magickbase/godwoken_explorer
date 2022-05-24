@@ -3,6 +3,8 @@ defmodule GodwokenExplorer.UDT do
 
   import GodwokenRPC.Util, only: [hex_to_number: 1]
 
+  alias GodwokenExplorer.Chain.Hash
+
   @derive {Jason.Encoder, except: [:__meta__]}
   @primary_key {:id, :integer, autogenerate: false}
   schema "udts" do
@@ -12,7 +14,7 @@ defmodule GodwokenExplorer.UDT do
     field(:icon, :string)
     field(:supply, :decimal)
     field(:type_script, :map)
-    field(:script_hash, :binary)
+    field(:script_hash, Hash.Full)
     field(:description, :string)
     field(:official_site, :string)
     field(:value, :decimal)
