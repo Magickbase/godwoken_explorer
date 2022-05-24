@@ -69,7 +69,8 @@ defmodule GodwokenExplorerWeb.Router do
 
     forward("/", RPC.RPCTranslator, %{
       "account" => {RPC.AccountController, []},
-      "contract" => {RPC.ContractController, []}
+      "contract" => {RPC.ContractController, []},
+      "block" => {RPC.BlockController, []}
     })
   end
 

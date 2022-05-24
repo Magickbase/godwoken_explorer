@@ -241,6 +241,96 @@ defmodule GodwokenExplorer.Chain do
 
   def string_to_transaction_hash(_), do: :error
 
+  def param_to_block_timestamp(timestamp_string) when is_binary(timestamp_string) do
+    case Integer.parse(timestamp_string) do
+      {temstamp_int, ""} ->
+        timestamp =
+          temstamp_int
+          |> DateTime.from_unix!(:second)
+
+        {:ok, timestamp}
+
+      _ ->
+        {:error, :invalid_timestamp}
+    end
+  end
+
+  def param_to_block_closest(closest) when is_binary(closest) do
+    case closest do
+      "before" -> {:ok, :before}
+      "after" -> {:ok, :after}
+      _ -> {:error, :invalid_closest}
+    end
+  end
+
+  def timestamp_to_block_number(given_timestamp, closest) do
+    {:ok, t} = Timex.format(given_timestamp, "%Y-%m-%d %H:%M:%S", :strftime)
+
+    inner_query =
+      from(
+        block in Block,
+        where:
+          fragment(
+            "? <= TO_TIMESTAMP(?, 'YYYY-MM-DD HH24:MI:SS') + (1 * interval '1 minute')",
+            block.timestamp,
+            ^t
+          ),
+        where:
+          fragment(
+            "? >= TO_TIMESTAMP(?, 'YYYY-MM-DD HH24:MI:SS') - (1 * interval '1 minute')",
+            block.timestamp,
+            ^t
+          )
+      )
+
+    query =
+      from(
+        block in subquery(inner_query),
+        select: block,
+        order_by:
+          fragment(
+            "abs(extract(epoch from (? - TO_TIMESTAMP(?, 'YYYY-MM-DD HH24:MI:SS'))))",
+            block.timestamp,
+            ^t
+          ),
+        limit: 1
+      )
+
+    response = query |> Repo.one()
+
+    response
+    |> case do
+      nil ->
+        {:error, :not_found}
+
+      %{:number => number, :timestamp => timestamp} ->
+        block_number =
+          get_block_number_based_on_closest(closest, timestamp, given_timestamp, number)
+
+        {:ok, block_number}
+    end
+  end
+
+  defp get_block_number_based_on_closest(closest, timestamp, given_timestamp, number) do
+    case closest do
+      :before ->
+        if DateTime.compare(timestamp, given_timestamp) == :lt ||
+             DateTime.compare(timestamp, given_timestamp) == :eq do
+          number
+        else
+          number - 1
+        end
+
+      :after ->
+        if DateTime.compare(timestamp, given_timestamp) == :lt ||
+             DateTime.compare(timestamp, given_timestamp) == :eq do
+          number + 1
+        else
+          number
+        end
+    end
+  end
+
   defp boolean_to_check_result(true), do: :ok
 
   defp boolean_to_check_result(false), do: :not_found
