@@ -68,7 +68,8 @@ defmodule GodwokenExplorerWeb.Router do
     alias GodwokenExplorerWeb.API.RPC
 
     forward("/", RPC.RPCTranslator, %{
-      "account" => {RPC.AccountController, []}
+      "account" => {RPC.AccountController, []},
+      "contract" => {RPC.ContractController, []}
     })
   end
 

@@ -215,6 +215,32 @@ defmodule GodwokenExplorer.Chain do
     Repo.exists?(query)
   end
 
+  @spec address_hash_to_smart_contract(Hash.Address.t()) :: SmartContract.t() | nil
+  def address_hash_to_smart_contract(address_hash) do
+    query =
+      from(
+        smart_contract in SmartContract,
+        join: a in Account,
+        on: a.id == smart_contract.account_id,
+        where: a.short_address == ^address_hash
+      )
+
+    current_smart_contract = Repo.one(query)
+
+    if current_smart_contract do
+      current_smart_contract
+    else
+      nil
+    end
+  end
+
+  @spec string_to_transaction_hash(String.t()) :: {:ok, Hash.t()} | :error
+  def string_to_transaction_hash(string) when is_binary(string) do
+    Hash.Full.cast(string)
+  end
+
+  def string_to_transaction_hash(_), do: :error
+
   defp boolean_to_check_result(true), do: :ok
 
   defp boolean_to_check_result(false), do: :not_found
