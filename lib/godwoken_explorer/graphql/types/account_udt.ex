@@ -1,6 +1,7 @@
 defmodule GodwokenExplorer.Graphql.Types.AccountUDT do
   use Absinthe.Schema.Notation
   alias GodwokenExplorer.Graphql.Resolvers, as: Resolvers
+  alias GodwokenExplorer.Graphql.Middleware.EIP55, as: MEIP55
   alias GodwokenExplorer.Graphql.Middleware.Downcase, as: MDowncase
   alias GodwokenExplorer.Graphql.Middleware.TermRange, as: MTermRange
 
@@ -47,6 +48,7 @@ defmodule GodwokenExplorer.Graphql.Types.AccountUDT do
     """
     field :account_udts, list_of(:account_udt) do
       arg(:input, non_null(:account_udts_input))
+      middleware(MEIP55, [:address_hashes, :token_contract_address_hash])
       middleware(MDowncase, [:address_hashes, :token_contract_address_hash])
       middleware(MTermRange, MTermRange.page_and_size_default_config())
       resolve(&Resolvers.AccountUDT.account_udts/3)
@@ -78,6 +80,7 @@ defmodule GodwokenExplorer.Graphql.Types.AccountUDT do
     """
     field :account_ckbs, list_of(:account_ckb) do
       arg(:input, non_null(:account_ckbs_input))
+      middleware(MEIP55, [:address_hashes])
       middleware(MDowncase, [:address_hashes])
       resolve(&Resolvers.AccountUDT.account_ckbs/3)
     end
@@ -123,6 +126,7 @@ defmodule GodwokenExplorer.Graphql.Types.AccountUDT do
     """
     field :account_udts_by_contract_address, list_of(:account_udt) do
       arg(:input, non_null(:account_udt_contract_address_input))
+      middleware(MEIP55, [:token_contract_address_hash])
       middleware(MDowncase, [:token_contract_address_hash])
       middleware(MTermRange, MTermRange.page_and_size_default_config())
       resolve(&Resolvers.AccountUDT.account_udts_by_contract_address/3)
