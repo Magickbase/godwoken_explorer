@@ -1,6 +1,7 @@
 defmodule GodwokenExplorer.Graphql.Types.TokenTransfer do
   use Absinthe.Schema.Notation
   alias GodwokenExplorer.Graphql.Resolvers, as: Resolvers
+  alias GodwokenExplorer.Graphql.Middleware.EIP55, as: MEIP55
   alias GodwokenExplorer.Graphql.Middleware.Downcase, as: MDowncase
   alias GodwokenExplorer.Graphql.Middleware.TermRange, as: MTermRange
 
@@ -44,6 +45,13 @@ defmodule GodwokenExplorer.Graphql.Types.TokenTransfer do
     """
     field :token_transfers, list_of(:token_transfer) do
       arg(:input, non_null(:token_transfer_input))
+
+      middleware(MEIP55, [
+        :transaction_hash,
+        :from_address,
+        :to_address,
+        :token_contract_address_hash
+      ])
 
       middleware(MDowncase, [
         :transaction_hash,

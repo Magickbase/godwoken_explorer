@@ -1,6 +1,7 @@
 defmodule GodwokenExplorer.Graphql.Types.Log do
   use Absinthe.Schema.Notation
   alias GodwokenExplorer.Graphql.Resolvers, as: Resolvers
+  alias GodwokenExplorer.Graphql.Middleware.EIP55, as: MEIP55
   alias GodwokenExplorer.Graphql.Middleware.Downcase, as: MDowncase
   alias GodwokenExplorer.Graphql.Middleware.TermRange, as: MTermRange
 
@@ -42,6 +43,15 @@ defmodule GodwokenExplorer.Graphql.Types.Log do
     """
     field :logs, list_of(:log) do
       arg(:input, non_null(:log_input))
+
+      middleware(MEIP55, [
+        :transaction_hash,
+        :first_topic,
+        :second_topic,
+        :third_topic,
+        :fourth_topic,
+        :address_hash
+      ])
 
       middleware(MDowncase, [
         :transaction_hash,
