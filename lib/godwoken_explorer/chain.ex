@@ -341,6 +341,16 @@ defmodule GodwokenExplorer.Chain do
     end
   end
 
+  def token_from_address_hash(%Hash{byte_count: unquote(Hash.Address.byte_count())} = hash) do
+    with %Account{id: id} <- Account.search(hash),
+         %UDT{supply: supply} <-
+           UDT |> where([u], u.id == ^id or u.bridge_account_id == ^id) |> Repo.one() do
+      {:ok, supply}
+    else
+      _ -> {:error, :not_found}
+    end
+  end
+
   defp boolean_to_check_result(true), do: :ok
 
   defp boolean_to_check_result(false), do: :not_found

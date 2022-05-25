@@ -10,6 +10,7 @@ defmodule GodwokenExplorer.UDTFactory do
           decimal: 8,
           script_hash: "0x0000000000000000000000000000000000000000000000000000000000000000",
           type: :bridge,
+          supply: Enum.random(1_000_000_000..1_000_000_000),
           bridge_account_id: 247
         }
       end

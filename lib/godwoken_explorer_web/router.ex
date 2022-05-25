@@ -71,7 +71,8 @@ defmodule GodwokenExplorerWeb.Router do
       "account" => {RPC.AccountController, []},
       "contract" => {RPC.ContractController, []},
       "block" => {RPC.BlockController, []},
-      "logs" => {RPC.LogsController, []}
+      "logs" => {RPC.LogsController, []},
+      "stats" => {RPC.StatsController, []}
     })
   end
 
