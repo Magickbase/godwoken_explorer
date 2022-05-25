@@ -7,6 +7,7 @@ defmodule GodwokenExplorer.Etherscan do
 
   alias GodwokenExplorer.Chain.Hash
   alias GodwokenExplorer.{Account, Repo, Polyjuice, Transaction, TokenTransfer, UDT}
+  alias GodwokenExplorer.Etherscan.Logs
 
   @default_options %{
     order_by_direction: :desc,
@@ -170,6 +171,9 @@ defmodule GodwokenExplorer.Etherscan do
     |> where_end_block_match(options)
     |> Repo.all()
   end
+
+  @spec list_logs(map()) :: [map()]
+  def list_logs(filter), do: Logs.list_logs(filter)
 
   defp where_address_match(query, id, _) do
     query

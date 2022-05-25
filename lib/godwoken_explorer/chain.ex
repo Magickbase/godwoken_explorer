@@ -331,6 +331,16 @@ defmodule GodwokenExplorer.Chain do
     end
   end
 
+  @spec max_consensus_block_number() :: {:ok, Block.block_number()} | {:error, :not_found}
+  def max_consensus_block_number do
+    Block
+    |> Repo.aggregate(:max, :number)
+    |> case do
+      nil -> {:error, :not_found}
+      number -> {:ok, number}
+    end
+  end
+
   defp boolean_to_check_result(true), do: :ok
 
   defp boolean_to_check_result(false), do: :not_found

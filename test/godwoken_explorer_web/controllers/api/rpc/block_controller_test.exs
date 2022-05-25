@@ -1,5 +1,4 @@
 defmodule GodwokenExplorerWeb.API.RPC.BlockControllerTest do
-  use GodwokenExplorer, :schema
   use GodwokenExplorerWeb.ConnCase
 
   import GodwokenExplorer.Factory

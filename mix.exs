@@ -116,6 +116,7 @@ defmodule GodwokenExplorer.MixProject do
       {:excoveralls, "~> 0.14.4", only: [:test]},
       {:mock, "~> 0.3.7", only: [:test], runtime: false},
       {:mox, "~> 1.0.1", only: [:test]},
+      {:ex_json_schema, "~> 0.6.2"},
 
       # graphql
       {:absinthe, "~> 1.7"},

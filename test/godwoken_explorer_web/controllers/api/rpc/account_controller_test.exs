@@ -1,10 +1,9 @@
 defmodule GodwokenExplorerWeb.API.RPC.AccountControllerTest do
-  use GodwokenExplorer, :schema
   use GodwokenExplorerWeb.ConnCase
 
   import GodwokenExplorer.Factory
 
-  alias GodwokenExplorer.Repo
+  alias GodwokenExplorer.{Account, Repo, Transaction, Polyjuice}
   alias Decimal, as: D
 
   describe "balance" do

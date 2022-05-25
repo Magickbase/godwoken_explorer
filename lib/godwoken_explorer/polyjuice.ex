@@ -11,12 +11,12 @@ defmodule GodwokenExplorer.Polyjuice do
   @derive {Jason.Encoder, except: [:__meta__]}
   schema "polyjuice" do
     field :is_create, :boolean, default: false
-    field :gas_limit, :integer
+    field :gas_limit, :decimal
     field :gas_price, :decimal
     field :value, :decimal
     field :input_size, :integer
     field :input, Data
-    field :gas_used, :integer
+    field :gas_used, :decimal
     field :transaction_index, :integer
     field :created_contract_address_hash, Hash.Address
     field(:status, Ecto.Enum, values: [:succeed, :failed])

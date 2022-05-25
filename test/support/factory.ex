@@ -5,6 +5,7 @@ defmodule GodwokenExplorer.Factory do
   use GodwokenExplorer.AccountFactory
   use GodwokenExplorer.AccountUDTFactory
   use GodwokenExplorer.BlockFactory
+  use GodwokenExplorer.LogFactory
   use GodwokenExplorer.PolyjuiceFactory
   use GodwokenExplorer.TokenTransferFactory
   use GodwokenExplorer.TransactionFactory
