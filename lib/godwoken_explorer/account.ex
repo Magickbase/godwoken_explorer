@@ -243,7 +243,7 @@ defmodule GodwokenExplorer.Account do
     end
   end
 
-  @spec search(Hash.Address.t()) :: map()
+  @spec search(Hash.Address.t()) :: nil | map()
   def search(%Hash{byte_count: unquote(Hash.Address.byte_count())} = keyword) do
     results =
       from(a in Account,
@@ -262,7 +262,7 @@ defmodule GodwokenExplorer.Account do
     end
   end
 
-  @spec search(Hash.Full.t()) :: map()
+  @spec search(Hash.Full.t()) :: nil | map()
   def search(%Hash{byte_count: unquote(Hash.Full.byte_count())} = keyword) do
     results =
       from(a in Account,

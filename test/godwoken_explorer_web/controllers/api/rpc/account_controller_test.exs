@@ -406,4 +406,196 @@ defmodule GodwokenExplorerWeb.API.RPC.AccountControllerTest do
       refute response["result"]
     end
   end
+
+  describe "tokenbalance" do
+    test "without required params", %{conn: conn} do
+      params = %{
+        "module" => "account",
+        "action" => "tokenbalance"
+      }
+
+      assert response =
+               conn
+               |> get("/api/v1", params)
+               |> json_response(200)
+
+      assert response["message"] =~ "missing: address, contractaddress"
+      assert response["status"] == "0"
+      assert Map.has_key?(response, "result")
+      refute response["result"]
+      assert :ok = ExJsonSchema.Validator.validate(tokenbalance_schema(), response)
+    end
+
+    test "with contract address but without address", %{conn: conn} do
+      params = %{
+        "module" => "account",
+        "action" => "tokenbalance",
+        "contractaddress" => "0x8bf38d4764929064f2d4d3a56520a76ab3df415b"
+      }
+
+      assert response =
+               conn
+               |> get("/api/v1", params)
+               |> json_response(200)
+
+      assert response["message"] =~ "missing: address"
+      assert response["status"] == "0"
+      assert Map.has_key?(response, "result")
+      refute response["result"]
+      assert :ok = ExJsonSchema.Validator.validate(tokenbalance_schema(), response)
+    end
+
+    test "with address but without contract address", %{conn: conn} do
+      params = %{
+        "module" => "account",
+        "action" => "tokenbalance",
+        "address" => "0x8bf38d4764929064f2d4d3a56520a76ab3df415b"
+      }
+
+      assert response =
+               conn
+               |> get("/api/v1", params)
+               |> json_response(200)
+
+      assert response["message"] =~ "missing: contractaddress"
+      assert response["status"] == "0"
+      assert Map.has_key?(response, "result")
+      refute response["result"]
+      assert :ok = ExJsonSchema.Validator.validate(tokenbalance_schema(), response)
+    end
+
+    test "with an invalid contract address hash", %{conn: conn} do
+      params = %{
+        "module" => "account",
+        "action" => "tokenbalance",
+        "contractaddress" => "badhash",
+        "address" => "badhash"
+      }
+
+      assert response =
+               conn
+               |> get("/api/v1", params)
+               |> json_response(200)
+
+      assert response["message"] =~ "Invalid contractaddress format"
+      assert response["status"] == "0"
+      assert Map.has_key?(response, "result")
+      refute response["result"]
+      assert :ok = ExJsonSchema.Validator.validate(tokenbalance_schema(), response)
+    end
+
+    test "with an invalid address hash", %{conn: conn} do
+      params = %{
+        "module" => "account",
+        "action" => "tokenbalance",
+        "contractaddress" => "0x8bf38d4764929064f2d4d3a56520a76ab3df415b",
+        "address" => "badhash"
+      }
+
+      assert response =
+               conn
+               |> get("/api/v1", params)
+               |> json_response(200)
+
+      assert response["message"] =~ "Invalid address format"
+      assert response["status"] == "0"
+      assert Map.has_key?(response, "result")
+      refute response["result"]
+      assert :ok = ExJsonSchema.Validator.validate(tokenbalance_schema(), response)
+    end
+
+    test "with a contract address and address that doesn't exist", %{conn: conn} do
+      params = %{
+        "module" => "account",
+        "action" => "tokenbalance",
+        "contractaddress" => "0x8bf38d4764929064f2d4d3a56520a76ab3df415b",
+        "address" => "0x9bf38d4764929064f2d4d3a56520a76ab3df415b"
+      }
+
+      assert response =
+               conn
+               |> get("/api/v1", params)
+               |> json_response(200)
+
+      assert response["result"] == "0"
+      assert response["status"] == "1"
+      assert response["message"] == "OK"
+      assert :ok = ExJsonSchema.Validator.validate(tokenbalance_schema(), response)
+    end
+
+    test "with contract address and address without row in token_balances table", %{conn: conn} do
+      %Account{short_address: native_short_address} = insert(:ckb_contract_account)
+
+      insert(:ckb_udt)
+
+      %Account{eth_address: user_eth_address} = insert(:user)
+
+      params = %{
+        "module" => "account",
+        "action" => "tokenbalance",
+        "contractaddress" => to_string(native_short_address),
+        "address" => to_string(user_eth_address)
+      }
+
+      assert response =
+               conn
+               |> get("/api/v1", params)
+               |> json_response(200)
+
+      assert response["result"] == "0"
+      assert response["status"] == "1"
+      assert response["message"] == "OK"
+      assert :ok = ExJsonSchema.Validator.validate(tokenbalance_schema(), response)
+    end
+
+    test "with contract address and address with existing balance in token_balances table", %{
+      conn: conn
+    } do
+      %Account{short_address: native_short_address} = insert(:ckb_contract_account)
+
+      insert(:ckb_udt)
+
+      %Account{short_address: user_short_address, eth_address: user_eth_address} = insert(:user)
+
+      account_udt =
+        insert(
+          :account_udt,
+          address_hash: user_short_address,
+          udt_id: 1,
+          token_contract_address_hash: native_short_address,
+          balance: D.new(555_500_000_000)
+        )
+
+      params = %{
+        "module" => "account",
+        "action" => "tokenbalance",
+        "contractaddress" => to_string(native_short_address),
+        "address" => to_string(user_eth_address)
+      }
+
+      assert response =
+               conn
+               |> get("/api/v1", params)
+               |> json_response(200)
+
+      assert response["result"] == to_string(account_udt.balance)
+      assert response["status"] == "1"
+      assert response["message"] == "OK"
+      assert :ok = ExJsonSchema.Validator.validate(tokenbalance_schema(), response)
+    end
+  end
+
+  defp tokenbalance_schema, do: resolve_schema(%{"type" => ["string", "null"]})
+
+  defp resolve_schema(result) do
+    %{
+      "type" => "object",
+      "properties" => %{
+        "message" => %{"type" => "string"},
+        "status" => %{"type" => "string"}
+      }
+    }
+    |> put_in(["properties", "result"], result)
+    |> ExJsonSchema.Schema.resolve()
+  end
 end

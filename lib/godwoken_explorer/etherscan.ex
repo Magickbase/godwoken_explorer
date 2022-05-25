@@ -6,7 +6,7 @@ defmodule GodwokenExplorer.Etherscan do
   import Ecto.Query, only: [from: 2, where: 3, or_where: 3, subquery: 1, order_by: 3]
 
   alias GodwokenExplorer.Chain.Hash
-  alias GodwokenExplorer.{Account, Repo, Polyjuice, Transaction, TokenTransfer, UDT}
+  alias GodwokenExplorer.{Account, AccountUDT, Repo, Polyjuice, Transaction, TokenTransfer, UDT}
   alias GodwokenExplorer.Etherscan.Logs
 
   @default_options %{
@@ -179,6 +179,24 @@ defmodule GodwokenExplorer.Etherscan do
     query
     |> where([t], t.from_account_id == ^id)
     |> or_where([t], t.to_account_id == ^id)
+  end
+
+  def get_token_balance(
+        %Hash{byte_count: unquote(Hash.Address.byte_count())} = contract_address_hash,
+        %Hash{byte_count: unquote(Hash.Address.byte_count())} = address_hash
+      ) do
+    case Account.search(address_hash) do
+      %Account{short_address: short_address} ->
+        from(au in AccountUDT,
+          where: au.token_contract_address_hash == ^contract_address_hash,
+          where: au.address_hash == ^short_address,
+          select: au.balance
+        )
+        |> Repo.one()
+
+      nil ->
+        nil
+    end
   end
 
   defp where_start_block_match(query, %{start_block: nil}), do: query

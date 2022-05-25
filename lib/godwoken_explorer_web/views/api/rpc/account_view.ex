@@ -29,6 +29,10 @@ defmodule GodwokenExplorerWeb.API.RPC.AccountView do
     RPCView.render("show.json", data: data)
   end
 
+  def render("tokenbalance.json", %{token_balance: token_balance}) do
+    RPCView.render("show.json", data: to_string(token_balance))
+  end
+
   defp prepare_transaction(transaction) do
     %{
       "blockNumber" => "#{transaction.block_number}",
