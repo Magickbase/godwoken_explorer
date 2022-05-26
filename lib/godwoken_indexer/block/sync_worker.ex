@@ -79,6 +79,10 @@ defmodule GodwokenIndexer.Block.SyncWorker do
        errors: []
      }} = GodwokenRPC.fetch_blocks_by_range(range)
 
+    if is_nil(multiple_block_once?) do
+      {:ok, _} = validate_last_block_fork(blocks_params, next_block_number)
+    end
+
     {:ok, inserted_transactions} =
       if transactions_params_without_receipts != [] do
         import_account(transactions_params_without_receipts)
