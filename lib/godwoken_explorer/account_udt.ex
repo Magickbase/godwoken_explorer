@@ -7,12 +7,14 @@ defmodule GodwokenExplorer.AccountUDT do
 
   alias GodwokenRPC
   alias GodwokenExplorer.Chain.Events.Publisher
+  alias GodwokenExplorer.Chain
+  alias GodwokenExplorer.Chain.Hash
 
   @derive {Jason.Encoder, except: [:__meta__]}
   schema "account_udts" do
     field :balance, :decimal
-    field :address_hash, :binary
-    field :token_contract_address_hash, :binary
+    field :address_hash, Hash.Address
+    field :token_contract_address_hash, Hash.Address
     belongs_to(:account, GodwokenExplorer.Account, foreign_key: :account_id, references: :id)
     belongs_to(:udt, GodwokenExplorer.UDT, foreign_key: :udt_id, references: :id)
 
@@ -136,6 +138,55 @@ defmodule GodwokenExplorer.AccountUDT do
       _ ->
         {:error, :account_not_exist}
     end
+  end
+
+  def get_ckb_balance(hashes) do
+    hashes_and_short_addresses = Chain.hashes_to_addresses(hashes)
+
+    addresses =
+      hashes_and_short_addresses
+      |> Enum.map(fn hash_and_short_address -> hash_and_short_address[:short_address] end)
+
+    udt_addresses = UDT.ckb_account_id() |> UDT.get_bridge_and_natvie_address()
+
+    results =
+      from(au in AccountUDT,
+        where: au.address_hash in ^addresses and au.token_contract_address_hash in ^udt_addresses,
+        select: %{
+          address: au.address_hash,
+          balance: au.balance,
+          updated_at: au.updated_at
+        }
+      )
+      |> Repo.all()
+      |> Enum.group_by(fn result -> result[:address] end)
+      |> Enum.reduce([], fn {_address, account_udts}, acc ->
+        if length(account_udts) > 1 do
+          latest_au = account_udts |> Enum.sort_by(fn au -> au[:updated_at] end) |> List.last()
+          [latest_au | acc]
+        else
+          [List.first(account_udts) | acc]
+        end
+      end)
+
+    hashes_and_short_addresses
+    |> Enum.map(fn hash_and_short_address ->
+      result =
+        results
+        |> Enum.find(fn result -> result[:address] == hash_and_short_address[:short_address] end)
+
+      if is_nil(result) do
+        %{
+          account: hash_and_short_address[:hash],
+          balance: 0
+        }
+      else
+        %{
+          account: hash_and_short_address[:hash],
+          balance: result[:balance]
+        }
+      end
+    end)
   end
 
   def sort_holder_list(udt_id, paging_options) do
