@@ -312,6 +312,7 @@ defmodule GodwokenRPC do
     end
   end
 
+  @spec fetch_transaction_receipts([%{eth_hash: hash()}]) :: nil | {:ok, map()}
   def fetch_transaction_receipts(transactions_params) when is_list(transactions_params) do
     options = Application.get_env(:godwoken_explorer, :json_rpc_named_arguments)
 

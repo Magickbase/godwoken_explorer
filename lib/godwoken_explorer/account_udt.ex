@@ -115,7 +115,7 @@ defmodule GodwokenExplorer.AccountUDT do
         account_id: account_id,
         address_hash: eth_address,
         udt_id: udt_id,
-        token_contract_address_hash: script_hash,
+        token_contract_address_hash: to_string(script_hash),
         balance: balance
       })
     else
@@ -134,7 +134,7 @@ defmodule GodwokenExplorer.AccountUDT do
         account_id: account_id,
         address_hash: eth_address,
         udt_id: udt_id,
-        token_contract_address_hash: script_hash,
+        token_contract_address_hash: to_string(script_hash),
         balance: balance
       })
     else

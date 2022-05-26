@@ -27,7 +27,6 @@ defmodule GodwokenExplorer.Log do
 
     belongs_to(:block, Block,
       foreign_key: :block_hash,
-      primary_key: true,
       references: :hash,
       type: Hash.Full
     )

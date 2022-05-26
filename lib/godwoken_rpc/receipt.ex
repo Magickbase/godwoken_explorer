@@ -4,7 +4,6 @@ defmodule GodwokenRPC.Receipt do
   [`eth_getTransactionReceipt`](https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_gettransactionreceipt).
   """
 
-
   import GodwokenRPC, only: [quantity_to_integer: 1]
   alias GodwokenRPC.Logs
 
@@ -129,6 +128,13 @@ defmodule GodwokenRPC.Receipt do
         } = elixir
       ) do
     status = elixir_to_status(elixir)
+
+    created_contract_address_hash =
+      if created_contract_address_hash == "0x" do
+        nil
+      else
+        created_contract_address_hash
+      end
 
     %{
       cumulative_gas_used: cumulative_gas_used,

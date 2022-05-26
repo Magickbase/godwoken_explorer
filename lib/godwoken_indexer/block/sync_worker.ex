@@ -206,7 +206,11 @@ defmodule GodwokenIndexer.Block.SyncWorker do
   end
 
   defp import_logs(logs) do
-    Import.insert_changes_list(logs, for: Log, timestamps: import_timestamps())
+    Import.insert_changes_list(logs,
+      for: Log,
+      timestamps: import_timestamps(),
+      on_conflict: :nothing
+    )
   end
 
   defp import_token_transfers(logs) do
@@ -505,7 +509,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
       ckb_id = UDT.ckb_account_id()
 
       if not is_nil(ckb_id) do
-        %Account{registry_address: ckb_contract_address} = Repo.get(Account, ckb_id)
+        %Account{script_hash: ckb_contract_address} = Repo.get(Account, ckb_id)
 
         account_ids =
           polyjuice_params
@@ -531,16 +535,12 @@ defmodule GodwokenIndexer.Block.SyncWorker do
               eth_address: account.eth_address,
               account_id: account.id,
               udt_id: ckb_id,
-              token_contract_address_hash: ckb_contract_address
+              token_contract_address_hash: to_string(ckb_contract_address)
             }
           end)
 
         {:ok, %GodwokenRPC.Account.FetchedBalances{params_list: import_account_udts}} =
           GodwokenRPC.fetch_balances(params)
-
-        import_account_udts =
-          import_account_udts
-          |> Enum.map(fn import_au -> import_au |> Map.merge(import_timestamps()) end)
 
         Import.insert_changes_list(import_account_udts,
           for: AccountUDT,

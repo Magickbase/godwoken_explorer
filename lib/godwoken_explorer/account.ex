@@ -104,7 +104,7 @@ defmodule GodwokenExplorer.Account do
         new_script = atom_script |> Map.merge(global_state)
 
         case meta_contract
-             |> Account.changeset(script: new_script)
+             |> Account.changeset(%{script: new_script})
              |> Repo.update() do
           {:ok, account} ->
             account_api_data = 0 |> find_by_id() |> account_to_view()
