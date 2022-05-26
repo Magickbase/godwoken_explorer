@@ -1,7 +1,11 @@
 defmodule GodwokenExplorer.Graphql.Common do
   import Ecto.Query
 
-  def page_and_size(query, input, max_limit \\ 100) do
+  def page_and_size(query, input), do: page_and_size(query, input, 100)
+
+  def page_and_size({:error, _} = error, _input, _max_limit), do: error
+
+  def page_and_size(query, input, max_limit) do
     page = Map.get(input, :page)
     page_size = Map.get(input, :page_size)
 
@@ -31,6 +35,8 @@ defmodule GodwokenExplorer.Graphql.Common do
         query
     end
   end
+
+  def sort_type({:error, _} = error, _input, _value), do: error
 
   def sort_type(query, input, value) do
     sort_condtion = Map.get(input, :sort_type)
