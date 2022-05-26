@@ -810,24 +810,31 @@ type RootQueryType {
   
   request-example:
   query {
-    transactions (input: {address:
-  "0x3076d0e71c44b89c58692cf6f474a28c7dd697b3977cfb91116c35da39cbf24b",  page:
-  1, page_size: 2, end_block_number: 15408}) {
+    transactions (input: {address: "0x966b30e576a4d6731996748b48dd67c94ef29067", 
+  page: 1, page_size: 2, end_block_number: 15408}) {
       block_hash
       block_number
       type
       from_account_id
+  from_account {
+        id
+        eth_address
+      }
       to_account_id
     }
+  
   }
   
-  result-example:
   {
     "data": {
       "transactions": [
         {
           "block_hash": "0x50505f785e5bfa7b5b13a440eea7b4701368fd539a405d50a03f114ea886e41a",
           "block_number": 15408,
+          "from_account": {
+            "eth_address": "0x966b30e576a4d6731996748b48dd67c94ef29067",
+            "id": 5
+          },
           "from_account_id": 5,
           "to_account_id": 1003,
           "type": "POLYJUICE"
@@ -835,6 +842,10 @@ type RootQueryType {
         {
           "block_hash": "0x50505f785e5bfa7b5b13a440eea7b4701368fd539a405d50a03f114ea886e41a",
           "block_number": 15408,
+          "from_account": {
+            "eth_address": "0x966b30e576a4d6731996748b48dd67c94ef29067",
+            "id": 5
+          },
           "from_account_id": 5,
           "to_account_id": 4,
           "type": "POLYJUICE"

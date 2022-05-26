@@ -22,7 +22,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
             dynamic([t], ^acc and t.eth_hash == ^value)
 
           _ ->
-            acc
+            false
         end
       end)
 
@@ -30,15 +30,18 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
   end
 
   def transactions(_parent, %{input: input} = _args, _resolution) do
-    return =
-      from(t in Transaction)
-      |> query_with_account_address(input)
-      |> query_with_block_range(input)
-      |> page_and_size(input)
-      |> sort_type(input, [:block_number, :index])
-      |> Repo.all()
+    from(t in Transaction)
+    |> query_with_account_address(input)
+    |> query_with_block_range(input)
+    |> page_and_size(input)
+    |> sort_type(input, [:block_number, :index])
+    |> do_transactions
+  end
 
-    {:ok, return}
+  defp do_transactions({:error, _} = error), do: error
+
+  defp do_transactions(query) do
+    {:ok, Repo.all(query)}
   end
 
   defp query_with_account_address(query, input) do
@@ -65,11 +68,13 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
           query
           |> where([t], t.to_account_id == ^account.id)
 
-        _ ->
-          query
+        nil ->
+          {:error, "address not found"}
       end
     end
   end
+
+  defp query_with_block_range({:error, _} = error, _input), do: error
 
   defp query_with_block_range(query, input) do
     start_block_number = Map.get(input, :start_block_number)
