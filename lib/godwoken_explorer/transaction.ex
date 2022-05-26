@@ -5,22 +5,37 @@ defmodule GodwokenExplorer.Transaction do
 
   alias GodwokenExplorer.Chain.Cache.Transactions
   alias GodwokenExplorer.Chain
+  alias GodwokenExplorer.Chain.Hash
 
   @tx_limit 500_000
   @account_tx_limit 100_000
 
   @derive {Jason.Encoder, except: [:__meta__]}
-  @primary_key {:hash, :binary, autogenerate: false}
+  @primary_key {:hash, Hash.Full, autogenerate: false}
   schema "transactions" do
     field(:args, :binary)
-    field(:from_account_id, :integer)
     field(:nonce, :integer)
-    field(:to_account_id, :integer)
     field(:type, Ecto.Enum, values: [:polyjuice_creator, :polyjuice, :unknown])
     field(:block_number, :integer)
     field(:index, :integer)
 
-    belongs_to(:block, Block, foreign_key: :block_hash, references: :hash, type: :binary)
+    belongs_to(:block, Block, foreign_key: :block_hash, references: :hash, type: Hash.Full)
+
+    belongs_to(
+      :from_account,
+      Account,
+      foreign_key: :from_account_id,
+      references: :id,
+      type: :integer
+    )
+
+    belongs_to(
+      :to_account,
+      Account,
+      foreign_key: :to_account_id,
+      references: :id,
+      type: :integer
+    )
 
     timestamps()
   end
@@ -258,21 +273,20 @@ defmodule GodwokenExplorer.Transaction do
       on: s4.account_id == t.to_account_id,
       left_join: p in Polyjuice,
       on: p.tx_hash == t.hash,
-      left_join: u6 in UDT,
-      on: u6.bridge_account_id == s4.account_id,
       where: t.hash in ^hashes,
       select: %{
         hash: t.hash,
         block_hash: b.hash,
         block_number: b.number,
+        timestamp: b.timestamp,
         l1_block_number: b.layer1_block_number,
         from: a2.eth_address,
         to:
           fragment(
             "
-          CASE WHEN ? = 'user' THEN encode(?, 'escape')
-          WHEN ? = 'polyjuice_contract' THEN encode(?, 'escape')
-           ELSE encode(?, 'escape') END",
+          CASE WHEN ? = 'user' THEN encode(?, 'hex')
+          WHEN ? = 'polyjuice_contract' THEN encode(?, 'hex')
+           ELSE encode(?, 'hex') END",
             a3.type,
             a3.eth_address,
             a3.type,
@@ -301,19 +315,16 @@ defmodule GodwokenExplorer.Transaction do
             a3.script_hash
           ),
         status: b.status,
+        index: p.transaction_index,
         polyjuice_status: p.status,
         type: t.type,
         nonce: t.nonce,
-        inserted_at: t.inserted_at,
         fee: p.gas_price * p.gas_used,
         gas_price: p.gas_price,
         gas_used: p.gas_used,
         gas_limit: p.gas_limit,
         value: p.value,
-        udt_id: s4.account_id,
         transaction_index: p.transaction_index,
-        udt_symbol: fragment("CASE WHEN ? IS NULL THEN ? ELSE ? END", u6, "", u6.symbol),
-        udt_icon: fragment("CASE WHEN ? IS NULL THEN ? ELSE ? END", u6, "", u6.icon),
         input: p.input,
         to_account_id: t.to_account_id,
         created_contract_address_hash: p.created_contract_address_hash

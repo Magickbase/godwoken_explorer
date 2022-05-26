@@ -3,6 +3,8 @@ defmodule GodwokenExplorer.UDT do
 
   import GodwokenRPC.Util, only: [hex_to_number: 1]
 
+  alias GodwokenExplorer.Chain.Hash
+
   @derive {Jason.Encoder, except: [:__meta__]}
   @primary_key {:id, :integer, autogenerate: false}
   schema "udts" do
@@ -12,7 +14,7 @@ defmodule GodwokenExplorer.UDT do
     field(:icon, :string)
     field(:supply, :decimal)
     field(:type_script, :map)
-    field(:script_hash, :binary)
+    field(:script_hash, Hash.Full)
     field(:description, :string)
     field(:official_site, :string)
     field(:value, :decimal)
@@ -75,30 +77,6 @@ defmodule GodwokenExplorer.UDT do
 
       %UDT{decimal: decimal} ->
         decimal
-    end
-  end
-
-  def get_udt_contract_ids do
-    bridge_query =
-      from(u in UDT,
-        where: u.type == :bridge and not is_nil(u.name),
-        select: %{id: u.bridge_account_id}
-      )
-
-    native_query =
-      from(u in UDT, where: u.type == :native and not is_nil(u.name), select: %{id: u.id})
-
-    from(q in subquery(union_all(bridge_query, ^native_query))) |> Repo.all() |> Enum.map(& &1.id)
-  end
-
-  def get_contract_id(udt_account_id) do
-    case Repo.get(UDT, udt_account_id) do
-      %UDT{type: :bridge, bridge_account_id: bridge_account_id}
-      when not is_nil(bridge_account_id) ->
-        bridge_account_id
-
-      _ ->
-        udt_account_id
     end
   end
 
@@ -197,5 +175,17 @@ defmodule GodwokenExplorer.UDT do
       _ ->
         ""
     end
+  end
+
+  def get_bridge_and_natvie_address(udt_id) do
+    from(u in UDT,
+      left_join: a1 in Account,
+      on: a1.id == u.id,
+      left_join: a2 in Account,
+      on: a2.id == u.bridge_account_id,
+      where: u.id == ^udt_id,
+      select: [a1.short_address, a2.short_address]
+    )
+    |> Repo.one()
   end
 end

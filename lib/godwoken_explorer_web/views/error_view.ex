@@ -14,9 +14,21 @@ defmodule GodwokenExplorerWeb.ErrorView do
     # When encoded, the changeset returns its errors
     # as a JSON object. So we just pass it forward.
     %{
-      errors:  %{
+      errors: %{
         status: "404",
         title: "not found",
+        detail: ""
+      }
+    }
+  end
+
+  def render("400.json", _assigns) do
+    # When encoded, the changeset returns its errors
+    # as a JSON object. So we just pass it forward.
+    %{
+      errors: %{
+        status: "400",
+        title: "bad request",
         detail: ""
       }
     }

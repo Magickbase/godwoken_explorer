@@ -6,26 +6,25 @@ defmodule GodwokenExplorer.Polyjuice do
   require Logger
 
   alias ABI.FunctionSelector
+  alias GodwokenExplorer.Chain.{Data, Hash}
 
   @derive {Jason.Encoder, except: [:__meta__]}
   schema "polyjuice" do
     field :is_create, :boolean, default: false
-    field :gas_limit, :integer
+    field :gas_limit, :decimal
     field :gas_price, :decimal
     field :value, :decimal
     field :input_size, :integer
-    field :input, :binary
-    field :tx_hash, :binary
-    field :gas_used, :integer
+    field :input, Data
+    field :gas_used, :decimal
     field :transaction_index, :integer
-    field :created_contract_address_hash, :binary
-
+    field :created_contract_address_hash, Hash.Address
     field(:status, Ecto.Enum, values: [:succeed, :failed])
 
     belongs_to(:transaction, GodwokenExplorer.Transaction,
       foreign_key: :tx_hash,
       references: :hash,
-      define_field: false
+      type: Hash.Full
     )
 
     timestamps()

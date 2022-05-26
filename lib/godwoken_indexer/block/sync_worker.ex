@@ -10,6 +10,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
   alias GodwokenExplorer.Token.BalanceReader
   alias GodwokenIndexer.Transform.{TokenTransfers, TokenBalances}
   alias GodwokenRPC.{Blocks, Receipts}
+  alias GodwokenExplorer.Chain.Import
 
   alias GodwokenExplorer.{
     AccountUDT,
@@ -77,10 +78,6 @@ defmodule GodwokenIndexer.Block.SyncWorker do
        withdrawal_params: withdrawal_params,
        errors: []
      }} = GodwokenRPC.fetch_blocks_by_range(range)
-
-    if is_nil(multiple_block_once?) do
-      {:ok, _} = validate_last_block_fork(blocks_params, next_block_number)
-    end
 
     {:ok, inserted_transactions} =
       if transactions_params_without_receipts != [] do
@@ -174,9 +171,10 @@ defmodule GodwokenIndexer.Block.SyncWorker do
   @spec import_block(list) :: list
   defp import_block(blocks_params) do
     {_count, returned_values} =
-      Repo.insert_all(
-        Block,
-        blocks_params |> Enum.map(fn block -> Map.merge(block, import_timestamps()) end),
+      Import.insert_changes_list(
+        blocks_params,
+        for: Block,
+        timestamps: import_timestamps(),
         on_conflict: :nothing,
         returning: [:hash, :number, :transaction_count, :size, :inserted_at]
       )
@@ -185,26 +183,16 @@ defmodule GodwokenIndexer.Block.SyncWorker do
   end
 
   defp import_logs(logs) do
-    import_all_batch(Log, logs)
-  end
-
-  defp import_all_batch(module, changesets) do
-    reducer = fn {changeset, index}, multi ->
-      Ecto.Multi.insert_all(multi, "insert_all#{index}", module, changeset, on_conflict: :nothing)
-    end
-
-    changesets
-    |> Enum.map(fn changeset -> Map.merge(changeset, import_timestamps()) end)
-    |> Enum.chunk_every(5_000)
-    |> Enum.with_index()
-    |> Enum.reduce(Ecto.Multi.new(), reducer)
-    |> Repo.transaction()
+    Import.insert_changes_list(logs, for: Log, timestamps: import_timestamps())
   end
 
   defp import_token_transfers(logs) do
     %{token_transfers: token_transfers, tokens: _tokens} = TokenTransfers.parse(logs)
 
-    import_all_batch(TokenTransfer, token_transfers)
+    Import.insert_changes_list(token_transfers,
+      for: TokenTransfer,
+      timestamps: import_timestamps()
+    )
 
     if length(token_transfers) > 0, do: update_erc20_balance(token_transfers)
   end
@@ -213,7 +201,9 @@ defmodule GodwokenIndexer.Block.SyncWorker do
     inserted_transaction_params = filter_transaction_columns(transactions_params_without_receipts)
 
     {_count, returned_values} =
-      Repo.insert_all(Transaction, inserted_transaction_params,
+      Import.insert_changes_list(inserted_transaction_params,
+        for: Transaction,
+        timestamps: import_timestamps(),
         on_conflict: :nothing,
         returning: [:from_account_id, :to_account_id, :hash, :type, :block_number, :inserted_at]
       )
@@ -239,7 +229,11 @@ defmodule GodwokenIndexer.Block.SyncWorker do
 
   defp import_polyjuice(polyjuice_with_receipts) do
     inserted_polyjuice_params = filter_polyjuice_columns(polyjuice_with_receipts)
-    import_all_batch(Polyjuice, inserted_polyjuice_params)
+
+    Import.insert_changes_list(inserted_polyjuice_params,
+      for: Polyjuice,
+      timestamps: import_timestamps()
+    )
   end
 
   defp import_withdrawal_requests(withdrawal_params) do
@@ -258,7 +252,11 @@ defmodule GodwokenIndexer.Block.SyncWorker do
       inserted_polyjuice_creator_params =
         filter_polyjuice_creator_columns(polyjuice_creator_params)
 
-      Repo.insert_all(PolyjuiceCreator, inserted_polyjuice_creator_params, on_conflict: :nothing)
+      Import.insert_changes_list(inserted_polyjuice_creator_params,
+        for: PolyjuiceCreator,
+        timestamps: import_timestamps(),
+        on_conflict: :nothing
+      )
     end
   end
 
@@ -453,7 +451,9 @@ defmodule GodwokenIndexer.Block.SyncWorker do
       end)
       |> Enum.reject(&is_nil/1)
 
-    Repo.insert_all(AccountUDT, import_account_udts,
+    Import.insert_changes_list(import_account_udts,
+      for: AccountUDT,
+      timestamps: import_timestamps(),
       on_conflict: {:replace, [:balance, :updated_at]},
       conflict_target: [:address_hash, :token_contract_address_hash]
     )
@@ -496,7 +496,9 @@ defmodule GodwokenIndexer.Block.SyncWorker do
           import_account_udts
           |> Enum.map(fn import_au -> import_au |> Map.merge(import_timestamps()) end)
 
-        Repo.insert_all(AccountUDT, import_account_udts,
+        Import.insert_changes_list(import_account_udts,
+          for: AccountUDT,
+          timestamps: import_timestamps(),
           on_conflict: {:replace, [:balance, :updated_at]},
           conflict_target: [:address_hash, :token_contract_address_hash]
         )
