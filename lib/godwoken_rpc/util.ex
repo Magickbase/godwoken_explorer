@@ -194,7 +194,7 @@ defmodule GodwokenRPC.Util do
     registry_id = block_producer |> String.slice(0..7) |> parse_le_number()
     address_len_bytes = block_producer |> String.slice(8..15) |> parse_le_number()
     address = block_producer |> String.slice(16, address_len_bytes * 2)
-    {registry_id, address}
+    {registry_id, "0x" <> address}
   end
 
   def parse_registry_address(registry_address_struct) do

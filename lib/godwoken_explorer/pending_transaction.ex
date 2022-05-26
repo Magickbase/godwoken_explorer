@@ -7,10 +7,12 @@ defmodule GodwokenExplorer.PendingTransaction do
 
   import Godwoken.MoleculeParser, only: [parse_meta_contract_args: 1]
 
+  alias GodwokenExplorer.Chain.{Hash, Data}
+
   @derive {Jason.Encoder, except: [:__meta__]}
-  @primary_key {:hash, :binary, autogenerate: false}
+  @primary_key {:hash, Hash.Full, autogenerate: false}
   schema "pending_transactions" do
-    field :args, :binary
+    field :args, Data
     field :from_account_id, :integer
     field :nonce, :integer
     field :to_account_id, :integer

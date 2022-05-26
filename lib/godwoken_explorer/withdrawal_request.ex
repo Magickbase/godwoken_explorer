@@ -3,24 +3,25 @@ defmodule GodwokenExplorer.WithdrawalRequest do
 
   import Ecto.Changeset
 
+  alias GodwokenExplorer.Chain.Hash
+
   @derive {Jason.Encoder, except: [:__meta__]}
   schema "withdrawal_requests" do
     field :nonce, :integer
     field :capacity, :decimal
     field :amount, :decimal
-    field :sudt_script_hash, :binary
-    field :account_script_hash, :binary
-    field :owner_lock_hash, :binary
+    field :sudt_script_hash, Hash.Full
+    field :account_script_hash, Hash.Full
+    field :owner_lock_hash, Hash.Full
     field :fee_amount, :decimal
-    field :udt_id, :integer
-    field :block_hash, :binary
+    field :block_hash, Hash.Full
     field :block_number, :integer
     field :chain_id, :integer
 
     belongs_to(:udt, GodwokenExplorer.UDT,
       foreign_key: :udt_id,
       references: :id,
-      define_field: false
+      type: :integer
     )
 
     timestamps()

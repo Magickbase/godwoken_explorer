@@ -11,14 +11,14 @@ defmodule GodwokenIndexer.Worker.RefreshNativeUDTSupply do
   def perform(%Oban.Job{}) do
     native_ids =
       Account
-      |> where([a], a.short_address in ^@native_udt_addresses)
+      |> where([a], a.eth_address in ^@native_udt_addresses)
       |> select([a], a.id)
       |> Repo.all()
 
     from(u in UDT, preload: [:account], where: u.bridge_account_id in ^native_ids)
     |> Repo.all()
     |> Enum.each(fn u ->
-      supply = UDT.eth_call_total_supply(u.account.short_address)
+      supply = UDT.eth_call_total_supply(u.account.eth_address)
 
       UDT.changeset(u, %{
         supply: supply

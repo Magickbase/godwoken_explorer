@@ -1,19 +1,21 @@
 defmodule GodwokenExplorer.WithdrawalHistory do
   use GodwokenExplorer, :schema
 
+  alias GodwokenExplorer.Chain.Hash
+
   @derive {Jason.Encoder, except: [:__meta__]}
   schema "withdrawal_histories" do
-    field :block_hash, :binary
+    field :block_hash, Hash.Full
     field :block_number, :integer
     field :layer1_block_number, :integer
-    field :l2_script_hash, :binary
+    field :l2_script_hash, Hash.Full
     field :layer1_output_index, :integer
-    field :layer1_tx_hash, :binary
-    field :owner_lock_hash, :binary
-    field :payment_lock_hash, :binary
+    field :layer1_tx_hash, Hash.Full
+    field :owner_lock_hash, Hash.Full
+    field :payment_lock_hash, Hash.Full
     field :sell_amount, :decimal
     field :sell_capacity, :decimal
-    field :udt_script_hash, :binary
+    field :udt_script_hash, Hash.Full
     field :amount, :decimal
     field :udt_id, :integer
     field :timestamp, :utc_datetime_usec

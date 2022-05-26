@@ -1,15 +1,17 @@
 defmodule GodwokenExplorer.DepositHistory do
   use GodwokenExplorer, :schema
 
+  alias GodwokenExplorer.Chain.Hash
+
   @derive {Jason.Encoder, except: [:__meta__]}
   schema "deposit_histories" do
-    field :script_hash, :binary
+    field :script_hash, Hash.Full
     field :amount, :decimal
     field :udt_id, :integer
     field :layer1_block_number, :integer
-    field :layer1_tx_hash, :binary
+    field :layer1_tx_hash, Hash.Full
     field :layer1_output_index, :integer
-    field :ckb_lock_hash, :binary
+    field :ckb_lock_hash, Hash.Full
     field :timestamp, :utc_datetime_usec
     field :capacity, :decimal
 

@@ -2,23 +2,19 @@ defmodule GodwokenExplorerWeb.API.BlockControllerTest do
   use GodwokenExplorer, :schema
   use GodwokenExplorerWeb.ConnCase
 
+  import GodwokenRPC.Util, only: [utc_to_unix: 1]
+
   alias GodwokenExplorer.Factory
 
   setup do
     Repo.insert(Factory.meta_contract_factory())
     block = Repo.insert!(Factory.block_factory())
 
-    block
-    |> Ecto.Changeset.change(%{
-      inserted_at: NaiveDateTime.truncate(~U[2021-10-31 05:39:38.000000Z], :second)
-    })
-    |> Repo.update()
-
-    :ok
+    %{block: block}
   end
 
   describe "index" do
-    test "return all block", %{conn: conn} do
+    test "return all block", %{conn: conn, block: block} do
       conn =
         get(
           conn,
@@ -40,7 +36,7 @@ defmodule GodwokenExplorerWeb.API.BlockControllerTest do
                          "0x9e449451846827df40c9a8bcb2809256011afbbf394de676d52535c3ca32a518",
                        "miner_hash" => "0x5c84fc6078725df72052cc858dffc6f352a06970",
                        "number" => 14,
-                       "timestamp" => 1_635_658_778,
+                       "timestamp" => utc_to_unix(block.inserted_at),
                        "tx_count" => 1
                      },
                      "id" => 14,
@@ -55,7 +51,7 @@ defmodule GodwokenExplorerWeb.API.BlockControllerTest do
   end
 
   describe "show" do
-    test "when block exist", %{conn: conn} do
+    test "when block exist", %{conn: conn, block: block} do
       conn =
         get(
           conn,
@@ -76,7 +72,7 @@ defmodule GodwokenExplorerWeb.API.BlockControllerTest do
                  "finalize_state" => "finalized",
                  "tx_count" => 1,
                  "miner_hash" => "0x5c84fc6078725df72052cc858dffc6f352a06970",
-                 "timestamp" => 1_635_658_778,
+                 "timestamp" => utc_to_unix(block.inserted_at),
                  "gas_limit" => "12500000",
                  "gas_used" => "0",
                  "size" => 156,

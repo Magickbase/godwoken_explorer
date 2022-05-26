@@ -7,7 +7,7 @@ defmodule GodwokenIndexer.Block.BindL1L2Worker do
   require Logger
 
   alias GodwkenRPC
-  alias GodwokenExplorer.Block
+  alias GodwokenExplorer.{Block, Chain}
 
   @buffer_block_number 30
   @default_worker_interval 5
@@ -85,7 +85,11 @@ defmodule GodwokenIndexer.Block.BindL1L2Worker do
              GodwokenRPC.fetch_l1_tx(tx_hash) do
         l2_block_number = parse_outputs_data(outputs_data, io_index)
 
-        Block.bind_l1_l2_block(l2_block_number, hex_to_number(block_number), tx_hash)
+        Block.bind_l1_l2_block(
+          l2_block_number,
+          hex_to_number(block_number),
+          tx_hash
+        )
       end
     end)
     |> Enum.reject(&is_nil/1)

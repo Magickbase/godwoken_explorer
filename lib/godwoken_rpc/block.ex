@@ -37,7 +37,11 @@ defmodule GodwokenRPC.Block do
         }
       }) do
     {registry_id, producer_address} =
-      block_producer |> String.slice(2..-1) |> parse_block_producer()
+      if block_producer == "0x" do
+        {nil, nil}
+      else
+        block_producer |> String.slice(2..-1) |> parse_block_producer()
+      end
 
     case GodwokenRPC.fetch_eth_block_by_hash(hash) do
       {:ok,

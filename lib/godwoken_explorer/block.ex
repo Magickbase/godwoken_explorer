@@ -5,6 +5,7 @@ defmodule GodwokenExplorer.Block do
 
   alias GodwokenExplorer.Chain.Cache.Blocks
   alias GodwokenExplorer.Chain.Events.Publisher
+  alias GodwokenExplorer.Chain.Hash
 
   @fields [
     :hash,
@@ -28,20 +29,18 @@ defmodule GodwokenExplorer.Block do
     :number,
     :timestamp,
     :status,
-    :transaction_count,
-    :registry_id,
-    :producer_address
+    :transaction_count
   ]
 
   @derive {Jason.Encoder, except: [:__meta__]}
-  @primary_key {:hash, :binary, autogenerate: false}
+  @primary_key {:hash, Hash.Full, autogenerate: false}
   schema "blocks" do
     field :number, :integer
-    field :parent_hash, :binary
+    field :parent_hash, Hash.Full
     field :timestamp, :utc_datetime_usec
-    field :status, Ecto.Enum, values: [:committed, :finalized], default: :committed
+    field :status, Ecto.Enum, values: [:committed, :finalized]
     field :transaction_count, :integer
-    field :layer1_tx_hash, :binary
+    field :layer1_tx_hash, Hash.Full
     field :layer1_block_number, :integer
     field :size, :integer
     field :gas_limit, :decimal
@@ -54,7 +53,7 @@ defmodule GodwokenExplorer.Block do
     field :state_root, :binary
     field :extra_data, :binary
     field :registry_id, :integer
-    field :producer_address, :binary
+    field :producer_address, Hash.Address
 
     has_many :transactions, GodwokenExplorer.Transaction, foreign_key: :block_hash
 
@@ -175,7 +174,7 @@ defmodule GodwokenExplorer.Block do
   def bind_l1_l2_block(l2_block_number, l1_block_number, l1_tx_hash) do
     with %Block{hash: hash} = block <- Repo.get_by(Block, number: l2_block_number) do
       block
-      |> Ecto.Changeset.change(%{layer1_block_number: l1_block_number, layer1_tx_hash: l1_tx_hash})
+      |> __MODULE__.changeset(%{layer1_block_number: l1_block_number, layer1_tx_hash: l1_tx_hash})
       |> Repo.update!()
 
       Publisher.broadcast(
@@ -231,7 +230,7 @@ defmodule GodwokenExplorer.Block do
     from(b in Block, where: b.layer1_block_number == ^layer1_block_number)
     |> Repo.all()
     |> Enum.each(fn block ->
-      Ecto.Changeset.change(block, %{
+      __MODULE__.changeset(block, %{
         layer1_block_number: nil,
         layer1_tx_hash: nil,
         status: :committed

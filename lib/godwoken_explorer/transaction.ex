@@ -5,27 +5,42 @@ defmodule GodwokenExplorer.Transaction do
 
   alias GodwokenExplorer.Chain.Cache.Transactions
   alias GodwokenExplorer.Chain
+  alias GodwokenExplorer.Chain.{Hash, Data}
 
   @tx_limit 500_000
   @account_tx_limit 100_000
 
   @derive {Jason.Encoder, except: [:__meta__]}
-  @primary_key {:hash, :binary, autogenerate: false}
+  @primary_key {:hash, Hash.Full, autogenerate: false}
   schema "transactions" do
-    field(:args, :binary)
-    field(:from_account_id, :integer)
+    field(:args, Data)
     field(:nonce, :integer)
-    field(:to_account_id, :integer)
 
     field(:type, Ecto.Enum,
       values: [:polyjuice_creator, :polyjuice, :eth_address_registry, :unknown]
     )
 
     field(:block_number, :integer)
-    field(:eth_hash, :binary)
+    field(:eth_hash, Hash.Full)
     field(:index, :integer)
 
-    belongs_to(:block, Block, foreign_key: :block_hash, references: :hash, type: :binary)
+    belongs_to(:block, Block, foreign_key: :block_hash, references: :hash, type: Hash.Full)
+
+    belongs_to(
+      :from_account,
+      Account,
+      foreign_key: :from_account_id,
+      references: :id,
+      type: :integer
+    )
+
+    belongs_to(
+      :to_account,
+      Account,
+      foreign_key: :to_account_id,
+      references: :id,
+      type: :integer
+    )
 
     timestamps()
   end
@@ -290,11 +305,12 @@ defmodule GodwokenExplorer.Transaction do
           fragment("CASE WHEN ? IS NOT NULL THEN ? ELSE ? END", t.eth_hash, t.eth_hash, t.hash),
         block_hash: b.hash,
         block_number: b.number,
+        timestamp: b.timestamp,
         l1_block_number: b.layer1_block_number,
         from: a2.eth_address,
         to:
           fragment(
-            "CASE WHEN ? IS NOT NULL THEN ? ELSE ? END",
+            "CASE WHEN ? IS NOT NULL THEN encode(?, 'hex') ELSE encode(?, 'hex') END",
             a3.eth_address,
             a3.eth_address,
             a3.script_hash
@@ -322,6 +338,7 @@ defmodule GodwokenExplorer.Transaction do
           ),
         status: b.status,
         timestamp: b.timestamp,
+        index: p.transaction_index,
         polyjuice_status: p.status,
         type: t.type,
         nonce: t.nonce,
@@ -330,10 +347,7 @@ defmodule GodwokenExplorer.Transaction do
         gas_used: p.gas_used,
         gas_limit: p.gas_limit,
         value: p.value,
-        udt_id: s4.account_id,
         transaction_index: p.transaction_index,
-        udt_symbol: fragment("CASE WHEN ? IS NULL THEN ? ELSE ? END", u6, "", u6.symbol),
-        udt_icon: fragment("CASE WHEN ? IS NULL THEN ? ELSE ? END", u6, "", u6.icon),
         input: p.input,
         to_account_id: t.to_account_id,
         created_contract_address_hash: p.created_contract_address_hash

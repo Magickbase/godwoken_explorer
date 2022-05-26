@@ -7,12 +7,14 @@ defmodule GodwokenExplorer.AccountUDT do
 
   alias GodwokenRPC
   alias GodwokenExplorer.Chain.Events.Publisher
+  alias GodwokenExplorer.Chain.Hash
 
   @derive {Jason.Encoder, except: [:__meta__]}
   schema "account_udts" do
-    field(:balance, :decimal)
-    field(:address_hash, :binary)
-    field(:token_contract_address_hash, :binary)
+    field :balance, :decimal
+    field :address_hash, Hash.Address
+    # For bridge token is the script_hash, for native token is the contract address
+    field :token_contract_address_hash, :binary
     belongs_to(:account, GodwokenExplorer.Account, foreign_key: :account_id, references: :id)
     belongs_to(:udt, GodwokenExplorer.UDT, foreign_key: :udt_id, references: :id)
 
@@ -139,6 +141,49 @@ defmodule GodwokenExplorer.AccountUDT do
       _ ->
         {:error, :account_not_exist}
     end
+  end
+
+  def get_ckb_balance(addresses) do
+    udt_addresses = UDT.ckb_account_id() |> UDT.get_bridge_and_natvie_address()
+
+    results =
+      from(au in AccountUDT,
+        where: au.address_hash in ^addresses and au.token_contract_address_hash in ^udt_addresses,
+        select: %{
+          address: au.address_hash,
+          balance: au.balance,
+          updated_at: au.updated_at
+        }
+      )
+      |> Repo.all()
+      |> Enum.group_by(fn result -> result[:address] end)
+      |> Enum.reduce([], fn {_address, account_udts}, acc ->
+        if length(account_udts) > 1 do
+          latest_au = account_udts |> Enum.sort_by(fn au -> au[:updated_at] end) |> List.last()
+          [latest_au | acc]
+        else
+          [List.first(account_udts) | acc]
+        end
+      end)
+
+    addresses
+    |> Enum.map(fn address ->
+      result =
+        results
+        |> Enum.find(fn result -> result[:address] == address end)
+
+      if is_nil(result) do
+        %{
+          account: address,
+          balance: 0
+        }
+      else
+        %{
+          account: address,
+          balance: result[:balance]
+        }
+      end
+    end)
   end
 
   def sort_holder_list(udt_id, paging_options) do

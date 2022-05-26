@@ -28,7 +28,7 @@ defmodule GodwokenExplorer.Chain.Events.Subscriber do
 
   ## Example
 
-  iex> Explorer.Chain.Events.Subscriber.to(:blocks, :realtime)
+  iex>GodwokenExplorer.Chain.Events.Subscriber.to(:blocks, :realtime)
   :ok
   """
   @spec to(atom(), broadcast_type()) :: :ok
