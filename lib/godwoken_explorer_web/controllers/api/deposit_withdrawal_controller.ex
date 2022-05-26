@@ -3,14 +3,14 @@ defmodule GodwokenExplorerWeb.API.DepositWithdrawalController do
 
   action_fallback GodwokenExplorerWeb.API.FallbackController
 
-  alias GodwokenExplorer.{Account, DepositWithdrawalView, UDT, Repo, Block}
+  alias GodwokenExplorer.{Account, Chain, DepositWithdrawalView, UDT, Repo, Block}
 
   def index(conn, %{"eth_address" => "0x" <> _} = params) do
-    case Account.search(String.downcase(params["eth_address"])) do
-      %Account{script_hash: script_hash} ->
-        data = DepositWithdrawalView.list_by_script_hash(script_hash, conn.params["page"] || 1)
-        json(conn, data)
-
+    with {:ok, address_hash} <- Chain.string_to_address_hash(params["eth_address"]),
+         %Account{script_hash: script_hash} <- Account.search(address_hash) do
+      data = DepositWithdrawalView.list_by_script_hash(script_hash, conn.params["page"] || 1)
+      json(conn, data)
+    else
       nil ->
         data = %{
           page: 1,
@@ -19,6 +19,9 @@ defmodule GodwokenExplorerWeb.API.DepositWithdrawalController do
         }
 
         json(conn, data)
+
+      :error ->
+        {:error, :bad_request}
     end
   end
 
@@ -44,10 +47,7 @@ defmodule GodwokenExplorerWeb.API.DepositWithdrawalController do
     end
   end
 
-  def index(conn, _) do
-    json(conn, %{
-      error_code: 400,
-      message: "bad request"
-    })
+  def index(_conn, _) do
+    {:error, :not_found}
   end
 end
