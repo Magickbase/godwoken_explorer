@@ -1,36 +1,22 @@
 defmodule GodwokenExplorer.Log do
   use GodwokenExplorer, :schema
 
-  alias GodwokenExplorer.Chain.{Hash, Data}
-
   @required_attrs ~w(address_hash data block_hash index transaction_hash)a
-  @optional_attrs ~w(first_topic second_topic third_topic fourth_topic block_number)a
+  @optional_attrs ~w(first_topic second_topic third_topic fourth_topic block_number removed)a
 
   @derive {Jason.Encoder, except: [:__meta__]}
   @primary_key false
   schema "logs" do
-    field(:data, Data)
+    field(:transaction_hash, :binary, primary_key: true)
+    field(:data, :binary)
     field(:first_topic, :string)
     field(:second_topic, :string)
     field(:third_topic, :string)
     field(:fourth_topic, :string)
     field(:index, :integer, primary_key: true)
     field(:block_number, :integer)
-    field(:address_hash, Hash.Address)
-
-    belongs_to(:transaction, Transaction,
-      foreign_key: :transaction_hash,
-      primary_key: true,
-      references: :hash,
-      type: Hash.Full
-    )
-
-    belongs_to(:block, Block,
-      foreign_key: :block_hash,
-      primary_key: true,
-      references: :hash,
-      type: Hash.Full
-    )
+    field(:address_hash, :binary)
+    field(:block_hash, :binary)
 
     timestamps()
   end
@@ -39,7 +25,7 @@ defmodule GodwokenExplorer.Log do
   `address_hash` and `transaction_hash` are converted to `t:Explorer.Chain.Hash.t/0`.  The allowed values for `type`
   are currently unknown, so it is left as a `t:String.t/0`.
 
-      iex> changeset =GodwokenExplorer.Chain.Log.changeset(
+      iex> changeset = Explorer.Chain.Log.changeset(
       ...>   %Explorer.Chain.Log{},
       ...>   %{
       ...>     address_hash: "0x8bf38d4764929064f2d4d3a56520a76ab3df415b",

@@ -3,20 +3,19 @@ defmodule GodwokenExplorer.PolyjuiceCreator do
 
   import Ecto.Changeset
 
-  alias GodwokenExplorer.Chain.Hash
-
   @derive {Jason.Encoder, except: [:__meta__]}
   schema "polyjuice_creators" do
     field(:code_hash, :binary)
     field(:hash_type, :string)
     field(:script_args, :binary)
+    field(:tx_hash, :binary)
     field(:fee_amount, :decimal)
     field(:fee_udt_id, :integer)
 
     belongs_to(:transaction, GodwokenExplorer.Transaction,
       foreign_key: :tx_hash,
       references: :hash,
-      type: Hash.Full
+      define_field: false
     )
 
     belongs_to(:udt, GodwokenExplorer.UDT,

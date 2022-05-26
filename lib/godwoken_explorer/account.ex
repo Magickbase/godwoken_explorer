@@ -7,16 +7,15 @@ defmodule GodwokenExplorer.Account do
 
   alias GodwokenRPC
   alias GodwokenExplorer.Chain.Events.Publisher
-  alias GodwokenExplorer.Chain.{Hash, Import}
 
   @yok_mainnet_account_id 12119
 
   @derive {Jason.Encoder, except: [:__meta__]}
   @primary_key {:id, :integer, autogenerate: false}
   schema "accounts" do
-    field(:eth_address, Hash.Address)
-    field(:script_hash, Hash.Full)
-    field(:short_address, Hash.Address)
+    field(:eth_address, :binary)
+    field(:script_hash, :binary)
+    field(:short_address, :binary)
     field(:script, :map)
     field(:nonce, :integer)
     field(:transaction_count, :integer)
@@ -243,30 +242,12 @@ defmodule GodwokenExplorer.Account do
     end
   end
 
-  @spec search(Hash.Address.t()) :: nil | map()
-  def search(%Hash{byte_count: unquote(Hash.Address.byte_count())} = keyword) do
+  def search(keyword) do
     results =
       from(a in Account,
         where:
-          a.eth_address == ^keyword or
+          a.eth_address == ^keyword or a.script_hash == ^keyword or
             (a.short_address == ^keyword and a.type == :polyjuice_contract),
-        order_by: a.id
-      )
-      |> Repo.all()
-
-    if length(results) > 1 do
-      Logger.error("Same keyword Error: #{keyword}")
-      nil
-    else
-      results |> List.first()
-    end
-  end
-
-  @spec search(Hash.Full.t()) :: nil | map()
-  def search(%Hash{byte_count: unquote(Hash.Full.byte_count())} = keyword) do
-    results =
-      from(a in Account,
-        where: a.script_hash == ^keyword,
         order_by: a.id
       )
       |> Repo.all()
@@ -519,11 +500,7 @@ defmodule GodwokenExplorer.Account do
         |> Map.merge(import_timestamps())
       end)
 
-    Import.insert_changes_list(account_attrs,
-      for: Account,
-      timestamps: import_timestamps(),
-      on_conflict: :nothing
-    )
+    Repo.insert_all(Account, account_attrs, on_conflict: :nothing)
   end
 
   def manual_create_account!(id) do

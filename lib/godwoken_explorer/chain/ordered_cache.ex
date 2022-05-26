@@ -4,14 +4,14 @@ defmodule GodwokenExplorer.Chain.OrderedCache do
 
   A macro based on `ConCache` is provided as well, at its minimum it can be used as;
   ```
-  use GodwokenExplorer.Chain.OrderedCache, name
+  use Explorer.Chain.OrderedCache, name
   ```
   where `name is an `t:atom/0` identifying the cache.
 
   All default values can be modified by overriding their respective function or
   by setting an option. For example (showing all of them):
   ```
-    use GodwokenExplorer.Chain.OrderedCache,
+    use Explorer.Chain.OrderedCache,
       name: :name, # need to be set
       max_size: 51, # defaults to 100
       ids_list_key: :ids_key, # defaults to `name`
@@ -19,7 +19,7 @@ defmodule GodwokenExplorer.Chain.OrderedCache do
   ```
   Note: `preloads` can also be set singularly with the option `preload`, e.g.:
   ```
-    use GodwokenExplorer.Chain.OrderedCache,
+    use Explorer.Chain.OrderedCache,
       name: :cache
       preload: :block
       preload: :address

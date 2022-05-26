@@ -63,19 +63,6 @@ defmodule GodwokenExplorerWeb.Router do
     get("/accounts/:address/logs", Account.LogController, :index)
   end
 
-  scope "/api/v1", as: :api_v1 do
-    pipe_through(:api)
-    alias GodwokenExplorerWeb.API.RPC
-
-    forward("/", RPC.RPCTranslator, %{
-      "account" => {RPC.AccountController, []},
-      "contract" => {RPC.ContractController, []},
-      "block" => {RPC.BlockController, []},
-      "logs" => {RPC.LogsController, []},
-      "stats" => {RPC.StatsController, []}
-    })
-  end
-
   scope "/", GodwokenExplorerWeb do
     get("/", RootController, :index)
   end
