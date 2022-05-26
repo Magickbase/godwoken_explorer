@@ -2,49 +2,71 @@ defmodule GodwokenExplorerWeb.API.SearchController do
   use GodwokenExplorerWeb, :controller
   action_fallback GodwokenExplorerWeb.API.FallbackController
 
-  alias GodwokenExplorer.{Account, Block, Chain, PendingTransaction, Transaction, UDT}
+  alias GodwokenExplorer.{Repo, Account, Block, Transaction, PendingTransaction, UDT}
 
-  def index(conn, %{"keyword" => query}) do
-    query
-    |> String.trim()
-    |> Chain.from_param()
-    |> case do
-      {:ok, item} ->
-        render_search_results(conn, item)
+  @max_integer 2_147_483_647
+  @block_tx_hash_length 66
+  @account_hash_length 42
 
-      {:error, :not_found} ->
+  def index(conn, %{"keyword" => "0x" <> _} = params) do
+    downcase_keyword = String.downcase(params["keyword"])
+
+    cond do
+      String.length(downcase_keyword) == @block_tx_hash_length ->
+        cond do
+          (block = Repo.get_by(Block, hash: downcase_keyword)) != nil ->
+            json(conn, %{type: "block", id: block.number})
+
+          (transaction = Repo.get_by(Transaction, hash: downcase_keyword)) != nil ->
+            json(conn, %{type: "transaction", id: transaction.hash})
+
+          (pending_tx = PendingTransaction.find_by_hash(downcase_keyword)) != nil ->
+            json(conn, %{type: "transaction", id: pending_tx.hash})
+
+          (account = Account.search(downcase_keyword)) != nil ->
+            json(conn, %{type: "account", id: account.id |> Account.display_id() |> elem(0)})
+
+          true ->
+            {:error, :not_found}
+        end
+
+      String.length(downcase_keyword) == @account_hash_length ->
+        case Account.search(downcase_keyword) do
+          %Account{id: id} ->
+            json(conn, %{type: "account", id: id |> Account.display_id() |> elem(0)})
+
+          nil ->
+            json(conn, %{type: "account", id: downcase_keyword})
+        end
+
+      true ->
         {:error, :not_found}
     end
   end
 
-  def index(_conn, _) do
-    {:error, :not_found}
-  end
+  def index(conn, %{"keyword" => keyword}) do
+    case keyword |> String.replace(",", "") |> Integer.parse() do
+      {num, ""} ->
+        if num > @max_integer || num < 0 do
+          {:error, :not_found}
+        else
+          case Repo.get_by(Block, number: num) do
+            %Block{number: number} ->
+              json(conn, %{type: "block", id: number})
 
-  defp render_search_results(conn, %Account{} = item) do
-    id =
-      case item.type do
-        :user -> item.eth_address
-        :polyjuice -> item.short_address
-        _ -> item.script_hash
-      end
+            nil ->
+              {:error, :not_found}
+          end
+        end
 
-    json(conn, %{type: "account", id: id})
-  end
+      _ ->
+        cond do
+          (udt = UDT.find_by_name_or_token(String.downcase(keyword))) != nil ->
+            json(conn, %{type: "udt", id: udt.id})
 
-  defp render_search_results(conn, %Block{} = item) do
-    json(conn, %{type: "block", id: item.number})
-  end
-
-  defp render_search_results(conn, %Transaction{} = item) do
-    json(conn, %{type: "transaction", id: item.hash})
-  end
-
-  defp render_search_results(conn, %PendingTransaction{} = item) do
-    json(conn, %{type: "transaction", id: item.hash})
-  end
-
-  defp render_search_results(conn, %UDT{} = item) do
-    json(conn, %{type: "udt", id: item.id})
+          true ->
+            {:error, :not_found}
+        end
+    end
   end
 end

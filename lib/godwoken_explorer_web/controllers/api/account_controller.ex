@@ -3,36 +3,57 @@ defmodule GodwokenExplorerWeb.API.AccountController do
 
   action_fallback GodwokenExplorerWeb.API.FallbackController
 
-  alias GodwokenExplorer.{Account, Chain}
+  alias GodwokenExplorer.{Repo, Account}
   alias GodwokenExplorer.Counters.{AddressTokenTransfersCounter, AddressTransactionsCounter}
 
   def show(conn, %{"id" => "0x" <> _} = params) do
-    with {:ok, address_hash} <- Chain.string_to_address_hash(params["id"]) do
-      case Account.search(address_hash) do
-        %Account{id: id} = account ->
-          fetch_transfer_and_transaction_count(account)
+    downcase_id = params["id"] |> String.downcase()
 
-          result =
-            id
-            |> Account.find_by_id()
-            |> Account.account_to_view()
+    case Account.search(downcase_id) do
+      %Account{id: id} = account ->
+        fetch_transfer_and_transaction_count(account)
 
-          json(
-            conn,
-            result
-          )
+        result =
+          id
+          |> Account.find_by_id()
+          |> Account.account_to_view()
 
-        nil ->
-          result = Account.non_create_account_info(address_hash)
+        json(
+          conn,
+          result
+        )
 
-          json(
-            conn,
-            result
-          )
-      end
-    else
-      :error ->
-        {:error, :address_format}
+      nil ->
+        result = Account.non_create_account_info(downcase_id)
+
+        json(
+          conn,
+          result
+        )
+    end
+  end
+
+  def show(conn, %{"id" => id}) do
+    case id |> Integer.parse() do
+      {num, ""} ->
+        case Repo.get(Account, num) do
+          %Account{} ->
+            result =
+              id
+              |> Account.find_by_id()
+              |> Account.account_to_view()
+
+            json(
+              conn,
+              result
+            )
+
+          nil ->
+            {:error, :not_found}
+        end
+
+      _ ->
+        {:error, :not_found}
     end
   end
 

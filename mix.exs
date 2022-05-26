@@ -43,7 +43,7 @@ defmodule GodwokenExplorer.MixProject do
   end
 
   # Specifies which paths to compile per environment.
-  defp elixirc_paths(:test), do: ["lib", "test/support", "test/factories"]
+  defp elixirc_paths(:test), do: ["lib", "test/support"]
   defp elixirc_paths(_), do: ["lib"]
 
   # Specifies your project dependencies.
@@ -63,6 +63,7 @@ defmodule GodwokenExplorer.MixProject do
       {:telemetry_metrics, "~> 0.6.1"},
       {:telemetry_poller, "~> 1.0.0"},
       {:gettext, "~> 0.11"},
+      {:jason, "~> 1.0"},
       {:plug_cowboy, "~> 2.0"},
       {:httpoison, "~> 1.8"},
       {:rustler, "~> 0.25.0"},
@@ -75,10 +76,6 @@ defmodule GodwokenExplorer.MixProject do
 
       # live dashboard ecto stats
       {:ecto_psql_extras, "~> 0.6"},
-
-      # encoder
-      {:jason, "~> 1.0"},
-      {:poison, "~> 5.0"},
 
       # admin dashboard
       {:torch, "~> 3.8"},
@@ -116,7 +113,6 @@ defmodule GodwokenExplorer.MixProject do
       {:excoveralls, "~> 0.14.4", only: [:test]},
       {:mock, "~> 0.3.7", only: [:test], runtime: false},
       {:mox, "~> 1.0.1", only: [:test]},
-      {:ex_json_schema, "~> 0.6.2"},
 
       # graphql
       {:absinthe, "~> 1.7"},

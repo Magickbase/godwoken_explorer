@@ -89,10 +89,6 @@ gwscan_graphiql =
 
 config :godwoken_explorer, :graphiql, gwscan_graphiql
 
-config :godwoken_explorer, GodwokenExplorerWeb.ApiRouter,
-  writing_enabled: false,
-  reading_enabled: true
-
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{config_env()}.exs"
