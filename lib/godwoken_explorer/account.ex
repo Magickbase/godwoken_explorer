@@ -7,7 +7,7 @@ defmodule GodwokenExplorer.Account do
 
   alias GodwokenRPC
   alias GodwokenExplorer.Chain.Events.Publisher
-  alias GodwokenExplorer.Chain.Hash
+  alias GodwokenExplorer.Chain.{Hash, Import}
 
   @yok_mainnet_account_id 12119
 
@@ -519,7 +519,11 @@ defmodule GodwokenExplorer.Account do
         |> Map.merge(import_timestamps())
       end)
 
-    Repo.insert_all(Account, account_attrs, on_conflict: :nothing)
+    Import.insert_changes_list(account_attrs,
+      for: Account,
+      timestamps: import_timestamps(),
+      on_conflict: :nothing
+    )
   end
 
   def manual_create_account!(id) do

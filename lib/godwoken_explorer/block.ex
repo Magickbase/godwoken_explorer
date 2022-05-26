@@ -27,7 +27,6 @@ defmodule GodwokenExplorer.Block do
     :parent_hash,
     :number,
     :timestamp,
-    :status,
     :aggregator_id,
     :transaction_count
   ]
@@ -38,7 +37,7 @@ defmodule GodwokenExplorer.Block do
     field :number, :integer
     field :parent_hash, Hash.Full
     field :timestamp, :utc_datetime_usec
-    field :status, Ecto.Enum, values: [:committed, :finalized], default: :committed
+    field :status, Ecto.Enum, values: [:committed, :finalized]
     field :transaction_count, :integer
     field :layer1_tx_hash, :binary
     field :layer1_block_number, :integer

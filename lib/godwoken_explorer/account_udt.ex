@@ -62,8 +62,7 @@ defmodule GodwokenExplorer.AccountUDT do
       on: u1.bridge_account_id == a.id,
       left_join: u2 in UDT,
       on: u2.id == a.id,
-      where:
-        au.address_hash == ^eth_address and au.balance != 0 and au.udt_id != ^UDT.ckb_account_id(),
+      where: au.address_hash == ^eth_address and au.balance != 0,
       select: %{
         id: fragment("CASE WHEN ? IS NULL THEN ? ELSE ? END", u1, u2.id, u1.id),
         type: fragment("CASE WHEN ? IS NULL THEN ? ELSE ? END", u1, u2.type, u1.type),
@@ -88,7 +87,7 @@ defmodule GodwokenExplorer.AccountUDT do
     results
     |> Enum.group_by(fn result -> result[:id] end)
     |> Enum.reduce([], fn {id, account_udts}, acc ->
-      if not is_nil(id) do
+      if not is_nil(id) and id != UDT.ckb_account_id() do
         if length(account_udts) > 1 do
           latest_au = account_udts |> Enum.sort_by(fn au -> au[:updated_at] end) |> List.last()
           [latest_au | acc]

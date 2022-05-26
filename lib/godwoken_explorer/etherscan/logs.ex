@@ -5,9 +5,9 @@ defmodule GodwokenExplorer.Etherscan.Logs do
 
   """
 
-  import Ecto.Query, only: [from: 2, where: 3, subquery: 1, order_by: 3, union: 2, dynamic: 2]
+  import Ecto.Query, only: [from: 2, where: 3, subquery: 1, order_by: 3, dynamic: 2]
 
-  alias GodwokenExplorer.{Account, Block, Chain, Log, Repo, Polyjuice, Transaction}
+  alias GodwokenExplorer.{Account, Block, Log, Repo, Polyjuice, Transaction}
 
   @base_filter %{
     from_block: nil,

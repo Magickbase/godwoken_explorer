@@ -4,7 +4,7 @@ defmodule GodwokenExplorer.Log do
   alias GodwokenExplorer.Chain.{Hash, Data}
 
   @required_attrs ~w(address_hash data block_hash index transaction_hash)a
-  @optional_attrs ~w(first_topic second_topic third_topic fourth_topic block_number removed)a
+  @optional_attrs ~w(first_topic second_topic third_topic fourth_topic block_number)a
 
   @derive {Jason.Encoder, except: [:__meta__]}
   @primary_key false
