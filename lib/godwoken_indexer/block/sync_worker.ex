@@ -506,7 +506,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
       if not is_nil(ckb_id) do
         nil
 
-        %Account{registry_address: ckb_contract_address} = Repo.get(Account, ckb_id)
+        %Account{script_hash: ckb_contract_address} = Repo.get(Account, ckb_id)
 
         account_ids =
           polyjuice_params
