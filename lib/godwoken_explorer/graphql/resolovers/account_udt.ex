@@ -13,23 +13,29 @@ defmodule GodwokenExplorer.Graphql.Resolvers.AccountUDT do
         _args,
         _resolution
       ) do
-    bridge_udt_query =
-      from(u in UDT)
-      |> join(:inner, [u], a in Account,
-        on: a.eth_address == ^token_contract_address_hash and u.bridge_account_id == a.id
-      )
-
-    udt_query =
+    return =
       if udt_id do
-        from(u in UDT, where: u.id == ^udt_id)
-        |> join(:full, [u], bu in ^bridge_udt_query, on: true)
-        |> order_by([u1, u2], desc: u1.updated_at, desc: u2.updated_at)
-        |> first()
+        from(u in UDT)
+        |> where([u], u.id == ^udt_id)
+        |> Repo.one()
       else
-        bridge_udt_query
+        result =
+          from(u in UDT)
+          |> join(:inner, [u], a in Account,
+            on: a.eth_address == ^token_contract_address_hash and u.bridge_account_id == a.id
+          )
+          |> order_by([u], desc: u.updated_at)
+          |> first()
+          |> Repo.all()
+
+        if result == [] do
+          nil
+        else
+          hd(result)
+        end
       end
 
-    {:ok, Repo.one(udt_query)}
+    {:ok, return}
   end
 
   def account(%AccountUDT{account_id: account_id} = _parent, _args, _resolution) do
