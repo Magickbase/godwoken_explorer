@@ -539,7 +539,7 @@ type RootQueryType {
       gas_limit
       account{
         id
-        registry_address
+        eth_address
       }
       transactions (input: {page: 1, page_size: 2}) {
         type
@@ -555,7 +555,7 @@ type RootQueryType {
       "block": {
         "account": {
           "id": 2,
-          "registry_address": "0x68f5cea51fa6fcfdcc10f6cddcafa13bf6717436"
+          "eth_address": "0x68f5cea51fa6fcfdcc10f6cddcafa13bf6717436"
         },
         "gas_limit": "981000000",
         "gas_used": "95240385",
@@ -867,7 +867,7 @@ type RootQueryType {
       type
       supply
       account{
-        registry_address
+        eth_address
       }
     }
   }
@@ -877,7 +877,7 @@ type RootQueryType {
     "data": {
       "udt": {
         "account": {
-          "registry_address": "0xbf1f27daea43849b67f839fd101569daaa321e2c"
+          "eth_address": "0xbf1f27daea43849b67f839fd101569daaa321e2c"
         },
         "id": "1",
         "name": "Nervos Token",
@@ -901,7 +901,7 @@ type RootQueryType {
       supply
       account{
         eth_address
-        registry_address
+        script_hash
       }
     }
   }
@@ -913,7 +913,7 @@ type RootQueryType {
         {
           "account": {
             "eth_address": null,
-            "registry_address": "0xbf1f27daea43849b67f839fd101569daaa321e2c"
+            "script_hash": "0xbf1f27daea43849b67f839fd101569daaa321e2c"
           },
           "id": "1",
           "name": "Nervos Token",
@@ -923,7 +923,7 @@ type RootQueryType {
         {
           "account": {
             "eth_address": null,
-            "registry_address": "0x21ad25fab1d759da1a419a589c0f36dee5e7fe3d"
+            "script_hash": "0x21ad25fab1d759da1a419a589c0f36dee5e7fe3d"
           },
           "id": "17",
           "name": null,

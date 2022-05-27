@@ -4,7 +4,6 @@ defmodule GodwokenRPC.Receipt do
   [`eth_getTransactionReceipt`](https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_gettransactionreceipt).
   """
 
-
   import GodwokenRPC, only: [quantity_to_integer: 1]
   alias GodwokenRPC.Logs
 
