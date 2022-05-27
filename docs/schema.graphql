@@ -445,15 +445,15 @@ type RootQueryType {
   
   request-example:
   query {
-    account_udts(input: {address_hashes:
-  ["0x15ca4f2165ff0e798d9c7434010eaacc4d768d85",
-  "0xc20538aa80bb3ced9e240dc8f8130b7f7d0b0c49"],
-        token_contract_address_hash: "0xbf1f27daea43849b67f839fd101569daaa321e2c"}) {
+    account_udts(input: {address_hashes: ["0x067e469c13a7294d1aafa2130272a9c7b70a4464"],
+        token_contract_address_hash: "0x2503a1a79a443f3961ee96a8c5ec513638129614"}) {
       address_hash
       balance
       udt{
+        id
         type
         name
+        bridge_account_id
       }
     }
   }
@@ -463,19 +463,13 @@ type RootQueryType {
     "data": {
       "account_udts": [
         {
-          "address_hash": "0x15ca4f2165ff0e798d9c7434010eaacc4d768d85",
-          "balance": "993799999325",
+          "address_hash": "0x067e469c13a7294d1aafa2130272a9c7b70a4464",
+          "balance": "0",
           "udt": {
-            "name": "Nervos Token",
-            "type": "BRIDGE"
-          }
-        },
-        {
-          "address_hash": "0xc20538aa80bb3ced9e240dc8f8130b7f7d0b0c49",
-          "balance": "950876407191",
-          "udt": {
-            "name": "Nervos Token",
-            "type": "BRIDGE"
+            "bridge_account_id": 6841,
+            "id": "6841",
+            "name": "tst",
+            "type": "NATIVE"
           }
         }
       ]
@@ -531,7 +525,7 @@ type RootQueryType {
   
   request-example:
   query {
-    block(input: {number: 345600}){
+    block(input: {number: 1}){
       hash
       parent_hash
       number
@@ -553,27 +547,13 @@ type RootQueryType {
   {
     "data": {
       "block": {
-        "account": {
-          "id": 2,
-          "eth_address": "0x68f5cea51fa6fcfdcc10f6cddcafa13bf6717436"
-        },
-        "gas_limit": "981000000",
-        "gas_used": "95240385",
-        "hash": "0x67dad5ec7f3bc8b5b8f623f4df230cb50c9c39493080a6b32d94023994ba886b",
-        "number": 345600,
-        "parent_hash": "0x962906210825c339fa4f871239d967c60b62005a6b780ced4334dba56618dbf5",
-        "transactions": [
-          {
-            "from_account_id": 52269,
-            "to_account_id": 64241,
-            "type": "POLYJUICE"
-          },
-          {
-            "from_account_id": 52920,
-            "to_account_id": 197067,
-            "type": "POLYJUICE"
-          }
-        ]
+        "account": null,
+        "gas_limit": "12500000",
+        "gas_used": "0",
+        "hash": "0x4ac339b063e52dac1b845d935788f379ebcdb0e33ecce077519f39929dbc8829",
+        "number": 1,
+        "parent_hash": "0x61bcff6f20e8be09bbe8e36092a9cc05dd3fa67e3841e206e8c30ae0dd7032df",
+        "transactions": []
       }
     }
   }
@@ -591,7 +571,7 @@ type RootQueryType {
       number
       gas_used
       gas_limit
-  producer_address
+      producer_address
       account{
         eth_address
       }
@@ -861,7 +841,7 @@ type RootQueryType {
   
   request-example:
   query {
-    udt(input: {contract_address: "0xbf1f27daea43849b67f839fd101569daaa321e2c"}){
+    udt(input: {contract_address: "0x2503a1a79a443f3961ee96a8c5ec513638129614"}){
       id
       name
       type
@@ -877,12 +857,12 @@ type RootQueryType {
     "data": {
       "udt": {
         "account": {
-          "eth_address": "0xbf1f27daea43849b67f839fd101569daaa321e2c"
+          "eth_address": "0x2503a1a79a443f3961ee96a8c5ec513638129614"
         },
-        "id": "1",
-        "name": "Nervos Token",
-        "supply": "693247799.35570027",
-        "type": "BRIDGE"
+        "id": "6841",
+        "name": "tst",
+        "supply": "111",
+        "type": "NATIVE"
       }
     }
   }

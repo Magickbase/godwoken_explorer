@@ -11,13 +11,15 @@ defmodule GodwokenExplorer.Graphql.Types.AccountUDT do
 
     request-example:
     query {
-      account_udts(input: {address_hashes: ["0x15ca4f2165ff0e798d9c7434010eaacc4d768d85", "0xc20538aa80bb3ced9e240dc8f8130b7f7d0b0c49"],
-          token_contract_address_hash: "0xbf1f27daea43849b67f839fd101569daaa321e2c"}) {
+      account_udts(input: {address_hashes: ["0x067e469c13a7294d1aafa2130272a9c7b70a4464"],
+          token_contract_address_hash: "0x2503a1a79a443f3961ee96a8c5ec513638129614"}) {
         address_hash
         balance
         udt{
+          id
           type
           name
+          bridge_account_id
         }
       }
     }
@@ -27,19 +29,13 @@ defmodule GodwokenExplorer.Graphql.Types.AccountUDT do
       "data": {
         "account_udts": [
           {
-            "address_hash": "0x15ca4f2165ff0e798d9c7434010eaacc4d768d85",
-            "balance": "993799999325",
+            "address_hash": "0x067e469c13a7294d1aafa2130272a9c7b70a4464",
+            "balance": "0",
             "udt": {
-              "name": "Nervos Token",
-              "type": "BRIDGE"
-            }
-          },
-          {
-            "address_hash": "0xc20538aa80bb3ced9e240dc8f8130b7f7d0b0c49",
-            "balance": "950876407191",
-            "udt": {
-              "name": "Nervos Token",
-              "type": "BRIDGE"
+              "bridge_account_id": 6841,
+              "id": "6841",
+              "name": "tst",
+              "type": "NATIVE"
             }
           }
         ]
