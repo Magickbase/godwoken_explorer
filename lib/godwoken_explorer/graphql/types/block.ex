@@ -9,7 +9,7 @@ defmodule GodwokenExplorer.Graphql.Types.Block do
 
     request-example:
     query {
-      block(input: {number: 345600}){
+      block(input: {number: 1}){
         hash
         parent_hash
         number
@@ -31,27 +31,13 @@ defmodule GodwokenExplorer.Graphql.Types.Block do
     {
       "data": {
         "block": {
-          "account": {
-            "id": 2,
-            "eth_address": "0x68f5cea51fa6fcfdcc10f6cddcafa13bf6717436"
-          },
-          "gas_limit": "981000000",
-          "gas_used": "95240385",
-          "hash": "0x67dad5ec7f3bc8b5b8f623f4df230cb50c9c39493080a6b32d94023994ba886b",
-          "number": 345600,
-          "parent_hash": "0x962906210825c339fa4f871239d967c60b62005a6b780ced4334dba56618dbf5",
-          "transactions": [
-            {
-              "from_account_id": 52269,
-              "to_account_id": 64241,
-              "type": "POLYJUICE"
-            },
-            {
-              "from_account_id": 52920,
-              "to_account_id": 197067,
-              "type": "POLYJUICE"
-            }
-          ]
+          "account": null,
+          "gas_limit": "12500000",
+          "gas_used": "0",
+          "hash": "0x4ac339b063e52dac1b845d935788f379ebcdb0e33ecce077519f39929dbc8829",
+          "number": 1,
+          "parent_hash": "0x61bcff6f20e8be09bbe8e36092a9cc05dd3fa67e3841e206e8c30ae0dd7032df",
+          "transactions": []
         }
       }
     }
@@ -72,7 +58,7 @@ defmodule GodwokenExplorer.Graphql.Types.Block do
         number
         gas_used
         gas_limit
-    producer_address
+        producer_address
         account{
           eth_address
         }
