@@ -12,7 +12,8 @@ defmodule GodwokenExplorer.DepositHistoryView do
       :udt_id,
       :value,
       :ckb_lock_hash,
-      :timestamp
+      :timestamp,
+      :capacity
     ]
   end
 

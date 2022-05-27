@@ -16,7 +16,7 @@ GET /txs
 ### Code samples
 
 ```console
-curl https://api.aggron.gwscan.com/api/txs?eth_address=0xbFbE23681D99A158f632e64A31288946770c7A9e&contract_address=0xc5e133e6b01b2c335055576c51a53647b1b9b624&page=1
+curl https://api.v1-betanet.gwscan.com/api/txs?eth_address=0xbFbE23681D99A158f632e64A31288946770c7A9e&contract_address=0xc5e133e6b01b2c335055576c51a53647b1b9b624&page=1
 ```
 
 ### Response
@@ -72,7 +72,7 @@ GET /txs
 ### Code samples
 
 ```console
-curl https://api.aggron.gwscan.com/api/txs?eth_address=0xbFbE23681D99A158f632e64A31288946770c7A9e&page=1
+curl https://api.v1-betanet.gwscan.com/api/txs?eth_address=0xbFbE23681D99A158f632e64A31288946770c7A9e&page=1
 ```
 
 ### Response
@@ -128,7 +128,7 @@ GET /txs
 ### Code samples
 
 ```console
-https://api.aggron.gwscan.com/api/txs?block_hash=0x88d0b2c105a7a17ab958f421ba71acc5aee475dfd11d0d33ff20b2544d7b5ab1
+https://api.v1-betanet.gwscan.com/api/txs?block_hash=0x88d0b2c105a7a17ab958f421ba71acc5aee475dfd11d0d33ff20b2544d7b5ab1
 ```
 
 ### Response
@@ -183,7 +183,7 @@ GET /txs
 ### Code samples
 
 ```console
-curl https://api.aggron.gwscan.com/api/txs/ 0xc30d26c095b8cc27643ccf2ca8ba5d5c7fd5c11625510ae8a5ea0d104121e797
+curl https://api.v1-betanet.gwscan.com/api/txs/ 0xc30d26c095b8cc27643ccf2ca8ba5d5c7fd5c11625510ae8a5ea0d104121e797
 ```
 
 ### Response
@@ -233,7 +233,7 @@ GET /txs
 ### Code samples
 
 ```console
-curl https://api.aggron.gwscan.com/api/txs/
+curl https://api.v1-betanet.gwscan.com/api/txs/
 0x548abac7dd2ca0c9df349a8523e7964887dd3007699ef94665e03caeba9385be
 ```
 

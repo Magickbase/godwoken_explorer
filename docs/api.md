@@ -2,8 +2,8 @@
 
 ## API Domain
 
-- Aggron network: https://api.staging.godwoken.nervina.cn
-- Lina nertwork: https://api.godwoken.nervina.cn
+- Aggron network: https://api.v1-betanet.gwscan.com
+- Lina nertwork: https://api.gwscan.com
 
 ## API List
 ### GET /api/accounts/{account_id | short_script_hash | eth_address}
