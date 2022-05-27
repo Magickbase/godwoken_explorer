@@ -17,7 +17,7 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         type
         supply
         account{
-          registry_address
+          eth_address
         }
       }
     }
@@ -27,7 +27,7 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
       "data": {
         "udt": {
           "account": {
-            "registry_address": "0xbf1f27daea43849b67f839fd101569daaa321e2c"
+            "eth_address": "0xbf1f27daea43849b67f839fd101569daaa321e2c"
           },
           "id": "1",
           "name": "Nervos Token",
@@ -56,7 +56,7 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         supply
         account{
           eth_address
-          registry_address
+          script_hash
         }
       }
     }
@@ -68,7 +68,7 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
           {
             "account": {
               "eth_address": null,
-              "registry_address": "0xbf1f27daea43849b67f839fd101569daaa321e2c"
+              "script_hash": "0xbf1f27daea43849b67f839fd101569daaa321e2c"
             },
             "id": "1",
             "name": "Nervos Token",
@@ -78,7 +78,7 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
           {
             "account": {
               "eth_address": null,
-              "registry_address": "0x21ad25fab1d759da1a419a589c0f36dee5e7fe3d"
+              "script_hash": "0x21ad25fab1d759da1a419a589c0f36dee5e7fe3d"
             },
             "id": "17",
             "name": null,

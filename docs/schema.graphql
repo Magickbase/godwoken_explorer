@@ -539,7 +539,7 @@ type RootQueryType {
       gas_limit
       account{
         id
-        registry_address
+        eth_address
       }
       transactions (input: {page: 1, page_size: 2}) {
         type
@@ -555,7 +555,7 @@ type RootQueryType {
       "block": {
         "account": {
           "id": 2,
-          "registry_address": "0x68f5cea51fa6fcfdcc10f6cddcafa13bf6717436"
+          "eth_address": "0x68f5cea51fa6fcfdcc10f6cddcafa13bf6717436"
         },
         "gas_limit": "981000000",
         "gas_used": "95240385",
@@ -810,24 +810,31 @@ type RootQueryType {
   
   request-example:
   query {
-    transactions (input: {address:
-  "0x3076d0e71c44b89c58692cf6f474a28c7dd697b3977cfb91116c35da39cbf24b",  page:
-  1, page_size: 2, end_block_number: 15408}) {
+    transactions (input: {address: "0x966b30e576a4d6731996748b48dd67c94ef29067", 
+  page: 1, page_size: 2, end_block_number: 15408}) {
       block_hash
       block_number
       type
       from_account_id
+  from_account {
+        id
+        eth_address
+      }
       to_account_id
     }
+  
   }
   
-  result-example:
   {
     "data": {
       "transactions": [
         {
           "block_hash": "0x50505f785e5bfa7b5b13a440eea7b4701368fd539a405d50a03f114ea886e41a",
           "block_number": 15408,
+          "from_account": {
+            "eth_address": "0x966b30e576a4d6731996748b48dd67c94ef29067",
+            "id": 5
+          },
           "from_account_id": 5,
           "to_account_id": 1003,
           "type": "POLYJUICE"
@@ -835,6 +842,10 @@ type RootQueryType {
         {
           "block_hash": "0x50505f785e5bfa7b5b13a440eea7b4701368fd539a405d50a03f114ea886e41a",
           "block_number": 15408,
+          "from_account": {
+            "eth_address": "0x966b30e576a4d6731996748b48dd67c94ef29067",
+            "id": 5
+          },
           "from_account_id": 5,
           "to_account_id": 4,
           "type": "POLYJUICE"
@@ -856,7 +867,7 @@ type RootQueryType {
       type
       supply
       account{
-        registry_address
+        eth_address
       }
     }
   }
@@ -866,7 +877,7 @@ type RootQueryType {
     "data": {
       "udt": {
         "account": {
-          "registry_address": "0xbf1f27daea43849b67f839fd101569daaa321e2c"
+          "eth_address": "0xbf1f27daea43849b67f839fd101569daaa321e2c"
         },
         "id": "1",
         "name": "Nervos Token",
@@ -890,7 +901,7 @@ type RootQueryType {
       supply
       account{
         eth_address
-        registry_address
+        script_hash
       }
     }
   }
@@ -902,7 +913,7 @@ type RootQueryType {
         {
           "account": {
             "eth_address": null,
-            "registry_address": "0xbf1f27daea43849b67f839fd101569daaa321e2c"
+            "script_hash": "0xbf1f27daea43849b67f839fd101569daaa321e2c"
           },
           "id": "1",
           "name": "Nervos Token",
@@ -912,7 +923,7 @@ type RootQueryType {
         {
           "account": {
             "eth_address": null,
-            "registry_address": "0x21ad25fab1d759da1a419a589c0f36dee5e7fe3d"
+            "script_hash": "0x21ad25fab1d759da1a419a589c0f36dee5e7fe3d"
           },
           "id": "17",
           "name": null,

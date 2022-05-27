@@ -7,7 +7,7 @@ defmodule GodwokenExplorerWeb.API.UDTController do
   plug JSONAPI.QueryParser, view: UDTView
   action_fallback GodwokenExplorerWeb.API.FallbackController
 
-  # fields[udt]=id,name,symbol,supply,holders,type,registry_address
+  # fields[udt]=id,name,symbol,supply,holders,type,eth_address
   def index(conn, _params) do
     results = UDTView.list(conn.params["type"], conn.params["page"] || 1)
 
