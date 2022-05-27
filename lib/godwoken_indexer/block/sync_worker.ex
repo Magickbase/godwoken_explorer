@@ -497,15 +497,10 @@ defmodule GodwokenIndexer.Block.SyncWorker do
   end
 
   defp update_ckb_balance(polyjuice_params) do
-    nil
-
     if length(polyjuice_params) > 0 do
       ckb_id = UDT.ckb_account_id()
-      nil
 
       if not is_nil(ckb_id) do
-        nil
-
         %Account{script_hash: ckb_contract_address} = Repo.get(Account, ckb_id)
 
         account_ids =
@@ -536,18 +531,12 @@ defmodule GodwokenIndexer.Block.SyncWorker do
             }
           end)
 
-        nil
-
         {:ok, %GodwokenRPC.Account.FetchedBalances{params_list: import_account_udts}} =
           GodwokenRPC.fetch_balances(params)
-
-        nil
 
         import_account_udts =
           import_account_udts
           |> Enum.map(fn import_au -> import_au |> Map.merge(import_timestamps()) end)
-
-        nil
 
         Repo.insert_all(AccountUDT, import_account_udts,
           on_conflict: {:replace, [:balance, :updated_at]},
