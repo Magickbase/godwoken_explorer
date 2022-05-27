@@ -460,27 +460,19 @@ defmodule GodwokenExplorer.Account do
              {:ok, script} <- GodwokenRPC.fetch_script(script_hash) do
           type = switch_account_type(script["code_hash"], script["args"])
 
-          registry_address =
-            if type in [:eth_user, :polyjuice_contract] do
-              {:ok, registry_address} = GodwokenRPC.fetch_registry_address(script_hash)
-              registry_address
-            else
-              nil
-            end
-
           cond do
             type in [:eth_user, :polyjuice_contract] ->
               {Account.script_to_eth_adress(type, script["args"]),
                Account.script_to_eth_adress(type, script["args"])}
 
             type == :polyjuice_creator ->
-              {registry_address, "Deploy Contract"}
+              {script_hash, "Deploy Contract"}
 
             type == :meta_contract ->
-              {registry_address, "Meta Contract"}
+              {script_hash, "Meta Contract"}
 
             type == :eth_addr_reg ->
-              {registry_address, "Eth Address Registry"}
+              {script_hash, "Eth Address Registry"}
 
             type == :udt ->
               {script_hash, script_hash}

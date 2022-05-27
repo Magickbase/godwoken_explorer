@@ -17,7 +17,7 @@ defmodule GodwokenExplorer.Graphql.Types.Block do
         gas_limit
         account{
           id
-          registry_address
+          eth_address
         }
         transactions (input: {page: 1, page_size: 2}) {
           type
@@ -33,7 +33,7 @@ defmodule GodwokenExplorer.Graphql.Types.Block do
         "block": {
           "account": {
             "id": 2,
-            "registry_address": "0x68f5cea51fa6fcfdcc10f6cddcafa13bf6717436"
+            "eth_address": "0x68f5cea51fa6fcfdcc10f6cddcafa13bf6717436"
           },
           "gas_limit": "981000000",
           "gas_used": "95240385",
@@ -72,7 +72,7 @@ defmodule GodwokenExplorer.Graphql.Types.Block do
         number
         gas_used
         gas_limit
-				producer_address
+    producer_address
         account{
           eth_address
         }

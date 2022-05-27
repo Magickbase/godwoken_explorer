@@ -9,7 +9,7 @@ defmodule GodwokenExplorer.SmartContractView do
   def fields do
     [
       :id,
-      :registry_address,
+      :eth_address,
       :name,
       :compiler_version,
       :compiler_file_format,
@@ -20,7 +20,7 @@ defmodule GodwokenExplorer.SmartContractView do
     ]
   end
 
-  def registry_address(smart_contract, _conn) do
+  def eth_address(smart_contract, _conn) do
     smart_contract.account.eth_address
   end
 
