@@ -7,7 +7,7 @@ defmodule GodwokenIndexer.Block.BindL1L2Worker do
   require Logger
 
   alias GodwkenRPC
-  alias GodwokenExplorer.{Block, Chain}
+  alias GodwokenExplorer.Block
 
   @buffer_block_number 30
   @default_worker_interval 5

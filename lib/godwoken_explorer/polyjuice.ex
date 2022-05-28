@@ -9,7 +9,7 @@ defmodule GodwokenExplorer.Polyjuice do
   alias GodwokenExplorer.Chain.{Data, Hash}
 
   @derive {Jason.Encoder, except: [:__meta__]}
-  schema "polyjuice" do
+  schema "polyjuices" do
     field :is_create, :boolean, default: false
     field :gas_limit, :decimal
     field :gas_price, :decimal
@@ -45,7 +45,15 @@ defmodule GodwokenExplorer.Polyjuice do
       :status,
       :created_contract_address_hash
     ])
-    |> validate_required([:is_create, :gas_limit, :gas_price, :value, :input_size, :input, :transaction_index])
+    |> validate_required([
+      :is_create,
+      :gas_limit,
+      :gas_price,
+      :value,
+      :input_size,
+      :input,
+      :transaction_index
+    ])
     |> unique_constraint(:tx_hash)
   end
 

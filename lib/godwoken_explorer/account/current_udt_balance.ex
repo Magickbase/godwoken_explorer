@@ -1,4 +1,4 @@
-defmodule GodwokenExplorer.AccountUDT do
+defmodule GodwokenExplorer.Account.CurrentUDTBalance do
   use GodwokenExplorer, :schema
 
   import GodwokenRPC.Util, only: [balance_to_view: 2]
@@ -10,11 +10,12 @@ defmodule GodwokenExplorer.AccountUDT do
   alias GodwokenExplorer.Chain.Hash
 
   @derive {Jason.Encoder, except: [:__meta__]}
-  schema "account_udts" do
-    field :balance, :decimal
+  schema "account_current_udt_balances" do
+    field :value, :decimal
+    field(:value_fetched_at, :utc_datetime_usec)
+    field(:block_number, :integer)
     field :address_hash, Hash.Address
-    # For bridge token is the script_hash, for native token is the contract address
-    field :token_contract_address_hash, :binary
+    field :token_contract_address_hash, Hash.Address
     belongs_to(:account, GodwokenExplorer.Account, foreign_key: :account_id, references: :id)
     belongs_to(:udt, GodwokenExplorer.UDT, foreign_key: :udt_id, references: :id)
 
@@ -24,11 +25,17 @@ defmodule GodwokenExplorer.AccountUDT do
   @doc false
   def changeset(account_udt, attrs) do
     account_udt
-    |> cast(attrs, [:account_id, :udt_id, :balance, :address_hash, :token_contract_address_hash])
+    |> cast(attrs, [
+      :account_id,
+      :udt_id,
+      :address_hash,
+      :token_contract_address_hash,
+      :value,
+      :value_fetched_at,
+      :block_number
+    ])
     |> validate_required([:address_hash, :token_contract_address_hash])
-    |> unique_constraint([:address_hash, :token_contract_address_hash],
-      name: :account_udts_address_hash_token_contract_address_hash_index
-    )
+    |> unique_constraint([:address_hash, :token_contract_address_hash])
   end
 
   def create_or_update_account_udt!(attrs) do
