@@ -317,6 +317,7 @@ input PageAndSizeInput {
 }
 
 type Polyjuice {
+  created_contract_address_hash: String
   gas_limit: Int
   gas_price: Decimal
   gas_used: Int
@@ -325,6 +326,7 @@ type Polyjuice {
   input_size: Int
   is_create: Boolean
   status: PolyjuiceStatus
+  transaction_index: Int
   tx_hash: String
   value: Decimal
 }

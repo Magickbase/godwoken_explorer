@@ -47,7 +47,6 @@ defmodule GodwokenExplorer.Graphql.Types.TokenTransfer do
       arg(:input, non_null(:token_transfer_input))
 
       middleware(MEIP55, [
-        :transaction_hash,
         :from_address,
         :to_address,
         :token_contract_address_hash
