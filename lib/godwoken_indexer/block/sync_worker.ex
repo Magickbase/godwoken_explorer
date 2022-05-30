@@ -86,8 +86,8 @@ defmodule GodwokenIndexer.Block.SyncWorker do
       if transactions_params_without_receipts != [] do
         import_account(transactions_params_without_receipts)
 
-        {polyjuice_without_receipts, polyjuice_creator_params, _eth_addr_reg_params,
-         _unknown_params} = group_transaction_params(transactions_params_without_receipts)
+        {polyjuice_without_receipts, polyjuice_creator_params, _eth_addr_reg_params} =
+          group_transaction_params(transactions_params_without_receipts)
 
         handle_polyjuice_transactions(polyjuice_without_receipts)
 
@@ -158,7 +158,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
     grouped = transactions_params_without_receipts |> Enum.group_by(fn tx -> tx[:type] end)
 
     {grouped[:polyjuice] || [], grouped[:polyjuice_creator] || [],
-     grouped[:eth_address_registry] || [], grouped[:unknown] || []}
+     grouped[:eth_address_registry] || []}
   end
 
   @spec under_tip_block?(GodwokenRPC.block_number()) :: boolean

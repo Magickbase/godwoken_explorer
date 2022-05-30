@@ -17,9 +17,7 @@ defmodule GodwokenExplorer.Transaction do
     field(:nonce, :integer)
     field(:to_account_id, :integer)
 
-    field(:type, Ecto.Enum,
-      values: [:polyjuice_creator, :polyjuice, :eth_address_registry, :unknown]
-    )
+    field(:type, Ecto.Enum, values: [:polyjuice_creator, :polyjuice, :eth_address_registry])
 
     field(:block_number, :integer)
     field(:eth_hash, :binary)
@@ -64,7 +62,7 @@ defmodule GodwokenExplorer.Transaction do
     )
   end
 
-  def create_transaction(%{type: type} = attrs) when type in [:unknown, :eth_address_registry] do
+  def create_transaction(%{type: type} = attrs) when type in [:eth_address_registry] do
     transaction =
       %Transaction{}
       |> Transaction.changeset(attrs)

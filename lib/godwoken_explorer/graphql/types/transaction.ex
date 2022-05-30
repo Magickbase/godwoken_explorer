@@ -80,7 +80,7 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
         block_number
         type
         from_account_id
-				from_account {
+    from_account {
           id
           eth_address
         }
@@ -167,7 +167,6 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
     value(:polyjuice_creator)
     value(:polyjuice)
     value(:eth_address_registry)
-    value(:unknown)
   end
 
   input_object :transaction_input do
