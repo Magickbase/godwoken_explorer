@@ -6,7 +6,6 @@ defmodule GodwokenExplorer.Account.CurrentUDTBalance do
   require Logger
 
   alias GodwokenRPC
-  alias GodwokenExplorer.Chain.Events.Publisher
   alias GodwokenExplorer.Chain.Hash
 
   @derive {Jason.Encoder, except: [:__meta__]}

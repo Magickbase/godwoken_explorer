@@ -36,17 +36,21 @@ defmodule GodwokenIndexer.Worker.CheckLostAccount do
           )
           |> Repo.all()
 
-        less_ids = ((last_count..total_count |> Enum.to_list()) -- database_ids) |> Enum.sort()
+        current_count =
+          if last_count + 20 < total_count do
+            last_count + 20
+          else
+            total_count
+          end
 
-        Repo.transaction(
-          fn ->
-            less_ids |> Enum.each(fn x -> Account.manual_create_account!(x) end)
+        less_ids =
+          ((last_count..current_count |> Enum.to_list()) -- database_ids)
+          |> Enum.sort()
 
-            KeyValue.changeset(key_value, %{value: Integer.to_string(total_count + 1)})
-            |> Repo.update!()
-          end,
-          timeout: :infinity
-        )
+        Account.batch_import_accounts(less_ids)
+
+        KeyValue.changeset(key_value, %{value: Integer.to_string(current_count + 1)})
+        |> Repo.update!()
       end
     end
 

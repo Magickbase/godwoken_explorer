@@ -8,8 +8,8 @@ defmodule GodwokenExplorer.Repo.Migrations.CreateAccountUDTBalance do
       add :udt_id, :integer
       add :account_id, :integer
       add :block_number, :bigint
-      add :value, :decimal, null: false
-      add :value_fetched_at, :utc_datetime_usec
+      add :value, :decimal, null: true
+      add :value_fetched_at, :utc_datetime_usec, null: true
 
       timestamps(null: false, type: :utc_datetime_usec)
     end

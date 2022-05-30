@@ -63,7 +63,7 @@ defmodule GodwokenExplorer.Account do
       :token_transfer_count,
       :contract_code
     ])
-    |> validate_required([:id, :script_hash])
+    |> validate_required([:id])
   end
 
   def create_or_update_account!(attrs) do

@@ -22,6 +22,8 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
     UDT
   }
 
+  alias GodwokenExplorer.Account.CurrentBridgedUDTBalance
+
   @default_worker_interval 5
   @smallest_ckb_capacity 290 * :math.pow(10, 8)
   @smallest_udt_ckb_capacity 371 * :math.pow(10, 8)

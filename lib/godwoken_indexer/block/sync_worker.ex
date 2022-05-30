@@ -7,7 +7,6 @@ defmodule GodwokenIndexer.Block.SyncWorker do
   require Logger
 
   alias GodwokenIndexer.Worker.ImportContractCode
-  alias GodwokenExplorer.Token.BalanceReader
   alias GodwokenIndexer.Transform.{TokenTransfers, TokenBalances}
   alias GodwokenRPC.{Blocks, Receipts}
   alias GodwokenExplorer.Chain.Import
@@ -26,7 +25,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
     UDT
   }
 
-  alias GodwokenExplorer.Account.{CurrentUDTBalance, UDTBalance}
+  alias GodwokenExplorer.Account.{UDTBalance, CurrentBridgedUDTBalance}
 
   alias GodwokenExplorer.Chain.Events.Publisher
   alias GodwokenExplorer.Chain.Cache.Blocks, as: BlocksCache
@@ -143,7 +142,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
       import_polyjuice(polyjuice_with_receipts ++ polyjuice_deploy_contract)
 
       if length(polyjuice_without_receipts) > 0,
-        do: {_integer, nil} = update_ckb_balance(polyjuice_without_receipts)
+        do: {:ok, :import} = update_ckb_balance(polyjuice_without_receipts)
 
       async_contract_code(polyjuice_with_receipts)
     end
@@ -546,12 +545,14 @@ defmodule GodwokenIndexer.Block.SyncWorker do
 
         Import.insert_changes_list(
           bridged_ckbs,
-          for: CurrentBridgeUDTBalance,
+          for: CurrentBridgedUDTBalance,
           timestamps: import_timestamps(),
           on_conflict: {:replace, [:block_number, :value, :updated_at]},
-          conflict_target: [:address_hash, :token_contract_address_hash]
+          conflict_target: [:address_hash, :udt_script_hash]
         )
       end)
+
+      {:ok, :import}
     else
       _ -> {:error, :ckb_not_found}
     end

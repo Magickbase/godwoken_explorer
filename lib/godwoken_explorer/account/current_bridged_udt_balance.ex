@@ -4,7 +4,7 @@ defmodule GodwokenExplorer.Account.CurrentBridgedUDTBalance do
   alias GodwokenExplorer.Chain.Hash
 
   @derive {Jason.Encoder, except: [:__meta__]}
-  schema "account_current_udt_balances" do
+  schema "account_current_bridged_udt_balances" do
     field(:value, :decimal)
     field(:value_fetched_at, :utc_datetime_usec)
     field(:layer1_block_number, :integer)
@@ -99,7 +99,7 @@ defmodule GodwokenExplorer.Account.CurrentBridgedUDTBalance do
         account_id: account_id,
         address_hash: eth_address,
         udt_id: udt_id,
-        token_contract_address_hash: to_string(script_hash),
+        udt_script_hash: to_string(script_hash),
         value: balance,
         layer1_block_number: layer1_block_number
       })
