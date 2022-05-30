@@ -11,7 +11,7 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
 
     request-example:
     query {
-      udt(input: {contract_address: "0xbf1f27daea43849b67f839fd101569daaa321e2c"}){
+      udt(input: {contract_address: "0x2503a1a79a443f3961ee96a8c5ec513638129614"}){
         id
         name
         type
@@ -27,12 +27,12 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
       "data": {
         "udt": {
           "account": {
-            "eth_address": "0xbf1f27daea43849b67f839fd101569daaa321e2c"
+            "eth_address": "0x2503a1a79a443f3961ee96a8c5ec513638129614"
           },
-          "id": "1",
-          "name": "Nervos Token",
-          "supply": "693247799.35570027",
-          "type": "BRIDGE"
+          "id": "6841",
+          "name": "tst",
+          "supply": "111",
+          "type": "NATIVE"
         }
       }
     }

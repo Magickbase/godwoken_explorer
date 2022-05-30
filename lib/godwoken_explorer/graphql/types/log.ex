@@ -45,11 +45,6 @@ defmodule GodwokenExplorer.Graphql.Types.Log do
       arg(:input, non_null(:log_input))
 
       middleware(MEIP55, [
-        :transaction_hash,
-        :first_topic,
-        :second_topic,
-        :third_topic,
-        :fourth_topic,
         :address_hash
       ])
 

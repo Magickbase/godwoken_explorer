@@ -17,6 +17,8 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Account do
     return =
       from(ac in AccountUDT)
       |> where([ac], ac.account_id == ^id)
+      |> order_by([ac], desc: ac.updated_at)
+      |> distinct([ac], ac.token_contract_address_hash)
       |> page_and_size(input)
       |> sort_type(input, :balance)
       |> Repo.all()

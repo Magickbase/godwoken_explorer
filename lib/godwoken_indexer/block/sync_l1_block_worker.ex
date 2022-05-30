@@ -173,7 +173,7 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
           l2_script_hash: "0x" <> l2_script_hash,
           block_hash: "0x" <> l2_block_hash,
           block_number: l2_block_number,
-          udt_script_hash: "0x" <> udt_script_hash,
+          udt_script_hash: udt_script_hash,
           owner_lock_hash: "0x" <> owner_lock_hash,
           timestamp: timestamp,
           udt_id: udt_id,

@@ -7,12 +7,35 @@ defmodule GodwokenExplorer.Graphql.Resolvers.AccountUDT do
 
   @addresses_max_limit 20
 
-  def udt(%AccountUDT{udt_id: udt_id} = _parent, _args, _resolution) do
-    if udt_id do
-      {:ok, Repo.get(UDT, udt_id)}
-    else
-      {:ok, nil}
-    end
+  def udt(
+        %AccountUDT{udt_id: udt_id, token_contract_address_hash: token_contract_address_hash} =
+          _parent,
+        _args,
+        _resolution
+      ) do
+    return =
+      if udt_id do
+        from(u in UDT)
+        |> where([u], u.id == ^udt_id)
+        |> Repo.one()
+      else
+        result =
+          from(u in UDT)
+          |> join(:inner, [u], a in Account,
+            on: a.eth_address == ^token_contract_address_hash and u.bridge_account_id == a.id
+          )
+          |> order_by([u], desc: u.updated_at)
+          |> first()
+          |> Repo.all()
+
+        if result == [] do
+          nil
+        else
+          hd(result)
+        end
+      end
+
+    {:ok, return}
   end
 
   def account(%AccountUDT{account_id: account_id} = _parent, _args, _resolution) do
