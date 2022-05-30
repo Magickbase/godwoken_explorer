@@ -38,134 +38,117 @@ defmodule GodwokenExplorer.Account.CurrentUDTBalance do
     |> unique_constraint([:address_hash, :token_contract_address_hash])
   end
 
-  def create_or_update_account_udt!(attrs) do
-    case Repo.get_by(__MODULE__, %{
-           address_hash: attrs[:address_hash],
-           token_contract_address_hash: attrs[:token_contract_address_hash]
-         }) do
-      nil -> %__MODULE__{}
-      account_udt -> account_udt
-    end
-    |> changeset(attrs)
-    |> Repo.insert_or_update!()
-    |> case do
-      account_udt = %AccountUDT{} ->
-        account_api_data =
-          account_udt.account_id |> Account.find_by_id() |> Account.account_to_view()
-
-        Publisher.broadcast([{:accounts, account_api_data}], :realtime)
-        {:ok, account_udt}
-
-      {:error, _} ->
-        {:error, nil}
-    end
-  end
-
   def list_udt_by_eth_address(eth_address) do
-    from(au in AccountUDT,
-      left_join: a1 in Account,
-      on: a1.id == au.udt_id,
-      left_join: a2 in Account,
-      on: a2.eth_address == au.token_contract_address_hash,
-      left_join: u3 in UDT,
-      on: u3.id == a1.id,
-      left_join: u4 in UDT,
-      on: u4.bridge_account_id == a2.id,
-      where: au.address_hash == ^eth_address and au.balance != 0,
-      select: %{
-        id: fragment("CASE WHEN ? IS NULL THEN ? ELSE ? END", u3, u4.id, u3.id),
-        type: fragment("CASE WHEN ? IS NULL THEN ? ELSE ? END", u3, u4.type, u3.type),
-        name: fragment("CASE WHEN ? IS NULL THEN ? ELSE ? END", u3, u4.name, u3.name),
-        symbol: fragment("CASE WHEN ? IS NULL THEN ? ELSE ? END", u3, u4.symbol, u3.symbol),
-        icon: fragment("CASE WHEN ? IS NULL THEN ? ELSE ? END", u3, u4.icon, u3.icon),
-        balance: au.balance,
-        udt_decimal:
-          fragment("CASE WHEN ? IS NULL THEN ? ELSE ? END", u3, u4.decimal, u3.decimal),
-        updated_at: au.updated_at
-      }
-    )
-    |> Repo.all()
-    |> unique_account_udts()
+    udt_balances =
+      from(cub in CurrentUDTBalance,
+        join: a1 in Account,
+        on: a1.eth_address == cub.token_contract_address_hash,
+        join: u2 in UDT,
+        on: u2.bridge_account_id == a1.id,
+        where: cub.address_hash == ^eth_address and cub.value != 0,
+        select: %{
+          id: u2.id,
+          type: u2.type,
+          name: u2.name,
+          symbol: u2.symbol,
+          icon: u2.icon,
+          balance: cub.value,
+          udt_decimal: u2.decimal,
+          updated_at: cub.updated_at
+        }
+      )
+      |> Repo.all()
+
+    bridged_udt_balances =
+      from(cbub in CurrentBridgedUDTBalance,
+        join: a1 in Account,
+        on: a1.script_hash == cbub.udt_script_hash,
+        join: u2 in UDT,
+        on: u2.id == a1.id,
+        where: cbub.address_hash == ^eth_address and cbub.value != 0,
+        select: %{
+          id: u2.id,
+          type: u2.type,
+          name: u2.name,
+          symbol: u2.symbol,
+          icon: u2.icon,
+          balance: cbub.value,
+          udt_decimal: u2.decimal,
+          updated_at: cbub.updated_at
+        }
+      )
+      |> Repo.all()
+
+    (bridged_udt_balances ++ udt_balances)
+    |> Enum.sort_by(&Map.fetch(&1, :updated_at))
+    |> Enum.uniq_by(&Map.fetch(&1, :id))
     |> Enum.map(fn record ->
       record
       |> Map.merge(%{balance: balance_to_view(record[:balance], record[:udt_decimal] || 0)})
     end)
   end
 
-  def unique_account_udts(results) do
-    results
-    |> Enum.group_by(fn result -> result[:id] end)
-    |> Enum.reduce([], fn {id, account_udts}, acc ->
-      if not is_nil(id) and id != UDT.ckb_account_id() do
-        if length(account_udts) > 1 do
-          latest_au = account_udts |> Enum.sort_by(fn au -> au[:updated_at] end) |> List.last()
-          [latest_au | acc]
-        else
-          [List.first(account_udts) | acc]
-        end
-      else
-        acc
-      end
-    end)
+  def filter_ckb_balance(udt_balances) do
+    udt_balances |> Enum.filter(fn ub -> ub.id == UDT.ckb_account_id() end)
   end
 
   def get_ckb_balance(addresses) do
-    udt_addresses = UDT.ckb_account_id() |> UDT.get_bridge_and_natvie_address()
+    [ckb_bridged_address, ckb_contract_address] =
+      UDT.ckb_account_id() |> UDT.list_address_by_udt_id()
 
-    results =
-      from(au in AccountUDT,
-        where: au.address_hash in ^addresses and au.token_contract_address_hash in ^udt_addresses,
+    bridged_results =
+      from(cbub in CurrentBridgedUDTBalance,
+        where: cbub.address_hash in ^addresses and cbub.udt_script_hash == ^ckb_bridged_address,
         select: %{
-          address: au.address_hash,
-          balance: au.balance,
-          updated_at: au.updated_at
+          address_hash: cbub.address_hash,
+          balance: cbub.value,
+          updated_at: cbub.updated_at
         }
       )
       |> Repo.all()
-      |> Enum.group_by(fn result -> result[:address] end)
-      |> Enum.reduce([], fn {_address, account_udts}, acc ->
-        if length(account_udts) > 1 do
-          latest_au = account_udts |> Enum.sort_by(fn au -> au[:updated_at] end) |> List.last()
-          [latest_au | acc]
-        else
-          [List.first(account_udts) | acc]
-        end
-      end)
 
-    addresses
-    |> Enum.map(fn address ->
-      result =
-        results
-        |> Enum.find(fn result -> result[:address] == address end)
+    if ckb_contract_address != nil do
+      results =
+        from(cub in CurrentUDTBalance,
+          where:
+            cub.address_hash in ^addresses and
+              cub.token_contract_address_hash == ^ckb_contract_address,
+          select: %{
+            address_hash: cub.address_hash,
+            balance: cub.value,
+            updated_at: cub.updated_at
+          }
+        )
+        |> Repo.all()
 
-      if is_nil(result) do
-        %{
-          account: address,
-          balance: 0
-        }
-      else
-        %{
-          account: address,
-          balance: result[:balance]
-        }
-      end
+      (bridged_results ++ results)
+      |> Enum.sort_by(&Map.fetch(&1, :updated_at))
+      |> Enum.uniq_by(&Map.fetch(&1, :address_hash))
+    else
+      bridged_results
+    end
+    |> Enum.map(fn result ->
+      %{
+        balance: result[:balance],
+        address: result[:address_hash]
+      }
     end)
   end
 
   def sort_holder_list(udt_id, paging_options) do
     case Repo.get(UDT, udt_id) do
       %UDT{type: :native, supply: supply, decimal: decimal} ->
-        token_contract_address_hashes = UDT.list_address_by_udt_id(udt_id)
+        [token_contract_address_hashes] = UDT.list_address_by_udt_id(udt_id)
 
         address_and_balances =
-          from(au in AccountUDT,
+          from(cub in CurrentUDTBalance,
             join: a1 in Account,
-            on: a1.eth_address == au.address_hash,
+            on: a1.eth_address == cub.address_hash,
             where:
-              au.token_contract_address_hash in ^token_contract_address_hashes and au.balance > 0,
+              cub.token_contract_address_hash == ^token_contract_address_hashes and cub.value > 0,
             select: %{
-              eth_address: a1.eth_address,
-              balance: au.balance,
+              eth_address: cub.address_hash,
+              balance: cub.value,
               tx_count:
                 fragment(
                   "CASE WHEN ? is null THEN 0 ELSE ? END",
@@ -173,37 +156,48 @@ defmodule GodwokenExplorer.Account.CurrentUDTBalance do
                   a1.transaction_count
                 )
             },
-            order_by: [desc: au.balance]
+            order_by: [desc: cub.balance]
           )
           |> Repo.paginate(page: paging_options[:page], page_size: paging_options[:page_size])
 
         parse_holder_sort_results(address_and_balances, supply, decimal || 0)
 
       %UDT{type: :bridge, supply: supply, decimal: decimal} ->
-        token_contract_address_hashes = UDT.list_address_by_udt_id(udt_id)
+        [udt_script_hash, token_contract_address_hashes] = UDT.list_address_by_udt_id(udt_id)
 
-        sub_query =
-          from(au in AccountUDT,
-            join: a1 in Account,
-            on: a1.eth_address == au.address_hash,
+        udt_balance_query =
+          from(cub in CurrentUDTBalance,
             where:
-              au.token_contract_address_hash in ^token_contract_address_hashes and au.balance > 0,
+              cub.token_contract_address_hash == ^token_contract_address_hashes and cub.value > 0,
             select: %{
-              eth_address: a1.eth_address,
-              balance: au.balance,
-              tx_count:
-                fragment(
-                  "CASE WHEN ? is null THEN 0 ELSE ? END",
-                  a1.transaction_count,
-                  a1.transaction_count
-                )
-            },
-            distinct: au.address_hash,
-            order_by: [desc: au.updated_at]
+              eth_address: cub.address_hash,
+              balance: cub.value,
+              updated_at: cub.updated_at
+            }
+          )
+
+        bridged_udt_balance_query =
+          from(cbub in CurrentBridgedUDTBalance,
+            where: cbub.udt_script_hash == ^udt_script_hash and cbub.value > 0,
+            select: %{
+              eth_address: cbub.address_hash,
+              balance: cbub.value,
+              updated_at: cbub.updated_at
+            }
           )
 
         address_and_balances =
-          from(sq in subquery(sub_query), order_by: [desc: sq.balance])
+          from(q in subquery(union_all(udt_balance_query, ^bridged_udt_balance_query)),
+            join: a in Account,
+            on: a.eth_address == q.eth_address,
+            select: %{
+              eth_address: q.address_hash,
+              balance: q.value,
+              tx_count: a.transaction_count
+            },
+            order_by: [desc: :updated_at, desc: :balance],
+            distinct: q.eth_address
+          )
           |> Repo.paginate(page: paging_options[:page], page_size: paging_options[:page_size])
 
         parse_holder_sort_results(address_and_balances, supply, decimal || 0)

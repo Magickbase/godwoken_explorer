@@ -18,7 +18,6 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
     Repo,
     Block,
     DepositHistory,
-    AccountUDT,
     WithdrawalHistory,
     UDT
   }
@@ -180,6 +179,12 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
           amount: amount,
           capacity: capacity
         })
+
+        CurrentBridgedUDTBalance.sync_balance!(%{
+          script_hash: l2_script_hash,
+          udt_id: udt_id,
+          layer1_block_number: block_number
+        })
       end
     rescue
       e -> Sentry.capture_exception(e, extra: %{l1_tx_hash: tx_hash, index: index})
@@ -266,9 +271,18 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
       })
 
       if udt_id != UDT.ckb_account_id(),
-        do: AccountUDT.sync_balance!(%{account_id: account.id, udt_id: udt_id})
+        do:
+          CurrentBridgedUDTBalance.sync_balance!(%{
+            account_id: account.id,
+            udt_id: udt_id,
+            layer1_block_number: l1_block_number
+          })
 
-      AccountUDT.sync_balance!(%{account_id: account.id, udt_id: UDT.ckb_account_id()})
+      CurrentBridgedUDTBalance.sync_balance!(%{
+        account_id: account.id,
+        udt_id: UDT.ckb_account_id(),
+        layer1_block_number: l1_block_number
+      })
     rescue
       ErlangError ->
         Logger.error("DepositLockArgs parse error: #{tx_hash} #{index}")

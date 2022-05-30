@@ -10,6 +10,7 @@ defmodule GodwokenExplorer.Repo.Migrations.CreateAccountCurrentBridgedUDTBalance
       add :value, :decimal, null: false
       add :value_fetched_at, :utc_datetime_usec
       add :layer1_block_number, :bigint, null: false
+      add :block_number, :bigint, null: false
 
       timestamps(null: false, type: :utc_datetime_usec)
     end

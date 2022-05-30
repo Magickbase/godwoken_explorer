@@ -6,7 +6,8 @@ defmodule GodwokenExplorer.Etherscan do
   import Ecto.Query, only: [from: 2, where: 3, or_where: 3, subquery: 1, order_by: 3]
 
   alias GodwokenExplorer.Chain.Hash
-  alias GodwokenExplorer.{Account, AccountUDT, Repo, Polyjuice, Transaction, TokenTransfer, UDT}
+  alias GodwokenExplorer.{Account, Repo, Polyjuice, Transaction, TokenTransfer, UDT}
+  alias GodwokenExplorer.Account.{CurrentBridgedUDTBalance, CurrentUDTBalance}
   alias GodwokenExplorer.Etherscan.Logs
 
   @default_options %{
@@ -161,12 +162,34 @@ defmodule GodwokenExplorer.Etherscan do
         %Hash{byte_count: unquote(Hash.Address.byte_count())} = contract_address_hash,
         %Hash{byte_count: unquote(Hash.Address.byte_count())} = address_hash
       ) do
-    from(au in AccountUDT,
-      where: au.token_contract_address_hash == ^contract_address_hash,
-      where: au.address_hash == ^address_hash,
-      select: au.balance
-    )
-    |> Repo.one()
+    udt_balance =
+      from(cub in CurrentUDTBalance,
+        where: cub.token_contract_address_hash == ^contract_address_hash,
+        where: cub.address_hash == ^address_hash,
+        select: {cub.value, cub.updated_at}
+      )
+      |> Repo.one()
+
+    with udt_script_hash when not is_nil(udt_script_hash) <-
+           from(u in UDT,
+             join: a in Account,
+             on: a.id == u.bridge_account_id,
+             where: u.type == :bridge and a.eth_address == ^contract_address_hash,
+             select: a.script_hash
+           )
+           |> Repo.one(),
+         bridged_udt_balance when not is_nil(bridged_udt_balance) <-
+           from(cbub in CurrentBridgedUDTBalance,
+             where: cbub.udt_script_hash == ^udt_script_hash,
+             where: cbub.address_hash == ^address_hash,
+             select: {cbub.value, cbub.updated_at}
+           )
+           |> Repo.one() do
+      [udt_balance, bridged_udt_balance] |> Enum.sort_by(&elem(&1, 1)) |> List.first() |> elem(0)
+    else
+      _ ->
+        udt_balance |> elem(0)
+    end
   end
 
   defp where_start_block_match(query, %{start_block: nil}), do: query

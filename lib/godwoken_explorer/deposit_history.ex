@@ -74,7 +74,11 @@ defmodule GodwokenExplorer.DepositHistory do
       if exist_count == 1 do
         Repo.delete!(account)
       else
-        AccountUDT.sync_balance!(%{account_id: account.id, udt_id: history.udt_id})
+        CurrentBridgedUDTBalance.sync_balance!(%{
+          account_id: account.id,
+          udt_id: history.udt_id,
+          layer1_block_number: layer1_block_number
+        })
       end
 
       Repo.delete!(history)

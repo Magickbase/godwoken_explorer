@@ -67,7 +67,8 @@ defmodule GodwokenExplorer.UDT do
   end
 
   def count_holder(udt_id) do
-    from(au in AccountUDT, where: au.udt_id == ^udt_id) |> Repo.aggregate(:count)
+    from(cbub in CurrentBridgedUDTBalance, where: cbub.udt_id == ^udt_id)
+    |> Repo.aggregate(:count)
   end
 
   def get_decimal(id) do
@@ -127,7 +128,7 @@ defmodule GodwokenExplorer.UDT do
              %Account{eth_address: eth_address} <- Repo.get(Account, udt.bridge_account_id) do
           [script_hash, eth_address]
         else
-          _ -> [script_hash]
+          _ -> [script_hash, nil]
         end
 
       %UDT{type: :native} = udt ->
@@ -200,17 +201,5 @@ defmodule GodwokenExplorer.UDT do
       _ ->
         ""
     end
-  end
-
-  def get_bridge_and_natvie_address(udt_id) do
-    from(u in UDT,
-      left_join: a1 in Account,
-      on: a1.id == u.id,
-      left_join: a2 in Account,
-      on: a2.id == u.bridge_account_id,
-      where: u.id == ^udt_id,
-      select: [a1.eth_address, a2.eth_address]
-    )
-    |> Repo.one()
   end
 end

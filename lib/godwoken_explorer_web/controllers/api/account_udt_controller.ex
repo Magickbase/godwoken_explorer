@@ -3,12 +3,13 @@ defmodule GodwokenExplorerWeb.API.AccountUDTController do
 
   action_fallback GodwokenExplorerWeb.API.FallbackController
 
-  alias GodwokenExplorer.{Repo, AccountUDT, UDT}
+  alias GodwokenExplorer.{Repo, UDT}
+  alias GodwokenExplorer.Account.CurrentUDTBalance
 
   def index(conn, %{"udt_id" => udt_id}) do
     with %UDT{} <- Repo.get(UDT, udt_id) do
       result =
-        AccountUDT.sort_holder_list(
+        CurrentUDTBalance.sort_holder_list(
           udt_id,
           %{page: conn.params["page"] || 1, page_size: conn.assigns.page_size}
         )

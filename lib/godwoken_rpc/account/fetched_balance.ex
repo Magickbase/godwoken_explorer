@@ -8,7 +8,7 @@ defmodule GodwokenRPC.Account.FetchedBalance do
       eth_address: eth_address,
       udt_id: udt_id,
       account_id: account_id,
-      token_contract_address_hash: token_contract_address_hash
+      udt_script_hash: udt_script_hash
     } = Map.fetch!(id_to_params, id)
 
     {:ok,
@@ -16,8 +16,8 @@ defmodule GodwokenRPC.Account.FetchedBalance do
        account_id: account_id,
        address_hash: eth_address,
        udt_id: udt_id,
-       token_contract_address_hash: token_contract_address_hash,
-       balance: quantity_to_integer(fetched_balance_quantity)
+       udt_script_hash: udt_script_hash,
+       value: quantity_to_integer(fetched_balance_quantity)
      }}
   end
 

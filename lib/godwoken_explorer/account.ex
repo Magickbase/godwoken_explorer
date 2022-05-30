@@ -151,7 +151,10 @@ defmodule GodwokenExplorer.Account do
         }
 
       %Account{type: type, eth_address: eth_address} when type == :eth_user ->
-        udt_list = AccountUDT.list_udt_by_eth_address(eth_address)
+        udt_list =
+          eth_address
+          |> CurrentUDTBalance.list_udt_by_eth_address()
+          |> CurrentUDTBalance.filter_ckb_balance()
 
         %{
           user: %{
@@ -169,7 +172,11 @@ defmodule GodwokenExplorer.Account do
 
       %Account{type: :polyjuice_contract, eth_address: eth_address} ->
         account = account |> Repo.preload(:smart_contract)
-        udt_list = AccountUDT.list_udt_by_eth_address(eth_address)
+
+        udt_list =
+          eth_address
+          |> CurrentUDTBalance.list_udt_by_eth_address()
+          |> CurrentUDTBalance.filter_ckb_balance()
 
         case account.smart_contract do
           smart_contract = %SmartContract{} ->
@@ -426,7 +433,10 @@ defmodule GodwokenExplorer.Account do
   end
 
   def non_create_account_info(eth_address) do
-    udt_list = AccountUDT.list_udt_by_eth_address(eth_address)
+    udt_list =
+      eth_address
+      |> CurrentUDTBalance.list_udt_by_eth_address()
+      |> CurrentUDTBalance.filter_ckb_balance()
 
     %{
       id: nil,
@@ -625,16 +635,9 @@ defmodule GodwokenExplorer.Account do
     params = ids |> Enum.map(fn id -> %{account_id: id} end)
     {:ok, responses} = GodwokenRPC.fetch_nonce_by_ids(params)
 
-    changes =
-      responses
-      |> Enum.map(fn m ->
-        Map.merge(m, %{
-          inserted_at: NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second),
-          updated_at: NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
-        })
-      end)
-
-    Repo.insert_all(Account, changes,
+    Import.insert_changes_list(responses,
+      for: Account,
+      timestamps: import_timestamps(),
       on_conflict: {:replace, [:nonce, :updated_at]},
       conflict_target: :id
     )

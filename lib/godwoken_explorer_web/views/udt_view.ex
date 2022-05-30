@@ -4,7 +4,8 @@ defmodule GodwokenExplorer.UDTView do
   import Ecto.Query, only: [from: 2]
   import GodwokenRPC.Util, only: [balance_to_view: 2]
 
-  alias GodwokenExplorer.{UDT, Repo, AccountUDT, Account}
+  alias GodwokenExplorer.{UDT, Repo, Account}
+  alias GodwokenExplorer.Account.CurrentUDTBalance
 
   def fields do
     [
@@ -42,17 +43,14 @@ defmodule GodwokenExplorer.UDTView do
     end
   end
 
-  # For udt type account, account_udt token_contract_address_hash is script_hash
-  # For polyjuice_contract type account, account_udt token_contract_address_hash is eth_address
   def holder_count(udt, _conn) do
-    token_contract_address_hashes = UDT.list_address_by_udt_id(udt.id)
+    result =
+      CurrentUDTBalance.sort_holder_list(
+        udt.id,
+        %{page: 1, page_size: 1}
+      )
 
-    from(
-      au in AccountUDT,
-      where: au.token_contract_address_hash in ^token_contract_address_hashes and au.balance > 0,
-      distinct: au.address_hash
-    )
-    |> Repo.aggregate(:count)
+    result[:total_count]
   end
 
   def transfer_count(udt, _conn) do

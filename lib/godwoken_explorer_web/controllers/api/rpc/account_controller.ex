@@ -2,12 +2,13 @@ defmodule GodwokenExplorerWeb.API.RPC.AccountController do
   use GodwokenExplorerWeb, :controller
 
   alias GodwokenExplorerWeb.API.RPC.Helpers
-  alias GodwokenExplorer.{Chain, AccountUDT, Etherscan}
+  alias GodwokenExplorer.{Chain, Etherscan}
+  alias GodwokenExplorer.Account.CurrentUDTBalance
 
   def balance(conn, params, template \\ :balance) do
     with {:address_param, {:ok, address_param}} <- fetch_address(params),
          {:format, {:ok, address_hashes}} <- to_address_hashes(address_param) do
-      addresses = AccountUDT.get_ckb_balance(address_hashes)
+      addresses = CurrentUDTBalance.get_ckb_balance(address_hashes)
       render(conn, template, %{addresses: addresses})
     else
       {:address_param, :error} ->

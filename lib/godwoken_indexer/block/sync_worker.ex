@@ -13,7 +13,6 @@ defmodule GodwokenIndexer.Block.SyncWorker do
   alias GodwokenExplorer.Chain.Import
 
   alias GodwokenExplorer.{
-    AccountUDT,
     Block,
     Transaction,
     Chain,
@@ -26,6 +25,8 @@ defmodule GodwokenIndexer.Block.SyncWorker do
     PolyjuiceCreator,
     UDT
   }
+
+  alias GodwokenExplorer.Account.{CurrentUDTBalance, UDTBalance}
 
   alias GodwokenExplorer.Chain.Events.Publisher
   alias GodwokenExplorer.Chain.Cache.Blocks, as: BlocksCache
@@ -140,7 +141,10 @@ defmodule GodwokenIndexer.Block.SyncWorker do
       import_logs(logs)
       import_token_transfers(logs)
       import_polyjuice(polyjuice_with_receipts ++ polyjuice_deploy_contract)
-      update_ckb_balance(polyjuice_without_receipts)
+
+      if length(polyjuice_without_receipts) > 0,
+        do: {_integer, nil} = update_ckb_balance(polyjuice_without_receipts)
+
       async_contract_code(polyjuice_with_receipts)
     end
   end
@@ -275,18 +279,18 @@ defmodule GodwokenIndexer.Block.SyncWorker do
 
     Import.insert_changes_list(inserted_polyjuice_params,
       for: Polyjuice,
-      timestamps: import_timestamps()
+      timestamps: import_timestamps(),
+      on_conflict: :nothing
     )
   end
 
   defp import_withdrawal_requests(withdrawal_params) do
     if withdrawal_params != [] do
-      Repo.insert_all(WithdrawalRequest, withdrawal_params, on_conflict: :nothing)
-
-      withdrawal_params
-      |> Enum.each(fn %{account_script_hash: account_script_hash, udt_id: udt_id} ->
-        AccountUDT.sync_balance!(%{script_hash: account_script_hash, udt_id: udt_id})
-      end)
+      Import.insert_changes_list(withdrawal_params,
+        for: WithdrawalRequest,
+        timestamps: import_timestamps(),
+        on_conflict: :nothing
+      )
     end
   end
 
@@ -352,7 +356,9 @@ defmodule GodwokenIndexer.Block.SyncWorker do
       |> Enum.sort_by(&Map.fetch(&1, :nonce), &>=/2)
       |> Enum.uniq_by(&Map.fetch(&1, :id))
 
-    Repo.insert_all(Account, accounts_and_nonce_attrs,
+    Import.insert_changes_list(accounts_and_nonce_attrs,
+      for: Account,
+      timestamps: import_timestamps(),
       on_conflict: {:replace, [:nonce, :updated_at]},
       conflict_target: :id
     )
@@ -402,7 +408,6 @@ defmodule GodwokenIndexer.Block.SyncWorker do
         block_hash: block_hash,
         index: index
       }
-      |> Map.merge(import_timestamps())
     end)
   end
 
@@ -434,7 +439,6 @@ defmodule GodwokenIndexer.Block.SyncWorker do
         transaction_index: transaction_index,
         created_contract_address_hash: created_contract_address_hash
       }
-      |> Map.merge(import_timestamps())
     end)
   end
 
@@ -454,7 +458,6 @@ defmodule GodwokenIndexer.Block.SyncWorker do
         fee_amount: fee_amount,
         tx_hash: hash
       }
-      |> Map.merge(import_timestamps())
     end)
   end
 
@@ -469,51 +472,40 @@ defmodule GodwokenIndexer.Block.SyncWorker do
   defp update_erc20_balance(token_transfers) do
     address_token_balances =
       TokenBalances.params_set(%{token_transfers_params: token_transfers})
-      |> Enum.sort_by(&Map.fetch(&1, :block_number), &>=/2)
-      |> Enum.uniq_by(fn map -> {map[:address_hash], map[:token_contract_address_hash]} end)
-
-    balances = BalanceReader.get_balances_of(address_token_balances)
-
-    import_account_udts =
-      address_token_balances
-      |> Enum.with_index()
-      |> Enum.map(fn {%{
-                        address_hash: address_hash,
-                        token_contract_address_hash: token_contract_address_hash
-                      }, index} ->
-        with {:ok, balance} <- balances |> Enum.at(index) do
-          %{
-            address_hash: address_hash,
-            token_contract_address_hash: token_contract_address_hash,
-            balance: balance
-          }
-          |> Map.merge(import_timestamps())
-        else
-          _ -> nil
-        end
+      |> Enum.uniq_by(fn map ->
+        {map[:address_hash], map[:token_contract_address_hash], map[:block_number]}
       end)
-      |> Enum.reject(&is_nil/1)
+      |> Enum.map(fn %{
+                       address_hash: address_hash,
+                       token_contract_address_hash: token_contract_address_hash,
+                       block_number: block_number
+                     } ->
+        %{
+          address_hash: address_hash,
+          token_contract_address_hash: token_contract_address_hash,
+          block_number: block_number
+        }
+      end)
 
-    Import.insert_changes_list(import_account_udts,
-      for: AccountUDT,
+    Import.insert_changes_list(address_token_balances,
+      for: UDTBalance,
       timestamps: import_timestamps(),
-      on_conflict: {:replace, [:balance, :updated_at]},
-      conflict_target: [:address_hash, :token_contract_address_hash]
+      on_conflict: :nothing,
+      conflict_target: [:address_hash, :token_contract_address_hash, :block_number]
     )
 
     :ok
   end
 
   defp update_ckb_balance(polyjuice_params) do
-    if length(polyjuice_params) > 0 do
-      ckb_id = UDT.ckb_account_id()
-
-      if not is_nil(ckb_id) do
-        %Account{script_hash: ckb_contract_address} = Repo.get(Account, ckb_id)
-
+    with ckb_id when not is_nil(ckb_id) <- UDT.ckb_account_id(),
+         %Account{script_hash: ckb_script_hash} = Repo.get(Account, ckb_id) do
+      polyjuice_params
+      |> Enum.filter(fn %{value: value} -> value > 0 end)
+      |> Enum.group_by(&Map.get(&1, :block_number))
+      |> Enum.map(fn {block_number, list} ->
         account_ids =
-          polyjuice_params
-          |> Enum.filter(fn %{value: value} -> value > 0 end)
+          list
           |> Enum.flat_map(fn %{account_ids: account_ids} ->
             account_ids
           end)
@@ -522,7 +514,11 @@ defmodule GodwokenIndexer.Block.SyncWorker do
         account_id_to_registry_addresses =
           from(a in Account,
             where: a.id in ^account_ids,
-            select: %{id: a.id, registry_address: a.registry_address, eth_address: a.eth_address}
+            select: %{
+              id: a.id,
+              registry_address: a.registry_address,
+              eth_address: a.eth_address
+            }
           )
           |> Repo.all()
 
@@ -535,20 +531,29 @@ defmodule GodwokenIndexer.Block.SyncWorker do
               eth_address: account.eth_address,
               account_id: account.id,
               udt_id: ckb_id,
-              token_contract_address_hash: to_string(ckb_contract_address)
+              udt_script_hash: to_string(ckb_script_hash)
             }
           end)
 
         {:ok, %GodwokenRPC.Account.FetchedBalances{params_list: import_account_udts}} =
           GodwokenRPC.fetch_balances(params)
 
-        Import.insert_changes_list(import_account_udts,
-          for: AccountUDT,
+        bridged_ckbs =
+          import_account_udts
+          |> Enum.map(fn ckbs ->
+            ckbs |> Map.merge(%{block_number: block_number})
+          end)
+
+        Import.insert_changes_list(
+          bridged_ckbs,
+          for: CurrentBridgeUDTBalance,
           timestamps: import_timestamps(),
-          on_conflict: {:replace, [:balance, :updated_at]},
+          on_conflict: {:replace, [:block_number, :value, :updated_at]},
           conflict_target: [:address_hash, :token_contract_address_hash]
         )
-      end
+      end)
+    else
+      _ -> {:error, :ckb_not_found}
     end
   end
 
