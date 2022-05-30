@@ -65,7 +65,6 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
     """
     field :transaction, :transaction do
       arg(:input, non_null(:transaction_input))
-      middleware(MEIP55, [:eth_hash])
       middleware(MDowncase, [:transaction_hash, :eth_hash])
       resolve(&Resolvers.Transaction.transaction/3)
     end
