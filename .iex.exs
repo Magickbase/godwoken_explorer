@@ -2,7 +2,6 @@ alias GodwokenExplorer.Repo
 alias Ecto.Multi
 alias GodwokenExplorer.{
   Account,
-  AccountUDT,
   Block,
   CheckInfo,
   ContractMethod,
@@ -21,5 +20,7 @@ alias GodwokenExplorer.{
   WithdrawalHistory,
   WithdrawalRequest
 }
+
+alias GodwokenExplorer.Account.{CurrentUDTBalance, CurrentBridgedUDTBalance, UDTBalance}
 
 import Ecto.{Query, Queryable, Changeset}

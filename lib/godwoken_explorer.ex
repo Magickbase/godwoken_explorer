@@ -15,9 +15,9 @@ defmodule GodwokenExplorer do
 
       alias Decimal, as: D
       alias Ecto.Multi
+
       alias GodwokenExplorer.{
         Account,
-        AccountUDT,
         Block,
         CheckInfo,
         ContractMethod,
@@ -36,6 +36,8 @@ defmodule GodwokenExplorer do
         WithdrawalHistory,
         WithdrawalRequest
       }
+
+      alias GodwokenExplorer.Account.{CurrentUDTBalance, CurrentBridgedUDTBalance, UDTBalance}
     end
   end
 

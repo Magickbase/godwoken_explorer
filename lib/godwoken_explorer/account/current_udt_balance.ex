@@ -109,47 +109,6 @@ defmodule GodwokenExplorer.Account.CurrentUDTBalance do
     end)
   end
 
-  def sync_balance!(%{script_hash: _script_hash, udt_id: nil}), do: {:error, :udt_not_exists}
-  def sync_balance!(%{account_id: _account_id, udt_id: nil}), do: {:error, :udt_not_exists}
-
-  def sync_balance!(%{script_hash: script_hash, udt_id: udt_id}) do
-    with %Account{id: account_id, eth_address: eth_address, registry_address: registry_address} <-
-           Repo.get_by(Account, script_hash: script_hash),
-         %Account{script_hash: script_hash} <- Repo.get(Account, udt_id) do
-      {:ok, balance} = GodwokenRPC.fetch_balance(registry_address, udt_id)
-
-      AccountUDT.create_or_update_account_udt!(%{
-        account_id: account_id,
-        address_hash: eth_address,
-        udt_id: udt_id,
-        token_contract_address_hash: to_string(script_hash),
-        balance: balance
-      })
-    else
-      _ ->
-        {:error, :account_not_exist}
-    end
-  end
-
-  def sync_balance!(%{account_id: account_id, udt_id: udt_id}) do
-    with %Account{eth_address: eth_address, registry_address: registry_address} <-
-           Repo.get(Account, account_id),
-         %Account{script_hash: script_hash} <- Repo.get(Account, udt_id) do
-      {:ok, balance} = GodwokenRPC.fetch_balance(registry_address, udt_id)
-
-      AccountUDT.create_or_update_account_udt!(%{
-        account_id: account_id,
-        address_hash: eth_address,
-        udt_id: udt_id,
-        token_contract_address_hash: to_string(script_hash),
-        balance: balance
-      })
-    else
-      _ ->
-        {:error, :account_not_exist}
-    end
-  end
-
   def get_ckb_balance(addresses) do
     udt_addresses = UDT.ckb_account_id() |> UDT.get_bridge_and_natvie_address()
 

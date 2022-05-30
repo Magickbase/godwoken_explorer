@@ -43,7 +43,6 @@ defmodule GodwokenExplorer.Account do
       ]
     )
 
-    has_many(:account_udts, AccountUDT)
     has_one(:smart_contract, SmartContract)
 
     timestamps()
