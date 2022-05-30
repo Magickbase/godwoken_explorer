@@ -54,7 +54,13 @@ defmodule GodwokenExplorer.Graphql.Resolvers.AccountUDT do
       {:error, :too_many_inputs}
     else
       query = search_account_udts(address_hashes, token_contract_address_hash)
-      return = Repo.all(query)
+      account_ckb_id = UDT.ckb_account_id()
+
+      return =
+        query
+        |> Repo.all()
+        |> Enum.filter(fn r -> r.udt_id != account_ckb_id end)
+
       {:ok, return}
     end
   end
