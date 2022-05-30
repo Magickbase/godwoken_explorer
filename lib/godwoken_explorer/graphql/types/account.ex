@@ -118,7 +118,6 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
     value(:polyjuice_creator)
     value(:polyjuice_contract)
     value(:eth_addr_reg)
-    value(:unknown)
   end
 
   input_object :account_input do

@@ -39,8 +39,7 @@ defmodule GodwokenExplorer.Account do
         :eth_user,
         :polyjuice_creator,
         :polyjuice_contract,
-        :eth_addr_reg,
-        :unknown
+        :eth_addr_reg
       ]
     )
 
@@ -413,9 +412,6 @@ defmodule GodwokenExplorer.Account do
 
       ^eth_addr_reg_type_hash ->
         :eth_addr_reg
-
-      _ ->
-        :unknown
     end
   end
 

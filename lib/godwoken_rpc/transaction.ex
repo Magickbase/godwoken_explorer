@@ -3,7 +3,7 @@ defmodule GodwokenRPC.Transaction do
     only: [hex_to_number: 1, parse_le_number: 1, transform_hash_type: 1, parse_polyjuice_args: 1]
 
   import Godwoken.MoleculeParser,
-    only: [parse_meta_contract_args: 1, parse_eth_address_registry_args: 1]
+    only: [parse_meta_contract_args: 1]
 
   require Logger
 
@@ -110,21 +110,6 @@ defmodule GodwokenRPC.Transaction do
 
         %{
           type: :eth_address_registry,
-          hash: hash,
-          eth_hash: eth_hash,
-          block_hash: block_hash,
-          block_number: block_number,
-          index: index,
-          nonce: hex_to_number(nonce),
-          args: "0x" <> args,
-          from_account_id: from_account_id,
-          to_account_id: to_account_id,
-          account_ids: [from_account_id, to_account_id]
-        }
-
-      true ->
-        %{
-          type: :unknown,
           hash: hash,
           eth_hash: eth_hash,
           block_hash: block_hash,
