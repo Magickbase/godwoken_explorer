@@ -17,7 +17,7 @@ defmodule GodwokenExplorer.Account do
   alias GodwokenExplorer.Counters.{AddressTokenTransfersCounter, AddressTransactionsCounter}
   alias GodwokenExplorer.Chain.{Hash, Import, Data}
 
-  @polyjuice_creator_args_length 82
+  @polyjuice_creator_args_length 74
   @yok_mainnet_account_id 12119
 
   @derive {Jason.Encoder, except: [:__meta__]}
