@@ -65,4 +65,23 @@ defmodule GodwokenExplorer.Repo do
       end
     end)
   end
+
+  def stream_in_transaction(query, fun) when is_function(fun, 1) do
+    transaction(
+      fn ->
+        query
+        |> stream(timeout: :infinity)
+        |> fun.()
+      end,
+      timeout: :infinity
+    )
+  end
+
+  def stream_each(query, fun) when is_function(fun, 1) do
+    stream_in_transaction(query, &Enum.each(&1, fun))
+  end
+
+  def stream_reduce(query, initial, reducer) when is_function(reducer, 2) do
+    stream_in_transaction(query, &Enum.reduce(&1, initial, reducer))
+  end
 end

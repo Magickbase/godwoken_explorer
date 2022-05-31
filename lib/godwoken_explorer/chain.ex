@@ -6,6 +6,7 @@ defmodule GodwokenExplorer.Chain do
   alias GodwokenExplorer.Counters.{AccountsCounter, AverageBlockTime}
   alias GodwokenExplorer.Chain.Cache.{BlockCount, TransactionCount}
   alias GodwokenExplorer.Chain.Hash
+  alias GodwokenExplorer.Repo
 
   @address_hash_len 40
   @tx_block_hash_len 64
@@ -542,6 +543,11 @@ defmodule GodwokenExplorer.Chain do
       block ->
         {:ok, block}
     end
+  end
+
+  def stream_unfetched_udt_balances(initial, reducer) when is_function(reducer, 2) do
+    UDTBalance.unfetched_udt_balances()
+    |> Repo.stream_reduce(initial, reducer)
   end
 
   defp boolean_to_check_result(true), do: :ok

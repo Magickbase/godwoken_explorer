@@ -2,6 +2,7 @@ defmodule GodwokenExplorer.Account.UDTBalance do
   use GodwokenExplorer, :schema
 
   alias GodwokenExplorer.Chain.Hash
+  alias GodwokenExplorer.Chain
 
   @derive {Jason.Encoder, except: [:__meta__]}
   schema "account_udt_balances" do
@@ -30,5 +31,19 @@ defmodule GodwokenExplorer.Account.UDTBalance do
     ])
     |> validate_required([:address_hash, :token_contract_address_hash])
     |> unique_constraint([:address_hash, :token_contract_address_hash, :block_number])
+  end
+
+  {:ok, burn_address_hash} =
+    Chain.string_to_address_hash("0x0000000000000000000000000000000000000000")
+
+  @burn_address_hash burn_address_hash
+
+  def unfetched_udt_balances do
+    from(
+      ub in UDTBalance,
+      where:
+        ub.address_hash != ^@burn_address_hash and
+          (is_nil(ub.value_fetched_at) or is_nil(ub.value))
+    )
   end
 end
