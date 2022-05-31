@@ -5,7 +5,7 @@ on:
       - "godwoken-v1.1-prod"
 
 jobs:
-  staging-testnet-v1-build-run:
+  prod-testnet-v1-build-run:
     runs-on: [self-hosted, prod_testnet_v1_1]
     environment: prod_testnet_v1_1
     env:
