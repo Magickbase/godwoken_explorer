@@ -6,6 +6,24 @@ defmodule GodwokenExplorer.Graphql.Types.Common do
     field :updated_at, :datetime
   end
 
+  object :paginate_metadata do
+    field :after, :string
+    field :before, :string
+    field :limit, :integer
+    field :total_count, :integer
+    field :total_count_cap_exceeded, :boolean
+  end
+
+  input_object :paginate_input do
+    @desc "Fetch the records before this cursor."
+    field :before, :string
+    @desc "Fetch the records after this cursor."
+    field :after, :string
+
+    @desc "Limits the number of records returned per page. Note that this number will be capped by maximum_limit=100. Defaults to 20."
+    field :limit, :integer, default_value: 20
+  end
+
   input_object :page_and_size_input do
     @desc """
     argument: the page of query result, the relations of postgres offset: offset = (page - 1) * page_size

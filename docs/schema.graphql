@@ -66,7 +66,6 @@ enum AccountType {
   POLYJUICE_CONTRACT
   POLYJUICE_CREATOR
   UDT
-  UNKNOWN
 }
 
 type AccountUdt {
@@ -314,6 +313,19 @@ input PageAndSizeInput {
   limit: > 0
   """
   page_size: Int = 20
+}
+
+type PaginateMetadata {
+  after: String
+  before: String
+  limit: Int
+  total_count: Int
+  total_count_cap_exceeded: Boolean
+}
+
+type PaginateTrasactions {
+  entries: [Transaction]
+  metadata: PaginateMetadata
 }
 
 type Polyjuice {
@@ -792,51 +804,71 @@ type RootQueryType {
   
   request-example:
   query {
-    transactions (input: {address: "0x966b30e576a4d6731996748b48dd67c94ef29067", 
-  page: 1, page_size: 2, end_block_number: 15408}) {
-      block_hash
-      block_number
-      type
-      from_account_id
-  from_account {
-        id
-        eth_address
+    transactions(
+      input: {
+        address: "0x57f2e7809ec800ea742fa7a5974aa106b14afab5"
+        end_block_number: 4000
+        sort_type: DESC
+        limit: 2
       }
-      to_account_id
-    }
+    ) {
+      entries {
+        block_hash
+        block_number
+        type
+        from_account_id
+        from_account {
+          id
+          eth_address
+        }
+        to_account_id
+      }
   
+      metadata {
+        total_count
+        before
+        after
+      }
+    }
   }
   
   {
     "data": {
-      "transactions": [
-        {
-          "block_hash": "0x50505f785e5bfa7b5b13a440eea7b4701368fd539a405d50a03f114ea886e41a",
-          "block_number": 15408,
-          "from_account": {
-            "eth_address": "0x966b30e576a4d6731996748b48dd67c94ef29067",
-            "id": 5
+      "transactions": {
+        "entries": [
+          {
+            "block_hash": "0x2f85c0b373c7bd770478472dd03c0b66cb4656184aaa99d49b666122c2bfe703",
+            "block_number": 3971,
+            "from_account": {
+              "eth_address": "0x57f2e7809ec800ea742fa7a5974aa106b14afab5",
+              "id": 110
+            },
+            "from_account_id": 110,
+            "to_account_id": 136,
+            "type": "POLYJUICE"
           },
-          "from_account_id": 5,
-          "to_account_id": 1003,
-          "type": "POLYJUICE"
-        },
-        {
-          "block_hash": "0x50505f785e5bfa7b5b13a440eea7b4701368fd539a405d50a03f114ea886e41a",
-          "block_number": 15408,
-          "from_account": {
-            "eth_address": "0x966b30e576a4d6731996748b48dd67c94ef29067",
-            "id": 5
-          },
-          "from_account_id": 5,
-          "to_account_id": 4,
-          "type": "POLYJUICE"
+          {
+            "block_hash": "0x2f85c0b373c7bd770478472dd03c0b66cb4656184aaa99d49b666122c2bfe703",
+            "block_number": 3971,
+            "from_account": {
+              "eth_address": "0x57f2e7809ec800ea742fa7a5974aa106b14afab5",
+              "id": 110
+            },
+            "from_account_id": 110,
+            "to_account_id": 137,
+            "type": "POLYJUICE"
+          }
+        ],
+        "metadata": {
+          "after": "g3QAAAACZAAMYmxvY2tfbnVtYmVyYgAAD4NkAAVpbmRleGEA",
+          "before": null,
+          "total_count": 77
         }
-      ]
+      }
     }
   }
   """
-  transactions(input: TransactionsInput!): [Transaction]
+  transactions(input: TransactionsInput!): PaginateTrasactions
 
   """
   function: get udt by contract address
@@ -1046,24 +1078,19 @@ input TransactionInput {
 input TransactionsInput {
   address: String!
 
+  """Fetch the records after this cursor."""
+  after: String
+
+  """Fetch the records before this cursor."""
+  before: String
+
   """argument: the end of block number(inclusive) for search query"""
   end_block_number: Int
 
   """
-  argument: the page of query result, the relations of postgres offset: offset = (page - 1) * page_size
-  
-  default: 1
-  limit: > 0
+  Limits the number of records returned per page. Note that this number will be capped by maximum_limit=100. Defaults to 20.
   """
-  page: Int = 1
-
-  """
-  argument: the page_size of query result, it's the same of postgres limit
-  
-  default: 20
-  limit: > 0
-  """
-  page_size: Int = 20
+  limit: Int = 20
   sort: SortType
 
   """
@@ -1081,7 +1108,6 @@ enum TransactionType {
   ETH_ADDRESS_REGISTRY
   POLYJUICE
   POLYJUICE_CREATOR
-  UNKNOWN
 }
 
 type Udt {
