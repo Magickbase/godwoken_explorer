@@ -91,7 +91,7 @@ defmodule GodwokenRPC.Block do
         if length(eth_transactions) != length(transactions) do
           {other_type_txs, polyjuice_txs} =
             transactions
-            |> Enum.split_while(fn t ->
+            |> Enum.split_with(fn t ->
               t["raw"]["to_id"] in ["0x0", @eth_addr_reg_id]
             end)
 
