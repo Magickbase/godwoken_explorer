@@ -119,7 +119,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
   defp handle_polyjuice_transactions(polyjuice_without_receipts) do
     if polyjuice_without_receipts != [] do
       {polyjuice_transaction, polyjuice_deploy_contract} =
-        polyjuice_without_receipts |> Enum.split_while(fn polyjuice -> polyjuice[:eth_hash] end)
+        polyjuice_without_receipts |> Enum.split_with(fn polyjuice -> polyjuice[:eth_hash] end)
 
       polyjuice_deploy_contract =
         polyjuice_deploy_contract
