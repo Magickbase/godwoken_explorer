@@ -3,7 +3,6 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
   alias GodwokenExplorer.Graphql.Resolvers, as: Resolvers
   alias GodwokenExplorer.Graphql.Middleware.EIP55, as: MEIP55
   alias GodwokenExplorer.Graphql.Middleware.Downcase, as: MDowncase
-  alias GodwokenExplorer.Graphql.Middleware.TermRange, as: MTermRange
 
   object :transaction_querys do
     @desc """
@@ -74,54 +73,74 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
 
     request-example:
     query {
-      transactions (input: {address: "0x966b30e576a4d6731996748b48dd67c94ef29067",  page: 1, page_size: 2, end_block_number: 15408}) {
-        block_hash
-        block_number
-        type
-        from_account_id
-    from_account {
-          id
-          eth_address
+      transactions(
+        input: {
+          address: "0x57f2e7809ec800ea742fa7a5974aa106b14afab5"
+          end_block_number: 4000
+          sort_type: DESC
+          limit: 2
         }
-        to_account_id
-      }
+      ) {
+        entries {
+          block_hash
+          block_number
+          type
+          from_account_id
+          from_account {
+            id
+            eth_address
+          }
+          to_account_id
+        }
 
+        metadata {
+          total_count
+          before
+          after
+        }
+      }
     }
 
     {
       "data": {
-        "transactions": [
-          {
-            "block_hash": "0x50505f785e5bfa7b5b13a440eea7b4701368fd539a405d50a03f114ea886e41a",
-            "block_number": 15408,
-            "from_account": {
-              "eth_address": "0x966b30e576a4d6731996748b48dd67c94ef29067",
-              "id": 5
+        "transactions": {
+          "entries": [
+            {
+              "block_hash": "0x2f85c0b373c7bd770478472dd03c0b66cb4656184aaa99d49b666122c2bfe703",
+              "block_number": 3971,
+              "from_account": {
+                "eth_address": "0x57f2e7809ec800ea742fa7a5974aa106b14afab5",
+                "id": 110
+              },
+              "from_account_id": 110,
+              "to_account_id": 136,
+              "type": "POLYJUICE"
             },
-            "from_account_id": 5,
-            "to_account_id": 1003,
-            "type": "POLYJUICE"
-          },
-          {
-            "block_hash": "0x50505f785e5bfa7b5b13a440eea7b4701368fd539a405d50a03f114ea886e41a",
-            "block_number": 15408,
-            "from_account": {
-              "eth_address": "0x966b30e576a4d6731996748b48dd67c94ef29067",
-              "id": 5
-            },
-            "from_account_id": 5,
-            "to_account_id": 4,
-            "type": "POLYJUICE"
+            {
+              "block_hash": "0x2f85c0b373c7bd770478472dd03c0b66cb4656184aaa99d49b666122c2bfe703",
+              "block_number": 3971,
+              "from_account": {
+                "eth_address": "0x57f2e7809ec800ea742fa7a5974aa106b14afab5",
+                "id": 110
+              },
+              "from_account_id": 110,
+              "to_account_id": 137,
+              "type": "POLYJUICE"
+            }
+          ],
+          "metadata": {
+            "after": "g3QAAAACZAAMYmxvY2tfbnVtYmVyYgAAD4NkAAVpbmRleGEA",
+            "before": null,
+            "total_count": 77
           }
-        ]
+        }
       }
     }
     """
-    field :transactions, list_of(:transaction) do
+    field :transactions, :paginate_trasactions do
       arg(:input, non_null(:transactions_input))
       middleware(MEIP55, [:address])
       middleware(MDowncase, [:address])
-      middleware(MTermRange, MTermRange.page_and_size_default_config())
       resolve(&Resolvers.Transaction.transactions/3)
     end
   end
@@ -162,6 +181,11 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
     end
   end
 
+  object :paginate_trasactions do
+    field :entries, list_of(:transaction)
+    field :metadata, :paginate_metadata
+  end
+
   enum :transaction_type do
     value(:polyjuice_creator)
     value(:polyjuice)
@@ -176,7 +200,7 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
   input_object :transactions_input do
     field :address, non_null(:string)
     field :sort, :sort_type
-    import_fields(:page_and_size_input)
+    import_fields(:paginate_input)
     import_fields(:sort_type_input)
     import_fields(:block_range_input)
   end
