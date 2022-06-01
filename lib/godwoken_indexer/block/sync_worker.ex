@@ -221,7 +221,8 @@ defmodule GodwokenIndexer.Block.SyncWorker do
 
     Import.insert_changes_list(token_transfers,
       for: TokenTransfer,
-      timestamps: import_timestamps()
+      timestamps: import_timestamps(),
+      on_conflict: :nothing
     )
 
     if length(token_transfers) > 0, do: update_erc20_balance(token_transfers)
