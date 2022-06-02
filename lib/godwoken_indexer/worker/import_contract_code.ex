@@ -1,7 +1,7 @@
 defmodule GodwokenIndexer.Worker.ImportContractCode do
   use Oban.Worker, queue: :default, unique: [period: 300, states: Oban.Job.states()]
 
-  alias GodwokenExplorer.{Repo, Account}
+  alias GodwokenExplorer.{Repo, Account, Chain.Hash}
 
   @impl Oban.Worker
   def perform(%Oban.Job{args: %{"block_number" => block_number, "address" => address}}) do
@@ -13,8 +13,10 @@ defmodule GodwokenIndexer.Worker.ImportContractCode do
        ]
      }} = GodwokenRPC.fetch_codes([%{block_quantity: block_number, address: address}])
 
+    {:ok, address_hash} = Hash.Address.cast(address)
+
     {:ok, %Account{id: id}} =
-      case Account.search(address) do
+      case Account.search(address_hash) do
         %Account{} = account ->
           account |> Account.changeset(%{contract_code: contract_code}) |> Repo.update()
 
