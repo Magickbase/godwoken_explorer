@@ -129,7 +129,7 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
             }
           ],
           "metadata": {
-            "after": "g3QAAAACZAAMYmxvY2tfbnVtYmVyYgAAD4NkAAVpbmRleGEA",
+            "after": "g3QAAAACaAJkAARkZXNjZAAMYmxvY2tfbnVtYmVyYgAAD4NoAmQABGRlc2NkAAVpbmRleGEA",
             "before": null,
             "total_count": 77
           }

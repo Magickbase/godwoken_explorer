@@ -3,7 +3,6 @@ defmodule GodwokenExplorer.Graphql.Types.TokenTransfer do
   alias GodwokenExplorer.Graphql.Resolvers, as: Resolvers
   alias GodwokenExplorer.Graphql.Middleware.EIP55, as: MEIP55
   alias GodwokenExplorer.Graphql.Middleware.Downcase, as: MDowncase
-  alias GodwokenExplorer.Graphql.Middleware.TermRange, as: MTermRange
 
   object :token_transfer_querys do
     @desc """
@@ -11,39 +10,63 @@ defmodule GodwokenExplorer.Graphql.Types.TokenTransfer do
 
     request-example:
     query {
-      token_transfers(input: {from_address: "0x966b30e576a4d6731996748b48dd67c94ef29067", start_block_number: 1, end_block_number:11904, page: 1, page_size: 1, sort_type: DESC}) {
-        transaction_hash
-        block_number
-        to_account{
-          eth_address
+      token_transfers(
+        input: {
+          from_address: "0x966b30e576a4d6731996748b48dd67c94ef29067"
+          start_block_number: 1
+          end_block_number: 11904
+          limit: 1
+          sort_type: DESC
         }
-        to_address
-        from_account{
-          eth_address
+      ) {
+        entries {
+          transaction_hash
+          block_number
+          to_account {
+            eth_address
+          }
+          to_address
+          from_account {
+            eth_address
+          }
+        }
+
+        metadata {
+          total_count
+          before
+          after
         }
       }
     }
 
+
     result-example:
     {
       "data": {
-        "token_transfers": [
-          {
-            "block_number": 11904,
-            "from_account": {
-              "eth_address": "0x966b30e576a4d6731996748b48dd67c94ef29067"
-            },
-            "to_account": {
-              "eth_address": "0xbd6250d17fc557dfe39a9eb3882c421d4c7f6413"
-            },
-            "to_address": "0xbd6250d17fc557dfe39a9eb3882c421d4c7f6413",
-            "transaction_hash": "0x2c70095a3a15a173517fc8d95c505add5242c3287da72907f5ffa1c0b6cc9578"
+        "token_transfers": {
+          "entries": [
+            {
+              "block_number": 11904,
+              "from_account": {
+                "eth_address": "0x966b30e576a4d6731996748b48dd67c94ef29067"
+              },
+              "to_account": {
+                "eth_address": "0xbd6250d17fc557dfe39a9eb3882c421d4c7f6413"
+              },
+              "to_address": "0xbd6250d17fc557dfe39a9eb3882c421d4c7f6413",
+              "transaction_hash": "0xaf0be54aadf00c5717e9380269146ab7e330cc195a2e5c181480aef1a4f552e7"
+            }
+          ],
+          "metadata": {
+            "after": "g3QAAAACZAAMYmxvY2tfbnVtYmVyYgAALoBkAAlsb2dfaW5kZXhhAQ==",
+            "before": null,
+            "total_count": 60
           }
-        ]
+        }
       }
     }
     """
-    field :token_transfers, list_of(:token_transfer) do
+    field :token_transfers, :paginate_token_transfers do
       arg(:input, non_null(:token_transfer_input))
 
       middleware(MEIP55, [
@@ -59,9 +82,13 @@ defmodule GodwokenExplorer.Graphql.Types.TokenTransfer do
         :token_contract_address_hash
       ])
 
-      middleware(MTermRange, MTermRange.page_and_size_default_config())
       resolve(&Resolvers.TokenTransfer.token_transfers/3)
     end
+  end
+
+  object :paginate_token_transfers do
+    field :entries, list_of(:token_transfer)
+    field :metadata, :paginate_metadata
   end
 
   object :token_transfer do
@@ -112,7 +139,7 @@ defmodule GodwokenExplorer.Graphql.Types.TokenTransfer do
     field :from_address, :string
     field :to_address, :string
     field :token_contract_address_hash, :string
-    import_fields(:page_and_size_input)
+    import_fields(:paginate_input)
     import_fields(:block_range_input)
     import_fields(:sort_type_input)
   end

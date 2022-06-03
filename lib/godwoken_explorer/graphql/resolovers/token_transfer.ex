@@ -4,11 +4,18 @@ defmodule GodwokenExplorer.Graphql.Resolvers.TokenTransfer do
   alias GodwokenExplorer.Repo
 
   import Ecto.Query
-  import GodwokenExplorer.Graphql.Common, only: [page_and_size: 2, sort_type: 3]
+  import GodwokenExplorer.Graphql.Common, only: [sort_type: 3]
+  import GodwokenExplorer.Graphql.Resolvers.Common, only: [paginate_query: 3]
 
   def token_transfers(_parent, %{input: input}, _resolution) do
-    query = query_token_transfers(input)
-    return = Repo.all(query)
+    return =
+      input
+      |> query_token_transfers()
+      |> paginate_query(input, %{
+        cursor_fields: [:block_number, :log_index],
+        total_count_primary_key_field: :transaction_hash
+      })
+
     {:ok, return}
   end
 
@@ -94,7 +101,6 @@ defmodule GodwokenExplorer.Graphql.Resolvers.TokenTransfer do
       end)
 
     from(tt in TokenTransfer, where: ^conditions)
-    |> page_and_size(input)
     |> sort_type(input, [:block_number, :log_index])
   end
 end
