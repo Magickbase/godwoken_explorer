@@ -323,6 +323,11 @@ type PaginateMetadata {
   total_count_cap_exceeded: Boolean
 }
 
+type PaginateTokenTransfers {
+  entries: [TokenTransfer]
+  metadata: PaginateMetadata
+}
+
 type PaginateTrasactions {
   entries: [Transaction]
   metadata: PaginateMetadata
@@ -434,7 +439,7 @@ type RootQueryType {
   
   request-example:
   query {
-    account_ckbs(input: {address_hashes: ["0x15ca4f2165ff0e798d9c7434010eaacc4d768d85"]}){
+    account_ckbs(input: {address_hashes: ["0x451bae98fe4daf99d45d3399b5acee2e55654c76"]}){
       address_hash
       balance
     }
@@ -445,8 +450,8 @@ type RootQueryType {
     "data": {
       "account_ckbs": [
         {
-          "address_hash": "0x15ca4f2165ff0e798d9c7434010eaacc4d768d85",
-          "balance": "993799999325"
+          "address_hash": "0x451bae98fe4daf99d45d3399b5acee2e55654c76",
+          "balance": "2601000000000000000000"
         }
       ]
     }
@@ -459,8 +464,7 @@ type RootQueryType {
   
   request-example:
   query {
-    account_udts(input: {address_hashes: ["0x067e469c13a7294d1aafa2130272a9c7b70a4464"],
-        token_contract_address_hash: "0x2503a1a79a443f3961ee96a8c5ec513638129614"}) {
+    account_udts(input: {address_hashes: ["0x451bae98fe4daf99d45d3399b5acee2e55654c76"]}) {
       address_hash
       balance
       udt{
@@ -477,13 +481,13 @@ type RootQueryType {
     "data": {
       "account_udts": [
         {
-          "address_hash": "0x067e469c13a7294d1aafa2130272a9c7b70a4464",
-          "balance": "0",
+          "address_hash": "0x451bae98fe4daf99d45d3399b5acee2e55654c76",
+          "balance": "2601000000000000000000",
           "udt": {
-            "bridge_account_id": 6841,
-            "id": "6841",
-            "name": "tst",
-            "type": "NATIVE"
+            "bridge_account_id": null,
+            "id": "1",
+            "name": null,
+            "type": "BRIDGE"
           }
         }
       ]
@@ -704,41 +708,63 @@ type RootQueryType {
   
   request-example:
   query {
-    token_transfers(input: {from_address:
-  "0x966b30e576a4d6731996748b48dd67c94ef29067", start_block_number: 1,
-  end_block_number:11904, page: 1, page_size: 1, sort_type: DESC}) {
-      transaction_hash
-      block_number
-      to_account{
-        eth_address
+    token_transfers(
+      input: {
+        from_address: "0x966b30e576a4d6731996748b48dd67c94ef29067"
+        start_block_number: 1
+        end_block_number: 11904
+        limit: 1
+        sort_type: DESC
       }
-      to_address
-      from_account{
-        eth_address
+    ) {
+      entries {
+        transaction_hash
+        block_number
+        to_account {
+          eth_address
+        }
+        to_address
+        from_account {
+          eth_address
+        }
+      }
+  
+      metadata {
+        total_count
+        before
+        after
       }
     }
   }
   
+  
   result-example:
   {
     "data": {
-      "token_transfers": [
-        {
-          "block_number": 11904,
-          "from_account": {
-            "eth_address": "0x966b30e576a4d6731996748b48dd67c94ef29067"
-          },
-          "to_account": {
-            "eth_address": "0xbd6250d17fc557dfe39a9eb3882c421d4c7f6413"
-          },
-          "to_address": "0xbd6250d17fc557dfe39a9eb3882c421d4c7f6413",
-          "transaction_hash": "0x2c70095a3a15a173517fc8d95c505add5242c3287da72907f5ffa1c0b6cc9578"
+      "token_transfers": {
+        "entries": [
+          {
+            "block_number": 11904,
+            "from_account": {
+              "eth_address": "0x966b30e576a4d6731996748b48dd67c94ef29067"
+            },
+            "to_account": {
+              "eth_address": "0xbd6250d17fc557dfe39a9eb3882c421d4c7f6413"
+            },
+            "to_address": "0xbd6250d17fc557dfe39a9eb3882c421d4c7f6413",
+            "transaction_hash": "0xaf0be54aadf00c5717e9380269146ab7e330cc195a2e5c181480aef1a4f552e7"
+          }
+        ],
+        "metadata": {
+          "after": "g3QAAAACZAAMYmxvY2tfbnVtYmVyYgAALoBkAAlsb2dfaW5kZXhhAQ==",
+          "before": null,
+          "total_count": 60
         }
-      ]
+      }
     }
   }
   """
-  token_transfers(input: TokenTransferInput!): [TokenTransfer]
+  token_transfers(input: TokenTransferInput!): PaginateTokenTransfers
 
   """
   function: get transaction by transaction_hash
@@ -860,7 +886,7 @@ type RootQueryType {
           }
         ],
         "metadata": {
-          "after": "g3QAAAACZAAMYmxvY2tfbnVtYmVyYgAAD4NkAAVpbmRleGEA",
+          "after": "g3QAAAACaAJkAARkZXNjZAAMYmxvY2tfbnVtYmVyYgAAD4NoAmQABGRlc2NkAAVpbmRleGEA",
           "before": null,
           "total_count": 77
         }
@@ -1018,25 +1044,20 @@ type TokenTransfer {
 }
 
 input TokenTransferInput {
+  """Fetch the records after this cursor."""
+  after: String
+
+  """Fetch the records before this cursor."""
+  before: String
+
   """argument: the end of block number(inclusive) for search query"""
   end_block_number: Int
   from_address: String
 
   """
-  argument: the page of query result, the relations of postgres offset: offset = (page - 1) * page_size
-  
-  default: 1
-  limit: > 0
+  Limits the number of records returned per page. Note that this number will be capped by maximum_limit=100. Defaults to 20.
   """
-  page: Int = 1
-
-  """
-  argument: the page_size of query result, it's the same of postgres limit
-  
-  default: 20
-  limit: > 0
-  """
-  page_size: Int = 20
+  limit: Int = 20
 
   """
   argument: the sort of type by custom condition
