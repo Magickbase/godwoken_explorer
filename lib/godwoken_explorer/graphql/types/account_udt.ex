@@ -11,8 +11,7 @@ defmodule GodwokenExplorer.Graphql.Types.AccountUDT do
 
     request-example:
     query {
-      account_udts(input: {address_hashes: ["0x067e469c13a7294d1aafa2130272a9c7b70a4464"],
-          token_contract_address_hash: "0x2503a1a79a443f3961ee96a8c5ec513638129614"}) {
+      account_udts(input: {address_hashes: ["0x451bae98fe4daf99d45d3399b5acee2e55654c76"]}) {
         address_hash
         balance
         udt{
@@ -29,13 +28,13 @@ defmodule GodwokenExplorer.Graphql.Types.AccountUDT do
       "data": {
         "account_udts": [
           {
-            "address_hash": "0x067e469c13a7294d1aafa2130272a9c7b70a4464",
-            "balance": "0",
+            "address_hash": "0x451bae98fe4daf99d45d3399b5acee2e55654c76",
+            "balance": "2601000000000000000000",
             "udt": {
-              "bridge_account_id": 6841,
-              "id": "6841",
-              "name": "tst",
-              "type": "NATIVE"
+              "bridge_account_id": null,
+              "id": "1",
+              "name": null,
+              "type": "BRIDGE"
             }
           }
         ]
@@ -55,7 +54,7 @@ defmodule GodwokenExplorer.Graphql.Types.AccountUDT do
 
     request-example:
     query {
-      account_ckbs(input: {address_hashes: ["0x15ca4f2165ff0e798d9c7434010eaacc4d768d85"]}){
+      account_ckbs(input: {address_hashes: ["0x451bae98fe4daf99d45d3399b5acee2e55654c76"]}){
         address_hash
         balance
       }
@@ -66,8 +65,8 @@ defmodule GodwokenExplorer.Graphql.Types.AccountUDT do
       "data": {
         "account_ckbs": [
           {
-            "address_hash": "0x15ca4f2165ff0e798d9c7434010eaacc4d768d85",
-            "balance": "993799999325"
+            "address_hash": "0x451bae98fe4daf99d45d3399b5acee2e55654c76",
+            "balance": "2601000000000000000000"
           }
         ]
       }
