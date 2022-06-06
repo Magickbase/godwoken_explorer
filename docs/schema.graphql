@@ -44,7 +44,7 @@ input AccountChildAccountUdtsInput {
 
 type AccountCkb {
   address_hash: String
-  balance: Decimal
+  balance: Bigint
 }
 
 input AccountCkbsInput {
@@ -71,7 +71,7 @@ enum AccountType {
 type AccountUdt {
   account: Account
   address_hash: String
-  balance: Decimal
+  balance: Bigint
   id: Int
   token_contract_address_hash: String
   udt: Udt
@@ -132,6 +132,28 @@ input AccountUdtsInput {
   """
   token_contract_address_hash: String
 }
+
+"""
+The `bigint` scalar type represents signed big integer
+values parsed by the elixir `Decimal` library(which support big integer scenario).  The BigInt appears in a JSON
+response as a string to preserve Big Interger.
+
+Formally:
+sign           ::=  '+' | '-'
+digit          ::=  '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' |
+                    '8' | '9'
+digits         ::=  digit [digit]...
+numeric-string ::=  [sign] digits| [sign] digit
+
+Examples:
+
+Some numeric strings are:
+
+    "0"          -- zero
+    "12"         -- a whole number
+    "-76"        -- a signed whole number
+"""
+scalar Bigint
 
 type Block {
   account: Account
@@ -335,9 +357,9 @@ type PaginateTrasactions {
 
 type Polyjuice {
   created_contract_address_hash: String
-  gas_limit: Decimal
-  gas_price: Decimal
-  gas_used: Decimal
+  gas_limit: Bigint
+  gas_price: Bigint
+  gas_used: Bigint
   id: Int
   input: String
   input_size: Int
@@ -345,12 +367,12 @@ type Polyjuice {
   status: PolyjuiceStatus
   transaction_index: Int
   tx_hash: String
-  value: Decimal
+  value: Bigint
 }
 
 type PolyjuiceCreator {
   code_hash: String
-  fee_amount: Decimal
+  fee_amount: Bigint
   fee_udt_id: Int
   hash_type: String
   id: Int
