@@ -35,9 +35,9 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
     from(t in Transaction)
     |> query_with_account_address(input)
     |> query_with_block_range(input)
-    |> sort_type(input, [:block_number, :index])
+    |> sort_type(input, [:block_number, :index, :hash])
     |> paginate_query(input, %{
-      cursor_fields: [desc: :block_number, desc: :index],
+      cursor_fields: [:block_number, :index, :hash],
       total_count_primary_key_field: :hash
     })
     |> do_transactions()

@@ -58,7 +58,7 @@ defmodule GodwokenExplorer.Graphql.Types.TokenTransfer do
             }
           ],
           "metadata": {
-            "after": "g3QAAAACZAAMYmxvY2tfbnVtYmVyYgAALoBkAAlsb2dfaW5kZXhhAQ==",
+            "after": "g3QAAAADZAAMYmxvY2tfbnVtYmVyYgAALoBkAAlsb2dfaW5kZXhhAWQAEHRyYW5zYWN0aW9uX2hhc2htAAAAQjB4YWYwYmU1NGFhZGYwMGM1NzE3ZTkzODAyNjkxNDZhYjdlMzMwY2MxOTVhMmU1YzE4MTQ4MGFlZjFhNGY1NTJlNw==",
             "before": null,
             "total_count": 60
           }
