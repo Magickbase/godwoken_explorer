@@ -130,12 +130,12 @@ defmodule GodwokenExplorer.Graphql.Types.AccountUDT do
 
   object :account_ckb do
     field :address_hash, :string
-    field :balance, :decimal
+    field :balance, :bigint
   end
 
   object :account_udt do
     field :id, :integer
-    field :balance, :decimal
+    field :balance, :bigint
     field :address_hash, :string
     field :token_contract_address_hash, :string
 
