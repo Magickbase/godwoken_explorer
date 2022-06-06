@@ -12,7 +12,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.TokenTransfer do
       input
       |> query_token_transfers()
       |> paginate_query(input, %{
-        cursor_fields: [:block_number, :log_index],
+        cursor_fields: [:block_number, :log_index, :transaction_hash],
         total_count_primary_key_field: :transaction_hash
       })
 
