@@ -1,6 +1,22 @@
 defmodule GodwokenExplorer.Graphql.Resolvers.Common do
   alias GodwokenExplorer.PaginateRepo
 
+  def paginate_query_with_sort_type(query, input, %{cursor_fields: cursor_fields} = params) do
+    sort_condtion = Map.get(input, :sort_type)
+
+    if is_nil(sort_condtion) do
+      paginate_query(query, input, params)
+    else
+      new_cursor_fields =
+        Enum.map(cursor_fields, fn cf ->
+          if is_tuple(cf), do: cf, else: {cf, sort_condtion}
+        end)
+
+      params = %{params | cursor_fields: new_cursor_fields}
+      paginate_query(query, input, params)
+    end
+  end
+
   def paginate_query({:error, _} = error, _, _), do: error
 
   def paginate_query(query, input, %{
