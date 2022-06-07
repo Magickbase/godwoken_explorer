@@ -85,10 +85,16 @@ defmodule GodwokenExplorer.Block do
   end
 
   def find_by_number_or_hash(number) when is_binary(number) or is_integer(number) do
-    from(b in Block,
-      where: b.number == ^number
-    )
-    |> Repo.one()
+    case Integer.parse(number) do
+      {block_number, ""} ->
+        from(b in Block,
+          where: b.number == ^block_number
+        )
+        |> Repo.one()
+
+      :error ->
+        nil
+    end
   end
 
   def latest_10_records do
