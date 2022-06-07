@@ -4,6 +4,7 @@ defmodule GodwokenExplorer.Graphql.Schemas.Graphql do
   import_types(GodwokenExplorer.Graphql.Types.Custom.JSON)
   import_types(GodwokenExplorer.Graphql.Types.Custom.UUID4)
   import_types(GodwokenExplorer.Graphql.Types.Custom.Money)
+  import_types(GodwokenExplorer.Graphql.Types.Custom.BigInt)
 
   import_types(GodwokenExplorer.Graphql.Types.Common)
   import_types(GodwokenExplorer.Graphql.Types.AccountUDT)

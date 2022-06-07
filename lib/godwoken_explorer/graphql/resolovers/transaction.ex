@@ -2,8 +2,10 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
   alias GodwokenExplorer.Repo
   alias GodwokenExplorer.{Account, Transaction, Block, Polyjuice, PolyjuiceCreator}
 
+  import GodwokenExplorer.Graphql.Resolvers.Common, only: [paginate_query: 3]
+
   import Ecto.Query
-  import GodwokenExplorer.Graphql.Common, only: [page_and_size: 2, sort_type: 3]
+  import GodwokenExplorer.Graphql.Common, only: [sort_type: 3]
 
   def transaction(_parent, %{input: input} = _args, _resolution) do
     query = query_with_eth_hash_or_tx_hash(input)
@@ -33,15 +35,18 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
     from(t in Transaction)
     |> query_with_account_address(input)
     |> query_with_block_range(input)
-    |> page_and_size(input)
-    |> sort_type(input, [:block_number, :index])
-    |> do_transactions
+    |> sort_type(input, [:block_number, :index, :hash])
+    |> paginate_query(input, %{
+      cursor_fields: [:block_number, :index, :hash],
+      total_count_primary_key_field: :hash
+    })
+    |> do_transactions()
   end
 
   defp do_transactions({:error, _} = error), do: error
 
-  defp do_transactions(query) do
-    {:ok, Repo.all(query)}
+  defp do_transactions(result) do
+    {:ok, result}
   end
 
   defp query_with_account_address(query, input) do
