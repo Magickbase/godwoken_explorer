@@ -107,6 +107,7 @@ defmodule GodwokenExplorer.MixProject do
       # tool
       {:timex, "~> 3.0"},
       {:retry, "~> 0.15"},
+      {:briefly, "~> 0.3"},
 
       # cron job
       {:oban, "~> 2.12"},

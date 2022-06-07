@@ -55,7 +55,6 @@ defmodule GodwokenExplorerWeb.API.RPC.RPCTranslator do
         |> halt()
 
       {:error, error} ->
-        IO.puts(inspect(error))
         Logger.error(fn -> ["Error while calling RPC action", inspect(error)] end)
 
         conn

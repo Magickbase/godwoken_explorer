@@ -1,8 +1,8 @@
 defmodule GodwokenExplorer.Chain.Data do
   @moduledoc """
-  The Elixir-native representation of `t:EthereumJSONRPC.data/0`.
+  The Elixir-native representation of `t:GodwokenRPC.data/0`.
 
-  `t:EthereumJSONRPC.data/0` is an unpadded hexadecimal number with 0 or more digits.  Each pair of digits maps directly
+  `t:GodwokenRPC.data/0` is an unpadded hexadecimal number with 0 or more digits.  Each pair of digits maps directly
   to a byte in the underlying binary representation.  When interpreted as a number, it should be treated as big-endian.
   """
 
@@ -287,7 +287,7 @@ defmodule GodwokenExplorer.Chain.Data do
   A hexadecimal number MUST be
   [byte](https://en.wikipedia.org/wiki/Byte)-[aligned](https://en.wikipedia.org/wiki/Data_structure_alignment).  If it
   has an odd number of digits, then it is only [nibble](https://en.wikipedia.org/wiki/Nibble)-aligned and can't a
-  valid `t:EthereumJSONRPC.data/0`, which MUST be in bytes.
+  valid `t:GodwokenRPC.data/0`, which MUST be in bytes.
 
       iex> Explorer.Chain.Data.cast("0xF")
       :error
@@ -339,7 +339,7 @@ defmodule GodwokenExplorer.Chain.Data do
       iex> Explorer.Chain.Data.load(<<>>)
       {:ok, %Explorer.Chain.Data{bytes: <<>>}}
 
-  `EthereumJSONRPC.data/0` that has been converted to an integer cannot be loaded
+  `GodwokenRPC.data/0` that has been converted to an integer cannot be loaded
 
       iex> Explorer.Chain.Data.load(0)
       :error

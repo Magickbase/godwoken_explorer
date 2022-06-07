@@ -5,7 +5,7 @@ defmodule GodwokenExplorer.Chain do
 
   alias GodwokenExplorer.Counters.{AccountsCounter, AverageBlockTime}
   alias GodwokenExplorer.Chain.Cache.{BlockCount, TransactionCount}
-  alias GodwokenExplorer.Chain.Hash
+  alias GodwokenExplorer.Chain.{Hash, Data}
   alias GodwokenExplorer.Repo
 
   @address_hash_len 40
@@ -184,6 +184,23 @@ defmodule GodwokenExplorer.Chain do
   end
 
   def string_to_address_hash(_), do: :error
+
+  def hash_to_address(%Hash{byte_count: unquote(Hash.Address.byte_count())} = hash) do
+    query =
+      from(
+        address in Address,
+        where: address.hash == ^hash
+      )
+
+    address_result =
+      query
+      |> Repo.one()
+
+    case address_result do
+      nil -> {:error, :not_found}
+      _ -> {:ok, address_result}
+    end
+  end
 
   def hashes_to_addresses(hashes) when is_list(hashes) do
     query =
@@ -548,6 +565,94 @@ defmodule GodwokenExplorer.Chain do
   def stream_unfetched_udt_balances(initial, reducer) when is_function(reducer, 2) do
     UDTBalance.unfetched_udt_balances()
     |> Repo.stream_reduce(initial, reducer)
+  end
+
+  def smart_contract_creation_tx_bytecode(address_hash) do
+    creation_tx_query =
+      from(
+        p in Polyjuice,
+        left_join: a in Account,
+        on: p.created_contract_address_hash == a.eth_address,
+        where: p.created_contract_address_hash == ^address_hash,
+        where: p.status == :succeed,
+        select: %{init: p.input, created_contract_code: a.contract_code}
+      )
+
+    tx_input =
+      creation_tx_query
+      |> Repo.one()
+
+    if tx_input do
+      with %{init: input, created_contract_code: created_contract_code} <- tx_input do
+        %{
+          init: Data.to_string(input),
+          created_contract_code: Data.to_string(created_contract_code)
+        }
+      end
+    else
+      nil
+    end
+  end
+
+  def contract_creation_input_data(address_hash) do
+    result =
+      from(
+        p in Polyjuice,
+        where: p.created_contract_address_hash == ^address_hash,
+        where: p.status == :succeed,
+        select: p.input
+      )
+      |> Repo.one()
+
+    case result do
+      nil -> ""
+      _ -> Data.to_string(result)
+    end
+  end
+
+  def smart_contract_verified?(address_hash_str) when is_binary(address_hash_str) do
+    case string_to_address_hash(address_hash_str) do
+      {:ok, address_hash} ->
+        check_verified(address_hash)
+
+      _ ->
+        false
+    end
+  end
+
+  def smart_contract_verified?(address_hash) do
+    check_verified(address_hash)
+  end
+
+  def create_smart_contract(attrs \\ %{}) do
+    %SmartContract{} |> SmartContract.changeset(attrs) |> Repo.insert()
+  end
+
+  def update_smart_contract(attrs \\ %{}) do
+    address_hash = Map.get(attrs, :address_hash)
+
+    smart_contract =
+      from(
+        smart_contract in SmartContract,
+        join: a in Account,
+        on: a.id == smart_contract.account_id,
+        where: a.eth_address == ^address_hash
+      )
+      |> Repo.one()
+
+    smart_contract |> SmartContract.changeset(attrs) |> Repo.update()
+  end
+
+  defp check_verified(address_hash) do
+    query =
+      from(
+        smart_contract in SmartContract,
+        join: a in Account,
+        on: a.id == smart_contract.account_id,
+        where: a.eth_address == ^address_hash
+      )
+
+    if Repo.one(query), do: true, else: false
   end
 
   defp boolean_to_check_result(true), do: :ok

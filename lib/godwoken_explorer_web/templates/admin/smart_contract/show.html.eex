@@ -29,7 +29,7 @@
 
         <li>
           <div class="torch-show-label">Account:</div>
-          <div class="torch-show-data"><%= Map.get(@smart_contract.account || %{}, :eth_address, nil) %></div>
+          <div class="torch-show-data"><%= Map.get(@smart_contract.account || %{}, :eth_address, nil) |> to_string() %></div>
         </li>
 
         <li>
@@ -39,7 +39,7 @@
 
         <li>
           <div class="torch-show-label">Deplayment Transaction Hash:</div>
-          <div class="torch-show-data"><%= @smart_contract.deployment_tx_hash %></div>
+          <div class="torch-show-data"><%= @smart_contract.deployment_tx_hash |> to_string()%></div>
         </li>
 
         <li>

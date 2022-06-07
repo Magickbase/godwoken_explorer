@@ -31,6 +31,8 @@ defmodule GodwokenExplorer.Application do
       GodwokenExplorer.Chain.Cache.Blocks,
       GodwokenExplorer.Chain.Cache.Transactions,
       GodwokenExplorer.ETS.SmartContracts,
+      GodwokenExplorer.SmartContract.SolcDownloader,
+      GodwokenExplorer.SmartContract.VyperDownloader,
       {Oban, oban_config()}
     ]
 

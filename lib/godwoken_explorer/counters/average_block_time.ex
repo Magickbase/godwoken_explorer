@@ -38,7 +38,8 @@ defmodule GodwokenExplorer.Counters.AverageBlockTime do
   end
 
   @impl true
-  def handle_call(:average_block_time, _from, %{average: average} = state), do: {:reply, average, state}
+  def handle_call(:average_block_time, _from, %{average: average} = state),
+    do: {:reply, average, state}
 
   @impl true
   def handle_call(:refresh_timestamps, _, _) do
@@ -47,7 +48,6 @@ defmodule GodwokenExplorer.Counters.AverageBlockTime do
 
   @impl true
   def handle_info(:refresh_timestamps, _) do
-    #refresh_period = Application.get_env(:explorer, __MODULE__)[:period]
     refresh_period = average_block_cache_period()
     Process.send_after(self(), :refresh_timestamps, refresh_period)
 
@@ -62,8 +62,7 @@ defmodule GodwokenExplorer.Counters.AverageBlockTime do
         select: {block.number, block.timestamp}
       )
 
-    timestamps_query =
-        base_query
+    timestamps_query = base_query
 
     timestamps_row =
       timestamps_query
@@ -99,7 +98,8 @@ defmodule GodwokenExplorer.Counters.AverageBlockTime do
 
   defp durations(timestamps) do
     timestamps
-    |> Enum.reduce({[], nil, nil}, fn {block_number, timestamp}, {durations, last_block_number, last_timestamp} ->
+    |> Enum.reduce({[], nil, nil}, fn {block_number, timestamp},
+                                      {durations, last_block_number, last_timestamp} ->
       if last_timestamp do
         block_numbers_range = last_block_number - block_number
 

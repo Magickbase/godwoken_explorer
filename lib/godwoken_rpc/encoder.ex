@@ -11,7 +11,7 @@ defmodule GodwokenRPC.Encoder do
 
   This is what is expected on the Json RPC data parameter.
   """
-  @spec encode_function_call(%ABI.FunctionSelector{}, [term()]) :: String.t()
+  @spec encode_function_call(ABI.FunctionSelector.t(), [term()]) :: String.t()
   def encode_function_call(function_selector, args) do
     parsed_args = parse_args(args)
 
@@ -28,7 +28,8 @@ defmodule GodwokenRPC.Encoder do
     |> Enum.map(&parse_args/1)
   end
 
-  defp parse_args(<<"0x", hexadecimal_digits::binary>>), do: Base.decode16!(hexadecimal_digits, case: :mixed)
+  defp parse_args(<<"0x", hexadecimal_digits::binary>>),
+    do: Base.decode16!(hexadecimal_digits, case: :mixed)
 
   defp parse_args(<<hexadecimal_digits::binary>>), do: try_to_decode(hexadecimal_digits)
 
@@ -49,9 +50,13 @@ defmodule GodwokenRPC.Encoder do
   """
   def decode_result(_, _, leave_error_as_map \\ false)
 
-  @spec decode_result(map(), %ABI.FunctionSelector{} | [%ABI.FunctionSelector{}]) ::
+  @spec decode_result(map(), ABI.FunctionSelector.t() | [ABI.FunctionSelector.t()]) ::
           {String.t(), {:ok, any()} | {:error, String.t() | :invalid_data}}
-  def decode_result(%{error: %{code: code, data: data, message: message}, id: id}, _selector, leave_error_as_map) do
+  def decode_result(
+        %{error: %{code: code, data: data, message: message}, id: id},
+        _selector,
+        leave_error_as_map
+      ) do
     if leave_error_as_map do
       {id, {:error, %{code: code, message: message, data: data}}}
     else
@@ -59,7 +64,11 @@ defmodule GodwokenRPC.Encoder do
     end
   end
 
-  def decode_result(%{error: %{code: code, message: message}, id: id}, _selector, leave_error_as_map) do
+  def decode_result(
+        %{error: %{code: code, message: message}, id: id},
+        _selector,
+        leave_error_as_map
+      ) do
     if leave_error_as_map do
       {id, {:error, %{code: code, message: message}}}
     else
