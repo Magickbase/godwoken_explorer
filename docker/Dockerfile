@@ -1,6 +1,7 @@
 FROM bitwalker/alpine-elixir-phoenix:1.13.1 as builder
 
-RUN apk --no-cache --update add alpine-sdk gmp-dev automake libtool inotify-tools autoconf python3 file qemu-x86_64
+RUN apk --no-cache --update add alpine-sdk gmp-dev automake libtool inotify-tools autoconf python3 file qemu-x86_64 nodejs && \
+  npm install solc --location=global
 
 ENV GLIBC_REPO=https://github.com/sgerrand/alpine-pkg-glibc
 ENV GLIBC_VERSION=2.30-r0
@@ -59,7 +60,6 @@ COPY assets assets
 
 # compile assets
 RUN mix assets.deploy
-RUN npm install
 
 # Compile the release
 COPY lib lib
