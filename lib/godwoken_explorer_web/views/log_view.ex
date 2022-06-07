@@ -48,7 +48,7 @@ defmodule GodwokenExplorer.LogView do
     from(
       l in Log,
       left_join: a in Account,
-      on: a.short_address == l.address_hash,
+      on: a.eth_address == l.address_hash,
       left_join: s in SmartContract,
       on: s.account_id == a.id,
       join: t in Transaction,
