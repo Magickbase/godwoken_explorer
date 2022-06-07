@@ -86,6 +86,7 @@ defmodule GodwokenExplorerWeb.Router do
     get("/", UDTController, :index)
     resources("/udts", UDTController, except: [:delete])
     resources("/smart_contracts", SmartContractController, except: [:delete])
+    resources("/jobs", JobController, only: [:index, :show, :delete])
   end
 
   # Other scopes may use custom stacks.
