@@ -8,7 +8,6 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
     only: [hex_to_number: 1, script_to_hash: 1, parse_le_number: 1, timestamp_to_datetime: 1]
 
   require Logger
-  require IEx
 
   alias GodwkenRPC
 

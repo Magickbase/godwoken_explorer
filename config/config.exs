@@ -93,6 +93,12 @@ config :godwoken_explorer, GodwokenExplorerWeb.ApiRouter,
   writing_enabled: false,
   reading_enabled: true
 
+config :godwoken_explorer,
+  allowed_evm_versions:
+    System.get_env("ALLOWED_EVM_VERSIONS") ||
+      "homestead,tangerineWhistle,spuriousDragon,byzantium,constantinople,petersburg,istanbul,berlin,london,default",
+  solc_bin_api_url: "https://solc-bin.ethereum.org"
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{config_env()}.exs"

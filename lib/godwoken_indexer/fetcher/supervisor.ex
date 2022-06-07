@@ -7,7 +7,7 @@ defmodule GodwokenIndexer.Fetcher.Supervisor do
 
   def init(_) do
     children = [
-      GodwokenIndexer.Fetcher.UDTBalance
+      # GodwokenIndexer.Fetcher.UDTBalance
     ]
 
     Supervisor.init(children, strategy: :one_for_one)

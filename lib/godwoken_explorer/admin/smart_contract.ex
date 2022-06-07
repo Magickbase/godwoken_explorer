@@ -8,8 +8,8 @@ defmodule GodwokenExplorer.Admin.SmartContract do
   import Torch.Helpers, only: [sort: 1, paginate: 4]
   import Filtrex.Type.Config
 
-  # alias GodwokenExplorer.Admin.SmartContract
   alias GodwokenExplorer.SmartContract
+  alias GodwokenExplorer.SmartContract.Solidity.PublisherWorker
 
   @pagination [page_size: 15]
   @pagination_distance 5
@@ -56,6 +56,7 @@ defmodule GodwokenExplorer.Admin.SmartContract do
   defp do_paginate_smart_contracts(filter, params) do
     SmartContract
     |> Filtrex.query(filter)
+    |> preload(:account)
     |> order_by(^sort(params))
     |> paginate(Repo, params, @pagination)
   end
@@ -79,9 +80,9 @@ defmodule GodwokenExplorer.Admin.SmartContract do
 
   """
   def create_smart_contract(attrs \\ %{}) do
-    %SmartContract{}
-    |> SmartContract.changeset(attrs)
-    |> Repo.insert()
+    attrs
+    |> PublisherWorker.new()
+    |> Oban.insert()
   end
 
   def update_smart_contract(%SmartContract{} = smart_contract, attrs) do

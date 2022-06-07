@@ -2,8 +2,8 @@ defmodule GodwokenExplorerWeb.Admin.SmartContractController do
   use GodwokenExplorerWeb, :controller
 
   alias GodwokenExplorer.Admin.SmartContract, as: Admin
-  # alias GodwokenExplorer.Admin.SmartContract
   alias GodwokenExplorer.{Account, SmartContract}
+  alias GodwokenExplorer.Chain.Hash
 
   plug(:put_root_layout, {GodwokenExplorerWeb.LayoutView, "torch.html"})
   plug(:put_layout, false)
@@ -26,25 +26,21 @@ defmodule GodwokenExplorerWeb.Admin.SmartContractController do
   end
 
   def create(conn, %{"smart_contract" => smart_contract_params}) do
-    with %Account{id: id, type: :polyjuice_contract} <-
-           smart_contract_params["eth_address"]
-           |> String.downcase()
-           |> Account.search() do
-      case Admin.create_smart_contract(
-             smart_contract_params
-             |> Map.merge(%{
-               "account_id" => id,
-               "abi" => Jason.decode!(smart_contract_params["abi"])
-             })
-           ) do
-        {:ok, smart_contract} ->
-          conn
-          |> put_flash(:info, "Smart contract created successfully.")
-          |> redirect(to: Routes.admin_smart_contract_path(conn, :show, smart_contract))
+    with {:ok, address_hash} <- smart_contract_params["eth_address"] |> Hash.Address.cast(),
+         %Account{id: id, type: :polyjuice_contract} <-
+           Account.search(address_hash) do
+      Admin.create_smart_contract(
+        smart_contract_params
+        |> Map.merge(%{
+          "address_hash" => to_string(address_hash),
+          "account_id" => id,
+          "optimization" => false
+        })
+      )
 
-        {:error, %Ecto.Changeset{} = changeset} ->
-          render(conn, "new.html", changeset: changeset)
-      end
+      conn
+      |> put_flash(:info, "Smart contract is under verified")
+      |> redirect(to: Routes.admin_smart_contract_path(conn, :index))
     else
       _ ->
         changeset = Admin.change_smart_contract(%SmartContract{})
@@ -63,7 +59,11 @@ defmodule GodwokenExplorerWeb.Admin.SmartContractController do
 
     changeset =
       Admin.change_smart_contract(smart_contract)
-      |> Ecto.Changeset.put_change(:eth_address, smart_contract.account.eth_address)
+      |> Ecto.Changeset.put_change(:eth_address, to_string(smart_contract.account.eth_address))
+      |> Ecto.Changeset.put_change(
+        :deployment_tx_hash,
+        to_string(smart_contract.deployment_tx_hash)
+      )
 
     render(conn, "edit.html", smart_contract: smart_contract, changeset: changeset)
   end
