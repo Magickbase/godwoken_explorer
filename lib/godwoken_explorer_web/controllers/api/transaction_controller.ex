@@ -120,7 +120,7 @@ defmodule GodwokenExplorerWeb.API.TransactionController do
                   Map.merge(base_struct, %{
                     gas_price: balance_to_view(tx.parsed_args["gas_price"], 18),
                     gas_limit: tx.parsed_args["gas_limit"],
-                    value: balance_to_view(tx.parsed_args["value"], 18),
+                    value: balance_to_view(tx.parsed_args["value"], 8),
                     input: tx.parsed_args["input"]
                   })
                 else

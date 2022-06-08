@@ -28,7 +28,7 @@ defmodule GodwokenExplorer.SmartContractView do
     with udt_id when is_integer(udt_id) <- UDT.ckb_account_id(),
          {:ok, balance} <-
            GodwokenRPC.fetch_balance(smart_contract.account.registry_address, udt_id) do
-      balance_to_view(balance, 18)
+      balance_to_view(balance, 8)
     else
       _ -> 0
     end
