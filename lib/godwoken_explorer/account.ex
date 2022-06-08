@@ -246,7 +246,7 @@ defmodule GodwokenExplorer.Account do
   def account_to_view(account) do
     account =
       Map.merge(account, %{
-        ckb: balance_to_view(account.ckb, 18)
+        ckb: balance_to_view(account.ckb, 8)
       })
 
     case Kernel.get_in(account, [:eth_user, :udt_list]) do
