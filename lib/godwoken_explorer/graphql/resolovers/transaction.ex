@@ -2,7 +2,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
   alias GodwokenExplorer.Repo
   alias GodwokenExplorer.{Account, Transaction, Block, Polyjuice, PolyjuiceCreator}
 
-  import GodwokenExplorer.Graphql.Resolvers.Common, only: [paginate_query: 3]
+  import GodwokenExplorer.Graphql.Resolvers.Common, only: [paginate_query_with_sort_type: 3]
 
   import Ecto.Query
   import GodwokenExplorer.Graphql.Common, only: [sort_type: 3]
@@ -36,7 +36,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
     |> query_with_account_address(input)
     |> query_with_block_range(input)
     |> sort_type(input, [:block_number, :index, :hash])
-    |> paginate_query(input, %{
+    |> paginate_query_with_sort_type(input, %{
       cursor_fields: [:block_number, :index, :hash],
       total_count_primary_key_field: :hash
     })
