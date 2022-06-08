@@ -1,7 +1,6 @@
 FROM bitwalker/alpine-elixir-phoenix:1.13.1 as builder
 
-RUN apk --no-cache --update add alpine-sdk gmp-dev automake libtool inotify-tools autoconf python3 file qemu-x86_64 nodejs && \
-  npm install solc --location=global
+RUN apk --no-cache --update add alpine-sdk gmp-dev automake libtool inotify-tools autoconf python3 file qemu-x86_64
 
 ENV GLIBC_REPO=https://github.com/sgerrand/alpine-pkg-glibc
 ENV GLIBC_VERSION=2.30-r0
@@ -75,6 +74,9 @@ FROM bitwalker/alpine-elixir-phoenix:1.13.1 as deploy
 
 WORKDIR "/app"
 ENV MIX_ENV="prod"
+
+# contract compile needs solc
+RUN npm install -g solc
 
 # Only copy the final release from the build stage
 COPY --from=builder --chown=nobody:root /app/_build/${MIX_ENV}/rel/godwoken_explorer ./
