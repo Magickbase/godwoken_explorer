@@ -100,8 +100,7 @@ defmodule GodwokenExplorer.TokenTransfer do
         select: %{
           transaction_hash: tt.transaction_hash,
           log_index: tt.log_index,
-          block_number: tt.block_number,
-          inserted_at: tt.inserted_at
+          block_number: tt.block_number
         }
       )
 
@@ -111,8 +110,7 @@ defmodule GodwokenExplorer.TokenTransfer do
         select: %{
           transaction_hash: tt.transaction_hash,
           log_index: tt.log_index,
-          block_number: tt.block_number,
-          inserted_at: tt.inserted_at
+          block_number: tt.block_number
         }
       )
 
@@ -184,7 +182,7 @@ defmodule GodwokenExplorer.TokenTransfer do
       select: %{
         hash: tt.transaction_hash,
         block_number: tt.block_number,
-        inserted_at: b.inserted_at,
+        timestamp: b.timestamp,
         from:
           fragment(
             "CASE WHEN ? IS NULL THEN encode(?, 'escape')
@@ -245,12 +243,11 @@ defmodule GodwokenExplorer.TokenTransfer do
         |> Repo.all()
         |> Enum.map(fn transfer ->
           transfer
-          |> Map.put(:timestamp, utc_to_unix(transfer[:inserted_at]))
+          |> Map.put(:timestamp, utc_to_unix(transfer[:timestamp]))
           |> Map.merge(%{
             transfer_value:
               balance_to_view(transfer[:transfer_value], transfer[:udt_decimal] || 0)
           })
-          |> Map.delete(:inserted_at)
         end)
 
       %{
