@@ -2,7 +2,8 @@ defmodule GodwokenRPC.Util do
   alias Blake2.Blake2b
 
   @type decimal() :: Decimal.t()
-  @stringify_ckb_decimal_keys ~w(gas_price fee value)a
+  @stringify_gckb_decimal_keys ~w(gas_price fee)a
+  @stringify_ckb_decimal_keys ~w(value)a
   @utc_unix_keys ~w(timestamp inserted_at)a
   @full_length_size 4
   @offset_size 4
@@ -65,8 +66,11 @@ defmodule GodwokenRPC.Util do
 
       parsed_value =
         case parsed_key do
-          d when d in @stringify_ckb_decimal_keys ->
+          d when d in @stringify_gckb_decimal_keys ->
             balance_to_view(v, 18)
+
+          d when d in @stringify_ckb_decimal_keys ->
+            balance_to_view(v, 8)
 
           u when u in @utc_unix_keys ->
             utc_to_unix(v)

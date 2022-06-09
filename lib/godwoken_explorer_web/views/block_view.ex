@@ -34,7 +34,7 @@ defmodule GodwokenExplorer.BlockView do
   end
 
   def timestamp(block, _conn) do
-    utc_to_unix(block.inserted_at)
+    utc_to_unix(block.timestamp)
   end
 
   def list(page, page_size) do
