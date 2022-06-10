@@ -40,28 +40,6 @@
 
               <th><%= table_link(@conn, "Args", :args) %></th>
 
-              <th><%= table_link(@conn, "Meta", :meta) %></th>
-
-              <th><%= table_link(@conn, "Tags", :tags) %></th>
-
-              <th><%= table_link(@conn, "Errors", :errors) %></th>
-
-              <th><%= table_link(@conn, "Attempt", :attempt) %></th>
-
-              <th><%= table_link(@conn, "Attempted by", :attempted_by) %></th>
-
-              <th><%= table_link(@conn, "Max attempts", :max_attempts) %></th>
-
-              <th><%= table_link(@conn, "Priority", :priority) %></th>
-
-              <th><%= table_link(@conn, "Attemted at", :attemted_at) %></th>
-
-              <th><%= table_link(@conn, "Cancelled at", :cancelled_at) %></th>
-
-              <th><%= table_link(@conn, "Completed at", :completed_at) %></th>
-
-              <th><%= table_link(@conn, "Discarded at", :discarded_at) %></th>
-
               <th><%= table_link(@conn, "Inserted at", :inserted_at) %></th>
 
               <th><%= table_link(@conn, "Scheduled at", :scheduled_at) %></th>
@@ -80,28 +58,6 @@
                 <td><%= job.worker %></td>
 
                 <td><%= job.args |> Enum.map_join(", ", fn {key, val} -> ~s{"#{key}", "#{val}"} end) %></td>
-
-                <td><%= job.meta |> Enum.map_join(", ", fn {key, val} -> ~s{"#{key}", "#{val}"} end) %></td>
-
-                <td><%= job.tags |> Enum.join(",") %></td>
-
-                <td><%= job.errors |> Enum.join(",")%></td>
-
-                <td><%= job.attempt %></td>
-
-                <td><%= job.attempted_by |> Enum.join(",") %></td>
-
-                <td><%= job.max_attempts %></td>
-
-                <td><%= job.priority %></td>
-
-                <td><%= job.attempted_at %></td>
-
-                <td><%= job.cancelled_at %></td>
-
-                <td><%= job.completed_at %></td>
-
-                <td><%= job.discarded_at %></td>
 
                 <td><%= job.inserted_at %></td>
 
