@@ -63,7 +63,7 @@
 
                 <td><%= udt.symbol %></td>
 
-                <td><%= udt.script_hash %></td>
+                <td><%= to_string(udt.script_hash) %></td>
 
                 <td><%= udt.type %></td>
 

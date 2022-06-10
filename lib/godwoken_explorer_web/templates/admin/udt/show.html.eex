@@ -18,7 +18,7 @@
 
         <li>
           <div class="torch-show-label">Bridge Account eth addresss:</div>
-          <div class="torch-show-data"><%= Map.get(@udt.account || %{}, :eth_address, nil) %></div>
+          <div class="torch-show-data"><%= Map.get(@udt.account || %{}, :eth_address, nil) |> to_string() %></div>
         </li>
 
         <li>
@@ -56,7 +56,7 @@
 
         <li>
           <div class="torch-show-label">Layer1 Script hash:</div>
-          <div class="torch-show-data"><%= @udt.script_hash %></div>
+          <div class="torch-show-data"><%= @udt.script_hash |> to_string() %></div>
         </li>
 
         <li>
