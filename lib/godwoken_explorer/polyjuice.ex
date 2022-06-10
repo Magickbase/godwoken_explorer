@@ -43,9 +43,11 @@ defmodule GodwokenExplorer.Polyjuice do
       :gas_used,
       :transaction_index,
       :status,
-      :created_contract_address_hash
+      :created_contract_address_hash,
+      :tx_hash
     ])
     |> validate_required([
+      :tx_hash,
       :is_create,
       :gas_limit,
       :gas_price,
