@@ -43,7 +43,11 @@
 
         <li>
           <div class="torch-show-label">Errors:</div>
-          <div class="torch-show-data"><%= @job.errors  |> Enum.map_join(", ", fn {key, val} -> ~s{"#{key}", "#{val}"} end)%></div>
+          <div class="torch-show-data">
+          <%= for error <- @job.errors do%>
+             <p><% error |> Enum.map_join(", ", fn {key, val} -> ~s{"#{key}": "#{val}"} end) %></p>
+          <% end %>
+          </div>
         </li>
 
         <li>
