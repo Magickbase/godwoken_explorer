@@ -43,7 +43,9 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
     |> do_transactions()
   end
 
-  defp do_transactions({:error, {:not_found_account, []}}), do: {:ok, []}
+  defp do_transactions({:error, {:not_found_account, []}}), do: {:ok, %{
+    entries: []
+  }}
   defp do_transactions({:error, _} = error), do: error
 
   defp do_transactions(result) do
