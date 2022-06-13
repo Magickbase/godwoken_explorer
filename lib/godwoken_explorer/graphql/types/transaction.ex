@@ -94,7 +94,7 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
     @desc """
     function: list transactions by account address
 
-    request-example:
+    request-result-example:
     query {
       transactions(
         input: {
@@ -159,6 +159,144 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
         }
       }
     }
+
+
+    request-result-example-1:
+    query {
+      transactions(
+        input: {
+          script_hash: "0x08c9937e412e135928fd6dec7255965ddd7df4d5a163564b60895100bb3b2f9e"
+          sort_type: ASC
+          limit: 2
+        }
+      ) {
+        entries {
+          block_hash
+          block_number
+          type
+          from_account_id
+          from_account {
+            script_hash
+            id
+            eth_address
+          }
+          to_account_id
+        }
+
+        metadata {
+          total_count
+          before
+          after
+        }
+      }
+    }
+
+    {
+      "data": {
+        "transactions": {
+          "entries": [
+            {
+              "block_hash": "0x3c864108150c7ee2a0a6e512d353a0aa812470d6fed3093daccef2007c307344",
+              "block_number": 26243,
+              "from_account": {
+                "eth_address": "0xa86e2b58f987d298c6103fc72592a19451fb49a4",
+                "id": 242,
+                "script_hash": "0x3c256a6acbf96338077c7cac3d69c8caf00bf4f9a964959bbc8dabcede7d7d6e"
+              },
+              "from_account_id": 242,
+              "to_account_id": 2,
+              "type": "ETH_ADDRESS_REGISTRY"
+            },
+            {
+              "block_hash": "0x727fdf656aa2484caa923e3479bbde3af75deab6db85cfbda523d4866cd28e1e",
+              "block_number": 30047,
+              "from_account": {
+                "eth_address": "0xa86e2b58f987d298c6103fc72592a19451fb49a4",
+                "id": 242,
+                "script_hash": "0x3c256a6acbf96338077c7cac3d69c8caf00bf4f9a964959bbc8dabcede7d7d6e"
+              },
+              "from_account_id": 242,
+              "to_account_id": 2,
+              "type": "ETH_ADDRESS_REGISTRY"
+            }
+          ],
+          "metadata": {
+            "after": "g3QAAAADZAAMYmxvY2tfbnVtYmVyYgAAdV9kAARoYXNobQAAAEIweGQ4MmFlYzliMjM2NDlhYmFkNGQzMDJkYTc2ZjFkZDIwNzI5NTI1NTU4YzgyMWY4ODVjYzgwMWJjNGM4ZmMyZDRkAAVpbmRleGEB",
+            "before": null,
+            "total_count": 1198
+          }
+        }
+      }
+    }
+
+
+    request-result-example-2:
+    query {
+      transactions(
+        input: {
+          sort_type: DESC
+          limit: 2
+        }
+      ) {
+        entries {
+          block_hash
+          block_number
+          type
+          from_account_id
+          from_account {
+            script_hash
+            id
+            eth_address
+          }
+          to_account_id
+        }
+
+        metadata {
+          total_count
+          before
+          after
+        }
+      }
+    }
+
+    {
+      "data": {
+        "transactions": {
+          "entries": [
+            {
+              "block_hash": "0x601bee02331b89ad675e231aa670c95715c4a999e3a12306aadc2c69f7b0e1f3",
+              "block_number": 100532,
+              "from_account": {
+                "eth_address": "0x934f1ebcb57ce1d9985a4c4f8811d17b04342067",
+                "id": 5684,
+                "script_hash": "0x9457ac2c7346092eb6f475c12c9b11eab23a6281429261c20f47910603ead343"
+              },
+              "from_account_id": 5684,
+              "to_account_id": 29352,
+              "type": "POLYJUICE"
+            },
+            {
+              "block_hash": "0x601bee02331b89ad675e231aa670c95715c4a999e3a12306aadc2c69f7b0e1f3",
+              "block_number": 100532,
+              "from_account": {
+                "eth_address": "0xb243e6840e99d6fd89e5075b0e1d3efa810cf653",
+                "id": 24426,
+                "script_hash": "0x035d5694f35baf9f8ed9b07cc2dcf22ac98eff06ee7729b5190f9659da0c73fc"
+              },
+              "from_account_id": 24426,
+              "to_account_id": 4,
+              "type": "POLYJUICE"
+            }
+          ],
+          "metadata": {
+            "after": "g3QAAAADZAAMYmxvY2tfbnVtYmVyYgABiLRkAARoYXNobQAAAEIweGJiNjVlYjM4YTdkN2U2NWZkNzA0YTY2ZTcxZjFhYTg5MjJiOGY2NDYzZDZhNjZiMDZkYjA0Y2QyY2IyZDk4YzZkAAVpbmRleGEB",
+            "before": null,
+            "total_count": 10000
+          }
+        }
+      }
+    }
+
     """
     field :transactions, :paginate_trasactions do
       arg(:input, non_null(:transactions_input))
@@ -221,7 +359,8 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
   end
 
   input_object :transactions_input do
-    field :address, non_null(:string)
+    field :address, :string
+    field :script_hash, :string
     field :sort, :sort_type
     import_fields(:paginate_input)
     import_fields(:sort_type_input)

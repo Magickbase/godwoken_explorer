@@ -52,11 +52,24 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
 
   defp query_with_account_address(query, input) do
     address = Map.get(input, :address)
+    script_hash = Map.get(input, :script_hash)
 
-    if is_nil(address) do
+    account_or_skip =
+      case {address, script_hash} do
+        {nil, nil} ->
+          :skip
+
+        {nil, script_hash} when not is_nil(script_hash) ->
+          Account.search(script_hash)
+
+        {address, _} when not is_nil(address) ->
+          Account.search(address)
+      end
+
+    if account_or_skip == :skip do
       query
     else
-      account = Account.search(address)
+      account = account_or_skip
 
       case account do
         %Account{type: :eth_user} ->
