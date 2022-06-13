@@ -53,10 +53,14 @@ input AccountCkbsInput {
 
 input AccountInput {
   """
-  argument: account address(eth_address)
+  address: account address(eth_address)
   example: "0x59b670e9fa9d0a427751af201d676719a970857b"
+  
+  script_hash: other address not compatible with eip55
+  example: "0x08c9937e412e135928fd6dec7255965ddd7df4d5a163564b60895100bb3b2f9e"
   """
-  address: String!
+  address: String
+  script_hash: String
 }
 
 enum AccountType {
@@ -403,6 +407,26 @@ type RootQueryType {
       "account": {
         "eth_address": "0x59b670e9fa9d0a427751af201d676719a970857b",
         "type": "POLYJUICE_CONTRACT"
+      }
+    }
+  }
+  
+  request-example-1:
+  query {
+    account(input: {script_hash: "0x08c9937e412e135928fd6dec7255965ddd7df4d5a163564b60895100bb3b2f9e"}){
+      type
+      eth_address
+      script_hash
+    }
+  }
+  
+  result-example:
+  {
+    "data": {
+      "account": {
+        "eth_address": null,
+        "script_hash": "0x08c9937e412e135928fd6dec7255965ddd7df4d5a163564b60895100bb3b2f9e",
+        "type": "ETH_ADDR_REG"
       }
     }
   }
@@ -778,7 +802,7 @@ type RootQueryType {
           }
         ],
         "metadata": {
-          "after": "g3QAAAACZAAMYmxvY2tfbnVtYmVyYgAALoBkAAlsb2dfaW5kZXhhAQ==",
+          "after": "g3QAAAADZAAMYmxvY2tfbnVtYmVyYgAALoBkAAlsb2dfaW5kZXhhAWQAEHRyYW5zYWN0aW9uX2hhc2htAAAAQjB4YWYwYmU1NGFhZGYwMGM1NzE3ZTkzODAyNjkxNDZhYjdlMzMwY2MxOTVhMmU1YzE4MTQ4MGFlZjFhNGY1NTJlNw==",
           "before": null,
           "total_count": 60
         }
@@ -931,7 +955,7 @@ type RootQueryType {
           }
         ],
         "metadata": {
-          "after": "g3QAAAACaAJkAARkZXNjZAAMYmxvY2tfbnVtYmVyYgAAD4NoAmQABGRlc2NkAAVpbmRleGEA",
+          "after": "g3QAAAADZAAMYmxvY2tfbnVtYmVyYgAAD4NkAARoYXNobQAAAEIweDU0MzNiMTE5ZmIwNTQ4NjM0YTY0NDAwNjZmNzUxNThlYWMyODk0MDgxNmU4YzlkYmVjZTk2ZTczMGUwMWU3MjZkAAVpbmRleGEA",
           "before": null,
           "total_count": 77
         }
