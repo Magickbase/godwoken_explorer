@@ -43,6 +43,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
     |> do_transactions()
   end
 
+  defp do_transactions({:error, {:not_found_account, []}}), do: {:ok, nil}
   defp do_transactions({:error, _} = error), do: error
 
   defp do_transactions(result) do
@@ -74,7 +75,10 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
           |> where([t], t.to_account_id == ^account.id)
 
         nil ->
-          {:error, "address not found"}
+          {:error, {:not_found_account, []}}
+
+        error ->
+          {:error, "internal error with: #{error}"}
       end
     end
   end
