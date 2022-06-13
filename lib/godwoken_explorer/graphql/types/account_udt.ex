@@ -9,7 +9,7 @@ defmodule GodwokenExplorer.Graphql.Types.AccountUDT do
     @desc """
     function: get list of account udt by account addresses
 
-    request-example:
+    request-result-example:
     query {
       account_udts(input: {address_hashes: ["0x451bae98fe4daf99d45d3399b5acee2e55654c76"]}) {
         address_hash
@@ -23,13 +23,48 @@ defmodule GodwokenExplorer.Graphql.Types.AccountUDT do
       }
     }
 
-    result-example:
     {
       "data": {
         "account_udts": [
           {
             "address_hash": "0x451bae98fe4daf99d45d3399b5acee2e55654c76",
             "balance": "2601000000000000000000",
+            "udt": {
+              "bridge_account_id": null,
+              "id": "1",
+              "name": null,
+              "type": "BRIDGE"
+            }
+          }
+        ]
+      }
+    }
+
+    request-result-example-1:
+    query {
+      account_udts(
+        input: {
+          script_hashes: [ "0x20b9546f0fe576733a4b7caf1c74465e5059f4036591963f06266329c8d2c859"
+          ]
+        }
+      ) {
+        address_hash
+        balance
+        udt {
+          id
+          type
+          name
+          bridge_account_id
+        }
+      }
+    }
+
+    {
+      "data": {
+        "account_udts": [
+          {
+            "address_hash": "0x39d260d641b576a77aa8862a9f617d183b9826f6",
+            "balance": "900000000000000000000",
             "udt": {
               "bridge_account_id": null,
               "id": "1",
@@ -52,7 +87,7 @@ defmodule GodwokenExplorer.Graphql.Types.AccountUDT do
     @desc """
     function: get list of account ckbs by account addresses
 
-    request-example:
+    request-result-example:
     query {
       account_ckbs(input: {address_hashes: ["0x451bae98fe4daf99d45d3399b5acee2e55654c76"]}){
         address_hash
@@ -60,7 +95,6 @@ defmodule GodwokenExplorer.Graphql.Types.AccountUDT do
       }
     }
 
-    result-example:
     {
       "data": {
         "account_ckbs": [
@@ -72,6 +106,29 @@ defmodule GodwokenExplorer.Graphql.Types.AccountUDT do
       }
     }
 
+    request-result-example-1:
+    query {
+      account_ckbs(
+        input: {
+          script_hashes: [   "0x20b9546f0fe576733a4b7caf1c74465e5059f4036591963f06266329c8d2c859"
+          ]
+        }
+      ) {
+        address_hash
+        balance
+      }
+    }
+
+    {
+      "data": {
+        "account_ckbs": [
+          {
+            "address_hash": "0x39d260d641b576a77aa8862a9f617d183b9826f6",
+            "balance": "900000000000000000000"
+          }
+        ]
+      }
+    }
     """
     field :account_ckbs, list_of(:account_ckb) do
       arg(:input, non_null(:account_ckbs_input))
@@ -150,16 +207,23 @@ defmodule GodwokenExplorer.Graphql.Types.AccountUDT do
 
   input_object :account_ckbs_input do
     field :address_hashes, list_of(:string), default_value: []
+    field :script_hashes, list_of(:string), default_value: []
   end
 
   input_object :account_udts_input do
     import_fields(:page_and_size_input)
 
     @desc """
-    argument: the list of account udt address
+    argument: the list of account eth address
     example: ["0x15ca4f2165ff0e798d9c7434010eaacc4d768d85"]
     """
     field :address_hashes, list_of(:string), default_value: []
+
+    @desc """
+    argument: the list of account script hash
+    example: ["0x08c9937e412e135928fd6dec7255965ddd7df4d5a163564b60895100bb3b2f9e"]
+    """
+    field :script_hashes, list_of(:string), default_value: []
 
     @desc """
     argument: the address of smart contract which supply udts
