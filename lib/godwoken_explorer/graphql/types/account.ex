@@ -100,7 +100,6 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
       middleware(MDowncase, [:address, :script_hash])
       resolve(&Resolvers.Account.account/3)
     end
-
   end
 
   object :account_mutations do
