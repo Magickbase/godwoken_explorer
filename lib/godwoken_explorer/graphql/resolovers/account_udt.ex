@@ -55,14 +55,16 @@
 #     {:ok, result}
 #   end
 
-#   def account_udts(_parent, %{input: input} = _args, _resolution) do
-#     address_hashes = Map.get(input, :address_hashes)
-#     token_contract_address_hash = Map.get(input, :token_contract_address_hash)
+# def account_udts(_parent, %{input: input} = _args, _resolution) do
+#   address_hashes = Map.get(input, :address_hashes)
+#   script_hashes = Map.get(input, :script_hashes)
+#   token_contract_address_hash = Map.get(input, :token_contract_address_hash)
 
-#     if length(address_hashes) > @addresses_max_limit do
-#       {:error, :too_many_inputs}
-#     else
-#       query = search_account_udts(address_hashes, token_contract_address_hash)
+#   if length(address_hashes) > @addresses_max_limit or
+#        length(script_hashes) > @addresses_max_limit do
+#     {:error, :too_many_inputs}
+#   else
+#     query = search_account_udts(address_hashes, script_hashes, token_contract_address_hash)
 
 #       {:ok, Repo.all(query)}
 #     end
@@ -81,26 +83,26 @@
 #     {:ok, return}
 #   end
 
-#   def account_ckbs(_parent, %{input: input} = _args, _resolution) do
-#     address_hashes = Map.get(input, :address_hashes)
+# def account_ckbs(_parent, %{input: input} = _args, _resolution) do
+#   address_hashes = Map.get(input, :address_hashes)
+#   script_hashes = Map.get(input, :script_hashes)
+#   ckb_account_id = UDT.ckb_account_id()
 
-#     ckb_account_id = UDT.ckb_account_id()
-
-#     if ckb_account_id do
-#       do_account_ckbs(address_hashes, ckb_account_id)
-#     else
-#       {:error, :ckb_account_not_found}
-#     end
+#   if ckb_account_id do
+#     do_account_ckbs(address_hashes, script_hashes, ckb_account_id)
+#   else
+#     {:error, :ckb_account_not_found}
 #   end
+# end
 
-#   defp do_account_ckbs(address_hashes, ckb_account_id) do
-#     %Account{script_hash: token_contract_address_hash} = Repo.get(Account, ckb_account_id)
+# defp do_account_ckbs(address_hashes, script_hashes, ckb_account_id) do
+#   %Account{script_hash: token_contract_address_hash} = Repo.get(Account, ckb_account_id)
 
-#     if length(address_hashes) > @addresses_max_limit do
-#       {:error, :too_many_addresses}
-#     else
-#       query = search_account_udts(address_hashes, token_contract_address_hash)
-#       return = Repo.all(query)
+#   if length(address_hashes) > @addresses_max_limit do
+#     {:error, :too_many_addresses}
+#   else
+#     query = search_account_udts(address_hashes, script_hashes, token_contract_address_hash)
+#     return = Repo.all(query)
 
 #       return_account_udts =
 #         Enum.map(return, fn au -> %{address_hash: au.address_hash, balance: au.balance} end)
@@ -109,10 +111,10 @@
 #     end
 #   end
 
-#   defp search_account_udts(address_hashes, token_contract_address_hash) do
-#     squery =
-#       from(a in Account)
-#       |> where([a], a.eth_address in ^address_hashes)
+# defp search_account_udts(address_hashes, script_hashes, token_contract_address_hash) do
+#   squery =
+#     from(a in Account)
+#     |> where([a], a.eth_address in ^address_hashes or a.script_hash in ^script_hashes)
 
 #     query =
 #       from(au in AccountUDT)

@@ -27,6 +27,26 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
       }
     }
 
+    request-example-1:
+    query {
+      account(input: {script_hash: "0x08c9937e412e135928fd6dec7255965ddd7df4d5a163564b60895100bb3b2f9e"}){
+        type
+        eth_address
+        script_hash
+      }
+    }
+
+    result-example:
+    {
+      "data": {
+        "account": {
+          "eth_address": null,
+          "script_hash": "0x08c9937e412e135928fd6dec7255965ddd7df4d5a163564b60895100bb3b2f9e",
+          "type": "ETH_ADDR_REG"
+        }
+      }
+    }
+
     request-example-2:
     query {
       account(input: {address: "0xcae7ac7ea158326cc16b4a5f1668924966419455"}){
@@ -77,7 +97,7 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
     field :account, :account do
       arg(:input, non_null(:account_input))
       middleware(MEIP55, [:address])
-      middleware(MDowncase, [:address])
+      middleware(MDowncase, [:address, :script_hash])
       resolve(&Resolvers.Account.account/3)
     end
   end
@@ -122,10 +142,14 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
 
   input_object :account_input do
     @desc """
-    argument: account address(eth_address)
+    address: account address(eth_address)
     example: "0x59b670e9fa9d0a427751af201d676719a970857b"
+
+    script_hash: other address not compatible with eip55
+    example: "0x08c9937e412e135928fd6dec7255965ddd7df4d5a163564b60895100bb3b2f9e"
     """
-    field :address, non_null(:string)
+    field :address, :string
+    field :script_hash, :string
   end
 
   input_object :account_child_account_udts_input do

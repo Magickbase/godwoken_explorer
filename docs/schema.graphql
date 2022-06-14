@@ -49,14 +49,19 @@ type AccountCkb {
 
 input AccountCkbsInput {
   address_hashes: [String] = []
+  script_hashes: [String] = []
 }
 
 input AccountInput {
   """
-  argument: account address(eth_address)
+  address: account address(eth_address)
   example: "0x59b670e9fa9d0a427751af201d676719a970857b"
+  
+  script_hash: other address not compatible with eip55
+  example: "0x08c9937e412e135928fd6dec7255965ddd7df4d5a163564b60895100bb3b2f9e"
   """
-  address: String!
+  address: String
+  script_hash: String
 }
 
 enum AccountType {
@@ -105,7 +110,7 @@ input AccountUdtContractAddressInput {
 
 input AccountUdtsInput {
   """
-  argument: the list of account udt address
+  argument: the list of account eth address
   example: ["0x15ca4f2165ff0e798d9c7434010eaacc4d768d85"]
   """
   address_hashes: [String] = []
@@ -125,6 +130,12 @@ input AccountUdtsInput {
   limit: > 0
   """
   page_size: Int = 20
+
+  """
+  argument: the list of account script hash
+  example: ["0x08c9937e412e135928fd6dec7255965ddd7df4d5a163564b60895100bb3b2f9e"]
+  """
+  script_hashes: [String] = []
 
   """
   argument: the address of smart contract which supply udts
@@ -407,6 +418,26 @@ type RootQueryType {
     }
   }
   
+  request-example-1:
+  query {
+    account(input: {script_hash: "0x08c9937e412e135928fd6dec7255965ddd7df4d5a163564b60895100bb3b2f9e"}){
+      type
+      eth_address
+      script_hash
+    }
+  }
+  
+  result-example:
+  {
+    "data": {
+      "account": {
+        "eth_address": null,
+        "script_hash": "0x08c9937e412e135928fd6dec7255965ddd7df4d5a163564b60895100bb3b2f9e",
+        "type": "ETH_ADDR_REG"
+      }
+    }
+  }
+  
   request-example-2:
   query {
     account(input: {address: "0xcae7ac7ea158326cc16b4a5f1668924966419455"}){
@@ -459,7 +490,7 @@ type RootQueryType {
   """
   function: get list of account ckbs by account addresses
   
-  request-example:
+  request-result-example:
   query {
     account_ckbs(input: {address_hashes: ["0x451bae98fe4daf99d45d3399b5acee2e55654c76"]}){
       address_hash
@@ -467,7 +498,6 @@ type RootQueryType {
     }
   }
   
-  result-example:
   {
     "data": {
       "account_ckbs": [
@@ -478,13 +508,37 @@ type RootQueryType {
       ]
     }
   }
+  
+  request-result-example-1:
+  query {
+    account_ckbs(
+      input: {
+        script_hashes: [   "0x20b9546f0fe576733a4b7caf1c74465e5059f4036591963f06266329c8d2c859"
+        ]
+      }
+    ) {
+      address_hash
+      balance
+    }
+  }
+  
+  {
+    "data": {
+      "account_ckbs": [
+        {
+          "address_hash": "0x39d260d641b576a77aa8862a9f617d183b9826f6",
+          "balance": "900000000000000000000"
+        }
+      ]
+    }
+  }
   """
   account_ckbs(input: AccountCkbsInput!): [AccountCkb]
 
   """
   function: get list of account udt by account addresses
   
-  request-example:
+  request-result-example:
   query {
     account_udts(input: {address_hashes: ["0x451bae98fe4daf99d45d3399b5acee2e55654c76"]}) {
       address_hash
@@ -498,13 +552,48 @@ type RootQueryType {
     }
   }
   
-  result-example:
   {
     "data": {
       "account_udts": [
         {
           "address_hash": "0x451bae98fe4daf99d45d3399b5acee2e55654c76",
           "balance": "2601000000000000000000",
+          "udt": {
+            "bridge_account_id": null,
+            "id": "1",
+            "name": null,
+            "type": "BRIDGE"
+          }
+        }
+      ]
+    }
+  }
+  
+  request-result-example-1:
+  query {
+    account_udts(
+      input: {
+        script_hashes: [ "0x20b9546f0fe576733a4b7caf1c74465e5059f4036591963f06266329c8d2c859"
+        ]
+      }
+    ) {
+      address_hash
+      balance
+      udt {
+        id
+        type
+        name
+        bridge_account_id
+      }
+    }
+  }
+  
+  {
+    "data": {
+      "account_udts": [
+        {
+          "address_hash": "0x39d260d641b576a77aa8862a9f617d183b9826f6",
+          "balance": "900000000000000000000",
           "udt": {
             "bridge_account_id": null,
             "id": "1",
@@ -728,15 +817,17 @@ type RootQueryType {
   """
   function: get list of token transfers by filter
   
-  request-example:
+  request-result-example:
   query {
     token_transfers(
       input: {
         from_address: "0x966b30e576a4d6731996748b48dd67c94ef29067"
+        to_address: "0xbd6250d17fc557dfe39a9eb3882c421d4c7f6413"
         start_block_number: 1
         end_block_number: 11904
-        limit: 1
+        limit: 10
         sort_type: DESC
+  	combine_from_to: true
       }
     ) {
       entries {
@@ -759,8 +850,163 @@ type RootQueryType {
     }
   }
   
+  {
+    "data": {
+      "token_transfers": {
+        "entries": [
+          {
+            "block_number": 11904,
+            "from_account": {
+              "eth_address": "0x966b30e576a4d6731996748b48dd67c94ef29067"
+            },
+            "to_account": {
+              "eth_address": "0xbd6250d17fc557dfe39a9eb3882c421d4c7f6413"
+            },
+            "to_address": "0xbd6250d17fc557dfe39a9eb3882c421d4c7f6413",
+            "transaction_hash": "0x2c70095a3a15a173517fc8d95c505add5242c3287da72907f5ffa1c0b6cc9578"
+          },
+          {
+            "block_number": 11904,
+            "from_account": {
+              "eth_address": "0x966b30e576a4d6731996748b48dd67c94ef29067"
+            },
+            "to_account": {
+              "eth_address": "0xbd6250d17fc557dfe39a9eb3882c421d4c7f6413"
+            },
+            "to_address": "0xbd6250d17fc557dfe39a9eb3882c421d4c7f6413",
+            "transaction_hash": "0x954fd1d5645c49c62008a842839fc9ea134453aa0e30120af23f78fac276b33b"
+          },
+          {
+            "block_number": 11904,
+            "from_account": {
+              "eth_address": "0x966b30e576a4d6731996748b48dd67c94ef29067"
+            },
+            "to_account": {
+              "eth_address": "0xbd6250d17fc557dfe39a9eb3882c421d4c7f6413"
+            },
+            "to_address": "0xbd6250d17fc557dfe39a9eb3882c421d4c7f6413",
+            "transaction_hash": "0xaf0be54aadf00c5717e9380269146ab7e330cc195a2e5c181480aef1a4f552e7"
+          },
+          {
+            "block_number": 11904,
+            "from_account": {
+              "eth_address": "0x966b30e576a4d6731996748b48dd67c94ef29067"
+            },
+            "to_account": {
+              "eth_address": "0xbd6250d17fc557dfe39a9eb3882c421d4c7f6413"
+            },
+            "to_address": "0xbd6250d17fc557dfe39a9eb3882c421d4c7f6413",
+            "transaction_hash": "0x934d9c939dcabf5c03c2828b0d74262a5c9b0aa86732a8cfc7bc03c8830bd1fc"
+          },
+          {
+            "block_number": 11463,
+            "from_account": {
+              "eth_address": "0x966b30e576a4d6731996748b48dd67c94ef29067"
+            },
+            "to_account": {
+              "eth_address": "0x0e86065dcac317eb6c6a46551672e9551c16f0dd"
+            },
+            "to_address": "0x0e86065dcac317eb6c6a46551672e9551c16f0dd",
+            "transaction_hash": "0x1a6274fd71b48c74537390bab79cc41a62560c5f5061cf44baa585fd898aa1d2"
+          },
+          {
+            "block_number": 11462,
+            "from_account": {
+              "eth_address": "0x966b30e576a4d6731996748b48dd67c94ef29067"
+            },
+            "to_account": {
+              "eth_address": "0x0e86065dcac317eb6c6a46551672e9551c16f0dd"
+            },
+            "to_address": "0x0e86065dcac317eb6c6a46551672e9551c16f0dd",
+            "transaction_hash": "0xfdb7a5fd9ac99a4e1fcf6f81424299d9ccc91a0c5e30c07bb1b2a6e02564d71c"
+          },
+          {
+            "block_number": 11462,
+            "from_account": {
+              "eth_address": "0x966b30e576a4d6731996748b48dd67c94ef29067"
+            },
+            "to_account": {
+              "eth_address": "0x0e86065dcac317eb6c6a46551672e9551c16f0dd"
+            },
+            "to_address": "0x0e86065dcac317eb6c6a46551672e9551c16f0dd",
+            "transaction_hash": "0x6de7fab87aa6b363462ba19a3cb23865a4b031d809f181d12d25f20bf47641b8"
+          },
+          {
+            "block_number": 11462,
+            "from_account": {
+              "eth_address": "0x966b30e576a4d6731996748b48dd67c94ef29067"
+            },
+            "to_account": {
+              "eth_address": "0x0e86065dcac317eb6c6a46551672e9551c16f0dd"
+            },
+            "to_address": "0x0e86065dcac317eb6c6a46551672e9551c16f0dd",
+            "transaction_hash": "0xd56ae47ca7fb342d646b3aa1277ff94dee9ccfefbc3d5085315a0f3564563a6f"
+          },
+          {
+            "block_number": 11371,
+            "from_account": {
+              "eth_address": "0x966b30e576a4d6731996748b48dd67c94ef29067"
+            },
+            "to_account": {
+              "eth_address": "0xc69f97a51f36f7f0c545ca9b2e784acd60de95eb"
+            },
+            "to_address": "0xc69f97a51f36f7f0c545ca9b2e784acd60de95eb",
+            "transaction_hash": "0x2090f0d6954484c8fdbefcd017b14d56d2b21e6e37cf4eb5c7f809be7a94d156"
+          },
+          {
+            "block_number": 11371,
+            "from_account": {
+              "eth_address": "0x966b30e576a4d6731996748b48dd67c94ef29067"
+            },
+            "to_account": {
+              "eth_address": "0xc69f97a51f36f7f0c545ca9b2e784acd60de95eb"
+            },
+            "to_address": "0xc69f97a51f36f7f0c545ca9b2e784acd60de95eb",
+            "transaction_hash": "0xac13f170691b6fafae5d4fe8b95dc52057d223d23e238ff8af66fdf085a058b6"
+          }
+        ],
+        "metadata": {
+          "after": "g3QAAAADZAAMYmxvY2tfbnVtYmVyYgAALGtkAAlsb2dfaW5kZXhhAWQAEHRyYW5zYWN0aW9uX2hhc2htAAAAQjB4YWMxM2YxNzA2OTFiNmZhZmFlNWQ0ZmU4Yjk1ZGM1MjA1N2QyMjNkMjNlMjM4ZmY4YWY2NmZkZjA4NWEwNThiNg==",
+          "before": null,
+          "total_count": 60
+        }
+      }
+    }
+  }
   
-  result-example:
+  request-example-result:
+  query {
+    token_transfers(
+      input: {
+        from_address: "0x966b30e576a4d6731996748b48dd67c94ef29067"
+        to_address: "0xbd6250d17fc557dfe39a9eb3882c421d4c7f6413"
+        start_block_number: 1
+        end_block_number: 11904
+        limit: 10
+        sort_type: DESC
+  	combine_from_to: false
+      }
+    ) {
+      entries {
+        transaction_hash
+        block_number
+        to_account {
+          eth_address
+        }
+        to_address
+        from_account {
+          eth_address
+        }
+      }
+  
+      metadata {
+        total_count
+        before
+        after
+      }
+    }
+  }
+  
   {
     "data": {
       "token_transfers": {
@@ -775,12 +1021,45 @@ type RootQueryType {
             },
             "to_address": "0xbd6250d17fc557dfe39a9eb3882c421d4c7f6413",
             "transaction_hash": "0xaf0be54aadf00c5717e9380269146ab7e330cc195a2e5c181480aef1a4f552e7"
+          },
+          {
+            "block_number": 11904,
+            "from_account": {
+              "eth_address": "0x966b30e576a4d6731996748b48dd67c94ef29067"
+            },
+            "to_account": {
+              "eth_address": "0xbd6250d17fc557dfe39a9eb3882c421d4c7f6413"
+            },
+            "to_address": "0xbd6250d17fc557dfe39a9eb3882c421d4c7f6413",
+            "transaction_hash": "0x954fd1d5645c49c62008a842839fc9ea134453aa0e30120af23f78fac276b33b"
+          },
+          {
+            "block_number": 11904,
+            "from_account": {
+              "eth_address": "0x966b30e576a4d6731996748b48dd67c94ef29067"
+            },
+            "to_account": {
+              "eth_address": "0xbd6250d17fc557dfe39a9eb3882c421d4c7f6413"
+            },
+            "to_address": "0xbd6250d17fc557dfe39a9eb3882c421d4c7f6413",
+            "transaction_hash": "0x934d9c939dcabf5c03c2828b0d74262a5c9b0aa86732a8cfc7bc03c8830bd1fc"
+          },
+          {
+            "block_number": 11904,
+            "from_account": {
+              "eth_address": "0x966b30e576a4d6731996748b48dd67c94ef29067"
+            },
+            "to_account": {
+              "eth_address": "0xbd6250d17fc557dfe39a9eb3882c421d4c7f6413"
+            },
+            "to_address": "0xbd6250d17fc557dfe39a9eb3882c421d4c7f6413",
+            "transaction_hash": "0x2c70095a3a15a173517fc8d95c505add5242c3287da72907f5ffa1c0b6cc9578"
           }
         ],
         "metadata": {
-          "after": "g3QAAAACZAAMYmxvY2tfbnVtYmVyYgAALoBkAAlsb2dfaW5kZXhhAQ==",
+          "after": null,
           "before": null,
-          "total_count": 60
+          "total_count": 4
         }
       }
     }
@@ -873,7 +1152,7 @@ type RootQueryType {
   """
   function: list transactions by account address
   
-  request-example:
+  request-result-example:
   query {
     transactions(
       input: {
@@ -931,9 +1210,146 @@ type RootQueryType {
           }
         ],
         "metadata": {
-          "after": "g3QAAAACaAJkAARkZXNjZAAMYmxvY2tfbnVtYmVyYgAAD4NoAmQABGRlc2NkAAVpbmRleGEA",
+          "after": "g3QAAAADZAAMYmxvY2tfbnVtYmVyYgAAD4NkAARoYXNobQAAAEIweDU0MzNiMTE5ZmIwNTQ4NjM0YTY0NDAwNjZmNzUxNThlYWMyODk0MDgxNmU4YzlkYmVjZTk2ZTczMGUwMWU3MjZkAAVpbmRleGEA",
           "before": null,
           "total_count": 77
+        }
+      }
+    }
+  }
+  
+  
+  request-result-example-1:
+  query {
+    transactions(
+      input: {
+        script_hash: "0x08c9937e412e135928fd6dec7255965ddd7df4d5a163564b60895100bb3b2f9e"
+        sort_type: ASC
+        limit: 2
+      }
+    ) {
+      entries {
+        block_hash
+        block_number
+        type
+        from_account_id
+        from_account {
+          script_hash
+          id
+          eth_address
+        }
+        to_account_id
+      }
+  
+      metadata {
+        total_count
+        before
+        after
+      }
+    }
+  }
+  
+  {
+    "data": {
+      "transactions": {
+        "entries": [
+          {
+            "block_hash": "0x3c864108150c7ee2a0a6e512d353a0aa812470d6fed3093daccef2007c307344",
+            "block_number": 26243,
+            "from_account": {
+              "eth_address": "0xa86e2b58f987d298c6103fc72592a19451fb49a4",
+              "id": 242,
+              "script_hash": "0x3c256a6acbf96338077c7cac3d69c8caf00bf4f9a964959bbc8dabcede7d7d6e"
+            },
+            "from_account_id": 242,
+            "to_account_id": 2,
+            "type": "ETH_ADDRESS_REGISTRY"
+          },
+          {
+            "block_hash": "0x727fdf656aa2484caa923e3479bbde3af75deab6db85cfbda523d4866cd28e1e",
+            "block_number": 30047,
+            "from_account": {
+              "eth_address": "0xa86e2b58f987d298c6103fc72592a19451fb49a4",
+              "id": 242,
+              "script_hash": "0x3c256a6acbf96338077c7cac3d69c8caf00bf4f9a964959bbc8dabcede7d7d6e"
+            },
+            "from_account_id": 242,
+            "to_account_id": 2,
+            "type": "ETH_ADDRESS_REGISTRY"
+          }
+        ],
+        "metadata": {
+          "after": "g3QAAAADZAAMYmxvY2tfbnVtYmVyYgAAdV9kAARoYXNobQAAAEIweGQ4MmFlYzliMjM2NDlhYmFkNGQzMDJkYTc2ZjFkZDIwNzI5NTI1NTU4YzgyMWY4ODVjYzgwMWJjNGM4ZmMyZDRkAAVpbmRleGEB",
+          "before": null,
+          "total_count": 1198
+        }
+      }
+    }
+  }
+  
+  
+  request-result-example-2:
+  query {
+    transactions(
+      input: {
+        sort_type: DESC
+        limit: 2
+      }
+    ) {
+      entries {
+        block_hash
+        block_number
+        type
+        from_account_id
+        from_account {
+          script_hash
+          id
+          eth_address
+        }
+        to_account_id
+      }
+  
+      metadata {
+        total_count
+        before
+        after
+      }
+    }
+  }
+  
+  {
+    "data": {
+      "transactions": {
+        "entries": [
+          {
+            "block_hash": "0x601bee02331b89ad675e231aa670c95715c4a999e3a12306aadc2c69f7b0e1f3",
+            "block_number": 100532,
+            "from_account": {
+              "eth_address": "0x934f1ebcb57ce1d9985a4c4f8811d17b04342067",
+              "id": 5684,
+              "script_hash": "0x9457ac2c7346092eb6f475c12c9b11eab23a6281429261c20f47910603ead343"
+            },
+            "from_account_id": 5684,
+            "to_account_id": 29352,
+            "type": "POLYJUICE"
+          },
+          {
+            "block_hash": "0x601bee02331b89ad675e231aa670c95715c4a999e3a12306aadc2c69f7b0e1f3",
+            "block_number": 100532,
+            "from_account": {
+              "eth_address": "0xb243e6840e99d6fd89e5075b0e1d3efa810cf653",
+              "id": 24426,
+              "script_hash": "0x035d5694f35baf9f8ed9b07cc2dcf22ac98eff06ee7729b5190f9659da0c73fc"
+            },
+            "from_account_id": 24426,
+            "to_account_id": 4,
+            "type": "POLYJUICE"
+          }
+        ],
+        "metadata": {
+          "after": "g3QAAAADZAAMYmxvY2tfbnVtYmVyYgABiLRkAARoYXNobQAAAEIweGJiNjVlYjM4YTdkN2U2NWZkNzA0YTY2ZTcxZjFhYTg5MjJiOGY2NDYzZDZhNjZiMDZkYjA0Y2QyY2IyZDk4YzZkAAVpbmRleGEB",
+          "before": null,
+          "total_count": 10000
         }
       }
     }
@@ -1095,6 +1511,12 @@ input TokenTransferInput {
   """Fetch the records before this cursor."""
   before: String
 
+  """
+  if combine_from_to is true, then from_address and to_address are combined into
+  query condition like `address = from_address OR address = to_address`
+  """
+  combine_from_to: Boolean = true
+
   """argument: the end of block number(inclusive) for search query"""
   end_block_number: Int
   from_address: String
@@ -1142,7 +1564,7 @@ input TransactionInput {
 }
 
 input TransactionsInput {
-  address: String!
+  address: String
 
   """Fetch the records after this cursor."""
   after: String
@@ -1157,6 +1579,7 @@ input TransactionsInput {
   Limits the number of records returned per page. Note that this number will be capped by maximum_limit=100. Defaults to 20.
   """
   limit: Int = 20
+  script_hash: String
   sort: SortType
 
   """
