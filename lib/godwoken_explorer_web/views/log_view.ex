@@ -52,7 +52,7 @@ defmodule GodwokenExplorer.LogView do
       left_join: s in SmartContract,
       on: s.account_id == a.id,
       join: t in Transaction,
-      on: t.hash == l.transaction_hash,
+      on: t.eth_hash == l.transaction_hash,
       where: l.address_hash == ^address_hash,
       select: %{
         data: l.data,
