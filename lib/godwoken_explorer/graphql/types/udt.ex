@@ -45,6 +45,41 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
     end
 
     @desc """
+    function: get udt by contract address
+
+    request-example:
+    query {
+      get_udt_by_account_id(input: {account_id: 80}){
+        id
+        name
+        type
+        supply
+        account{
+          eth_address
+        }
+      }
+    }
+
+    {
+      "data": {
+        "get_udt_by_account_id": {
+          "account": {
+            "eth_address": null
+          },
+          "id": "80",
+          "name": "USD Coin",
+          "supply": "9999999999",
+          "type": "BRIDGE"
+        }
+      }
+    }
+    """
+    field :get_udt_by_account_id, :udt do
+      arg(:input, non_null(:account_id_input))
+      resolve(&Resolvers.UDT.get_udt_by_account_id/3)
+    end
+
+    @desc """
     function: get list of udts
 
     request-example:
@@ -125,8 +160,8 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
     value(:native)
   end
 
-  input_object :udt_id_input do
-    field :id, :string
+  input_object :account_id_input do
+    field :account_id, :integer
   end
 
   input_object :udts_input do
