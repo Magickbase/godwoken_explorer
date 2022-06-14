@@ -80,11 +80,11 @@ defmodule GodwokenExplorer.Graphql.Resolvers.TokenTransfer do
           {:transaction_hash, value} ->
             dynamic([tt], ^acc and tt.transaction_hash == ^value)
 
-          {:from_address, value} ->
-            dynamic([tt], ^acc and tt.from_address_hash == ^value)
+          # {:from_address, value} ->
+          #   dynamic([tt], ^acc and tt.from_address_hash == ^value)
 
-          {:to_address, value} ->
-            dynamic([tt], ^acc and tt.to_address_hash == ^value)
+          # {:to_address, value} ->
+          #   dynamic([tt], ^acc and tt.to_address_hash == ^value)
 
           {:token_contract_address_hash, value} ->
             dynamic([tt], ^acc and tt.token_contract_address_hash == ^value)
@@ -99,6 +99,34 @@ defmodule GodwokenExplorer.Graphql.Resolvers.TokenTransfer do
             acc
         end
       end)
+
+    conditions =
+      case {input[:from_address], input[:to_address]} do
+        {nil, nil} ->
+          conditions
+
+        {nil, to_address} when not is_nil(to_address) ->
+          dynamic([tt], ^conditions and tt.to_address_hash == ^to_address)
+
+        {from_address, nil} when not is_nil(from_address) ->
+          dynamic([tt], ^conditions and tt.from_address_hash == ^from_address)
+
+        {from_address, to_address} ->
+          if input[:combine_from_to] do
+            dynamic(
+              [tt],
+              ^conditions and
+                (tt.from_address_hash == ^from_address or
+                   tt.to_address_hash == ^to_address)
+            )
+          else
+            dynamic(
+              [tt],
+              ^conditions and tt.from_address_hash == ^from_address and
+                tt.to_address_hash == ^to_address
+            )
+          end
+      end
 
     from(tt in TokenTransfer, where: ^conditions)
     |> sort_type(input, [:block_number, :log_index])
