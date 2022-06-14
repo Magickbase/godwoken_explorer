@@ -567,6 +567,103 @@ type RootQueryType {
       }
     }
   }
+  
+  request-example-5:
+  query {
+    account(
+      input: {
+        script_hash: "0x829cc5785a4d8ac642ede32cb3cb5cb9dc389d5892f2fc2afc760691445be194"
+      }
+    ) {
+      type
+      eth_address
+      script_hash
+      script
+    }
+  }
+  
+  {
+    "data": {
+      "account": {
+        "eth_address": "0x2f760c8f8656bde4995f26b8963e2dd801000000",
+        "script": {
+          "args": "0x702359ea7f073558921eb50d8c1c77e92f760c8f8656bde4995f26b8963e2dd801000000",
+          "code_hash": "0x1629b04b49ded9e5747481f985b11cba6cdd4ffc167971a585e96729455ca736",
+          "hash_type": "type"
+        },
+        "script_hash": "0x829cc5785a4d8ac642ede32cb3cb5cb9dc389d5892f2fc2afc760691445be194",
+        "type": "POLYJUICE_CREATOR"
+      }
+    }
+  }
+  
+  request-example-6:
+  query {
+    account(
+      input: {
+        script_hash: "0x08c9937e412e135928fd6dec7255965ddd7df4d5a163564b60895100bb3b2f9e"
+      }
+    ) {
+      type
+      eth_address
+      script_hash
+      script
+    }
+  }
+  
+  {
+    "data": {
+      "account": {
+        "eth_address": null,
+        "script": {
+          "args": "0x702359ea7f073558921eb50d8c1c77e92f760c8f8656bde4995f26b8963e2dd8",
+          "code_hash": "0xa30dcbb83ebe571f49122d8d1ce4537679ebf511261c8ffaaa6679bf9fdea3a4",
+          "hash_type": "type"
+        },
+        "script_hash": "0x08c9937e412e135928fd6dec7255965ddd7df4d5a163564b60895100bb3b2f9e",
+        "type": "ETH_ADDR_REG"
+      }
+    }
+  }
+  
+  request-example-7:
+  query {
+    account(
+      input: {
+        script_hash: "0x9b55204439c78d3b9cbcc62c03f31e47c8457fd39ca9a9eb805b364b45c26c38"
+      }
+    ) {
+      type
+      eth_address
+      script
+      script_hash
+      smart_contract {
+        id
+        account_id
+        name
+      }
+    }
+  }
+  
+  {
+    "data": {
+      "account": {
+        "eth_address": "0x2503a1a79a443f3961ee96a8c5ec513638129614",
+        "script": {
+          "args": "0x702359ea7f073558921eb50d8c1c77e92f760c8f8656bde4995f26b8963e2dd8040000002503a1a79a443f3961ee96a8c5ec513638129614",
+          "code_hash": "0x1629b04b49ded9e5747481f985b11cba6cdd4ffc167971a585e96729455ca736",
+          "hash_type": "type"
+        },
+        "script_hash": "0x9b55204439c78d3b9cbcc62c03f31e47c8457fd39ca9a9eb805b364b45c26c38",
+        "smart_contract": {
+          "account_id": "6841",
+          "id": 1,
+          "name": "Test"
+        },
+        "type": "POLYJUICE_CONTRACT"
+      }
+    }
+  }
   """
   account(input: AccountInput!): Account
 
