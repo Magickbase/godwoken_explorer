@@ -58,7 +58,7 @@ defmodule GodwokenRPC.Block do
       timestamp:
         timestamp |> hex_to_number() |> Kernel.*(1000) |> DateTime.from_unix!(:microsecond),
       registry_id: registry_id,
-      producer_address: "0x#{producer_address}",
+      producer_address: producer_address,
       transaction_count: tx_count |> hex_to_number(),
       size: size |> hex_to_number(),
       logs_bloom: logs_bloom,
