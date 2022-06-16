@@ -154,7 +154,19 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
       {sudt_script_hash, sell_amount, sell_capacity},
       owner_lock_hash,
       payment_lock_hash
-    } = parse_withdrawal_lock_args(args)
+    } = parse_withdrawal_lock_args(args |> String.slice(0..447))
+
+    fast_withdrawal? =
+      if String.length(args) == 448 do
+        false
+      else
+        try do
+          owner_lock_length = args |> String.slice(448..455) |> hex_to_number
+          args |> String.slice((456 + owner_lock_length * 2)..-1) == "01"
+        rescue
+          _ -> false
+        end
+      end
 
     capacity = hex_to_number(output["capacity"])
     {udt_script, udt_script_hash, amount} = parse_udt_script(output, output_data, capacity)
@@ -167,6 +179,7 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
              l1_tip_number
            ) do
       WithdrawalHistory.create_or_update_history!(%{
+        is_fast_withdrawal: fast_withdrawal?,
         layer1_block_number: block_number,
         layer1_tx_hash: tx_hash,
         layer1_output_index: index,
