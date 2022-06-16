@@ -98,7 +98,8 @@ defmodule GodwokenExplorer.DepositWithdrawalView do
         ckb_lock_hash: nil,
         state: w.state,
         type: "withdrawal",
-        capacity: w.capacity
+        capacity: w.capacity,
+        is_fast_withdrawal: w.is_fast_withdrawal
       }
     )
   end
@@ -133,7 +134,8 @@ defmodule GodwokenExplorer.DepositWithdrawalView do
         ckb_lock_hash: d.ckb_lock_hash,
         state: "succeed",
         type: "deposit",
-        capacity: d.capacity
+        capacity: d.capacity,
+        is_fast_withdrawal: false
       }
     )
   end

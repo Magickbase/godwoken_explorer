@@ -19,6 +19,7 @@ defmodule GodwokenExplorer.WithdrawalHistory do
     field :timestamp, :utc_datetime_usec
     field :state, Ecto.Enum, values: [:pending, :available, :succeed]
     field :capacity, :decimal
+    field :is_fast_withdrawal, :boolean, default: false
 
     belongs_to(:udt, UDT, foreign_key: :udt_id, references: :id, define_field: false)
 
@@ -29,6 +30,7 @@ defmodule GodwokenExplorer.WithdrawalHistory do
   def changeset(withdrawal_history, attrs) do
     withdrawal_history
     |> cast(attrs, [
+      :is_fast_withdrawal,
       :layer1_block_number,
       :layer1_tx_hash,
       :layer1_output_index,
