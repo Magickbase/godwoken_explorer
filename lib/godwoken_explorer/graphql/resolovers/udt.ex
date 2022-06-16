@@ -24,6 +24,19 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
     end
   end
 
+  def get_udt_by_account_id(
+        _parent,
+        %{input: %{account_id: account_id}},
+        _resolution
+      ) do
+    udt =
+      from(u in UDT)
+      |> where([u], u.id == ^account_id or u.bridge_account_id == ^account_id)
+      |> Repo.one()
+
+    {:ok, udt}
+  end
+
   def udts(_parent, %{input: input} = _args, _resolution) do
     conditions =
       Enum.reduce(input, true, fn arg, acc ->

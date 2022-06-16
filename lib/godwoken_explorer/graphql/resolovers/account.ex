@@ -25,6 +25,15 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Account do
     end
   end
 
+  def udt(%Account{id: id}, _args, _resolution) do
+    udt =
+      from(u in UDT)
+      |> where([u], u.id == ^id or u.bridge_account_id == ^id)
+      |> Repo.one()
+
+    {:ok, udt}
+  end
+
   def account_udts(%Account{id: id}, %{input: input} = _args, _resolution) do
     account_ckb_id = UDT.ckb_account_id()
 
