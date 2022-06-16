@@ -25,6 +25,30 @@ defmodule GodwokenExplorer.WithdrawalHistoryView do
     ]
   end
 
+  def layer1_tx_hash(withdrawal_history, _connn) do
+    to_string(withdrawal_history.layer1_tx_hash)
+  end
+
+  def l2_script_hash(withdrawal_history, _connn) do
+    to_string(withdrawal_history.l2_script_hash)
+  end
+
+  def block_hash(withdrawal_history, _connn) do
+    to_string(withdrawal_history.block_hash)
+  end
+
+  def udt_script_hash(withdrawal_history, _connn) do
+    to_string(withdrawal_history.udt_script_hash)
+  end
+
+  def owner_lock_hash(withdrawal_history, _connn) do
+    to_string(withdrawal_history.owner_lock_hash)
+  end
+
+  def payment_lock_hash(withdrawal_history, _connn) do
+    to_string(withdrawal_history.payment_lock_hash)
+  end
+
   def relationships do
     [udt: {GodwokenExplorer.UDTView, :include}]
   end

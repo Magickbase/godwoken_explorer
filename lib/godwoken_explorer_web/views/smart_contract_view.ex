@@ -20,8 +20,12 @@ defmodule GodwokenExplorer.SmartContractView do
     ]
   end
 
+  def deployment_tx_hash(smart_contract, _conn) do
+    to_string(smart_contract.deployment_tx_hash)
+  end
+
   def eth_address(smart_contract, _conn) do
-    smart_contract.account.eth_address
+    to_string(smart_contract.account.eth_address)
   end
 
   def balance(smart_contract, _conn) do

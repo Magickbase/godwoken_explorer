@@ -27,11 +27,15 @@ defmodule GodwokenExplorer.UDTView do
     ]
   end
 
+  def script_hash(udt, _conn) do
+    to_string(udt.script_hash)
+  end
+
   def eth_address(udt, _conn) do
     if is_nil(udt.account) do
       ""
     else
-      udt.account.eth_address
+      to_string(udt.account.eth_address)
     end
   end
 

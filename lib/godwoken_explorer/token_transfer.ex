@@ -193,9 +193,9 @@ defmodule GodwokenExplorer.TokenTransfer do
         timestamp: b.timestamp,
         from:
           fragment(
-            "CASE WHEN ? IS NULL THEN encode(?, 'escape')
-      WHEN ? in ('eth_user', 'polyjuice_contract') THEN encode(?, 'escape')
-    ELSE encode(?, 'escape') END",
+            "CASE WHEN ? IS NULL THEN encode(?, 'hex')
+      WHEN ? in ('eth_user', 'polyjuice_contract') THEN encode(?, 'hex')
+    ELSE encode(?, 'hex') END",
             a1,
             tt.from_address_hash,
             a1.type,
@@ -204,9 +204,9 @@ defmodule GodwokenExplorer.TokenTransfer do
           ),
         to:
           fragment(
-            "CASE WHEN ? IS NULL THEN encode(?, 'escape')
-      WHEN ? in ('eth_user', 'polyjuice_contract') THEN encode(?, 'escape')
-    ELSE encode(?, 'escape') END",
+            "CASE WHEN ? IS NULL THEN encode(?, 'hex')
+      WHEN ? in ('eth_user', 'polyjuice_contract') THEN encode(?, 'hex')
+    ELSE encode(?, 'hex') END",
             a2,
             tt.to_address_hash,
             a2.type,
@@ -253,6 +253,7 @@ defmodule GodwokenExplorer.TokenTransfer do
           transfer
           |> Map.put(:timestamp, utc_to_unix(transfer[:timestamp]))
           |> Map.merge(%{
+            hash: to_string(transfer[:hash]),
             transfer_value:
               balance_to_view(transfer[:transfer_value], transfer[:udt_decimal] || 0)
           })
