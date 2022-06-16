@@ -21,6 +21,26 @@ defmodule GodwokenExplorer.WithdrawalRequestView do
     ]
   end
 
+  def account_script_hash(withdrawal_request, _connn) do
+    to_string(withdrawal_request.account_script_hash)
+  end
+
+  def block_hash(withdrawal_request, _connn) do
+    to_string(withdrawal_request.block_hash)
+  end
+
+  def sudt_script_hash(withdrawal_request, _connn) do
+    to_string(withdrawal_request.sudt_script_hash)
+  end
+
+  def owner_lock_hash(withdrawal_request, _connn) do
+    to_string(withdrawal_request.owner_lock_hash)
+  end
+
+  def payment_lock_hash(withdrawal_request, _connn) do
+    to_string(withdrawal_request.payment_lock_hash)
+  end
+
   def ckb(withdrawal_request, _connn) do
     balance_to_view(withdrawal_request.capacity, 8)
   end

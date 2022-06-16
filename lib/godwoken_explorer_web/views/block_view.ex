@@ -19,6 +19,10 @@ defmodule GodwokenExplorer.BlockView do
     ]
   end
 
+  def hash(block, _conn) do
+    to_string(block.hash)
+  end
+
   def finalize_state(block, _conn) do
     block.status
   end
@@ -30,7 +34,7 @@ defmodule GodwokenExplorer.BlockView do
   end
 
   def miner_hash(block, _conn) do
-    block.producer_address
+    to_string(block.producer_address)
   end
 
   def timestamp(block, _conn) do

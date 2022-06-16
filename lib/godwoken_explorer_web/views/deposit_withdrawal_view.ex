@@ -14,6 +14,14 @@ defmodule GodwokenExplorer.DepositWithdrawalView do
       |> Enum.map(fn struct ->
         struct
         |> Map.merge(%{
+          script_hash: to_string(struct[:script_hash]),
+          eth_address: to_string(struct[:eth_address]),
+          owner_lock_hash: to_string(struct[:owner_lock_hash]),
+          payment_lock_hash: to_string(struct[:payment_lock_hash]),
+          block_hash: to_string(struct[:block_hash]),
+          sudt_script_hash: to_string(struct[:sudt_script_hash]),
+          ckb_lock_hash: to_string(struct[:ckb_lock_hash]),
+          layer1_tx_hash: to_string(struct[:layer1_tx_hash]),
           value: balance_to_view(struct[:value], struct[:udt_decimal] || 0),
           sell_value: balance_to_view(struct[:sell_value], struct[:udt_decimal] || 0)
         })
@@ -56,6 +64,14 @@ defmodule GodwokenExplorer.DepositWithdrawalView do
       |> Enum.map(fn struct ->
         struct
         |> Map.merge(%{
+          script_hash: to_string(struct[:script_hash]),
+          eth_address: to_string(struct[:eth_address]),
+          owner_lock_hash: to_string(struct[:owner_lock_hash]),
+          payment_lock_hash: to_string(struct[:payment_lock_hash]),
+          block_hash: to_string(struct[:block_hash]),
+          sudt_script_hash: to_string(struct[:sudt_script_hash]),
+          ckb_lock_hash: to_string(struct[:ckb_lock_hash]),
+          layer1_tx_hash: to_string(struct[:layer1_tx_hash]),
           value: balance_to_view(struct[:value], struct[:udt_decimal] || 0),
           sell_value: balance_to_view(struct[:sell_value], struct[:udt_decimal] || 0)
         })

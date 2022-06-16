@@ -19,6 +19,14 @@ defmodule GodwokenExplorer.LogView do
     ]
   end
 
+  def address_hash(log, _conn) do
+    to_string(log.address_hash)
+  end
+
+  def transaction_hash(log, _conn) do
+    to_string(log.transaction_hash)
+  end
+
   def id(%{index: index}), do: index
 
   def list_by_tx_hash(transaction_hash, page, page_size) do

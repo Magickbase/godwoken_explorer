@@ -17,6 +17,14 @@ defmodule GodwokenExplorer.DepositHistoryView do
     ]
   end
 
+  def layer1_tx_hash(deposit_history, _conn) do
+    to_string(deposit_history.layer1_tx_hash)
+  end
+
+  def ckb_lock_hash(deposit_history, _conn) do
+    to_string(deposit_history.ckb_lock_hash)
+  end
+
   def relationships do
     [udt: {GodwokenExplorer.UDTView, :include}]
   end
