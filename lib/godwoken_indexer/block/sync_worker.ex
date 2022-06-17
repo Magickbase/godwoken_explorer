@@ -135,7 +135,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
       polyjuice_transaction
       |> Stream.each(fn poly_txs ->
         {:ok, %{logs: logs, receipts: receipts}} =
-          GodwokenRPC.fetch_transaction_receipts(poly_txs)
+          GodwokenRPC.fetch_transaction_receipts([poly_txs])
 
         logs = logs |> Enum.reject(fn x -> x[:topic] == [] end)
         import_logs(logs)
