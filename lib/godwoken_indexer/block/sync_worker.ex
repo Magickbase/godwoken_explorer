@@ -140,7 +140,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
         logs = logs |> Enum.reject(fn x -> x[:topic] == [] end)
         import_logs(logs)
         import_token_transfers(logs)
-        polyjuice_with_receipts = Receipts.put(polyjuice_transaction, receipts)
+        polyjuice_with_receipts = Receipts.put([poly_txs], receipts)
         import_polyjuice(polyjuice_with_receipts ++ polyjuice_deploy_contract)
         async_contract_code(polyjuice_with_receipts)
       end)
