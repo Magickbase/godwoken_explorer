@@ -134,7 +134,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
 
       receipts =
         polyjuice_transaction
-        |> Enum.chunk_every(10)
+        |> Enum.chunk_every(3)
         |> Enum.map(fn poly_txs ->
           {:ok, %{logs: logs, receipts: receipts}} =
             GodwokenRPC.fetch_transaction_receipts(poly_txs)
