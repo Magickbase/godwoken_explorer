@@ -132,12 +132,21 @@ defmodule GodwokenIndexer.Block.SyncWorker do
           })
         end)
 
-      {:ok, %{logs: logs, receipts: receipts}} =
-        GodwokenRPC.fetch_transaction_receipts(polyjuice_transaction)
+      receipts =
+        polyjuice_transaction
+        |> Enum.chunk_every(10)
+        |> Enum.map(fn poly_txs ->
+          {:ok, %{logs: logs, receipts: receipts}} =
+            GodwokenRPC.fetch_transaction_receipts(poly_txs)
+
+          import_logs(logs)
+          import_token_transfers(logs)
+
+          receipts
+        end)
+        |> Enum.concat()
 
       polyjuice_with_receipts = Receipts.put(polyjuice_transaction, receipts)
-      import_logs(logs)
-      import_token_transfers(logs)
       import_polyjuice(polyjuice_with_receipts ++ polyjuice_deploy_contract)
       update_ckb_balance(polyjuice_without_receipts)
       async_contract_code(polyjuice_with_receipts)
