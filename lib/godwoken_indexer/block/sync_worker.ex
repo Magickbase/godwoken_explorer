@@ -104,7 +104,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
 
     import_withdrawal_requests(withdrawal_params)
     inserted_blocks = import_block(blocks_params)
-    update_block_cache(inserted_blocks)
+    # update_block_cache(inserted_blocks)
 
     broadcast_block_and_tx(inserted_blocks, inserted_transactions)
 
