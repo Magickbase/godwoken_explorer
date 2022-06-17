@@ -104,7 +104,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
 
     import_withdrawal_requests(withdrawal_params)
     inserted_blocks = import_block(blocks_params)
-    # update_block_cache(inserted_blocks)
+    update_block_cache(inserted_blocks)
 
     broadcast_block_and_tx(inserted_blocks, inserted_transactions)
 
@@ -217,7 +217,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
     |> Enum.chunk_every(5_000)
     |> Enum.with_index()
     |> Enum.reduce(Ecto.Multi.new(), reducer)
-    |> Repo.transaction()
+    |> Repo.transaction(timeout: :infinity)
   end
 
   defp import_token_transfers(logs) do
