@@ -1,140 +1,224 @@
-# defmodule GodwokenExplorer.Graphql.Resolvers.AccountUDT do
-#   alias GodwokenExplorer.{AccountUDT, UDT, Account}
-#   alias GodwokenExplorer.Repo
+defmodule GodwokenExplorer.Graphql.Resolvers.AccountUDT do
+  alias GodwokenExplorer.{UDT, Account}
+  alias GodwokenExplorer.Account.{CurrentUDTBalance, CurrentBridgedUDTBalance}
 
-#   import Ecto.Query
-#   import GodwokenExplorer.Graphql.Common, only: [page_and_size: 2, sort_type: 3]
+  alias GodwokenExplorer.Repo
 
-#   @addresses_max_limit 20
+  import Ecto.Query
+  import GodwokenExplorer.Graphql.Common, only: [page_and_size: 2, sort_type: 3]
 
-#   def udt(
-#         %AccountUDT{udt_id: udt_id, token_contract_address_hash: token_contract_address_hash} =
-#           _parent,
-#         _args,
-#         _resolution
-#       ) do
-#     return =
-#       if udt_id do
-#         from(u in UDT)
-#         |> where([u], u.id == ^udt_id)
-#         |> Repo.one()
-#       else
-#         result =
-#           from(u in UDT)
-#           |> join(:inner, [u], a in Account,
-#             on: a.eth_address == ^token_contract_address_hash and u.bridge_account_id == a.id
-#           )
-#           |> order_by([u], desc: u.updated_at)
-#           |> first()
-#           |> Repo.all()
+  @addresses_max_limit 20
 
-#         if result == [] do
-#           nil
-#         else
-#           hd(result)
-#         end
-#       end
+  def account_current_udts(_parent, %{input: input} = _args, _resolution) do
+    address_hashes = Map.get(input, :address_hashes)
+    script_hashes = Map.get(input, :script_hashes)
+    token_contract_address_hash = Map.get(input, :token_contract_address_hash)
 
-#     {:ok, return}
-#   end
+    if length(address_hashes) > @addresses_max_limit or
+         length(script_hashes) > @addresses_max_limit do
+      {:error, :too_many_inputs}
+    else
+      query =
+        search_account_current_udts(address_hashes, script_hashes, token_contract_address_hash)
 
-#   def account(
-#         %AccountUDT{token_contract_address_hash: token_contract_address_hash} = _parent,
-#         _args,
-#         _resolution
-#       ) do
-#     result =
-#       from(a in Account)
-#       |> where(
-#         [a],
-#         a.eth_address == ^token_contract_address_hash or
-#           a.script_hash == ^token_contract_address_hash
-#       )
-#       |> Repo.one()
+      {:ok, Repo.all(query)}
+    end
+  end
 
-#     {:ok, result}
-#   end
+  defp search_account_current_udts(address_hashes, script_hashes, token_contract_address_hash) do
+    squery =
+      from(a in Account)
+      |> where([a], a.eth_address in ^address_hashes or a.script_hash in ^script_hashes)
 
-# def account_udts(_parent, %{input: input} = _args, _resolution) do
-#   address_hashes = Map.get(input, :address_hashes)
-#   script_hashes = Map.get(input, :script_hashes)
-#   token_contract_address_hash = Map.get(input, :token_contract_address_hash)
+    query =
+      from(cu in CurrentUDTBalance)
+      |> join(:inner, [cu], a in subquery(squery), on: cu.address_hash == a.eth_address)
+      |> join(:inner, [cu], a in Account, on: cu.token_contract_address_hash == a.eth_address)
+      |> join(:inner, [_cu, _a1, a2], u in UDT, on: a2.id == u.bridge_account_id)
+      |> order_by([cu], desc: cu.updated_at)
+      |> distinct([cu, _a1, _a2, u], [cu.address_hash, u.id])
 
-#   if length(address_hashes) > @addresses_max_limit or
-#        length(script_hashes) > @addresses_max_limit do
-#     {:error, :too_many_inputs}
-#   else
-#     query = search_account_udts(address_hashes, script_hashes, token_contract_address_hash)
+    if is_nil(token_contract_address_hash) do
+      query
+      |> preload([:account])
+    else
+      query
+      |> where([cu], cu.token_contract_address_hash == ^token_contract_address_hash)
+      |> preload([:account])
+    end
+  end
 
-#       {:ok, Repo.all(query)}
-#     end
-#   end
+  def account_current_bridged_udts(_parent, %{input: input} = _args, _resolution) do
+    address_hashes = Map.get(input, :address_hashes)
+    script_hashes = Map.get(input, :script_hashes)
+    udt_script_hash = Map.get(input, :udt_script_hash)
 
-#   def account_udts_by_contract_address(_parent, %{input: input} = _args, _resolution) do
-#     token_contract_address_hash = Map.get(input, :token_contract_address_hash)
+    if length(address_hashes) > @addresses_max_limit or
+         length(script_hashes) > @addresses_max_limit do
+      {:error, :too_many_inputs}
+    else
+      query = search_account_current_brideged_udts(address_hashes, script_hashes, udt_script_hash)
 
-#     return =
-#       from(au in AccountUDT)
-#       |> where([au], au.token_contract_address_hash == ^token_contract_address_hash)
-#       |> sort_type(input, :balance)
-#       |> page_and_size(input)
-#       |> Repo.all()
+      {:ok, Repo.all(query)}
+    end
+  end
 
-#     {:ok, return}
-#   end
+  defp search_account_current_brideged_udts(address_hashes, script_hashes, udt_script_hash) do
+    squery =
+      from(a in Account)
+      |> where([a], a.eth_address in ^address_hashes or a.script_hash in ^script_hashes)
 
-# def account_ckbs(_parent, %{input: input} = _args, _resolution) do
-#   address_hashes = Map.get(input, :address_hashes)
-#   script_hashes = Map.get(input, :script_hashes)
-#   ckb_account_id = UDT.ckb_account_id()
+    query =
+      from(cbu in CurrentBridgedUDTBalance)
+      |> join(:inner, [cbu], a in subquery(squery), on: cbu.address_hash == a.eth_address)
+      |> join(:inner, [cbu], a in Account, on: cbu.udt_script_hash == a.script_hash)
+      |> join(:inner, [_cbu, _a1, a2], u in UDT, on: a2.id == u.id)
+      |> order_by([cbu], desc: cbu.updated_at)
+      |> distinct([cbu, _a1, _a2, u], [cbu.address_hash, u.id])
 
-#   if ckb_account_id do
-#     do_account_ckbs(address_hashes, script_hashes, ckb_account_id)
-#   else
-#     {:error, :ckb_account_not_found}
-#   end
-# end
+    if is_nil(udt_script_hash) do
+      query
+      |> preload([:account])
+    else
+      query
+      |> where([au], au.udt_script_hash == ^udt_script_hash)
+      |> preload([:account])
+    end
+  end
 
-# defp do_account_ckbs(address_hashes, script_hashes, ckb_account_id) do
-#   %Account{script_hash: token_contract_address_hash} = Repo.get(Account, ckb_account_id)
+  def udt(
+        %CurrentUDTBalance{
+          udt_id: udt_id,
+          token_contract_address_hash: token_contract_address_hash
+        } = _parent,
+        _args,
+        _resolution
+      ) do
+    return =
+      if udt_id do
+        from(u in UDT)
+        |> where([u], u.id == ^udt_id)
+        |> Repo.one()
+      else
+        result =
+          from(u in UDT)
+          |> join(:inner, [u], a in Account,
+            on: a.eth_address == ^token_contract_address_hash and u.bridge_account_id == a.id
+          )
+          |> order_by([u], desc: u.updated_at)
+          |> first()
+          |> Repo.all()
 
-#   if length(address_hashes) > @addresses_max_limit do
-#     {:error, :too_many_addresses}
-#   else
-#     query = search_account_udts(address_hashes, script_hashes, token_contract_address_hash)
-#     return = Repo.all(query)
+        if result == [] do
+          nil
+        else
+          hd(result)
+        end
+      end
 
-#       return_account_udts =
-#         Enum.map(return, fn au -> %{address_hash: au.address_hash, balance: au.balance} end)
+    {:ok, return}
+  end
 
-#       {:ok, return_account_udts}
-#     end
-#   end
+  def udt(
+        %CurrentBridgedUDTBalance{udt_id: udt_id, udt_script_hash: udt_script_hash} = _parent,
+        _args,
+        _resolution
+      ) do
+    return =
+      if udt_id do
+        from(u in UDT)
+        |> where([u], u.id == ^udt_id)
+        |> Repo.one()
+      else
+        result =
+          from(u in UDT)
+          |> join(:inner, [u], a in Account,
+            on: a.script_hash == ^udt_script_hash and u.id == a.id
+          )
+          |> order_by([u], desc: u.updated_at)
+          |> first()
+          |> Repo.all()
 
-# defp search_account_udts(address_hashes, script_hashes, token_contract_address_hash) do
-#   squery =
-#     from(a in Account)
-#     |> where([a], a.eth_address in ^address_hashes or a.script_hash in ^script_hashes)
+        if result == [] do
+          nil
+        else
+          hd(result)
+        end
+      end
 
-#     query =
-#       from(au in AccountUDT)
-#       |> join(:inner, [au], a in subquery(squery), on: au.address_hash == a.eth_address)
-#       |> join(:inner, [au], a in Account,
-#         on:
-#           au.token_contract_address_hash == a.eth_address or
-#             au.token_contract_address_hash == a.script_hash
-#       )
-#       |> join(:inner, [_au, _a1, a2], u in UDT, on: a2.id == u.id or a2.id == u.bridge_account_id)
-#       |> order_by([au], desc: au.updated_at)
-#       |> distinct([au, _a1, _a2, u], [au.address_hash, u.id])
+    {:ok, return}
+  end
 
-#     if is_nil(token_contract_address_hash) do
-#       query
-#       |> preload([:account])
-#     else
-#       query
-#       |> where([au], au.token_contract_address_hash == ^token_contract_address_hash)
-#       |> preload([:account])
-#     end
-#   end
-# end
+  def account(
+        %CurrentUDTBalance{token_contract_address_hash: token_contract_address_hash} = _parent,
+        _args,
+        _resolution
+      ) do
+    result =
+      from(a in Account)
+      |> where(
+        [a],
+        a.eth_address == ^token_contract_address_hash
+      )
+      |> Repo.one()
+
+    {:ok, result}
+  end
+
+  def account(
+        %CurrentBridgedUDTBalance{udt_script_hash: udt_script_hash} = _parent,
+        _args,
+        _resolution
+      ) do
+    result =
+      from(a in Account)
+      |> where(
+        [a],
+        a.script_hash == ^udt_script_hash
+      )
+      |> Repo.one()
+
+    {:ok, result}
+  end
+
+  # def account_udts_by_contract_address(_parent, %{input: input} = _args, _resolution) do
+  #   token_contract_address_hash = Map.get(input, :token_contract_address_hash)
+
+  #   return =
+  #     from(au in AccountUDT)
+  #     |> where([au], au.token_contract_address_hash == ^token_contract_address_hash)
+  #     |> sort_type(input, :balance)
+  #     |> page_and_size(input)
+  #     |> Repo.all()
+
+  #   {:ok, return}
+  # end
+
+  # def account_ckbs(_parent, %{input: input} = _args, _resolution) do
+  #   address_hashes = Map.get(input, :address_hashes)
+  #   script_hashes = Map.get(input, :script_hashes)
+  #   ckb_account_id = UDT.ckb_account_id()
+
+  #   if ckb_account_id do
+  #     do_account_ckbs(address_hashes, script_hashes, ckb_account_id)
+  #   else
+  #     {:error, :ckb_account_not_found}
+  #   end
+  # end
+
+  # defp do_account_ckbs(address_hashes, script_hashes, ckb_account_id) do
+  #   %Account{script_hash: token_contract_address_hash} = Repo.get(Account, ckb_account_id)
+
+  #   if length(address_hashes) > @addresses_max_limit do
+  #     {:error, :too_many_addresses}
+  #   else
+  #     query = search_account_udts(address_hashes, script_hashes, token_contract_address_hash)
+  #     return = Repo.all(query)
+
+  #     return_account_udts =
+  #       Enum.map(return, fn au -> %{address_hash: au.address_hash, balance: au.balance} end)
+
+  #     {:ok, return_account_udts}
+  #   end
+  # end
+end

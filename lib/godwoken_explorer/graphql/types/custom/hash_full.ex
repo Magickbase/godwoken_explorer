@@ -3,7 +3,7 @@ defmodule GodwokenExplorer.Graphql.Types.Custom.HashFull do
   alias GodwokenExplorer.Chain.Hash
   alias GodwokenExplorer.Chain.Hash.Full
 
-  scalar :hashfull do
+  scalar :hash_full do
     description("""
     A 32-byte [KECCAK-256](https://en.wikipedia.org/wiki/SHA-3) hash.
     """)

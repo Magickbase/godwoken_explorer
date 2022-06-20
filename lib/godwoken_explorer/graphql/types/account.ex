@@ -296,14 +296,14 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
       resolve(&Resolvers.Account.udt/3)
     end
 
-    field :account_udts, list_of(:account_udt) do
-      arg(:input, :account_child_account_udts_input,
-        default_value: %{page: 1, page_size: 20, sort_type: :desc}
-      )
+    # field :account_udts, list_of(:account_udt) do
+    #   arg(:input, :account_child_account_udts_input,
+    #     default_value: %{page: 1, page_size: 20, sort_type: :desc}
+    #   )
 
-      middleware(MTermRange, MTermRange.page_and_size_default_config())
-      resolve(&Resolvers.Account.account_udts/3)
-    end
+    #   middleware(MTermRange, MTermRange.page_and_size_default_config())
+    #   resolve(&Resolvers.Account.account_udts/3)
+    # end
 
     field :smart_contract, :smart_contract do
       resolve(&Resolvers.Account.smart_contract/3)

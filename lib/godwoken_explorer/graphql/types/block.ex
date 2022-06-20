@@ -99,11 +99,11 @@ defmodule GodwokenExplorer.Graphql.Types.Block do
   object :block do
     field :hash, :string
     field :number, :integer
-    field :parent_hash, :string
+    field :parent_hash, :hash_full
     field :timestamp, :datetime
     field :status, :block_status
     field :transaction_count, :integer
-    field :layer1_tx_hash, :string
+    field :layer1_tx_hash, :hash_full
     field :layer1_block_number, :integer
     field :size, :integer
     field :gas_limit, :decimal
@@ -116,7 +116,7 @@ defmodule GodwokenExplorer.Graphql.Types.Block do
     field :state_root, :string
     field :extra_data, :string
     field :registry_id, :integer
-    field :producer_address, :string
+    field :producer_address, :hash_address
 
     field :account, :account do
       resolve(&Resolvers.Block.account/3)

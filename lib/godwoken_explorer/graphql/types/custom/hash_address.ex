@@ -3,7 +3,7 @@ defmodule GodwokenExplorer.Graphql.Types.Custom.HashAddress do
   alias GodwokenExplorer.Chain.Hash
   alias GodwokenExplorer.Chain.Hash.Address
 
-  scalar :hashaddress do
+  scalar :hash_address do
     description("""
     The address (40 (hex) characters / 160 bits / 20 bytes) is derived from the public key (128 (hex) characters /
     512 bits / 64 bytes) which is derived from the private key (64 (hex) characters / 256 bits / 32 bytes).
