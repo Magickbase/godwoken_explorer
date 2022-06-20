@@ -244,7 +244,7 @@ type Block {
   extra_data: String
   gas_limit: Decimal
   gas_used: Decimal
-  hash: String
+  hash: HashFull
   layer1_block_number: Int
   layer1_tx_hash: HashFull
   logs_bloom: String
@@ -264,7 +264,7 @@ type Block {
 }
 
 input BlockInput {
-  hash: String
+  hash: HashFull
   number: Int
 }
 
@@ -1029,7 +1029,7 @@ type RootQueryType {
   """
   function: get block by block number or block hash
   
-  request-example:
+  request-result-example:
   query {
     block(input: {number: 1}){
       hash
@@ -1049,7 +1049,6 @@ type RootQueryType {
     }
   }
   
-  result-example:
   {
     "data": {
       "block": {
