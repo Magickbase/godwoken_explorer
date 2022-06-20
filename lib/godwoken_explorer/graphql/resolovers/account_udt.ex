@@ -34,17 +34,14 @@ defmodule GodwokenExplorer.Graphql.Resolvers.AccountUDT do
       from(cu in CurrentUDTBalance)
       |> join(:inner, [cu], a in subquery(squery), on: cu.address_hash == a.eth_address)
       |> join(:inner, [cu], a in Account, on: cu.token_contract_address_hash == a.eth_address)
-      |> join(:inner, [_cu, _a1, a2], u in UDT, on: a2.id == u.bridge_account_id)
       |> order_by([cu], desc: cu.updated_at)
-      |> distinct([cu, _a1, _a2, u], [cu.address_hash, u.id])
+      |> distinct([cu], [cu.address_hash, cu.token_contract_address_hash])
 
     if is_nil(token_contract_address_hash) do
       query
-      |> preload([:account])
     else
       query
       |> where([cu], cu.token_contract_address_hash == ^token_contract_address_hash)
-      |> preload([:account])
     end
   end
 
@@ -74,17 +71,14 @@ defmodule GodwokenExplorer.Graphql.Resolvers.AccountUDT do
       from(cbu in CurrentBridgedUDTBalance)
       |> join(:inner, [cbu], a in subquery(squery), on: cbu.address_hash == a.eth_address)
       |> join(:inner, [cbu], a in Account, on: cbu.udt_script_hash == a.script_hash)
-      |> join(:inner, [_cbu, _a1, a2], u in UDT, on: a2.id == u.id)
       |> order_by([cbu], desc: cbu.updated_at)
-      |> distinct([cbu, _a1, _a2, u], [cbu.address_hash, u.id])
+      |> distinct([cbu], [cbu.address_hash, cbu.udt_script_hash])
 
     if is_nil(udt_script_hash) do
       query
-      |> preload([:account])
     else
       query
       |> where([au], au.udt_script_hash == ^udt_script_hash)
-      |> preload([:account])
     end
   end
 

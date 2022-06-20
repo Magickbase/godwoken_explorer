@@ -897,7 +897,10 @@ type RootQueryType {
   request-result-example:
   query {
     account_current_udts(
-      input: { address_hashes: ["0x715AB282B873B79A7BE8B0E8C13C4E8966A52040"] }
+      input: {
+        address_hashes: ["0xC6A44E4D2216A98B3A5086A64A33D94FBCC8FEC3"]
+        token_contract_address_hash: "0xbb30e8691f6ffd5b4c0b2f73d17847e1e289ea80"
+      }
     ) {
       block_number
       id
@@ -920,9 +923,24 @@ type RootQueryType {
     }
   }
   
+  
   {
     "data": {
-      "account_current_udts": []
+      "account_current_udts": [
+        {
+          "account": {
+            "eth_address": "0xbb30e8691f6ffd5b4c0b2f73d17847e1e289ea80",
+            "id": 22,
+            "script_hash": "0x391abff2cfc25eec0a9e5c9c3ec3b4c3e7607cbc079ea9c75c997f5e857268ad"
+          },
+          "block_number": 90,
+          "id": 1,
+          "token_contract_address_hash": "0xbb30e8691f6ffd5b4c0b2f73d17847e1e289ea80",
+          "udt": null,
+          "value": "4",
+          "value_fetched_at": "2022-06-01T04:59:29.938716Z"
+        }
+      ]
     }
   }
   """
