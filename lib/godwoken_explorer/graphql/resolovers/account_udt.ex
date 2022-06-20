@@ -183,18 +183,31 @@ defmodule GodwokenExplorer.Graphql.Resolvers.AccountUDT do
     {:ok, result}
   end
 
-  # def account_udts_by_contract_address(_parent, %{input: input} = _args, _resolution) do
-  #   token_contract_address_hash = Map.get(input, :token_contract_address_hash)
+  def account_udts_by_contract_address(_parent, %{input: input} = _args, _resolution) do
+    token_contract_address_hash = Map.get(input, :token_contract_address_hash)
 
-  #   return =
-  #     from(au in AccountUDT)
-  #     |> where([au], au.token_contract_address_hash == ^token_contract_address_hash)
-  #     |> sort_type(input, :balance)
-  #     |> page_and_size(input)
-  #     |> Repo.all()
+    return =
+      from(cu in CurrentUDTBalance)
+      |> where([cu], cu.token_contract_address_hash == ^token_contract_address_hash)
+      |> sort_type(input, :value)
+      |> page_and_size(input)
+      |> Repo.all()
 
-  #   {:ok, return}
-  # end
+    {:ok, return}
+  end
+
+  def account_bridged_udts_by_script_hash(_parent, %{input: input} = _args, _resolution) do
+    udt_script_hash = Map.get(input, :udt_script_hash)
+
+    return =
+      from(cbu in CurrentBridgedUDTBalance)
+      |> where([cbu], cbu.udt_script_hash == ^udt_script_hash)
+      |> sort_type(input, :value)
+      |> page_and_size(input)
+      |> Repo.all()
+
+    {:ok, return}
+  end
 
   def account_ckbs(_parent, %{input: input} = _args, _resolution) do
     address_hashes = Map.get(input, :address_hashes)

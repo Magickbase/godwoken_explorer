@@ -1,18 +1,44 @@
 defmodule GodwokenExplorer.Graphql.Types.AccountUDT do
   use Absinthe.Schema.Notation
   alias GodwokenExplorer.Graphql.Resolvers, as: Resolvers
-  alias GodwokenExplorer.Graphql.Middleware.EIP55, as: MEIP55
-  alias GodwokenExplorer.Graphql.Middleware.Downcase, as: MDowncase
   alias GodwokenExplorer.Graphql.Middleware.TermRange, as: MTermRange
 
   object :account_udt_querys do
     @desc """
-    TODO
+    request-result-example:
+    query {
+      account_current_udts(
+        input: { address_hashes: ["0x715AB282B873B79A7BE8B0E8C13C4E8966A52040"] }
+      ) {
+        block_number
+        id
+        token_contract_address_hash
+        value
+        value_fetched_at
+        udt {
+          id
+          name
+          bridge_account_id
+          script_hash
+          decimal
+          value
+        }
+        account {
+          id
+          eth_address
+          script_hash
+        }
+      }
+    }
+
+    {
+      "data": {
+        "account_current_udts": []
+      }
+    }
     """
     field :account_current_udts, list_of(:account_current_udt) do
       arg(:input, non_null(:account_current_udts_input))
-      middleware(MEIP55, [:address_hashes, :token_contract_address_hash])
-      middleware(MDowncase, [:address_hashes, :token_contract_address_hash])
       middleware(MTermRange, MTermRange.page_and_size_default_config())
       resolve(&Resolvers.AccountUDT.account_current_udts/3)
     end
@@ -21,7 +47,10 @@ defmodule GodwokenExplorer.Graphql.Types.AccountUDT do
     request-result-example:
     query {
       account_current_bridged_udts(
-        input: { address_hashes: ["0x715AB282B873B79A7BE8B0E8C13C4E8966A52040"] }
+        input: {
+          address_hashes: ["0x715AB282B873B79A7BE8B0E8C13C4E8966A52040"]
+          udt_script_hash: "0x595cc14e574a708dc70a320d2026f79374246ed4659261131cdda7dd5814b5ca"
+        }
       ) {
         block_number
         id
@@ -73,8 +102,6 @@ defmodule GodwokenExplorer.Graphql.Types.AccountUDT do
     """
     field :account_current_bridged_udts, list_of(:account_current_bridged_udt) do
       arg(:input, non_null(:account_current_bridged_udts_input))
-      middleware(MEIP55, [:address_hashes, :token_contract_address_hash])
-      middleware(MDowncase, [:address_hashes, :token_contract_address_hash])
       middleware(MTermRange, MTermRange.page_and_size_default_config())
       resolve(&Resolvers.AccountUDT.account_current_bridged_udts/3)
     end
@@ -139,16 +166,126 @@ defmodule GodwokenExplorer.Graphql.Types.AccountUDT do
       resolve(&Resolvers.AccountUDT.account_ckbs/3)
     end
 
-    # @desc """
-    # TODO
-    # """
-    # field :account_udts_by_contract_address, list_of(:account_udt) do
-    #   arg(:input, non_null(:account_udt_contract_address_input))
-    #   middleware(MEIP55, [:token_contract_address_hash])
-    #   middleware(MDowncase, [:token_contract_address_hash])
-    #   middleware(MTermRange, MTermRange.page_and_size_default_config())
-    #   resolve(&Resolvers.AccountUDT.account_udts_by_contract_address/3)
-    # end
+    @desc """
+    request-result-example:
+    query {
+      account_udts_by_contract_address(
+        input: {
+          token_contract_address_hash: "0xD1556D3FE220B6EB816536AB448DE4E4EDC3E439"
+          sort_type: ASC
+          page_size: 1
+        }
+      ) {
+        block_number
+        id
+        token_contract_address_hash
+        value
+        value_fetched_at
+        udt {
+          id
+          name
+          bridge_account_id
+          script_hash
+          decimal
+          value
+        }
+        account {
+          id
+          eth_address
+          script_hash
+        }
+      }
+    }
+
+    {
+      "data": {
+        "account_udts_by_contract_address": [
+          {
+            "account": {
+              "eth_address": "0xd1556d3fe220b6eb816536ab448de4e4edc3e439",
+              "id": 70,
+              "script_hash": "0x66fb5a40e0bb9c62a68770b77393e2c5cc8428503025d9478550e99d0bed5138"
+            },
+            "block_number": 2857,
+            "id": 5,
+            "token_contract_address_hash": "0xd1556d3fe220b6eb816536ab448de4e4edc3e439",
+            "udt": null,
+            "value": "4",
+            "value_fetched_at": "2022-06-01T06:03:53.730509Z"
+          }
+        ]
+      }
+    }
+    """
+    field :account_udts_by_contract_address, list_of(:account_current_udt) do
+      arg(:input, non_null(:account_udts_by_contract_address_input))
+      middleware(MTermRange, MTermRange.page_and_size_default_config())
+      resolve(&Resolvers.AccountUDT.account_udts_by_contract_address/3)
+    end
+
+    @desc """
+    request-result-example:
+    query {
+      account_bridged_udts_by_script_hash(
+        input: {
+          udt_script_hash: "0x595cc14e574a708dc70a320d2026f79374246ed4659261131cdda7dd5814b5ca"
+          sort_type: ASC
+          page_size: 1
+        }
+      ) {
+        block_number
+        id
+        udt_script_hash
+        value
+        value_fetched_at
+        udt {
+          id
+          name
+          bridge_account_id
+          script_hash
+          decimal
+          value
+        }
+        account {
+          id
+          eth_address
+          script_hash
+        }
+      }
+    }
+
+    {
+      "data": {
+        "account_bridged_udts_by_script_hash": [
+          {
+            "account": {
+              "eth_address": null,
+              "id": 1,
+              "script_hash": "0x595cc14e574a708dc70a320d2026f79374246ed4659261131cdda7dd5814b5ca"
+            },
+            "block_number": 6135,
+            "id": 49,
+            "udt": {
+              "bridge_account_id": null,
+              "decimal": null,
+              "id": "1",
+              "name": null,
+              "script_hash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+              "value": null
+            },
+            "udt_script_hash": "0x595cc14e574a708dc70a320d2026f79374246ed4659261131cdda7dd5814b5ca",
+            "value": "0",
+            "value_fetched_at": null
+          }
+        ]
+      }
+    }
+    """
+    field :account_bridged_udts_by_script_hash, list_of(:account_current_bridged_udt) do
+      arg(:input, non_null(:account_bridged_udts_by_script_hash_input))
+      middleware(MTermRange, MTermRange.page_and_size_default_config())
+      resolve(&Resolvers.AccountUDT.account_bridged_udts_by_script_hash/3)
+    end
   end
 
   object :account_current_udt do
@@ -230,9 +367,15 @@ defmodule GodwokenExplorer.Graphql.Types.AccountUDT do
     field :udt_script_hash, :hash_full
   end
 
-  input_object :account_udt_contract_address_input do
+  input_object :account_udts_by_contract_address_input do
     import_fields(:page_and_size_input)
     import_fields(:sort_type_input)
     field :token_contract_address_hash, non_null(:hash_address)
+  end
+
+  input_object :account_bridged_udts_by_script_hash_input do
+    import_fields(:page_and_size_input)
+    import_fields(:sort_type_input)
+    field :udt_script_hash, non_null(:hash_full)
   end
 end
