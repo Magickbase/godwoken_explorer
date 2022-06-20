@@ -1,8 +1,6 @@
 defmodule GodwokenExplorer.Graphql.Types.Account do
   use Absinthe.Schema.Notation
   alias GodwokenExplorer.Graphql.Resolvers, as: Resolvers
-  alias GodwokenExplorer.Graphql.Middleware.EIP55, as: MEIP55
-  alias GodwokenExplorer.Graphql.Middleware.Downcase, as: MDowncase
   alias GodwokenExplorer.Graphql.Middleware.TermRange, as: MTermRange
 
   object :account_querys do
@@ -271,8 +269,6 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
     """
     field :account, :account do
       arg(:input, non_null(:account_input))
-      middleware(MEIP55, [:address])
-      middleware(MDowncase, [:address, :script_hash])
       resolve(&Resolvers.Account.account/3)
     end
   end
@@ -296,14 +292,23 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
       resolve(&Resolvers.Account.udt/3)
     end
 
-    # field :account_udts, list_of(:account_udt) do
-    #   arg(:input, :account_child_account_udts_input,
-    #     default_value: %{page: 1, page_size: 20, sort_type: :desc}
-    #   )
+    field :account_current_udts, list_of(:account_current_udt) do
+      arg(:input, :account_child_udts_input,
+        default_value: %{page: 1, page_size: 20, sort_type: :desc}
+      )
 
-    #   middleware(MTermRange, MTermRange.page_and_size_default_config())
-    #   resolve(&Resolvers.Account.account_udts/3)
-    # end
+      middleware(MTermRange, MTermRange.page_and_size_default_config())
+      resolve(&Resolvers.Account.account_current_udts/3)
+    end
+
+    field :account_current_bridged_udts, list_of(:account_current_bridged_udt) do
+      arg(:input, :account_child_udts_input,
+        default_value: %{page: 1, page_size: 20, sort_type: :desc}
+      )
+
+      middleware(MTermRange, MTermRange.page_and_size_default_config())
+      resolve(&Resolvers.Account.account_current_bridged_udts/3)
+    end
 
     field :smart_contract, :smart_contract do
       resolve(&Resolvers.Account.smart_contract/3)
@@ -324,14 +329,14 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
     address: account address(eth_address)
     example: "0x59b670e9fa9d0a427751af201d676719a970857b"
 
-    script_hash: other address not compatible with eip55
+    script_hash: script hash with hash_full type
     example: "0x08c9937e412e135928fd6dec7255965ddd7df4d5a163564b60895100bb3b2f9e"
     """
-    field :address, :string
-    field :script_hash, :string
+    field :address, :hash_address
+    field :script_hash, :hash_full
   end
 
-  input_object :account_child_account_udts_input do
+  input_object :account_child_udts_input do
     import_fields(:page_and_size_input)
     import_fields(:sort_type_input)
   end

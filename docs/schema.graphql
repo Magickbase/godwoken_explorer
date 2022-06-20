@@ -3,6 +3,8 @@ schema {
 }
 
 type Account {
+  account_current_bridged_udts(input: AccountChildUdtsInput = {page: 1, page_size: 20, sort_type: DESC}): [AccountCurrentBridgedUdt]
+  account_current_udts(input: AccountChildUdtsInput = {page: 1, page_size: 20, sort_type: DESC}): [AccountCurrentUdt]
   contract_code: String
   eth_address: HashFull
   id: Int
@@ -41,6 +43,31 @@ input AccountBridgedUdtsByScriptHashInput {
   """
   sort_type: SortType = DESC
   udt_script_hash: HashFull!
+}
+
+input AccountChildUdtsInput {
+  """
+  argument: the page of query result, the relations of postgres offset: offset = (page - 1) * page_size
+  
+  default: 1
+  limit: > 0
+  """
+  page: Int = 1
+
+  """
+  argument: the page_size of query result, it's the same of postgres limit
+  
+  default: 20
+  limit: > 0
+  """
+  page_size: Int = 20
+
+  """
+  argument: the sort of type by custom condition
+  
+  default: desc
+  """
+  sort_type: SortType = DESC
 }
 
 input AccountCkbsInput {
@@ -147,11 +174,11 @@ input AccountInput {
   address: account address(eth_address)
   example: "0x59b670e9fa9d0a427751af201d676719a970857b"
   
-  script_hash: other address not compatible with eip55
+  script_hash: script hash with hash_full type
   example: "0x08c9937e412e135928fd6dec7255965ddd7df4d5a163564b60895100bb3b2f9e"
   """
-  address: String
-  script_hash: String
+  address: HashAddress
+  script_hash: HashFull
 }
 
 enum AccountType {

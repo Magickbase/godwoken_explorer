@@ -1,9 +1,10 @@
 defmodule GodwokenExplorer.Graphql.Resolvers.Account do
   alias GodwokenExplorer.Repo
   alias GodwokenExplorer.{Account, SmartContract, UDT}
+  alias GodwokenExplorer.Account.{CurrentUDTBalance, CurrentBridgedUDTBalance}
 
   import Ecto.Query
-  # import GodwokenExplorer.Graphql.Common, only: [page_and_size: 2, sort_type: 3]
+  import GodwokenExplorer.Graphql.Common, only: [page_and_size: 2, sort_type: 3]
 
   def account(_parent, %{input: input} = _args, _resolution) do
     address = Map.get(input, :address)
@@ -34,21 +35,33 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Account do
     {:ok, udt}
   end
 
-  # def account_udts(%Account{id: id}, %{input: input} = _args, _resolution) do
-  #   account_ckb_id = UDT.ckb_account_id()
+  def account_current_udts(%Account{eth_address: eth_address}, %{input: input} = _args, _resolution) do
 
-  #   return =
-  #     from(ac in AccountUDT)
-  #     |> where([ac], ac.account_id == ^id)
-  #     |> order_by([ac], desc: ac.updated_at)
-  #     |> distinct([ac], ac.token_contract_address_hash)
-  #     |> page_and_size(input)
-  #     |> sort_type(input, :balance)
-  #     |> Repo.all()
-  #     |> Enum.filter(fn r -> r.udt_id != account_ckb_id end)
+    return =
+      from(cu in CurrentUDTBalance)
+      |> where([cu], cu.address_hash == ^eth_address)
+      |> order_by([cu], desc: cu.updated_at)
+      |> distinct([cu], cu.token_contract_address_hash)
+      |> page_and_size(input)
+      |> sort_type(input, :value)
+      |> Repo.all()
 
-  #   {:ok, return}
-  # end
+    {:ok, return}
+  end
+
+  def account_current_bridged_udts(%Account{eth_address: eth_address}, %{input: input} = _args, _resolution) do
+
+    return =
+      from(cbu in CurrentBridgedUDTBalance)
+      |> where([cbu], cbu.address_hash == ^eth_address)
+      |> order_by([cbu], desc: cbu.updated_at)
+      |> distinct([cbu], cbu.udt_script_hash)
+      |> page_and_size(input)
+      |> sort_type(input, :value)
+      |> Repo.all()
+
+    {:ok, return}
+  end
 
   def smart_contract(%Account{id: id}, _args, _resolution) do
     return =
