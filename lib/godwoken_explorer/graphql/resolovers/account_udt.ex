@@ -68,6 +68,8 @@ defmodule GodwokenExplorer.Graphql.Resolvers.AccountUDT do
       from(a in Account)
       |> where([a], a.eth_address in ^address_hashes or a.script_hash in ^script_hashes)
 
+    Repo.all(squery) |> IO.inspect(label: :xxxx)
+
     query =
       from(cbu in CurrentBridgedUDTBalance)
       |> join(:inner, [cbu], a in subquery(squery), on: cbu.address_hash == a.eth_address)
@@ -194,31 +196,34 @@ defmodule GodwokenExplorer.Graphql.Resolvers.AccountUDT do
   #   {:ok, return}
   # end
 
-  # def account_ckbs(_parent, %{input: input} = _args, _resolution) do
-  #   address_hashes = Map.get(input, :address_hashes)
-  #   script_hashes = Map.get(input, :script_hashes)
-  #   ckb_account_id = UDT.ckb_account_id()
+  def account_ckbs(_parent, %{input: input} = _args, _resolution) do
+    address_hashes = Map.get(input, :address_hashes)
+    script_hashes = Map.get(input, :script_hashes)
+    ckb_account_id = UDT.ckb_account_id()
 
-  #   if ckb_account_id do
-  #     do_account_ckbs(address_hashes, script_hashes, ckb_account_id)
-  #   else
-  #     {:error, :ckb_account_not_found}
-  #   end
-  # end
+    if ckb_account_id do
+      do_account_ckbs(address_hashes, script_hashes, ckb_account_id)
+    else
+      {:error, :ckb_account_not_found}
+    end
+  end
 
-  # defp do_account_ckbs(address_hashes, script_hashes, ckb_account_id) do
-  #   %Account{script_hash: token_contract_address_hash} = Repo.get(Account, ckb_account_id)
+  defp do_account_ckbs(address_hashes, script_hashes, ckb_account_id) do
+    %Account{script_hash: token_contract_address_hash} = Repo.get(Account, ckb_account_id)
 
-  #   if length(address_hashes) > @addresses_max_limit do
-  #     {:error, :too_many_addresses}
-  #   else
-  #     query = search_account_udts(address_hashes, script_hashes, token_contract_address_hash)
-  #     return = Repo.all(query)
+    if length(address_hashes) > @addresses_max_limit do
+      {:error, :too_many_addresses}
+    else
+      query =
+        search_account_current_brideged_udts(
+          address_hashes,
+          script_hashes,
+          token_contract_address_hash
+        )
 
-  #     return_account_udts =
-  #       Enum.map(return, fn au -> %{address_hash: au.address_hash, balance: au.balance} end)
+      return = Repo.all(query)
 
-  #     {:ok, return_account_udts}
-  #   end
-  # end
+      {:ok, return}
+    end
+  end
 end

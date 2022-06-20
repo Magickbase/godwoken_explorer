@@ -282,8 +282,8 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
 
   object :account do
     field :id, :integer
-    field :eth_address, :string
-    field :script_hash, :string
+    field :eth_address, :hash_full
+    field :script_hash, :hash_address
     field :registry_address, :string
     field :script, :json
     field :nonce, :integer
