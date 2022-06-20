@@ -21,6 +21,7 @@ defmodule GodwokenExplorer.WithdrawalHistoryView do
       :udt_id,
       :timestamp,
       :state,
+      :capacity,
       :is_fast_withdrawal
     ]
   end
