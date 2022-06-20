@@ -2,7 +2,11 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
   use GenServer
 
   import Godwoken.MoleculeParser,
-    only: [parse_deposition_lock_args: 1, parse_withdrawal_lock_args: 1]
+    only: [
+      parse_deposition_lock_args: 1,
+      parse_v1_deposition_lock_args: 1,
+      parse_withdrawal_lock_args: 1
+    ]
 
   import GodwokenRPC.Util,
     only: [hex_to_number: 1, script_to_hash: 1, parse_le_number: 1, timestamp_to_datetime: 1]
@@ -318,13 +322,24 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
   end
 
   defp parse_lock_args(args) do
-    args
-    |> String.slice(2..-1)
-    |> parse_deposition_lock_args()
-    |> Tuple.to_list()
-    |> Enum.map(fn x ->
-      "0x" <> x
-    end)
+    try do
+      args
+      |> String.slice(2..-1)
+      |> parse_deposition_lock_args()
+      |> Tuple.to_list()
+      |> Enum.map(fn x ->
+        "0x" <> x
+      end)
+    rescue
+      ErlangError ->
+        args
+        |> String.slice(2..-1)
+        |> parse_v1_deposition_lock_args()
+        |> Tuple.to_list()
+        |> Enum.map(fn x ->
+          "0x" <> x
+        end)
+    end
   end
 
   defp schedule_work(start_block_number) do
