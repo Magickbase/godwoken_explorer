@@ -4,7 +4,7 @@ defmodule GodwokenRPC.Util do
   @type decimal() :: Decimal.t()
   @stringify_gckb_decimal_keys ~w(gas_price fee)a
   @stringify_ckb_decimal_keys ~w(value)a
-  @stringify_hash_keys ~w(hash eth_hash block_hash address_hash data from to to_alias created_contract_address_hash)a
+  @stringify_hash_keys ~w(hash eth_hash block_hash transaction_hash address_hash data from to to_alias created_contract_address_hash)a
   @utc_unix_keys ~w(timestamp inserted_at)a
   @full_length_size 4
   @offset_size 4

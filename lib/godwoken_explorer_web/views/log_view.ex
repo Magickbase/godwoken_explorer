@@ -41,6 +41,7 @@ defmodule GodwokenExplorer.LogView do
       select: %{
         data: l.data,
         index: l.index,
+        transaction_hash: l.transaction_hash,
         address_hash: l.address_hash,
         first_topic: l.first_topic,
         second_topic: l.second_topic,
