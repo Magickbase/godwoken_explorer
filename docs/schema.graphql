@@ -363,8 +363,8 @@ human-readable json string.
 scalar Json
 
 type Log {
-  address_hash: String
-  block_hash: String
+  address_hash: HashAddress
+  block_hash: HashFull
   block_number: Int
   data: String
   first_topic: String
@@ -372,11 +372,11 @@ type Log {
   index: Int
   second_topic: String
   third_topic: String
-  transaction_hash: String
+  transaction_hash: HashFull
 }
 
 input LogInput {
-  address_hash: String
+  address_hash: HashAddress
 
   """argument: the end of block number(inclusive) for search query"""
   end_block_number: Int
@@ -410,7 +410,7 @@ input LogInput {
   """argument: the start of block number(inclusive) for search query"""
   start_block_number: Int
   third_topic: String
-  transaction_hash: String
+  transaction_hash: HashFull
 }
 
 input PageAndSizeInput {
@@ -1179,9 +1179,11 @@ type RootQueryType {
   """
   function: get smart contract by address
   
-  request-example:
+  request-result-example:
   query {
-    smart_contract(input: {contract_address: "0xcae7ac7ea158326cc16b4a5f1668924966419455"}) {
+    smart_contract(
+      input: { contract_address: "0x2503A1A79A443F3961EE96A8C5EC513638129614" }
+    ) {
       name
       account_id
       account {
@@ -1189,11 +1191,39 @@ type RootQueryType {
       }
     }
   }
-  
-  result-example:
   {
     "data": {
-      "smart_contract": null
+      "smart_contract": {
+        "account": {
+          "eth_address": "0x2503a1a79a443f3961ee96a8c5ec513638129614"
+        },
+        "account_id": "6841",
+        "name": "EIP20"
+      }
+    }
+  }
+  
+  request-result-example2:
+  query {
+    smart_contract(
+      input: { script_hash: "0x9B55204439C78D3B9CBCC62C03F31E47C8457FD39CA9A9EB805B364B45C26C38" }
+    ) {
+      name
+      account_id
+      account {
+        eth_address
+      }
+    }
+  }
+  {
+    "data": {
+      "smart_contract": {
+        "account": {
+          "eth_address": "0x2503a1a79a443f3961ee96a8c5ec513638129614"
+        },
+        "account_id": "6841",
+        "name": "EIP20"
+      }
     }
   }
   """
@@ -1216,7 +1246,15 @@ type RootQueryType {
   result-example:
   {
     "data": {
-      "smart_contracts": []
+      "smart_contracts": [
+        {
+          "account": {
+            "eth_address": "0x2503a1a79a443f3961ee96a8c5ec513638129614"
+          },
+          "account_id": "6841",
+          "name": "EIP20"
+        }
+      ]
     }
   }
   """
@@ -1854,14 +1892,15 @@ type SmartContract {
   compiler_version: String
   constructor_arguments: String
   contract_source_code: String
-  deployment_tx_hash: String
+  deployment_tx_hash: HashFull
   id: Int
   name: String
   other_info: String
 }
 
 input SmartContractInput {
-  contract_address: String!
+  contract_address: HashAddress
+  script_hash: HashFull
 }
 
 input SmartContractsInput {

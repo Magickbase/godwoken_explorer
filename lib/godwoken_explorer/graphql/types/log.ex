@@ -1,7 +1,6 @@
 defmodule GodwokenExplorer.Graphql.Types.Log do
   use Absinthe.Schema.Notation
   alias GodwokenExplorer.Graphql.Resolvers, as: Resolvers
-  alias GodwokenExplorer.Graphql.Middleware.EIP55, as: MEIP55
   alias GodwokenExplorer.Graphql.Middleware.Downcase, as: MDowncase
   alias GodwokenExplorer.Graphql.Middleware.TermRange, as: MTermRange
 
@@ -44,17 +43,11 @@ defmodule GodwokenExplorer.Graphql.Types.Log do
     field :logs, list_of(:log) do
       arg(:input, non_null(:log_input))
 
-      middleware(MEIP55, [
-        :address_hash
-      ])
-
       middleware(MDowncase, [
-        :transaction_hash,
         :first_topic,
         :second_topic,
         :third_topic,
-        :fourth_topic,
-        :address_hash
+        :fourth_topic
       ])
 
       middleware(MTermRange, MTermRange.page_and_size_default_config())
@@ -63,7 +56,7 @@ defmodule GodwokenExplorer.Graphql.Types.Log do
   end
 
   object :log do
-    field :transaction_hash, :string
+    field :transaction_hash, :hash_full
     field :data, :string
     field :first_topic, :string
     field :second_topic, :string
@@ -71,17 +64,17 @@ defmodule GodwokenExplorer.Graphql.Types.Log do
     field :fourth_topic, :string
     field :index, :integer
     field :block_number, :integer
-    field :address_hash, :string
-    field :block_hash, :string
+    field :address_hash, :hash_address
+    field :block_hash, :hash_full
   end
 
   input_object :log_input do
-    field :transaction_hash, :string
+    field :transaction_hash, :hash_full
     field :first_topic, :string
     field :second_topic, :string
     field :third_topic, :string
     field :fourth_topic, :string
-    field :address_hash, :string
+    field :address_hash, :hash_address
     import_fields(:block_range_input)
     import_fields(:page_and_size_input)
     import_fields(:sort_type_input)
