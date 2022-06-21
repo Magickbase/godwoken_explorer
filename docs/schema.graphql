@@ -1808,7 +1808,7 @@ type RootQueryType {
   
   request-example:
   query {
-    udt(input: {contract_address: "0x2503a1a79a443f3961ee96a8c5ec513638129614"}){
+    udt(input: {script_hash: "0x64050AF0D25C38DDF9455B8108654F7C5CC30FE6D871A303D83B1020EDDDD7A7"}){
       id
       name
       type
@@ -1824,12 +1824,12 @@ type RootQueryType {
     "data": {
       "udt": {
         "account": {
-          "eth_address": "0x2503a1a79a443f3961ee96a8c5ec513638129614"
+          "eth_address": null
         },
-        "id": "6841",
-        "name": "tst",
-        "supply": "111",
-        "type": "NATIVE"
+        "id": "80",
+        "name": null,
+        "supply": null,
+        "type": "BRIDGE"
       }
     }
   }
@@ -2056,7 +2056,7 @@ type Udt {
   name: String
   official_site: String
   price: Decimal
-  script_hash: String
+  script_hash: HashFull
   supply: Decimal
   symbol: String
   type: UdtType
