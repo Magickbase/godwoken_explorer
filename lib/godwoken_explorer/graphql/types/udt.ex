@@ -1,8 +1,6 @@
 defmodule GodwokenExplorer.Graphql.Types.UDT do
   use Absinthe.Schema.Notation
   alias GodwokenExplorer.Graphql.Resolvers, as: Resolvers
-  alias GodwokenExplorer.Graphql.Middleware.EIP55, as: MEIP55
-  alias GodwokenExplorer.Graphql.Middleware.Downcase, as: MDowncase
   alias GodwokenExplorer.Graphql.Middleware.TermRange, as: MTermRange
 
   object :udt_querys do
@@ -11,7 +9,7 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
 
     request-example:
     query {
-      udt(input: {contract_address: "0x2503a1a79a443f3961ee96a8c5ec513638129614"}){
+      udt(input: {script_hash: "0x64050AF0D25C38DDF9455B8108654F7C5CC30FE6D871A303D83B1020EDDDD7A7"}){
         id
         name
         type
@@ -27,20 +25,18 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
       "data": {
         "udt": {
           "account": {
-            "eth_address": "0x2503a1a79a443f3961ee96a8c5ec513638129614"
+            "eth_address": null
           },
-          "id": "6841",
-          "name": "tst",
-          "supply": "111",
-          "type": "NATIVE"
+          "id": "80",
+          "name": null,
+          "supply": null,
+          "type": "BRIDGE"
         }
       }
     }
     """
     field :udt, :udt do
       arg(:input, non_null(:smart_contract_input))
-      middleware(MEIP55, [:contract_address])
-      middleware(MDowncase, [:contract_address])
       resolve(&Resolvers.UDT.udt/3)
     end
 
@@ -142,7 +138,7 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
     field :icon, :string
     field :supply, :decimal
     field :type_script, :json
-    field :script_hash, :string
+    field :script_hash, :hash_full
     field :description, :string
     field :official_site, :string
     field :value, :decimal

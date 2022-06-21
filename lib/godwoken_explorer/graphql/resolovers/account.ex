@@ -1,6 +1,7 @@
 defmodule GodwokenExplorer.Graphql.Resolvers.Account do
   alias GodwokenExplorer.Repo
-  alias GodwokenExplorer.{Account, SmartContract, AccountUDT, UDT}
+  alias GodwokenExplorer.{Account, SmartContract, UDT}
+  alias GodwokenExplorer.Account.{CurrentUDTBalance, CurrentBridgedUDTBalance}
 
   import Ecto.Query
   import GodwokenExplorer.Graphql.Common, only: [page_and_size: 2, sort_type: 3]
@@ -34,18 +35,32 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Account do
     {:ok, udt}
   end
 
-  def account_udts(%Account{id: id}, %{input: input} = _args, _resolution) do
-    account_ckb_id = UDT.ckb_account_id()
+  def account_current_udts(%Account{eth_address: eth_address}, %{input: input} = _args, _resolution) do
 
     return =
-      from(ac in AccountUDT)
-      |> where([ac], ac.account_id == ^id)
-      |> order_by([ac], desc: ac.updated_at)
-      |> distinct([ac], ac.token_contract_address_hash)
+      from(cu in CurrentUDTBalance)
+      |> where([cu], cu.address_hash == ^eth_address)
+      |> order_by([cu], desc: cu.updated_at)
+      |> join(:inner, [cu], a in Account, on: a.eth_address == cu.token_contract_address_hash)
+      |> join(:inner, [cu, a], u in UDT, on: a.id == u.bridge_account_id)
       |> page_and_size(input)
-      |> sort_type(input, :balance)
+      |> sort_type(input, :value)
       |> Repo.all()
-      |> Enum.filter(fn r -> r.udt_id != account_ckb_id end)
+
+    {:ok, return}
+  end
+
+  def account_current_bridged_udts(%Account{eth_address: eth_address}, %{input: input} = _args, _resolution) do
+
+    return =
+      from(cbu in CurrentBridgedUDTBalance)
+      |> where([cbu], cbu.address_hash == ^eth_address)
+      |> order_by([cbu], desc: cbu.updated_at)
+      |> join(:inner, [cbu], a in Account, on: a.script_hash == cbu.udt_script_hash)
+      |> join(:inner, [cbu, a], u in UDT, on: a.id == u.id)
+      |> page_and_size(input)
+      |> sort_type(input, :value)
+      |> Repo.all()
 
     {:ok, return}
   end

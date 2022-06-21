@@ -7,7 +7,7 @@ defmodule GodwokenExplorer.Graphql.Types.Block do
     @desc """
     function: get block by block number or block hash
 
-    request-example:
+    request-result-example:
     query {
       block(input: {number: 1}){
         hash
@@ -27,7 +27,6 @@ defmodule GodwokenExplorer.Graphql.Types.Block do
       }
     }
 
-    result-example:
     {
       "data": {
         "block": {
@@ -97,13 +96,13 @@ defmodule GodwokenExplorer.Graphql.Types.Block do
   end
 
   object :block do
-    field :hash, :string
+    field :hash, :hash_full
     field :number, :integer
-    field :parent_hash, :string
+    field :parent_hash, :hash_full
     field :timestamp, :datetime
     field :status, :block_status
     field :transaction_count, :integer
-    field :layer1_tx_hash, :string
+    field :layer1_tx_hash, :hash_full
     field :layer1_block_number, :integer
     field :size, :integer
     field :gas_limit, :decimal
@@ -116,7 +115,7 @@ defmodule GodwokenExplorer.Graphql.Types.Block do
     field :state_root, :string
     field :extra_data, :string
     field :registry_id, :integer
-    field :producer_address, :string
+    field :producer_address, :hash_address
 
     field :account, :account do
       resolve(&Resolvers.Block.account/3)
@@ -135,7 +134,7 @@ defmodule GodwokenExplorer.Graphql.Types.Block do
   end
 
   input_object :block_input do
-    field :hash, :string
+    field :hash, :hash_full
     field :number, :integer
   end
 

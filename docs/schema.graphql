@@ -3,14 +3,15 @@ schema {
 }
 
 type Account {
-  account_udts(input: AccountChildAccountUdtsInput = {page: 1, page_size: 20, sort_type: DESC}): [AccountUdt]
+  account_current_bridged_udts(input: AccountChildUdtsInput = {page: 1, page_size: 20, sort_type: DESC}): [AccountCurrentBridgedUdt]
+  account_current_udts(input: AccountChildUdtsInput = {page: 1, page_size: 20, sort_type: DESC}): [AccountCurrentUdt]
   contract_code: String
-  eth_address: String
+  eth_address: HashFull
   id: Int
   nonce: Int
   registry_address: String
   script: Json
-  script_hash: String
+  script_hash: HashAddress
   smart_contract: SmartContract
   token_transfer_count: Int
   transaction_count: Int
@@ -18,7 +19,7 @@ type Account {
   udt: Udt
 }
 
-input AccountChildAccountUdtsInput {
+input AccountBridgedUdtsByScriptHashInput {
   """
   argument: the page of query result, the relations of postgres offset: offset = (page - 1) * page_size
   
@@ -41,11 +42,32 @@ input AccountChildAccountUdtsInput {
   default: desc
   """
   sort_type: SortType = DESC
+  udt_script_hash: HashFull!
 }
 
-type AccountCkb {
-  address_hash: String
-  balance: Bigint
+input AccountChildUdtsInput {
+  """
+  argument: the page of query result, the relations of postgres offset: offset = (page - 1) * page_size
+  
+  default: 1
+  limit: > 0
+  """
+  page: Int = 1
+
+  """
+  argument: the page_size of query result, it's the same of postgres limit
+  
+  default: 20
+  limit: > 0
+  """
+  page_size: Int = 20
+
+  """
+  argument: the sort of type by custom condition
+  
+  default: desc
+  """
+  sort_type: SortType = DESC
 }
 
 input AccountCkbsInput {
@@ -53,72 +75,24 @@ input AccountCkbsInput {
   script_hashes: [String] = []
 }
 
-input AccountIdInput {
-  account_id: Int
-}
-
-input AccountInput {
-  """
-  address: account address(eth_address)
-  example: "0x59b670e9fa9d0a427751af201d676719a970857b"
-  
-  script_hash: other address not compatible with eip55
-  example: "0x08c9937e412e135928fd6dec7255965ddd7df4d5a163564b60895100bb3b2f9e"
-  """
-  address: String
-  script_hash: String
-}
-
-enum AccountType {
-  ETH_ADDR_REG
-  ETH_USER
-  META_CONTRACT
-  POLYJUICE_CONTRACT
-  POLYJUICE_CREATOR
-  UDT
-}
-
-type AccountUdt {
+type AccountCurrentBridgedUdt {
   account: Account
-  address_hash: String
-  balance: Bigint
+  address_hash: HashAddress
+  block_number: Int
   id: Int
-  token_contract_address_hash: String
+  layer1_block_number: Int
   udt: Udt
+  udt_script_hash: HashFull
+  value: Bigint
+  value_fetched_at: DateTime
 }
 
-input AccountUdtContractAddressInput {
-  """
-  argument: the page of query result, the relations of postgres offset: offset = (page - 1) * page_size
-  
-  default: 1
-  limit: > 0
-  """
-  page: Int = 1
-
-  """
-  argument: the page_size of query result, it's the same of postgres limit
-  
-  default: 20
-  limit: > 0
-  """
-  page_size: Int = 20
-
-  """
-  argument: the sort of type by custom condition
-  
-  default: desc
-  """
-  sort_type: SortType = DESC
-  token_contract_address_hash: String!
-}
-
-input AccountUdtsInput {
+input AccountCurrentBridgedUdtsInput {
   """
   argument: the list of account eth address
   example: ["0x15ca4f2165ff0e798d9c7434010eaacc4d768d85"]
   """
-  address_hashes: [String] = []
+  address_hashes: [HashAddress] = []
 
   """
   argument: the page of query result, the relations of postgres offset: offset = (page - 1) * page_size
@@ -140,13 +114,106 @@ input AccountUdtsInput {
   argument: the list of account script hash
   example: ["0x08c9937e412e135928fd6dec7255965ddd7df4d5a163564b60895100bb3b2f9e"]
   """
-  script_hashes: [String] = []
+  script_hashes: [HashAddress] = []
+  udt_script_hash: HashFull
+}
+
+type AccountCurrentUdt {
+  account: Account
+  address_hash: HashAddress
+  block_number: Int
+  id: Int
+  token_contract_address_hash: HashAddress
+  udt: Udt
+  value: Bigint
+  value_fetched_at: DateTime
+}
+
+input AccountCurrentUdtsInput {
+  """
+  argument: the list of account eth address
+  example: ["0x15ca4f2165ff0e798d9c7434010eaacc4d768d85"]
+  """
+  address_hashes: [HashAddress] = []
+
+  """
+  argument: the page of query result, the relations of postgres offset: offset = (page - 1) * page_size
+  
+  default: 1
+  limit: > 0
+  """
+  page: Int = 1
+
+  """
+  argument: the page_size of query result, it's the same of postgres limit
+  
+  default: 20
+  limit: > 0
+  """
+  page_size: Int = 20
+
+  """
+  argument: the list of account script hash
+  example: ["0x08c9937e412e135928fd6dec7255965ddd7df4d5a163564b60895100bb3b2f9e"]
+  """
+  script_hashes: [HashFull] = []
 
   """
   argument: the address of smart contract which supply udts
   example: "0xbf1f27daea43849b67f839fd101569daaa321e2c"
   """
-  token_contract_address_hash: String
+  token_contract_address_hash: HashAddress
+}
+
+input AccountIdInput {
+  account_id: Int
+}
+
+input AccountInput {
+  """
+  address: account address(eth_address)
+  example: "0x59b670e9fa9d0a427751af201d676719a970857b"
+  
+  script_hash: script hash with hash_full type
+  example: "0x08c9937e412e135928fd6dec7255965ddd7df4d5a163564b60895100bb3b2f9e"
+  """
+  address: HashAddress
+  script_hash: HashFull
+}
+
+enum AccountType {
+  ETH_ADDR_REG
+  ETH_USER
+  META_CONTRACT
+  POLYJUICE_CONTRACT
+  POLYJUICE_CREATOR
+  UDT
+}
+
+input AccountUdtsByContractAddressInput {
+  """
+  argument: the page of query result, the relations of postgres offset: offset = (page - 1) * page_size
+  
+  default: 1
+  limit: > 0
+  """
+  page: Int = 1
+
+  """
+  argument: the page_size of query result, it's the same of postgres limit
+  
+  default: 20
+  limit: > 0
+  """
+  page_size: Int = 20
+
+  """
+  argument: the sort of type by custom condition
+  
+  default: desc
+  """
+  sort_type: SortType = DESC
+  token_contract_address_hash: HashAddress!
 }
 
 """
@@ -177,14 +244,14 @@ type Block {
   extra_data: String
   gas_limit: Decimal
   gas_used: Decimal
-  hash: String
+  hash: HashFull
   layer1_block_number: Int
-  layer1_tx_hash: String
+  layer1_tx_hash: HashFull
   logs_bloom: String
   nonce: String
   number: Int
-  parent_hash: String
-  producer_address: String
+  parent_hash: HashFull
+  producer_address: HashAddress
   registry_id: Int
   sha3_uncles: String
   size: Int
@@ -197,7 +264,7 @@ type Block {
 }
 
 input BlockInput {
-  hash: String
+  hash: HashFull
   number: Int
 }
 
@@ -278,6 +345,17 @@ Some numeric strings are:
 scalar Decimal
 
 """
+The address (40 (hex) characters / 160 bits / 20 bytes) is derived from the public key (128 (hex) characters /
+512 bits / 64 bytes) which is derived from the private key (64 (hex) characters / 256 bits / 32 bytes).
+
+The address is actually the last 40 characters of the keccak-256 hash of the public key with `0x` appended.
+"""
+scalar HashAddress
+
+"""A 32-byte [KECCAK-256](https://en.wikipedia.org/wiki/SHA-3) hash."""
+scalar HashFull
+
+"""
 The `Json` scalar type represents arbitrary json string data, represented as UTF-8
 character sequences. The Json type is most often used to represent a free-form
 human-readable json string.
@@ -285,8 +363,8 @@ human-readable json string.
 scalar Json
 
 type Log {
-  address_hash: String
-  block_hash: String
+  address_hash: HashAddress
+  block_hash: HashFull
   block_number: Int
   data: String
   first_topic: String
@@ -294,11 +372,11 @@ type Log {
   index: Int
   second_topic: String
   third_topic: String
-  transaction_hash: String
+  transaction_hash: HashFull
 }
 
 input LogInput {
-  address_hash: String
+  address_hash: HashAddress
 
   """argument: the end of block number(inclusive) for search query"""
   end_block_number: Int
@@ -332,7 +410,7 @@ input LogInput {
   """argument: the start of block number(inclusive) for search query"""
   start_block_number: Int
   third_topic: String
-  transaction_hash: String
+  transaction_hash: HashFull
 }
 
 input PageAndSizeInput {
@@ -630,7 +708,7 @@ type RootQueryType {
   query {
     account(
       input: {
-        script_hash: "0x9b55204439c78d3b9cbcc62c03f31e47c8457fd39ca9a9eb805b364b45c26c38"
+        script_hash: "0x495D9CFB7B6FAEAEB0F5A7ED81A830A477F7AEEA8D53EF73ABDC2EC2F5FED07C"
       }
     ) {
       type
@@ -642,25 +720,37 @@ type RootQueryType {
         account_id
         name
       }
+      account_current_udts {
+        id
+        value
+      }
+      account_current_bridged_udts{
+        id
+        value
+      }
     }
   }
+  
   
   {
     "data": {
       "account": {
-        "eth_address": "0x2503a1a79a443f3961ee96a8c5ec513638129614",
+        "account_current_bridged_udts": [
+          {
+            "id": 1,
+            "value": "1165507481400061309833"
+          }
+        ],
+        "account_current_udts": [],
+        "eth_address": "0x715ab282b873b79a7be8b0e8c13c4e8966a52040",
         "script": {
-          "args": "0x702359ea7f073558921eb50d8c1c77e92f760c8f8656bde4995f26b8963e2dd8040000002503a1a79a443f3961ee96a8c5ec513638129614",
-          "code_hash": "0x1629b04b49ded9e5747481f985b11cba6cdd4ffc167971a585e96729455ca736",
+          "args": "0x702359ea7f073558921eb50d8c1c77e92f760c8f8656bde4995f26b8963e2dd8715ab282b873b79a7be8b0e8c13c4e8966a52040",
+          "code_hash": "0x07521d0aa8e66ef441ebc31204d86bb23fc83e9edc58c19dbb1b0ebe64336ec0",
           "hash_type": "type"
         },
-        "script_hash": "0x9b55204439c78d3b9cbcc62c03f31e47c8457fd39ca9a9eb805b364b45c26c38",
-        "smart_contract": {
-          "account_id": "6841",
-          "id": 1,
-          "name": "Test"
-        },
-        "type": "POLYJUICE_CONTRACT"
+        "script_hash": "0x495d9cfb7b6faeaeb0f5a7ed81a830a477f7aeea8d53ef73abdc2ec2f5fed07c",
+        "smart_contract": null,
+        "type": "ETH_USER"
       }
     }
   }
@@ -668,171 +758,276 @@ type RootQueryType {
   account(input: AccountInput!): Account
 
   """
-  function: get list of account ckbs by account addresses
-  
   request-result-example:
   query {
-    account_ckbs(input: {address_hashes: ["0x451bae98fe4daf99d45d3399b5acee2e55654c76"]}){
-      address_hash
-      balance
-    }
-  }
-  
-  {
-    "data": {
-      "account_ckbs": [
-        {
-          "address_hash": "0x451bae98fe4daf99d45d3399b5acee2e55654c76",
-          "balance": "2601000000000000000000"
-        }
-      ]
-    }
-  }
-  
-  request-result-example-1:
-  query {
-    account_ckbs(
+    account_bridged_udts_by_script_hash(
       input: {
-        script_hashes: [   "0x20b9546f0fe576733a4b7caf1c74465e5059f4036591963f06266329c8d2c859"
-        ]
+        udt_script_hash: "0x595cc14e574a708dc70a320d2026f79374246ed4659261131cdda7dd5814b5ca"
+        sort_type: ASC
+        page_size: 1
       }
     ) {
-      address_hash
-      balance
+      block_number
+      id
+      udt_script_hash
+      value
+      value_fetched_at
+      udt {
+        id
+        name
+        bridge_account_id
+        script_hash
+        decimal
+        value
+      }
+      account {
+        id
+        eth_address
+        script_hash
+      }
     }
   }
   
   {
     "data": {
-      "account_ckbs": [
+      "account_bridged_udts_by_script_hash": [
         {
-          "address_hash": "0x39d260d641b576a77aa8862a9f617d183b9826f6",
-          "balance": "900000000000000000000"
+          "account": {
+            "eth_address": null,
+            "id": 1,
+            "script_hash": "0x595cc14e574a708dc70a320d2026f79374246ed4659261131cdda7dd5814b5ca"
+          },
+          "block_number": 6135,
+          "id": 49,
+          "udt": {
+            "bridge_account_id": null,
+            "decimal": null,
+            "id": "1",
+            "name": null,
+            "script_hash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+            "value": null
+          },
+          "udt_script_hash": "0x595cc14e574a708dc70a320d2026f79374246ed4659261131cdda7dd5814b5ca",
+          "value": "0",
+          "value_fetched_at": null
         }
       ]
     }
   }
   """
-  account_ckbs(input: AccountCkbsInput!): [AccountCkb]
+  account_bridged_udts_by_script_hash(input: AccountBridgedUdtsByScriptHashInput!): [AccountCurrentBridgedUdt]
 
   """
-  function: get list of account udt by account addresses
-  
   request-result-example:
   query {
-    account_udts(input: {address_hashes: ["0x451bae98fe4daf99d45d3399b5acee2e55654c76"]}) {
-      address_hash
-      balance
-      udt{
-        id
-        type
-        name
-        bridge_account_id
-      }
-    }
-  }
-  
-  {
-    "data": {
-      "account_udts": [
-        {
-          "address_hash": "0x451bae98fe4daf99d45d3399b5acee2e55654c76",
-          "balance": "2601000000000000000000",
-          "udt": {
-            "bridge_account_id": null,
-            "id": "1",
-            "name": null,
-            "type": "BRIDGE"
-          }
-        }
-      ]
-    }
-  }
-  
-  request-result-example-1:
-  query {
-    account_udts(
+    account_current_bridged_udts(
       input: {
-        script_hashes: [ "0x20b9546f0fe576733a4b7caf1c74465e5059f4036591963f06266329c8d2c859"
-        ]
+        address_hashes: ["0x715AB282B873B79A7BE8B0E8C13C4E8966A52040"]
+        udt_script_hash: "0x595cc14e574a708dc70a320d2026f79374246ed4659261131cdda7dd5814b5ca"
       }
     ) {
-      address_hash
-      balance
+      block_number
+      id
+      udt_script_hash
+      value
+      value_fetched_at
       udt {
         id
-        type
         name
         bridge_account_id
+        script_hash
+        decimal
+        value
+      }
+      account {
+        id
+        eth_address
+        script_hash
       }
     }
   }
   
   {
     "data": {
-      "account_udts": [
+      "account_current_bridged_udts": [
         {
-          "address_hash": "0x39d260d641b576a77aa8862a9f617d183b9826f6",
-          "balance": "900000000000000000000",
+          "account": {
+            "eth_address": null,
+            "id": 1,
+            "script_hash": "0x595cc14e574a708dc70a320d2026f79374246ed4659261131cdda7dd5814b5ca"
+          },
+          "block_number": null,
+          "id": 1,
           "udt": {
             "bridge_account_id": null,
+            "decimal": null,
             "id": "1",
             "name": null,
-            "type": "BRIDGE"
-          }
+            "script_hash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+            "value": null
+          },
+          "udt_script_hash": "0x595cc14e574a708dc70a320d2026f79374246ed4659261131cdda7dd5814b5ca",
+          "value": "1165507481400061309833",
+          "value_fetched_at": null
         }
       ]
     }
   }
   """
-  account_udts(input: AccountUdtsInput!): [AccountUdt]
+  account_current_bridged_udts(input: AccountCurrentBridgedUdtsInput!): [AccountCurrentBridgedUdt]
 
   """
-  function: get list account udts by smart contract address which sort of balance
-  
-  request-example:
+  request-result-example:
   query {
-    account_udts_by_contract_address(input: {token_contract_address_hash:
-  "0xbf1f27daea43849b67f839fd101569daaa321e2c", page_size: 2}){
-      address_hash
-      balance
+    account_current_bridged_udts_of_ckb(
+      input: { address_hashes: ["0x715AB282B873B79A7BE8B0E8C13C4E8966A52040"] }
+    ) {
+      block_number
+      id
+      udt_script_hash
+      value
+      value_fetched_at
       udt {
-        type
-  	    name
+        id
+        name
+        bridge_account_id
+        script_hash
+        decimal
+        value
+      }
+      account {
+        id
+        eth_address
+        script_hash
       }
     }
   }
   
-  result-example:
+  {
+    "data": {
+      "account_current_bridged_udts_of_ckb": [
+        {
+          "account": {
+            "eth_address": null,
+            "id": 1,
+            "script_hash": "0x595cc14e574a708dc70a320d2026f79374246ed4659261131cdda7dd5814b5ca"
+          },
+          "block_number": null,
+          "id": 1,
+          "udt": {
+            "bridge_account_id": null,
+            "decimal": null,
+            "id": "1",
+            "name": null,
+            "script_hash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+            "value": null
+          },
+          "udt_script_hash": "0x595cc14e574a708dc70a320d2026f79374246ed4659261131cdda7dd5814b5ca",
+          "value": "1165507481400061309833",
+          "value_fetched_at": null
+        }
+      ]
+    }
+  }
+  """
+  account_current_bridged_udts_of_ckb(input: AccountCkbsInput!): [AccountCurrentBridgedUdt]
+
+  """
+  request-result-example:
+  query {
+    account_current_udts(
+      input: {
+        address_hashes: ["0xC6A44E4D2216A98B3A5086A64A33D94FBCC8FEC3"]
+        token_contract_address_hash: "0xbb30e8691f6ffd5b4c0b2f73d17847e1e289ea80"
+      }
+    ) {
+      block_number
+      id
+      token_contract_address_hash
+      value
+      value_fetched_at
+      udt {
+        id
+        name
+        bridge_account_id
+        script_hash
+        decimal
+        value
+      }
+      account {
+        id
+        eth_address
+        script_hash
+      }
+    }
+  }
+  
+  
+  {
+    "data": {
+      "account_current_udts": []
+    }
+  }
+  """
+  account_current_udts(input: AccountCurrentUdtsInput!): [AccountCurrentUdt]
+
+  """
+  request-result-example:
+  query {
+    account_udts_by_contract_address(
+      input: {
+        token_contract_address_hash: "0xD1556D3FE220B6EB816536AB448DE4E4EDC3E439"
+        sort_type: ASC
+        page_size: 1
+      }
+    ) {
+      block_number
+      id
+      token_contract_address_hash
+      value
+      value_fetched_at
+      udt {
+        id
+        name
+        bridge_account_id
+        script_hash
+        decimal
+        value
+      }
+      account {
+        id
+        eth_address
+        script_hash
+      }
+    }
+  }
+  
   {
     "data": {
       "account_udts_by_contract_address": [
         {
-          "address_hash": "0x68f5cea51fa6fcfdcc10f6cddcafa13bf6717436",
-          "balance": "3711221022882427",
-          "udt": {
-            "name": "Nervos Token",
-            "type": "BRIDGE"
-          }
-        },
-        {
-          "address_hash": "0x7c12cbcbc3703bff1230434f792d84d70d47bb6f",
-          "balance": "1075120930414037",
-          "udt": {
-            "name": "Nervos Token",
-            "type": "BRIDGE"
-          }
+          "account": {
+            "eth_address": "0xd1556d3fe220b6eb816536ab448de4e4edc3e439",
+            "id": 70,
+            "script_hash": "0x66fb5a40e0bb9c62a68770b77393e2c5cc8428503025d9478550e99d0bed5138"
+          },
+          "block_number": 2857,
+          "id": 5,
+          "token_contract_address_hash": "0xd1556d3fe220b6eb816536ab448de4e4edc3e439",
+          "udt": null,
+          "value": "4",
+          "value_fetched_at": "2022-06-01T06:03:53.730509Z"
         }
       ]
     }
   }
   """
-  account_udts_by_contract_address(input: AccountUdtContractAddressInput!): [AccountUdt]
+  account_udts_by_contract_address(input: AccountUdtsByContractAddressInput!): [AccountCurrentUdt]
 
   """
   function: get block by block number or block hash
   
-  request-example:
+  request-result-example:
   query {
     block(input: {number: 1}){
       hash
@@ -852,7 +1047,6 @@ type RootQueryType {
     }
   }
   
-  result-example:
   {
     "data": {
       "block": {
@@ -983,9 +1177,11 @@ type RootQueryType {
   """
   function: get smart contract by address
   
-  request-example:
+  request-result-example:
   query {
-    smart_contract(input: {contract_address: "0xcae7ac7ea158326cc16b4a5f1668924966419455"}) {
+    smart_contract(
+      input: { contract_address: "0x2503A1A79A443F3961EE96A8C5EC513638129614" }
+    ) {
       name
       account_id
       account {
@@ -993,11 +1189,39 @@ type RootQueryType {
       }
     }
   }
-  
-  result-example:
   {
     "data": {
-      "smart_contract": null
+      "smart_contract": {
+        "account": {
+          "eth_address": "0x2503a1a79a443f3961ee96a8c5ec513638129614"
+        },
+        "account_id": "6841",
+        "name": "EIP20"
+      }
+    }
+  }
+  
+  request-result-example2:
+  query {
+    smart_contract(
+      input: { script_hash: "0x9B55204439C78D3B9CBCC62C03F31E47C8457FD39CA9A9EB805B364B45C26C38" }
+    ) {
+      name
+      account_id
+      account {
+        eth_address
+      }
+    }
+  }
+  {
+    "data": {
+      "smart_contract": {
+        "account": {
+          "eth_address": "0x2503a1a79a443f3961ee96a8c5ec513638129614"
+        },
+        "account_id": "6841",
+        "name": "EIP20"
+      }
     }
   }
   """
@@ -1020,7 +1244,15 @@ type RootQueryType {
   result-example:
   {
     "data": {
-      "smart_contracts": []
+      "smart_contracts": [
+        {
+          "account": {
+            "eth_address": "0x2503a1a79a443f3961ee96a8c5ec513638129614"
+          },
+          "account_id": "6841",
+          "name": "EIP20"
+        }
+      ]
     }
   }
   """
@@ -1574,7 +1806,7 @@ type RootQueryType {
   
   request-example:
   query {
-    udt(input: {contract_address: "0x2503a1a79a443f3961ee96a8c5ec513638129614"}){
+    udt(input: {script_hash: "0x64050AF0D25C38DDF9455B8108654F7C5CC30FE6D871A303D83B1020EDDDD7A7"}){
       id
       name
       type
@@ -1590,12 +1822,12 @@ type RootQueryType {
     "data": {
       "udt": {
         "account": {
-          "eth_address": "0x2503a1a79a443f3961ee96a8c5ec513638129614"
+          "eth_address": null
         },
-        "id": "6841",
-        "name": "tst",
-        "supply": "111",
-        "type": "NATIVE"
+        "id": "80",
+        "name": null,
+        "supply": null,
+        "type": "BRIDGE"
       }
     }
   }
@@ -1658,14 +1890,15 @@ type SmartContract {
   compiler_version: String
   constructor_arguments: String
   contract_source_code: String
-  deployment_tx_hash: String
+  deployment_tx_hash: HashFull
   id: Int
   name: String
   other_info: String
 }
 
 input SmartContractInput {
-  contract_address: String!
+  contract_address: HashAddress
+  script_hash: HashFull
 }
 
 input SmartContractsInput {
@@ -1701,18 +1934,18 @@ enum SortType {
 type TokenTransfer {
   amount: Decimal
   block: Block
-  block_hash: String
+  block_hash: HashFull
   block_number: Int
   from_account: Account
-  from_address: String
+  from_address: HashAddress
   log_index: Int
   polyjuice: Polyjuice
   to_account: Account
-  to_address: String
-  token_contract_address_hash: String
+  to_address: HashAddress
+  token_contract_address_hash: HashAddress
   token_id: Decimal
   transaction: Transaction
-  transaction_hash: String
+  transaction_hash: HashFull
   udt: Udt
 }
 
@@ -1731,7 +1964,7 @@ input TokenTransferInput {
 
   """argument: the end of block number(inclusive) for search query"""
   end_block_number: Int
-  from_address: String
+  from_address: HashAddress
 
   """
   Limits the number of records returned per page. Note that this number will be capped by maximum_limit=100. Defaults to 20.
@@ -1747,20 +1980,20 @@ input TokenTransferInput {
 
   """argument: the start of block number(inclusive) for search query"""
   start_block_number: Int
-  to_address: String
-  token_contract_address_hash: String
-  transaction_hash: String
+  to_address: HashAddress
+  token_contract_address_hash: HashAddress
+  transaction_hash: HashFull
 }
 
 type Transaction {
   args: String
   block: Block
-  block_hash: String
+  block_hash: HashFull
   block_number: Int
-  eth_hash: String
+  eth_hash: HashFull
   from_account: Account
   from_account_id: Int
-  hash: String
+  hash: HashFull
   index: Int
   nonce: Int
   polyjuice: Polyjuice
@@ -1771,12 +2004,12 @@ type Transaction {
 }
 
 input TransactionInput {
-  eth_hash: String
-  transaction_hash: String
+  eth_hash: HashFull
+  transaction_hash: HashFull
 }
 
 input TransactionsInput {
-  address: String
+  address: HashAddress
 
   """Fetch the records after this cursor."""
   after: String
@@ -1791,7 +2024,7 @@ input TransactionsInput {
   Limits the number of records returned per page. Note that this number will be capped by maximum_limit=100. Defaults to 20.
   """
   limit: Int = 20
-  script_hash: String
+  script_hash: HashFull
   sort: SortType
 
   """
@@ -1821,7 +2054,7 @@ type Udt {
   name: String
   official_site: String
   price: Decimal
-  script_hash: String
+  script_hash: HashFull
   supply: Decimal
   symbol: String
   type: UdtType

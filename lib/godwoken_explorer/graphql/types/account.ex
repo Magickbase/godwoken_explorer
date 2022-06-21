@@ -1,8 +1,6 @@
 defmodule GodwokenExplorer.Graphql.Types.Account do
   use Absinthe.Schema.Notation
   alias GodwokenExplorer.Graphql.Resolvers, as: Resolvers
-  alias GodwokenExplorer.Graphql.Middleware.EIP55, as: MEIP55
-  alias GodwokenExplorer.Graphql.Middleware.Downcase, as: MDowncase
   alias GodwokenExplorer.Graphql.Middleware.TermRange, as: MTermRange
 
   object :account_querys do
@@ -234,7 +232,7 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
     query {
       account(
         input: {
-          script_hash: "0x9b55204439c78d3b9cbcc62c03f31e47c8457fd39ca9a9eb805b364b45c26c38"
+          script_hash: "0x495D9CFB7B6FAEAEB0F5A7ED81A830A477F7AEEA8D53EF73ABDC2EC2F5FED07C"
         }
       ) {
         type
@@ -246,33 +244,43 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
           account_id
           name
         }
+        account_current_udts {
+          id
+          value
+        }
+        account_current_bridged_udts{
+          id
+          value
+        }
       }
     }
+
 
     {
       "data": {
         "account": {
-          "eth_address": "0x2503a1a79a443f3961ee96a8c5ec513638129614",
+          "account_current_bridged_udts": [
+            {
+              "id": 1,
+              "value": "1165507481400061309833"
+            }
+          ],
+          "account_current_udts": [],
+          "eth_address": "0x715ab282b873b79a7be8b0e8c13c4e8966a52040",
           "script": {
-            "args": "0x702359ea7f073558921eb50d8c1c77e92f760c8f8656bde4995f26b8963e2dd8040000002503a1a79a443f3961ee96a8c5ec513638129614",
-            "code_hash": "0x1629b04b49ded9e5747481f985b11cba6cdd4ffc167971a585e96729455ca736",
+            "args": "0x702359ea7f073558921eb50d8c1c77e92f760c8f8656bde4995f26b8963e2dd8715ab282b873b79a7be8b0e8c13c4e8966a52040",
+            "code_hash": "0x07521d0aa8e66ef441ebc31204d86bb23fc83e9edc58c19dbb1b0ebe64336ec0",
             "hash_type": "type"
           },
-          "script_hash": "0x9b55204439c78d3b9cbcc62c03f31e47c8457fd39ca9a9eb805b364b45c26c38",
-          "smart_contract": {
-            "account_id": "6841",
-            "id": 1,
-            "name": "Test"
-          },
-          "type": "POLYJUICE_CONTRACT"
+          "script_hash": "0x495d9cfb7b6faeaeb0f5a7ed81a830a477f7aeea8d53ef73abdc2ec2f5fed07c",
+          "smart_contract": null,
+          "type": "ETH_USER"
         }
       }
     }
     """
     field :account, :account do
       arg(:input, non_null(:account_input))
-      middleware(MEIP55, [:address])
-      middleware(MDowncase, [:address, :script_hash])
       resolve(&Resolvers.Account.account/3)
     end
   end
@@ -282,8 +290,8 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
 
   object :account do
     field :id, :integer
-    field :eth_address, :string
-    field :script_hash, :string
+    field :eth_address, :hash_full
+    field :script_hash, :hash_address
     field :registry_address, :string
     field :script, :json
     field :nonce, :integer
@@ -296,13 +304,22 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
       resolve(&Resolvers.Account.udt/3)
     end
 
-    field :account_udts, list_of(:account_udt) do
-      arg(:input, :account_child_account_udts_input,
+    field :account_current_udts, list_of(:account_current_udt) do
+      arg(:input, :account_child_udts_input,
         default_value: %{page: 1, page_size: 20, sort_type: :desc}
       )
 
       middleware(MTermRange, MTermRange.page_and_size_default_config())
-      resolve(&Resolvers.Account.account_udts/3)
+      resolve(&Resolvers.Account.account_current_udts/3)
+    end
+
+    field :account_current_bridged_udts, list_of(:account_current_bridged_udt) do
+      arg(:input, :account_child_udts_input,
+        default_value: %{page: 1, page_size: 20, sort_type: :desc}
+      )
+
+      middleware(MTermRange, MTermRange.page_and_size_default_config())
+      resolve(&Resolvers.Account.account_current_bridged_udts/3)
     end
 
     field :smart_contract, :smart_contract do
@@ -324,14 +341,14 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
     address: account address(eth_address)
     example: "0x59b670e9fa9d0a427751af201d676719a970857b"
 
-    script_hash: other address not compatible with eip55
+    script_hash: script hash with hash_full type
     example: "0x08c9937e412e135928fd6dec7255965ddd7df4d5a163564b60895100bb3b2f9e"
     """
-    field :address, :string
-    field :script_hash, :string
+    field :address, :hash_address
+    field :script_hash, :hash_full
   end
 
-  input_object :account_child_account_udts_input do
+  input_object :account_child_udts_input do
     import_fields(:page_and_size_input)
     import_fields(:sort_type_input)
   end

@@ -7,10 +7,23 @@ defmodule GodwokenExplorer.Graphql.Resolvers.SmartContract do
 
   def smart_contract(
         _parent,
-        %{input: %{contract_address: contract_address}} = _args,
+        %{input: input} = _args,
         _resolution
       ) do
-    account = Account.search(contract_address)
+    contract_address = Map.get(input, :contract_address)
+    script_hash = Map.get(input, :script_hash)
+
+    account =
+      case {contract_address, script_hash} do
+        {nil, script_hash} when not is_nil(script_hash) ->
+          Account.search(script_hash)
+
+        {contract_address, _} when not is_nil(contract_address) ->
+          Account.search(contract_address)
+
+        {nil, nil} ->
+          nil
+      end
 
     if account do
       return =
