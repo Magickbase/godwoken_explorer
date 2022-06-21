@@ -105,7 +105,7 @@ defmodule GodwokenExplorer.Block do
         end)
 
       _ ->
-        from(b in "blocks",
+        from(b in Block,
           select: %{
             hash: b.hash,
             number: b.number,
