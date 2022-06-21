@@ -76,7 +76,7 @@ defmodule GodwokenExplorer.Etherscan.Logs do
     prepared_filter = Map.merge(@base_filter, filter)
 
     condition =
-      case Account.search(address_hash) do
+      case Repo.get_by(Account, eth_address: address_hash) do
         nil ->
           true
 

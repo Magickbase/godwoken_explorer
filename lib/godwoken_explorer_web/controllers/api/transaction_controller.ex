@@ -5,7 +5,7 @@ defmodule GodwokenExplorerWeb.API.TransactionController do
 
   import GodwokenRPC.Util, only: [balance_to_view: 2]
 
-  alias GodwokenExplorer.{Transaction, Account, Repo, PendingTransaction}
+  alias GodwokenExplorer.{Account, Chain, PendingTransaction, Repo, Transaction}
 
   # TODO: Remove after safepal is no longer used
   def index(conn, %{"eth_address" => "0x" <> _, "contract_address" => "0x" <> _} = params) do
@@ -38,8 +38,10 @@ defmodule GodwokenExplorerWeb.API.TransactionController do
 
   def index(conn, %{"eth_address" => "0x" <> _} = params) do
     results =
-      with %Account{type: type} = account <-
-             Account.search(String.downcase(params["eth_address"])) do
+      with {:ok, address_hash} <-
+             Chain.string_to_address_hash(params["eth_address"]),
+           %Account{type: type} = account <-
+             Repo.get_by(Account, eth_address: address_hash) do
         Transaction.account_transactions_data(
           %{type: type, account: account},
           %{

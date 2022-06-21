@@ -185,48 +185,6 @@ defmodule GodwokenExplorer.Chain do
 
   def string_to_address_hash(_), do: :error
 
-  def hash_to_address(%Hash{byte_count: unquote(Hash.Address.byte_count())} = hash) do
-    query =
-      from(
-        address in Address,
-        where: address.hash == ^hash
-      )
-
-    address_result =
-      query
-      |> Repo.one()
-
-    case address_result do
-      nil -> {:error, :not_found}
-      _ -> {:ok, address_result}
-    end
-  end
-
-  def hashes_to_addresses(hashes) when is_list(hashes) do
-    query =
-      from(
-        account in Account,
-        where: account.eth_address in ^hashes,
-        select: account.eth_address
-      )
-
-    results = Repo.all(query)
-
-    hashes
-    |> Enum.map(fn hash ->
-      result = results |> Enum.find(fn result -> hash in result end)
-
-      script_hash =
-        if is_nil(result) do
-          nil
-        else
-          List.last(result)
-        end
-
-      %{hash: hash, script_hash: script_hash}
-    end)
-  end
-
   @spec check_address_exists(Hash.Address.t()) :: :ok | :not_found
   def check_address_exists(address_hash) do
     address_hash
@@ -379,7 +337,7 @@ defmodule GodwokenExplorer.Chain do
   end
 
   def token_from_address_hash(%Hash{byte_count: unquote(Hash.Address.byte_count())} = hash) do
-    with %Account{id: id} <- Account.search(hash),
+    with %Account{id: id} <- Repo.get_by(Account, eth_address: hash),
          %UDT{supply: supply} <-
            UDT |> where([u], u.id == ^id or u.bridge_account_id == ^id) |> Repo.one() do
       {:ok, supply}
@@ -435,7 +393,7 @@ defmodule GodwokenExplorer.Chain do
   defp address_from_param(param) do
     case string_to_address_hash(param) do
       {:ok, hash} ->
-        case Account.search(hash) do
+        case Repo.get_by(Account, eth_address: hash) do
           nil ->
             {:error, :not_found}
 

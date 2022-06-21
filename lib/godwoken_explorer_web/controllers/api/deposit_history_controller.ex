@@ -1,13 +1,13 @@
 defmodule GodwokenExplorerWeb.API.DepositHistoryController do
   use GodwokenExplorerWeb, :controller
 
-  alias GodwokenExplorer.{Account, Chain, DepositHistoryView}
+  alias GodwokenExplorer.{Account, Chain, DepositHistoryView, Repo}
 
   action_fallback GodwokenExplorerWeb.API.FallbackController
 
   def index(conn, %{"eth_address" => "0x" <> _} = params) do
     with {:ok, address_hash} <- Chain.string_to_address_hash(params["eth_address"]),
-         %Account{script_hash: script_hash} <- Account.search(address_hash) do
+         %Account{script_hash: script_hash} <- Repo.get_by(Account, eth_address: address_hash) do
       results = DepositHistoryView.list_by_script_hash(script_hash, conn.params["page"] || 1)
 
       data =

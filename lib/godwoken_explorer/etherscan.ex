@@ -31,7 +31,7 @@ defmodule GodwokenExplorer.Etherscan do
         options \\ @default_options
       ) do
     options = Map.merge(@default_options, options)
-    %Account{id: id} = Account.search(address_hash)
+    %Account{id: id} = Repo.get_by(Account, eth_address: address_hash)
 
     query =
       from(
@@ -75,7 +75,7 @@ defmodule GodwokenExplorer.Etherscan do
         options \\ @default_options
       ) do
     options = Map.merge(@default_options, options)
-    %Account{eth_address: eth_address} = Account.search(address_hash)
+    %Account{eth_address: eth_address} = Repo.get_by(Account, eth_address: address_hash)
 
     tt_query =
       from(

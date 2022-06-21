@@ -1,7 +1,7 @@
 defmodule GodwokenExplorerWeb.API.TransferController do
   use GodwokenExplorerWeb, :controller
 
-  alias GodwokenExplorer.{Account, Repo, TokenTransfer}
+  alias GodwokenExplorer.{Account, Chain, Repo, TokenTransfer}
 
   action_fallback(GodwokenExplorerWeb.API.FallbackController)
 
@@ -27,8 +27,10 @@ defmodule GodwokenExplorerWeb.API.TransferController do
   end
 
   def index(conn, %{"eth_address" => "0x" <> _} = params) do
-    with %Account{eth_address: eth_address} <-
-           Account.search(String.downcase(params["eth_address"])) do
+    with {:ok, address_hash} <-
+           Chain.string_to_address_hash(params["eth_address"]),
+         %Account{eth_address: eth_address} <-
+           Repo.get_by(Account, eth_address: address_hash) do
       results =
         TokenTransfer.list(%{eth_address: eth_address}, %{
           page: conn.params["page"] || 1,
