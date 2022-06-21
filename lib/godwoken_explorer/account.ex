@@ -260,6 +260,63 @@ defmodule GodwokenExplorer.Account do
     end
   end
 
+  def import_udt_account(udt_script_and_hashes) do
+    udt_code_hash = Application.get_env(:godwoken_explorer, :udt_code_hash)
+    rollup_script_hash = Application.get_env(:godwoken_explorer, :rollup_script_hash)
+
+    full_params =
+      udt_script_and_hashes
+      |> Enum.map(fn {udt_script_hash, udt_script} ->
+        account_script = %{
+          "code_hash" => udt_code_hash,
+          "hash_type" => "type",
+          "args" => rollup_script_hash <> String.slice(udt_script_hash, 2..-1)
+        }
+
+        l2_script_hash = script_to_hash(account_script)
+
+        %{
+          script: account_script,
+          script_hash: l2_script_hash,
+          udt_script_hash: udt_script_hash,
+          udt_script: udt_script
+        }
+      end)
+
+    params = full_params |> Enum.map(fn full -> full |> Map.take([:script, :script_hash]) end)
+
+    {:ok, %GodwokenRPC.Account.FetchedAccountIDs{errors: [], params_list: l2_script_hash_and_ids}} =
+      GodwokenRPC.fetch_account_ids(params)
+
+    account_attrs =
+      l2_script_hash_and_ids
+      |> Enum.map(fn map ->
+        map
+        |> Map.merge(%{short_address: String.slice(map[:script_hash], 0, 42)})
+        |> Map.merge(%{type: :udt})
+        |> Map.merge(import_timestamps())
+      end)
+
+    Repo.insert_all(Account, account_attrs, on_conflict: :nothing)
+
+    udt_attrs =
+      l2_script_hash_and_ids
+      |> Enum.map(fn map ->
+        full_param =
+          full_params |> Enum.find(fn full -> full[:script_hash] == map[:script_hash] end)
+
+        map
+        |> Map.merge(%{
+          type_script: Map.get(full_param, :udt_script),
+          script_hash: Map.get(full_param, :udt_script_hash)
+        })
+        |> Map.delete(:script)
+        |> Map.merge(import_timestamps())
+      end)
+
+    Repo.insert_all(UDT, udt_attrs, on_conflict: :nothing)
+  end
+
   def find_or_create_udt_account!(
         udt_script,
         udt_script_hash,

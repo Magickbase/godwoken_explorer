@@ -213,7 +213,15 @@ gwscan_multiple_block_once =
 
 gwscan_block_batch_size = System.get_env("GWSCAN_BLOCK_BATCH_SIZE", "1") |> String.to_integer()
 
+gwscan_multiple_l1_block_once =
+  System.get_env("GWSCAN_MULTIPLE_L1_BLOCK_ONCE", "false") |> String.to_atom()
+
+gwscan_l1_block_batch_size =
+  System.get_env("GWSCAN_L1_BLOCK_BATCH_SIZE", "1") |> String.to_integer()
+
 config :godwoken_explorer,
   job: gwscan_scheduler_job,
   multiple_block_once: gwscan_multiple_block_once,
-  block_batch_size: gwscan_block_batch_size
+  block_batch_size: gwscan_block_batch_size,
+  multiple_l1_block_once: gwscan_multiple_l1_block_once,
+  l1_block_batch_size: gwscan_l1_block_batch_size
