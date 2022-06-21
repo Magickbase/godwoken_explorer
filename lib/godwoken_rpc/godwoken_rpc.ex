@@ -12,6 +12,7 @@ defmodule GodwokenRPC do
     FetchedTransaction,
     FetchedTip,
     FetchedBlock,
+    FetchedBlocks,
     FetchedLiveCell,
     FetchedCells
   }
@@ -147,7 +148,8 @@ defmodule GodwokenRPC do
   def fetch_l1_block(block_number) do
     rpc_options = Application.get_env(:godwoken_explorer, :ckb_rpc_named_arguments)
 
-    case FetchedBlock.request(block_number) |> HTTP.json_rpc(rpc_options) do
+    case FetchedBlock.request(%{id: 1, block_number: block_number})
+         |> HTTP.json_rpc(rpc_options) do
       {:ok, response} ->
         {:ok, response}
 
@@ -157,6 +159,18 @@ defmodule GodwokenRPC do
         )
 
         {:error, msg}
+    end
+  end
+
+  def fetch_l1_blocks(params) do
+    id_to_params = id_to_params(params)
+    options = Application.get_env(:godwoken_explorer, :ckb_rpc_named_arguments)
+
+    with {:ok, responses} <-
+           id_to_params
+           |> FetchedBlocks.requests()
+           |> HTTP.json_rpc(options) do
+      {:ok, FetchedBlocks.from_responses(responses, id_to_params)}
     end
   end
 
