@@ -300,7 +300,12 @@ defmodule GodwokenExplorer.Transaction do
       where: t.eth_hash in ^hashes or t.hash in ^hashes,
       select: %{
         hash:
-          fragment("CASE WHEN ? IS NOT NULL THEN ? ELSE ? END", t.eth_hash, t.eth_hash, t.hash),
+          fragment(
+            "CASE WHEN ? IS NOT NULL THEN encode(?, 'hex') ELSE encode(?, 'hex') END",
+            t.eth_hash,
+            t.eth_hash,
+            t.hash
+          ),
         block_hash: b.hash,
         block_number: b.number,
         timestamp: b.timestamp,
