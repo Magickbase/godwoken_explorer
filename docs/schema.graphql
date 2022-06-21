@@ -1936,18 +1936,18 @@ enum SortType {
 type TokenTransfer {
   amount: Decimal
   block: Block
-  block_hash: String
+  block_hash: HashFull
   block_number: Int
   from_account: Account
-  from_address: String
+  from_address: HashAddress
   log_index: Int
   polyjuice: Polyjuice
   to_account: Account
-  to_address: String
-  token_contract_address_hash: String
+  to_address: HashAddress
+  token_contract_address_hash: HashAddress
   token_id: Decimal
   transaction: Transaction
-  transaction_hash: String
+  transaction_hash: HashFull
   udt: Udt
 }
 
@@ -1966,7 +1966,7 @@ input TokenTransferInput {
 
   """argument: the end of block number(inclusive) for search query"""
   end_block_number: Int
-  from_address: String
+  from_address: HashAddress
 
   """
   Limits the number of records returned per page. Note that this number will be capped by maximum_limit=100. Defaults to 20.
@@ -1982,9 +1982,9 @@ input TokenTransferInput {
 
   """argument: the start of block number(inclusive) for search query"""
   start_block_number: Int
-  to_address: String
-  token_contract_address_hash: String
-  transaction_hash: String
+  to_address: HashAddress
+  token_contract_address_hash: HashAddress
+  transaction_hash: HashFull
 }
 
 type Transaction {

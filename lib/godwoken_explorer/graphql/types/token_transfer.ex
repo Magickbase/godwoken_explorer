@@ -282,22 +282,22 @@ defmodule GodwokenExplorer.Graphql.Types.TokenTransfer do
   end
 
   object :token_transfer do
-    field :transaction_hash, :string
+    field :transaction_hash, :hash_full
     field :amount, :decimal
     field :block_number, :integer
-    field :block_hash, :string
+    field :block_hash, :hash_full
     field :log_index, :integer
     field :token_id, :decimal
 
-    field :from_address, :string do
+    field :from_address, :hash_address do
       resolve(&Resolvers.TokenTransfer.from_address/3)
     end
 
-    field :to_address, :string do
+    field :to_address, :hash_address do
       resolve(&Resolvers.TokenTransfer.to_address/3)
     end
 
-    field :token_contract_address_hash, :string
+    field :token_contract_address_hash, :hash_address
 
     field :polyjuice, :polyjuice do
       resolve(&Resolvers.TokenTransfer.polyjuice/3)
@@ -325,14 +325,14 @@ defmodule GodwokenExplorer.Graphql.Types.TokenTransfer do
   end
 
   input_object :token_transfer_input do
-    field :transaction_hash, :string
-    field :from_address, :string
-    field :to_address, :string
+    field :transaction_hash, :hash_full
+    field :from_address, :hash_address
+    field :to_address, :hash_address
     @desc """
     if combine_from_to is true, then from_address and to_address are combined into query condition like `address = from_address OR address = to_address`
     """
     field :combine_from_to, :boolean, default_value: true
-    field :token_contract_address_hash, :string
+    field :token_contract_address_hash, :hash_address
     import_fields(:paginate_input)
     import_fields(:block_range_input)
     import_fields(:sort_type_input)
