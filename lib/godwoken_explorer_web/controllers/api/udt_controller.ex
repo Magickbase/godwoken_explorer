@@ -1,7 +1,7 @@
 defmodule GodwokenExplorerWeb.API.UDTController do
   use GodwokenExplorerWeb, :controller
 
-  alias GodwokenExplorer.{UDTView, Account, Repo}
+  alias GodwokenExplorer.{UDTView, Account, Chain, Repo}
   alias GodwokenExplorer.Counters.{AddressTokenTransfersCounter, AddressTransactionsCounter}
 
   plug JSONAPI.QueryParser, view: UDTView
@@ -21,21 +21,21 @@ defmodule GodwokenExplorerWeb.API.UDTController do
   end
 
   def show(conn, %{"id" => "0x" <> _} = params) do
-    downcase_id = params["id"] |> String.downcase()
+    with {:ok, address_hash} <-
+           Chain.string_to_address_hash(params["id"]),
+         %Account{id: id} = account <-
+           Repo.get_by(Account, eth_address: address_hash) do
+      fetch_transfer_and_transaction_count(account)
 
-    case Account.search(downcase_id) do
-      %Account{id: id} = account ->
-        fetch_transfer_and_transaction_count(account)
+      case UDTView.get_udt(id) do
+        nil ->
+          {:error, :not_found}
 
-        case UDTView.get_udt(id) do
-          nil ->
-            {:error, :not_found}
-
-          udt = %{name: _name} ->
-            result = JSONAPI.Serializer.serialize(UDTView, udt, conn)
-            json(conn, result)
-        end
-
+        udt = %{name: _name} ->
+          result = JSONAPI.Serializer.serialize(UDTView, udt, conn)
+          json(conn, result)
+      end
+    else
       nil ->
         {:error, :not_found}
     end

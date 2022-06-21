@@ -2,7 +2,7 @@ defmodule GodwokenExplorerWeb.Admin.UDTController do
   use GodwokenExplorerWeb, :controller
 
   alias GodwokenExplorer.Admin.UDT, as: Admin
-  alias GodwokenExplorer.{UDT, Account, Repo}
+  alias GodwokenExplorer.{Account, Chain, Repo, UDT}
 
   plug(:put_root_layout, {GodwokenExplorerWeb.LayoutView, "torch.html"})
   plug(:put_layout, false)
@@ -25,19 +25,20 @@ defmodule GodwokenExplorerWeb.Admin.UDTController do
   end
 
   def create(conn, %{"udt" => udt_params}) do
-    %Account{id: udt_id} =
-      udt_params["udt_address"]
-      |> String.downcase()
-      |> Account.search()
+    udt_id =
+      with {:ok, address_hash} <- Chain.string_to_address_hash(udt_params["udt_address"]),
+           %Account{id: udt_id} <- Repo.get_by(Account, eth_address: address_hash) do
+        udt_id
+      end
 
     udt_params =
       if udt_params["type"] == "native" do
         udt_params |> Map.merge(%{"bridge_account_id" => udt_id})
       else
-        with %Account{id: id, type: :polyjuice_contract} <-
-               udt_params["bridge_account_eth_address"]
-               |> String.downcase()
-               |> Account.search() do
+        with {:ok, address_hash} <-
+               Chain.string_to_address_hash(udt_params["bridge_account_eth_address"]),
+             %Account{id: id, type: :polyjuice_contract} <-
+               Repo.get_by(Account, eth_address: address_hash) do
           udt_params
           |> Map.merge(%{"bridge_account_id" => id})
         else
@@ -109,10 +110,10 @@ defmodule GodwokenExplorerWeb.Admin.UDTController do
       if udt_params["type"] == "native" do
         udt_params |> Map.merge(%{"bridge_account_id" => id})
       else
-        with %Account{id: id, type: :polyjuice_contract} <-
-               udt_params["bridge_account_eth_address"]
-               |> String.downcase()
-               |> Account.search() do
+        with {:ok, address_hash} <-
+               Chain.string_to_address_hash(udt_params["bridge_account_eth_address"]),
+             %Account{id: id, type: :polyjuice_contract} <-
+               Repo.get_by(Account, eth_address: address_hash) do
           udt_params |> Map.merge(%{"bridge_account_id" => id})
         else
           _ -> udt_params |> Map.merge(%{"bridge_account_id" => nil})

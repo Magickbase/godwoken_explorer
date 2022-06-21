@@ -3,11 +3,11 @@ defmodule GodwokenExplorerWeb.API.AccountController do
 
   action_fallback GodwokenExplorerWeb.API.FallbackController
 
-  alias GodwokenExplorer.{Account, Chain}
+  alias GodwokenExplorer.{Account, Chain, Repo}
 
   def show(conn, %{"id" => "0x" <> _} = params) do
     with {:ok, address_hash} <- Chain.string_to_address_hash(params["id"]) do
-      case Account.search(address_hash) do
+      case Repo.get_by(Account, eth_address: address_hash) do
         %Account{id: id} = account ->
           Account.async_fetch_transfer_and_transaction_count(account)
 

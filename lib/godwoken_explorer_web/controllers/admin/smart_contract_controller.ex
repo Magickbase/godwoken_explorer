@@ -2,8 +2,7 @@ defmodule GodwokenExplorerWeb.Admin.SmartContractController do
   use GodwokenExplorerWeb, :controller
 
   alias GodwokenExplorer.Admin.SmartContract, as: Admin
-  alias GodwokenExplorer.{Account, SmartContract}
-  alias GodwokenExplorer.Chain.Hash
+  alias GodwokenExplorer.{Account, Chain, Repo, SmartContract}
 
   plug(:put_root_layout, {GodwokenExplorerWeb.LayoutView, "torch.html"})
   plug(:put_layout, false)
@@ -26,9 +25,10 @@ defmodule GodwokenExplorerWeb.Admin.SmartContractController do
   end
 
   def create(conn, %{"smart_contract" => smart_contract_params}) do
-    with {:ok, address_hash} <- smart_contract_params["eth_address"] |> Hash.Address.cast(),
+    with {:ok, address_hash} <-
+           Chain.string_to_address_hash(smart_contract_params["eth_address"]),
          %Account{id: id, type: :polyjuice_contract} <-
-           Account.search(address_hash) do
+           Repo.get_by(Account, eth_address: address_hash) do
       Admin.create_smart_contract(
         smart_contract_params
         |> Map.merge(%{
@@ -71,10 +71,10 @@ defmodule GodwokenExplorerWeb.Admin.SmartContractController do
   def update(conn, %{"id" => id, "smart_contract" => smart_contract_params}) do
     smart_contract = Admin.get_smart_contract!(id)
 
-    with %Account{id: id, type: :polyjuice_contract} <-
-           smart_contract_params["eth_address"]
-           |> String.downcase()
-           |> Account.search() do
+    with {:ok, address_hash} <-
+           Chain.string_to_address_hash(smart_contract_params["eth_address"]),
+         %Account{id: id, type: :polyjuice_contract} <-
+           Repo.get_by(Account, eth_address: address_hash) do
       case Admin.update_smart_contract(
              smart_contract,
              smart_contract_params

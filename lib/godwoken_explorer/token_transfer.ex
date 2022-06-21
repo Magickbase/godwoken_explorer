@@ -78,7 +78,7 @@ defmodule GodwokenExplorer.TokenTransfer do
 
   def list(%{eth_address: eth_address}, paging_options) do
     token_transfer_count =
-      case Account.search(eth_address) do
+      case Repo.get_by(Account, eth_address: eth_address) do
         %Account{token_transfer_count: token_transfer_count} -> token_transfer_count || 0
         nil -> Chain.address_to_token_transfer_count(eth_address)
       end
@@ -136,7 +136,7 @@ defmodule GodwokenExplorer.TokenTransfer do
 
   def list(%{udt_address: udt_address}, paging_options) do
     token_transfer_count =
-      case Account.search(udt_address) do
+      case Repo.get_by(Account, eth_address: udt_address) do
         %Account{token_transfer_count: token_transfer_count} -> token_transfer_count || 0
         nil -> Chain.address_to_token_transfer_count(udt_address)
       end
