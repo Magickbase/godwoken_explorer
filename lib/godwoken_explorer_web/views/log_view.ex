@@ -2,6 +2,7 @@ defmodule GodwokenExplorer.LogView do
   use JSONAPI.View, type: "log"
 
   import Ecto.Query, only: [from: 2]
+  import GodwokenRPC.Util, only: [stringify_and_unix_maps: 1]
 
   alias GodwokenExplorer.{Account, Log, Repo, SmartContract, Transaction}
 
@@ -78,5 +79,6 @@ defmodule GodwokenExplorer.LogView do
       limit: 25
     )
     |> Repo.all()
+    |> Enum.map(&stringify_and_unix_maps(&1))
   end
 end
