@@ -198,4 +198,28 @@ defmodule GodwokenExplorer.UDT do
         ""
     end
   end
+
+  def list_bridge_token_by_udt_script_hashes(udt_script_hashes) do
+    from(u in UDT,
+      where: u.type == :bridge and u.script_hash in ^udt_script_hashes,
+      select: {u.script_hash, u.id}
+    )
+    |> Repo.all()
+  end
+
+  def filter_not_exist_udts(udt_script_and_hashes) do
+    udt_script_and_hashes = udt_script_and_hashes |> Enum.into(%{}, fn {k, v} -> {k, v} end)
+
+    udt_script_hashes = udt_script_and_hashes |> Map.keys()
+
+    exist_udt_script_hashes =
+      from(u in UDT,
+        where: u.type == :bridge and u.script_hash in ^udt_script_hashes,
+        select: u.script_hash
+      )
+      |> Repo.all()
+
+    not_exist_udt_script_hashes = udt_script_hashes -- exist_udt_script_hashes
+    Map.take(udt_script_and_hashes, not_exist_udt_script_hashes)
+  end
 end

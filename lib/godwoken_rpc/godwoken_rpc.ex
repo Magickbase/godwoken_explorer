@@ -21,6 +21,7 @@ defmodule GodwokenRPC do
 
   alias GodwokenRPC.Account.{
     FetchedAccountID,
+    FetchedAccountIDs,
     FetchedScriptHash,
     FetchedScriptHashes,
     FetchedScript,
@@ -174,10 +175,22 @@ defmodule GodwokenRPC do
     end
   end
 
+  def fetch_account_ids(params) do
+    id_to_params = id_to_params(params)
+    options = Application.get_env(:godwoken_explorer, :json_rpc_named_arguments)
+
+    with {:ok, responses} <-
+           id_to_params
+           |> FetchedAccountIDs.requests()
+           |> HTTP.json_rpc(options) do
+      {:ok, FetchedAccountIDs.from_responses(responses, id_to_params)}
+    end
+  end
+
   def fetch_account_id(account_script_hash) do
     options = Application.get_env(:godwoken_explorer, :json_rpc_named_arguments)
 
-    case FetchedAccountID.request(%{script_hash: account_script_hash})
+    case FetchedAccountID.request(%{id: 1, script: nil, script_hash: account_script_hash})
          |> HTTP.json_rpc(options) do
       {:ok, account_id} when is_nil(account_id) ->
         Logger.error("Fetch account succeed.But is nil!!!:#{account_script_hash}")

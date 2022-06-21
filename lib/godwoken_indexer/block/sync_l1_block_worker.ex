@@ -9,7 +9,13 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
     ]
 
   import GodwokenRPC.Util,
-    only: [hex_to_number: 1, script_to_hash: 1, parse_le_number: 1, timestamp_to_datetime: 1]
+    only: [
+      hex_to_number: 1,
+      script_to_hash: 1,
+      parse_le_number: 1,
+      timestamp_to_datetime: 1,
+      import_timestamps: 0
+    ]
 
   require Logger
 
@@ -60,7 +66,13 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
 
     {:ok, next_block_number} =
       if block_number + @buffer_block_for_create_account <= l1_tip_number do
-        {:ok, _new_block_number} = fetch_deposition_script_and_update(block_number, l1_tip_number)
+        multiple_l1_block_once? = Application.get_env(:godwoken_explorer, :multiple_l1_block_once)
+
+        if multiple_l1_block_once? do
+          {:ok, _new_block_number} = batch_fetch_l1_script_and_update(block_number)
+        else
+          {:ok, _new_block_number} = fetch_l1_script_and_update(block_number, l1_tip_number)
+        end
       else
         {:ok, block_number}
       end
@@ -70,15 +82,119 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
     {:noreply, state}
   end
 
-  def fetch_deposition_script_and_update(block_number, l1_tip_number) do
+  def batch_fetch_l1_script_and_update(block_number) do
+    deposition_lock = Application.get_env(:godwoken_explorer, :deposition_lock)
+    withdrawal_lock = Application.get_env(:godwoken_explorer, :withdrawal_lock)
+
+    l1_block_batch_size = Application.get_env(:godwoken_explorer, :l1_block_batch_size)
+
+    range = block_number..(block_number + l1_block_batch_size) |> Enum.map(&%{block_number: &1})
+
+    {:ok,
+     %GodwokenRPC.CKBIndexer.FetchedBlocks{
+       errors: [],
+       params_list: block_responses
+     }} = GodwokenRPC.fetch_l1_blocks(range)
+
+    responses = block_responses |> Enum.map(&Map.fetch!(&1, :block))
+    last_header = responses |> List.last() |> Map.fetch!("header")
+    last_block_hash = last_header["hash"]
+    last_block_number = last_header["number"] |> hex_to_number()
+
+    combined_txs =
+      responses
+      |> Enum.flat_map(fn response ->
+        response
+        |> Map.fetch!("transactions")
+        |> Enum.map(fn tx ->
+          tx
+          |> Map.merge(%{"block_number" => response["header"]["number"] |> hex_to_number()})
+          |> Map.merge(%{
+            "timestamp" =>
+              response["header"]["timestamp"] |> hex_to_number() |> timestamp_to_datetime()
+          })
+        end)
+      end)
+
+    deposit_txs =
+      combined_txs
+      |> Enum.flat_map(fn tx ->
+        tx["outputs"]
+        |> Enum.with_index()
+        |> Enum.reduce([], fn {output, index}, acc ->
+          if output["lock"]["code_hash"] == deposition_lock.code_hash &&
+               output["lock"]["hash_type"] == deposition_lock.hash_type &&
+               String.starts_with?(output["lock"]["args"], deposition_lock.args) &&
+               ((is_nil(Map.get(output, "type")) &&
+                   hex_to_number(output["capacity"]) >= @smallest_ckb_capacity) ||
+                  (not is_nil(Map.get(output, "type")) &&
+                     hex_to_number(output["capacity"]) >= @smallest_udt_ckb_capacity)) do
+            [
+              %{
+                output: output,
+                index: index,
+                block_number: tx["block_number"],
+                timestamp: tx["timestamp"],
+                tx_hash: tx["hash"],
+                output_data: tx["outputs_data"] |> Enum.at(index)
+              }
+              | acc
+            ]
+          else
+            acc
+          end
+        end)
+      end)
+
+    withdrawal_txs =
+      combined_txs
+      |> Enum.flat_map(fn tx ->
+        tx["outputs"]
+        |> Enum.with_index()
+        |> Enum.reduce([], fn {output, index}, acc ->
+          if output["lock"]["code_hash"] == withdrawal_lock.code_hash &&
+               output["lock"]["hash_type"] == withdrawal_lock.hash_type &&
+               String.starts_with?(output["lock"]["args"], withdrawal_lock.args) do
+            [
+              %{
+                block_number: tx["block_number"],
+                tx_hash: tx["hash"],
+                index: index,
+                args: output["lock"]["args"] |> String.slice(2..-1),
+                timestamp: tx["timestamp"],
+                output_data: tx["outputs_data"] |> Enum.at(index),
+                output: output
+              }
+              | acc
+            ]
+          else
+            acc
+          end
+        end)
+      end)
+
+    if deposit_txs != [], do: deposit_txs |> parse_deposit_txs() |> import_deposits()
+    if withdrawal_txs != [], do: withdrawal_txs |> parse_withdrawal_txs() |> import_withdrawals()
+
+    CheckInfo.create_or_update_info(%{
+      type: :main_deposit,
+      tip_block_number: last_block_number,
+      block_hash: last_block_hash
+    })
+
+    {:ok, last_block_number + 1}
+  end
+
+  def fetch_l1_script_and_update(block_number, l1_tip_number) do
     deposition_lock = Application.get_env(:godwoken_explorer, :deposition_lock)
     withdrawal_lock = Application.get_env(:godwoken_explorer, :withdrawal_lock)
     check_info = Repo.get_by(CheckInfo, type: :main_deposit)
+
     {:ok, response} = GodwokenRPC.fetch_l1_block(block_number)
+
     header = response["header"]
     block_hash = header["hash"]
-
-    timestamp = header["timestamp"] |> hex_to_number() |> timestamp_to_datetime
+    timestamp = header["timestamp"] |> hex_to_number() |> timestamp_to_datetime()
 
     if forked?(header["parent_hash"], check_info) do
       Logger.error("!!!!!!forked!!!!!!#{block_number}")
@@ -142,6 +258,70 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
     {:ok, block_number + 1}
   end
 
+  def parse_withdrawal_txs(withdrawal_txs) do
+    parsed_withdrawal_histories =
+      withdrawal_txs
+      |> Enum.map(fn %{
+                       block_number: block_number,
+                       tx_hash: tx_hash,
+                       index: index,
+                       args: args,
+                       timestamp: timestamp,
+                       output_data: output_data,
+                       output: output
+                     } ->
+        {
+          l2_script_hash,
+          {l2_block_hash, l2_block_number},
+          {_sudt_script_hash, sell_amount, sell_capacity},
+          owner_lock_hash,
+          payment_lock_hash
+        } = parse_withdrawal_lock_args(args |> String.slice(0..447))
+
+        capacity = hex_to_number(output["capacity"])
+        {_udt_script, udt_script_hash, amount} = parse_udt_script(output, output_data, capacity)
+
+        %{
+          is_fast_withdrawal: fast_withdrawal?(args),
+          layer1_block_number: block_number,
+          layer1_tx_hash: tx_hash,
+          layer1_output_index: index,
+          l2_script_hash: "0x" <> l2_script_hash,
+          block_hash: "0x" <> l2_block_hash,
+          block_number: l2_block_number,
+          udt_script_hash: "0x" <> udt_script_hash,
+          sell_amount: sell_amount |> parse_le_number,
+          sell_capacity: sell_capacity,
+          owner_lock_hash: "0x" <> owner_lock_hash,
+          payment_lock_hash: "0x" <> payment_lock_hash,
+          timestamp: timestamp,
+          amount: amount,
+          capacity: capacity
+        }
+      end)
+
+    udt_script_hash_with_ids = list_udt_script_hash_and_udt_id(parsed_withdrawal_histories)
+
+    parsed_withdrawal_histories
+    |> Enum.map(fn wh ->
+      wh
+      |> Map.merge(%{udt_id: Map.fetch!(udt_script_hash_with_ids, wh[:udt_script_hash])})
+      |> Map.merge(import_timestamps())
+    end)
+  end
+
+  defp list_udt_script_hash_and_udt_id(parsed_histories) do
+    parsed_histories
+    |> Enum.uniq_by(&Map.fetch!(&1, :udt_script_hash))
+    |> Enum.map(&Map.fetch!(&1, :udt_script_hash))
+    |> UDT.list_bridge_token_by_udt_script_hashes()
+    |> Enum.into(%{}, fn {k, v} -> {k, v} end)
+  end
+
+  defp import_withdrawals(withdrawal_histories) do
+    Repo.insert_all(WithdrawalHistory, withdrawal_histories, on_conflict: :nothing)
+  end
+
   defp parse_withdrawal_lock_args_and_save(%{
          block_number: block_number,
          tx_hash: tx_hash,
@@ -160,18 +340,6 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
       payment_lock_hash
     } = parse_withdrawal_lock_args(args |> String.slice(0..447))
 
-    fast_withdrawal? =
-      if String.length(args) == 448 do
-        false
-      else
-        try do
-          owner_lock_length = args |> String.slice(448..455) |> hex_to_number
-          args |> String.slice((456 + owner_lock_length * 2)..-1) == "01"
-        rescue
-          _ -> false
-        end
-      end
-
     capacity = hex_to_number(output["capacity"])
     {udt_script, udt_script_hash, amount} = parse_udt_script(output, output_data, capacity)
 
@@ -183,7 +351,7 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
              l1_tip_number
            ) do
       WithdrawalHistory.create_or_update_history!(%{
-        is_fast_withdrawal: fast_withdrawal?,
+        is_fast_withdrawal: fast_withdrawal?(args),
         layer1_block_number: block_number,
         layer1_tx_hash: tx_hash,
         layer1_output_index: index,
@@ -201,6 +369,60 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
         capacity: capacity
       })
     end
+  end
+
+  defp parse_deposit_txs(deposit_txs) do
+    parsed_deposit_histories =
+      deposit_txs
+      |> Enum.map(fn %{
+                       output: output,
+                       block_number: l1_block_number,
+                       index: index,
+                       timestamp: timestamp,
+                       tx_hash: tx_hash,
+                       output_data: output_data
+                     } ->
+        capacity = hex_to_number(output["capacity"])
+        [script_hash, l1_lock_hash] = parse_lock_args(output["lock"]["args"])
+        {udt_script, udt_script_hash, amount} = parse_udt_script(output, output_data, capacity)
+
+        %{
+          layer1_block_number: l1_block_number,
+          layer1_tx_hash: tx_hash,
+          layer1_output_index: index,
+          timestamp: timestamp,
+          udt_script_hash: udt_script_hash,
+          udt_script: udt_script,
+          amount: amount,
+          ckb_lock_hash: l1_lock_hash,
+          script_hash: script_hash,
+          capacity: capacity
+        }
+      end)
+
+    import_udts(parsed_deposit_histories)
+    udt_script_hash_with_ids = list_udt_script_hash_and_udt_id(parsed_deposit_histories)
+
+    parsed_deposit_histories
+    |> Enum.map(fn dh ->
+      dh
+      |> Map.merge(%{udt_id: Map.fetch!(udt_script_hash_with_ids, dh[:udt_script_hash])})
+      |> Map.delete(:udt_script)
+      |> Map.delete(:udt_script_hash)
+      |> Map.merge(import_timestamps())
+    end)
+  end
+
+  defp import_deposits(deposit_histories) do
+    Repo.insert_all(DepositHistory, deposit_histories, on_conflict: :nothing)
+  end
+
+  defp import_udts(parsed_deposit_histories) do
+    parsed_deposit_histories
+    |> Enum.uniq_by(&Map.fetch!(&1, :udt_script_hash))
+    |> Enum.map(&{Map.fetch!(&1, :udt_script_hash), Map.fetch!(&1, :udt_script)})
+    |> UDT.filter_not_exist_udts()
+    |> Account.import_udt_account()
   end
 
   defp parse_lock_args_and_bind(%{
@@ -348,6 +570,19 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
         @default_worker_interval
 
     Process.send_after(self(), {:bind_deposit_work, start_block_number}, second * 1000)
+  end
+
+  defp fast_withdrawal?(args) do
+    if String.length(args) == 448 do
+      false
+    else
+      try do
+        owner_lock_length = args |> String.slice(448..455) |> hex_to_number
+        args |> String.slice((456 + owner_lock_length * 2)..-1) == "01"
+      rescue
+        _ -> false
+      end
+    end
   end
 
   defp forked?(parent_hash, check_info) do
