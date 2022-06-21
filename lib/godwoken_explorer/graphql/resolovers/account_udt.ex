@@ -36,7 +36,6 @@ defmodule GodwokenExplorer.Graphql.Resolvers.AccountUDT do
       |> join(:inner, [cu, _a1], a2 in Account, on: cu.token_contract_address_hash == a2.eth_address)
       |> join(:inner, [_cu, _a1, a2], u in UDT, on: u.id == a2.id)
       |> order_by([cu], desc: cu.updated_at)
-      |> distinct([cu, _a1, _a2, u], [cu.address_hash, u.id])
 
     if is_nil(token_contract_address_hash) do
       query
@@ -74,7 +73,6 @@ defmodule GodwokenExplorer.Graphql.Resolvers.AccountUDT do
       |> join(:inner, [cbu], a2 in Account, on: cbu.udt_script_hash == a2.script_hash)
       |> join(:inner, [_cbu, _a1, a2], u in UDT, on: u.id == a2.id)
       |> order_by([cbu], desc: cbu.updated_at)
-      |> distinct([cbu, _a1, _a2, u], [cbu.address_hash, u.id])
 
     if is_nil(udt_script_hash) do
       query
