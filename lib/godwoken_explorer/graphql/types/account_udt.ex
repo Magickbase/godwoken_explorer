@@ -37,21 +37,7 @@ defmodule GodwokenExplorer.Graphql.Types.AccountUDT do
 
     {
       "data": {
-        "account_current_udts": [
-          {
-            "account": {
-              "eth_address": "0xbb30e8691f6ffd5b4c0b2f73d17847e1e289ea80",
-              "id": 22,
-              "script_hash": "0x391abff2cfc25eec0a9e5c9c3ec3b4c3e7607cbc079ea9c75c997f5e857268ad"
-            },
-            "block_number": 90,
-            "id": 1,
-            "token_contract_address_hash": "0xbb30e8691f6ffd5b4c0b2f73d17847e1e289ea80",
-            "udt": null,
-            "value": "4",
-            "value_fetched_at": "2022-06-01T04:59:29.938716Z"
-          }
-        ]
+        "account_current_udts": []
       }
     }
     """

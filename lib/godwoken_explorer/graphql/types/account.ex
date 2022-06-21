@@ -232,7 +232,7 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
     query {
       account(
         input: {
-          script_hash: "0x9b55204439c78d3b9cbcc62c03f31e47c8457fd39ca9a9eb805b364b45c26c38"
+          script_hash: "0x495D9CFB7B6FAEAEB0F5A7ED81A830A477F7AEEA8D53EF73ABDC2EC2F5FED07C"
         }
       ) {
         type
@@ -244,25 +244,37 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
           account_id
           name
         }
+        account_current_udts {
+          id
+          value
+        }
+        account_current_bridged_udts{
+          id
+          value
+        }
       }
     }
+
 
     {
       "data": {
         "account": {
-          "eth_address": "0x2503a1a79a443f3961ee96a8c5ec513638129614",
+          "account_current_bridged_udts": [
+            {
+              "id": 1,
+              "value": "1165507481400061309833"
+            }
+          ],
+          "account_current_udts": [],
+          "eth_address": "0x715ab282b873b79a7be8b0e8c13c4e8966a52040",
           "script": {
-            "args": "0x702359ea7f073558921eb50d8c1c77e92f760c8f8656bde4995f26b8963e2dd8040000002503a1a79a443f3961ee96a8c5ec513638129614",
-            "code_hash": "0x1629b04b49ded9e5747481f985b11cba6cdd4ffc167971a585e96729455ca736",
+            "args": "0x702359ea7f073558921eb50d8c1c77e92f760c8f8656bde4995f26b8963e2dd8715ab282b873b79a7be8b0e8c13c4e8966a52040",
+            "code_hash": "0x07521d0aa8e66ef441ebc31204d86bb23fc83e9edc58c19dbb1b0ebe64336ec0",
             "hash_type": "type"
           },
-          "script_hash": "0x9b55204439c78d3b9cbcc62c03f31e47c8457fd39ca9a9eb805b364b45c26c38",
-          "smart_contract": {
-            "account_id": "6841",
-            "id": 1,
-            "name": "Test"
-          },
-          "type": "POLYJUICE_CONTRACT"
+          "script_hash": "0x495d9cfb7b6faeaeb0f5a7ed81a830a477f7aeea8d53ef73abdc2ec2f5fed07c",
+          "smart_contract": null,
+          "type": "ETH_USER"
         }
       }
     }
