@@ -1,8 +1,5 @@
 defmodule GodwokenExplorer.Graphql.Middleware.EIP55 do
   @behaviour Absinthe.Middleware
-  def call(resolution, _) do
-    resolution
-  end
 
   def call(resolution, config) when is_list(config) do
     arguments = resolution.arguments
