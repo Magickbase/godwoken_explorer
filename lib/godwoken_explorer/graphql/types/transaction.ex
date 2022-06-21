@@ -1,8 +1,6 @@
 defmodule GodwokenExplorer.Graphql.Types.Transaction do
   use Absinthe.Schema.Notation
   alias GodwokenExplorer.Graphql.Resolvers, as: Resolvers
-  alias GodwokenExplorer.Graphql.Middleware.EIP55, as: MEIP55
-  alias GodwokenExplorer.Graphql.Middleware.Downcase, as: MDowncase
 
   object :transaction_querys do
     @desc """
@@ -87,7 +85,6 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
     """
     field :transaction, :transaction do
       arg(:input, non_null(:transaction_input))
-      middleware(MDowncase, [:transaction_hash, :eth_hash])
       resolve(&Resolvers.Transaction.transaction/3)
     end
 
@@ -300,8 +297,6 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
     """
     field :transactions, :paginate_trasactions do
       arg(:input, non_null(:transactions_input))
-      middleware(MEIP55, [:address])
-      middleware(MDowncase, [:address])
       resolve(&Resolvers.Transaction.transactions/3)
     end
   end
@@ -310,15 +305,15 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
   end
 
   object :transaction do
-    field :hash, :string
+    field :hash, :hash_full
     field :args, :string
     field :from_account_id, :integer
     field :nonce, :integer
     field :to_account_id, :integer
     field :type, :transaction_type
     field :block_number, :integer
-    field :block_hash, :string
-    field :eth_hash, :string
+    field :block_hash, :hash_full
+    field :eth_hash, :hash_full
     field(:index, :integer)
 
     field :polyjuice, :polyjuice do
@@ -354,13 +349,13 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
   end
 
   input_object :transaction_input do
-    field :transaction_hash, :string
-    field :eth_hash, :string
+    field :transaction_hash, :hash_full
+    field :eth_hash, :hash_full
   end
 
   input_object :transactions_input do
-    field :address, :string
-    field :script_hash, :string
+    field :address, :hash_address
+    field :script_hash, :hash_full
     field :sort, :sort_type
     import_fields(:paginate_input)
     import_fields(:sort_type_input)

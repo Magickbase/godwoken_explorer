@@ -1990,12 +1990,12 @@ input TokenTransferInput {
 type Transaction {
   args: String
   block: Block
-  block_hash: String
+  block_hash: HashFull
   block_number: Int
-  eth_hash: String
+  eth_hash: HashFull
   from_account: Account
   from_account_id: Int
-  hash: String
+  hash: HashFull
   index: Int
   nonce: Int
   polyjuice: Polyjuice
@@ -2006,12 +2006,12 @@ type Transaction {
 }
 
 input TransactionInput {
-  eth_hash: String
-  transaction_hash: String
+  eth_hash: HashFull
+  transaction_hash: HashFull
 }
 
 input TransactionsInput {
-  address: String
+  address: HashAddress
 
   """Fetch the records after this cursor."""
   after: String
@@ -2026,7 +2026,7 @@ input TransactionsInput {
   Limits the number of records returned per page. Note that this number will be capped by maximum_limit=100. Defaults to 20.
   """
   limit: Int = 20
-  script_hash: String
+  script_hash: HashFull
   sort: SortType
 
   """
