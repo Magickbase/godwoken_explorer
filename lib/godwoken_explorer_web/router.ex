@@ -61,6 +61,7 @@ defmodule GodwokenExplorerWeb.Router do
     get("/daily_stats", DailyStatController, :index)
     get("/txs/:hash/logs", Transaction.LogController, :index)
     get("/accounts/:address/logs", Account.LogController, :index)
+    get("/poly_versions", PolyVersionController, :index)
   end
 
   scope "/api/v1", as: :api_v1 do

@@ -4,7 +4,15 @@ defmodule GodwokenRPC do
   require Logger
 
   alias GodwokenRPC.{Blocks, Block, HTTP, Receipts, Contract}
-  alias GodwokenRPC.Web3.{FetchedTransactionReceipt, FetchedBlockByHash, FetchedCodes}
+
+  alias GodwokenRPC.Web3.{
+    FetchedTransactionReceipt,
+    FetchedBlockByHash,
+    FetchedCodes,
+    EthCall,
+    FetchedPolyVersion
+  }
+
   alias GodwokenRPC.Transaction.FetchedTransaction, as: FetchedGodwokenTransaction
 
   alias GodwokenRPC.CKBIndexer.{
@@ -15,8 +23,6 @@ defmodule GodwokenRPC do
     FetchedLiveCell,
     FetchedCells
   }
-
-  alias GodwokenRPC.Web3.EthCall
 
   alias GodwokenRPC.Account.{
     FetchedAccountID,
@@ -408,6 +414,19 @@ defmodule GodwokenRPC do
       {:error, msg} ->
         Logger.error("Failed to eth call: #{inspect(msg)} #{inspect(params)}")
         {:error, :node_error}
+    end
+  end
+
+  def fetch_poly_version() do
+    options = Application.get_env(:godwoken_explorer, :json_rpc_named_arguments)
+
+    case FetchedPolyVersion.request() |> HTTP.json_rpc(options) do
+      {:ok, response} ->
+        {:ok, response}
+
+      _ ->
+        Logger.error("Failed to fetch poly version")
+        {:error, nil}
     end
   end
 
