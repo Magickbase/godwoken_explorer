@@ -30,6 +30,7 @@ defmodule GodwokenExplorer.Application do
       GodwokenExplorer.Chain.Cache.TransactionCount,
       GodwokenExplorer.Chain.Cache.Blocks,
       GodwokenExplorer.Chain.Cache.Transactions,
+      GodwokenExplorer.Chain.Cache.PolyVersion,
       GodwokenExplorer.ETS.SmartContracts,
       {Oban, oban_config()}
     ]
