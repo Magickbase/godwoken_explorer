@@ -27,7 +27,6 @@ defmodule GodwokenExplorer.TokenTransfer do
     field(:token_contract_address_hash, :binary)
     field(:amounts, {:array, :decimal})
     field(:token_ids, {:array, :decimal})
-
     timestamps()
   end
 
