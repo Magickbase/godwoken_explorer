@@ -28,6 +28,14 @@ defmodule GodwokenExplorer.TokenTransfer do
     field(:amounts, {:array, :decimal})
     field(:token_ids, {:array, :decimal})
 
+    belongs_to(:block, Block, foreign_key: :block_hash, references: :hash, type: :string)
+
+    belongs_to(:transaction, Transaction,
+      foreign_key: :transaction_hash,
+      primary_key: true,
+      references: :eth_hash,
+      type: :string
+    )
     timestamps()
   end
 
