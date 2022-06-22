@@ -54,6 +54,8 @@ services:
       - GWSCAN_SCHEDULER_JOB
       - GWSCAN_MULTIPLE_BLOCK_ONCE
       - GWSCAN_BLOCK_BATCH_SIZE
+      - GWSCAN_MULTIPLE_L1_BLOCK_ONCE
+      - GWSCAN_L1_BLOCK_BATCH_SIZE
     ports:
       - 4001:4001
     extra_hosts:
