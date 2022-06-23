@@ -17,12 +17,13 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
       import_timestamps: 0
     ]
 
-  require Logger
+  import Ecto.Query, only: [from: 2]
 
-  alias GodwkenRPC
+  require Logger
 
   alias GodwokenExplorer.{
     Account,
+    AccountUDT,
     CheckInfo,
     Repo,
     Block,
@@ -185,7 +186,14 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
         end)
       end)
 
-    if deposit_txs != [], do: deposit_txs |> parse_deposit_txs() |> import_deposits()
+    if deposit_txs != [],
+      do:
+        deposit_txs
+        |> parse_deposit_txs()
+        |> import_deposits()
+        |> elem(1)
+        |> import_eoa_accounts()
+
     if withdrawal_txs != [], do: withdrawal_txs |> parse_withdrawal_txs() |> import_withdrawals()
 
     CheckInfo.create_or_update_info(%{
@@ -304,7 +312,59 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
   end
 
   defp import_deposits(deposit_histories) do
-    Repo.insert_all(DepositHistory, deposit_histories, on_conflict: :nothing)
+    Repo.insert_all(DepositHistory, deposit_histories,
+      on_conflict: :nothing,
+      returning: [:script_hash, :udt_id]
+    )
+  end
+
+  def import_eoa_accounts(deposit_histories) do
+    if deposit_histories != [] do
+      script_hashes_and_udt_id =
+        deposit_histories |> Enum.map(&{Map.fetch!(&1, :script_hash), Map.fetch!(&1, :udt_id)})
+
+      script_hashes_and_udt_id_map =
+        script_hashes_and_udt_id |> Enum.uniq() |> Enum.into(%{}, fn {k, v} -> {k, v} end)
+
+      script_hashes = Map.keys(script_hashes_and_udt_id_map)
+
+      exist_script_hashes =
+        from(a in Account, where: a.script_hash in ^script_hashes, select: a.script_hash)
+        |> Repo.all()
+
+      not_exist_script_hashes = script_hashes -- exist_script_hashes
+      Account.batch_import_accounts_with_script_hashes(not_exist_script_hashes)
+
+      script_hash_short_address =
+        from(a in Account,
+          where: a.script_hash in ^script_hashes,
+          select: {a.script_hash, a.short_address}
+        )
+        |> Repo.all()
+        |> Enum.into(%{}, fn {k, v} -> {k, v} end)
+
+      params =
+        script_hashes_and_udt_id_map
+        |> Enum.map(fn {script_hash, udt_id} ->
+          %{
+            short_address: Map.fetch!(script_hash_short_address, script_hash),
+            udt_id: udt_id,
+            token_contract_address_hash: nil
+          }
+        end)
+
+      {:ok, %GodwokenRPC.Account.FetchedBalances{params_list: import_account_udts}} =
+        GodwokenRPC.fetch_balances(params)
+
+      import_account_udts =
+        import_account_udts
+        |> Enum.map(fn import_au -> import_au |> Map.merge(import_timestamps()) end)
+
+      Repo.insert_all(AccountUDT, import_account_udts,
+        on_conflict: {:replace, [:balance, :updated_at]},
+        conflict_target: [:address_hash, :token_contract_address_hash]
+      )
+    end
   end
 
   defp import_udts(parsed_deposit_histories) do
