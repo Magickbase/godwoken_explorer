@@ -20,8 +20,8 @@ defmodule GodwokenRPC.Account.FetchedScripts do
   end
 
   def requests(id_to_params) when is_map(id_to_params) do
-    Enum.map(id_to_params, fn {id, %{script_hash: script_hash, account_id: account_id}} ->
-      FetchedScript.request(%{id: id, script_hash: script_hash, account_id: account_id})
+    Enum.map(id_to_params, fn {id, %{script_hash: script_hash}} ->
+      FetchedScript.request(%{id: id, script_hash: script_hash})
     end)
   end
 end
