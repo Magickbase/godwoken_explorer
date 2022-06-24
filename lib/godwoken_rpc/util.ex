@@ -9,6 +9,14 @@ defmodule GodwokenRPC.Util do
   @full_length_size 4
   @offset_size 4
 
+  def transform_hex_number_to_le(hex_number, bytes) do
+    hex_number
+    |> hex_to_number()
+    |> integer_to_le_binary()
+    |> pad_trailing(bytes)
+    |> Base.encode16(case: :lower)
+  end
+
   def integer_to_le_hex(integer) do
     integer |> :binary.encode_unsigned(:little) |> Base.encode16() |> String.downcase()
   end
@@ -203,31 +211,5 @@ defmodule GodwokenRPC.Util do
     address_len_bytes = block_producer |> String.slice(8..15) |> parse_le_number()
     address = block_producer |> String.slice(16, address_len_bytes * 2)
     {registry_id, "0x" <> address}
-  end
-
-  def parse_registry_address(registry_address_struct) do
-    if is_nil(registry_address_struct) do
-      nil
-    else
-      le_registry_id_hex =
-        registry_address_struct["registry_id"]
-        |> hex_to_number()
-        |> integer_to_le_binary()
-        |> pad_trailing(4)
-        |> Base.encode16(case: :lower)
-
-      address_len =
-        registry_address_struct["address"]
-        |> String.slice(2..-1)
-        |> String.length()
-        |> Kernel.div(2)
-        |> integer_to_le_binary()
-        |> pad_trailing(4)
-        |> Base.encode16(case: :lower)
-
-      "0x" <>
-        le_registry_id_hex <>
-        address_len <> String.slice(registry_address_struct["address"], 2..-1)
-    end
   end
 end

@@ -222,16 +222,8 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
                 nonce = GodwokenRPC.fetch_nonce(account_id)
                 {:ok, script} = GodwokenRPC.fetch_script(script_hash)
                 type = Account.switch_account_type(script["code_hash"], script["args"])
-
-                registry_address =
-                  if type in [:eth_user, :polyjuice_contract] do
-                    {:ok, registry_address} = GodwokenRPC.fetch_registry_address(script_hash)
-                    registry_address
-                  else
-                    nil
-                  end
-
                 eth_address = Account.script_to_eth_adress(type, script["args"])
+                registry_address = Account.eth_address_to_registry_address(eth_address)
 
                 {:ok, account} =
                   Account.create_or_update_account!(%{
