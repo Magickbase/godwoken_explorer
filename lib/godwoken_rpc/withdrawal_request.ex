@@ -43,7 +43,10 @@ defmodule GodwokenRPC.WithdrawalRequest do
         transform_hex_number_to_le(fee_sudt_id, 4) <>
         transform_hex_number_to_le(fee_amount, 16)
 
-    hash = Blake2b.hash_hex(molecule_raw, "", 32, "", "ckb-default-hash")
+    hash =
+      molecule_raw
+      |> Base.decode16!(case: :lower)
+      |> Blake2b.hash_hex("", 32, "", "ckb-default-hash")
 
     %{
       hash: "0x" <> hash,
