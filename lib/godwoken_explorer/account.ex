@@ -7,7 +7,9 @@ defmodule GodwokenExplorer.Account do
       balance_to_view: 2,
       import_timestamps: 0,
       integer_to_le_binary: 1,
-      pad_trailing: 3
+      pad_trailing: 3,
+      transform_hex_number_to_le: 2,
+      number_to_hex: 1
     ]
 
   require Logger
@@ -407,6 +409,19 @@ defmodule GodwokenExplorer.Account do
     end
   end
 
+  def eth_address_to_registry_address(eth_address) do
+    if eth_address != nil do
+      eth_address = String.slice(eth_address, 2..-1)
+      eth_addr_reg_id = Application.get_env(:godwoken_explorer, :eth_addr_reg_id)
+
+      address_byte_count = eth_address |> String.length() |> Kernel.div(2) |> number_to_hex()
+
+      "0x" <>
+        transform_hex_number_to_le(eth_addr_reg_id, 4) <>
+        transform_hex_number_to_le(address_byte_count, 4) <> eth_address
+    end
+  end
+
   def non_create_account_info(eth_address) do
     udt_list = AccountUDT.list_udt_by_eth_address(eth_address)
 
@@ -523,11 +538,8 @@ defmodule GodwokenExplorer.Account do
     {:ok, %{errors: [], params_list: script_hash_list}} = GodwokenRPC.fetch_script_hashes(params)
     {:ok, %{errors: [], params_list: script_list}} = GodwokenRPC.fetch_scripts(script_hash_list)
 
-    {:ok, %{errors: [], params_list: registry_address_list}} =
-      GodwokenRPC.fetch_registry_addresses(script_hash_list)
-
     account_list =
-      (script_hash_list ++ script_list ++ registry_address_list)
+      (script_hash_list ++ script_list)
       |> Enum.group_by(&Map.get(&1, :script_hash))
       |> Enum.map(fn {_, list} ->
         Enum.concat(list)
@@ -542,13 +554,15 @@ defmodule GodwokenExplorer.Account do
                      } = account ->
         type = switch_account_type(script["code_hash"], script["args"])
         eth_address = script_to_eth_adress(type, script["args"])
+        registry_address = eth_address_to_registry_address(eth_address)
 
         account
         |> Map.merge(%{
           id: account_id,
           type: type,
           nonce: 0,
-          eth_address: eth_address
+          eth_address: eth_address,
+          registry_address: registry_address
         })
         |> Map.drop([:account_id])
         |> Map.merge(import_timestamps())
@@ -565,15 +579,8 @@ defmodule GodwokenExplorer.Account do
       {:ok, script} = GodwokenRPC.fetch_script(script_hash)
       type = switch_account_type(script["code_hash"], script["args"])
 
-      registry_address =
-        if type in [:eth_user, :polyjuice_contract] do
-          {:ok, registry_address} = GodwokenRPC.fetch_registry_address(script_hash)
-          registry_address
-        else
-          nil
-        end
-
       eth_address = script_to_eth_adress(type, script["args"])
+      registry_address = eth_address_to_registry_address(eth_address)
 
       attrs = %{
         id: id,
