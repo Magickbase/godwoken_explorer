@@ -15,7 +15,7 @@ defmodule GodwokenRPC.Account.FetchedScriptHash do
 
     {:ok,
      %{
-       account_id: account_id,
+       id: account_id,
        script_hash: script_hash
      }}
   end
@@ -24,7 +24,7 @@ defmodule GodwokenRPC.Account.FetchedScriptHash do
       when is_integer(code) and is_binary(message) and is_map(id_to_params) do
     %{account_id: account_id} = Map.fetch!(id_to_params, id)
 
-    annotated_error = Map.put(error, :data, %{account_id: account_id})
+    annotated_error = Map.put(error, :data, %{id: account_id})
 
     {:error, annotated_error}
   end
