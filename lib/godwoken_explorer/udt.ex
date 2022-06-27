@@ -204,7 +204,7 @@ defmodule GodwokenExplorer.UDT do
   def list_bridge_token_by_udt_script_hashes(udt_script_hashes) do
     from(u in UDT,
       where: u.type == :bridge and u.script_hash in ^udt_script_hashes,
-      select: {u.script_hash, u.id}
+      select: {fragment("encode(?, 'hex')", u.script_hash), u.id}
     )
     |> Repo.all()
   end
@@ -217,7 +217,7 @@ defmodule GodwokenExplorer.UDT do
     exist_udt_script_hashes =
       from(u in UDT,
         where: u.type == :bridge and u.script_hash in ^udt_script_hashes,
-        select: u.script_hash
+        select: fragment("encode(?, 'hex')", u.script_hash)
       )
       |> Repo.all()
 
