@@ -301,7 +301,7 @@ defmodule GodwokenExplorer.Transaction do
       select: %{
         hash:
           fragment(
-            "CASE WHEN ? IS NOT NULL THEN encode(?, 'hex') ELSE encode(?, 'hex') END",
+            "'0x' || CASE WHEN ? IS NOT NULL THEN encode(?, 'hex') ELSE encode(?, 'hex') END",
             t.eth_hash,
             t.eth_hash,
             t.hash
@@ -313,7 +313,7 @@ defmodule GodwokenExplorer.Transaction do
         from: a2.eth_address,
         to:
           fragment(
-            "CASE WHEN ? IS NOT NULL THEN encode(?, 'hex') ELSE encode(?, 'hex') END",
+            "'0x' || CASE WHEN ? IS NOT NULL THEN encode(?, 'hex') ELSE encode(?, 'hex') END",
             a3.eth_address,
             a3.eth_address,
             a3.script_hash
@@ -321,7 +321,7 @@ defmodule GodwokenExplorer.Transaction do
         to_alias:
           fragment(
             "
-          CASE WHEN ? = 'user' THEN encode(?, 'hex')
+          '0x' || CASE WHEN ? = 'user' THEN encode(?, 'hex')
           WHEN ? = 'udt' THEN (CASE WHEN ? IS NOT NULL THEN ? ELSE encode(?, 'hex') END)
           WHEN ? = 'polyjuice_contract' THEN (CASE WHEN ? IS NOT NULL THEN ? ELSE encode(?, 'hex') END)
           WHEN ? = 'polyjuice_creator' THEN 'Deploy Contract'

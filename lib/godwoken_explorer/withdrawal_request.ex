@@ -7,6 +7,7 @@ defmodule GodwokenExplorer.WithdrawalRequest do
 
   @derive {Jason.Encoder, except: [:__meta__]}
   schema "withdrawal_requests" do
+    field :hash, :binary
     field :nonce, :integer
     field :capacity, :decimal
     field :amount, :decimal
@@ -17,6 +18,7 @@ defmodule GodwokenExplorer.WithdrawalRequest do
     field :block_hash, Hash.Full
     field :block_number, :integer
     field :chain_id, :integer
+    field :registry_id, :integer
 
     belongs_to(:udt, GodwokenExplorer.UDT,
       foreign_key: :udt_id,
@@ -31,6 +33,7 @@ defmodule GodwokenExplorer.WithdrawalRequest do
   def changeset(withdrawal_request, attrs) do
     withdrawal_request
     |> cast(attrs, [
+      :hash,
       :account_script_hash,
       :amount,
       :capacity,
@@ -41,9 +44,11 @@ defmodule GodwokenExplorer.WithdrawalRequest do
       :nonce,
       :block_number,
       :fee_amount,
-      :chain_id
+      :chain_id,
+      :registry_id
     ])
     |> validate_required([
+      :hash,
       :account_script_hash,
       :amount,
       :capacity,

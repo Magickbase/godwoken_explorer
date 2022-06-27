@@ -47,7 +47,7 @@ defmodule GodwokenIndexer.Worker.CheckLostAccount do
           ((last_count..current_count |> Enum.to_list()) -- database_ids)
           |> Enum.sort()
 
-        Account.batch_import_accounts(less_ids)
+        Account.batch_import_accounts_with_ids(less_ids)
 
         KeyValue.changeset(key_value, %{value: Integer.to_string(current_count + 1)})
         |> Repo.update!()
