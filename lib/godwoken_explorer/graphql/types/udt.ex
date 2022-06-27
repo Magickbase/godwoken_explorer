@@ -80,7 +80,7 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
 
     request-example:
     query {
-      udts(input: {page: 1, page_size: 2, sort_type: ASC}){
+      udts{
         id
         name
         type
@@ -120,14 +120,15 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
       }
     }
     """
-    field :udts, list_of(:udt) do
-      arg(:input, :udts_input,
-        default_value: %{type: :bridge, page: 1, page_size: 10, sort_type: :asc}
-      )
-
-      middleware(MTermRange, MTermRange.page_and_size_default_config())
+    field :udts, :paginate_udts do
+      arg(:input, :udts_input, default_value: %{sorter: [%{sort_type: :asc, sort_value: :name}]})
       resolve(&Resolvers.UDT.udts/3)
     end
+  end
+
+  object :paginate_udts do
+    field :entries, list_of(:udt)
+    field :metadata, :paginate_metadata
   end
 
   object :udt do
@@ -156,13 +157,29 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
     value(:native)
   end
 
+  enum :udts_sorter do
+    value(:id)
+    value(:name)
+    value(:supply)
+    value(:holders)
+  end
+
   input_object :account_id_input do
     field :account_id, :integer
   end
 
   input_object :udts_input do
     field :type, :udt_type
-    import_fields(:page_and_size_input)
-    import_fields(:sort_type_input)
+    field :fuzzy_name, :string
+
+    field :sorter, list_of(:udts_sorter_input),
+      default_value: [%{sort_type: :asc, sort_value: :name}]
+
+    import_fields(:paginate_input)
+  end
+
+  input_object :udts_sorter_input do
+    field :sort_type, :sort_type
+    field :sort_value, :udts_sorter
   end
 end
