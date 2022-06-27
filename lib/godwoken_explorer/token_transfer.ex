@@ -193,7 +193,7 @@ defmodule GodwokenExplorer.TokenTransfer do
         timestamp: b.timestamp,
         from:
           fragment(
-            "CASE WHEN ? IS NULL THEN encode(?, 'hex')
+            "'0x' || CASE WHEN ? IS NULL THEN encode(?, 'hex')
       WHEN ? in ('eth_user', 'polyjuice_contract') THEN encode(?, 'hex')
     ELSE encode(?, 'hex') END",
             a1,
@@ -204,7 +204,7 @@ defmodule GodwokenExplorer.TokenTransfer do
           ),
         to:
           fragment(
-            "CASE WHEN ? IS NULL THEN encode(?, 'hex')
+            "'0x' || CASE WHEN ? IS NULL THEN encode(?, 'hex')
       WHEN ? in ('eth_user', 'polyjuice_contract') THEN encode(?, 'hex')
     ELSE encode(?, 'hex') END",
             a2,
