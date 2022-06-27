@@ -14,6 +14,7 @@ defmodule GodwokenExplorer.DepositHistory do
     field :ckb_lock_hash, Hash.Full
     field :timestamp, :utc_datetime_usec
     field :capacity, :decimal
+    field :udt_script_hash, Hash.Full
 
     belongs_to(:udt, UDT, foreign_key: :udt_id, references: :id, define_field: false)
 
@@ -32,12 +33,14 @@ defmodule GodwokenExplorer.DepositHistory do
       :layer1_output_index,
       :ckb_lock_hash,
       :timestamp,
-      :capacity
+      :capacity,
+      :udt_script_hash
     ])
     |> validate_required([
       :layer1_block_number,
       :layer1_tx_hash,
       :udt_id,
+      :udt_script_hash,
       :amount,
       :script_hash,
       :layer1_output_index,

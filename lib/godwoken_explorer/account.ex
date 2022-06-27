@@ -308,55 +308,68 @@ defmodule GodwokenExplorer.Account do
     end
   end
 
-  def find_or_create_udt_account!(
-        udt_script,
-        udt_script_hash,
-        l1_block_number \\ 0,
-        tip_block_number \\ 0
-      ) do
-    case Repo.get_by(UDT, script_hash: udt_script_hash) do
-      %UDT{id: id} ->
-        {:ok, id}
+  def import_udt_account(udt_script_and_hashes) do
+    l2_udt_code_hash = Application.get_env(:godwoken_explorer, :l2_udt_code_hash)
+    rollup_type_hash = Application.get_env(:godwoken_explorer, :rollup_type_hash)
 
-      nil ->
-        l2_udt_code_hash = Application.get_env(:godwoken_explorer, :l2_udt_code_hash)
-        rollup_type_hash = Application.get_env(:godwoken_explorer, :rollup_type_hash)
-
+    full_params =
+      udt_script_and_hashes
+      |> Enum.map(fn {udt_script_hash, udt_script} ->
         account_script = %{
           "code_hash" => l2_udt_code_hash,
           "hash_type" => "type",
           "args" => rollup_type_hash <> String.slice(udt_script_hash, 2..-1)
         }
 
-        l2_udt_script_hash = script_to_hash(account_script)
+        l2_script_hash = script_to_hash(account_script)
 
-        case GodwokenRPC.fetch_account_id(l2_udt_script_hash) do
-          {:error, :account_slow} ->
-            if l1_block_number + 100 > tip_block_number do
-              raise "account may not created now at #{l1_block_number}"
-            end
+        %{
+          script: account_script,
+          script_hash: l2_script_hash,
+          udt_script_hash: udt_script_hash,
+          udt_script: udt_script
+        }
+      end)
 
-          {:error, :network_error} ->
-            {:error, nil}
+    params = full_params |> Enum.map(fn full -> full |> Map.take([:script, :script_hash]) end)
 
-          {:ok, udt_account_id} ->
-            {:ok, _udt} =
-              UDT.find_or_create_by(%{
-                id: udt_account_id,
-                script_hash: udt_script_hash,
-                type_script: udt_script
-              })
+    {:ok, %GodwokenRPC.Account.FetchedAccountIDs{errors: [], params_list: l2_script_hash_and_ids}} =
+      GodwokenRPC.fetch_account_ids(params)
 
-            __MODULE__.create_or_update_account!(%{
-              id: udt_account_id,
-              script: account_script,
-              script_hash: l2_udt_script_hash,
-              type: "udt"
-            })
+    account_attrs =
+      l2_script_hash_and_ids
+      |> Enum.map(fn map ->
+        map
+        |> Map.merge(%{type: :udt})
+      end)
 
-            {:ok, udt_account_id}
-        end
-    end
+    Import.insert_changes_list(
+      account_attrs,
+      for: Account,
+      timestamps: import_timestamps(),
+      on_conflict: :nothing
+    )
+
+    udt_attrs =
+      l2_script_hash_and_ids
+      |> Enum.map(fn map ->
+        full_param =
+          full_params |> Enum.find(fn full -> full[:script_hash] == map[:script_hash] end)
+
+        map
+        |> Map.merge(%{
+          type_script: Map.get(full_param, :udt_script),
+          script_hash: Map.get(full_param, :udt_script_hash)
+        })
+        |> Map.delete(:script)
+      end)
+
+    Import.insert_changes_list(
+      udt_attrs,
+      for: UDT,
+      timestamps: import_timestamps(),
+      on_conflict: :nothing
+    )
   end
 
   def find_or_create_contract_by_eth_address(eth_address) do
@@ -561,38 +574,40 @@ defmodule GodwokenExplorer.Account do
     end)
   end
 
-  def batch_import_accounts(ids) do
+  def batch_import_accounts_with_script_hashes(script_hashes) do
+    params = script_hashes |> Enum.map(&%{script_hash: &1, script: nil})
+
+    {:ok, %GodwokenRPC.Account.FetchedAccountIDs{errors: [], params_list: l2_script_hash_and_ids}} =
+      GodwokenRPC.fetch_account_ids(params)
+
+    {:ok, %{errors: [], params_list: account_list}} =
+      GodwokenRPC.fetch_scripts(l2_script_hash_and_ids)
+
+    import_accounts(account_list)
+  end
+
+  def batch_import_accounts_with_ids(ids) do
     params = ids |> Enum.map(&%{account_id: &1})
     {:ok, %{errors: [], params_list: script_hash_list}} = GodwokenRPC.fetch_script_hashes(params)
-    {:ok, %{errors: [], params_list: script_list}} = GodwokenRPC.fetch_scripts(script_hash_list)
+    {:ok, %{errors: [], params_list: account_list}} = GodwokenRPC.fetch_scripts(script_hash_list)
+    import_accounts(account_list)
+  end
 
-    account_list =
-      (script_hash_list ++ script_list)
-      |> Enum.group_by(&Map.get(&1, :script_hash))
-      |> Enum.map(fn {_, list} ->
-        Enum.concat(list)
-        |> Enum.into(%{})
-      end)
-
+  defp import_accounts(account_list) do
     account_attrs =
       account_list
-      |> Enum.map(fn %{
-                       account_id: account_id,
-                       script: script
-                     } = account ->
+      |> Enum.map(fn %{script: script} = account ->
         type = switch_account_type(script["code_hash"], script["args"])
         eth_address = script_to_eth_adress(type, script["args"])
         registry_address = eth_address_to_registry_address(eth_address)
 
         account
         |> Map.merge(%{
-          id: account_id,
           type: type,
           nonce: 0,
           eth_address: eth_address,
           registry_address: registry_address
         })
-        |> Map.drop([:account_id])
         |> Map.merge(import_timestamps())
       end)
 
