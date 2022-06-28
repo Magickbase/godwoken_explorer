@@ -190,7 +190,7 @@ defmodule GodwokenExplorer.Account.CurrentUDTBalance do
             join: a in Account,
             on: a.eth_address == q.eth_address,
             select: %{
-              eth_address: q.address_hash,
+              eth_address: q.eth_address,
               balance: q.value,
               tx_count: a.transaction_count
             },
