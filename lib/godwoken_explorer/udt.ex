@@ -3,7 +3,7 @@ defmodule GodwokenExplorer.UDT do
 
   import GodwokenRPC.Util, only: [hex_to_number: 1, script_to_hash: 1, import_timestamps: 0]
 
-  alias GodwokenExplorer.Chain.Hash
+  alias GodwokenExplorer.Chain.{Hash, Import}
 
   @derive {Jason.Encoder, except: [:__meta__]}
   @primary_key {:id, :integer, autogenerate: false}
@@ -272,6 +272,7 @@ defmodule GodwokenExplorer.UDT do
           }
         end
       end)
+      |> Enum.reject(&is_nil(&1))
 
     Import.insert_changes_list(
       udt_params,
