@@ -4,6 +4,7 @@ config :godwoken_explorer,
   meta_contract_validator_type_hash:
     "0x2c0b586137cb942f92cc3f84f62d77924b560e4088667f6f47012ecfa828e184",
   l2_udt_code_hash: "0x990027acd7058ec1b45df9d7448c0c5407fc17dde4b9b769f594d613c8053084",
+  l1_udt_code_hash: "0x5e7a36a77e68eecc013dfa2fe6a23f3b6c344b04005808694ae6dd45eea4cfd5",
   rollup_type_hash: "0x1ca35cb5fda4bd542e71d94a6d5f4c0d255d6d6fba73c41cf45d2693e59b3072",
   polyjuice_validator_code_hash:
     "0x83d5d8841518e8db686909d27c821398491f475ed5f1cd392c36e83f4252c4ac",
