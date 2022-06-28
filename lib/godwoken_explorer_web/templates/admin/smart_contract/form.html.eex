@@ -47,7 +47,7 @@
 
     <div class="torch-form-group">
       <%= label f, :deployment_tx_hash %>
-      <%= text_input f, :deployment_tx_hash %>
+      <input id="torch-form_smart_contract_deployment_tx_hash" name="smart_contract[deployment_tx_hash]" type="text" value="<%= deployment_tx_hash(@conn) %>" >
       <%= error_tag f, :deployment_tx_hash %>
     </div>
 

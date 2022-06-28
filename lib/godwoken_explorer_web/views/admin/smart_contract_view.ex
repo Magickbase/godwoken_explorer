@@ -3,4 +3,9 @@ defmodule GodwokenExplorerWeb.Admin.SmartContractView do
 
   import Torch.TableView
   import Torch.FilterView
+
+  def deployment_tx_hash(conn) do
+    smart_contract = conn.assigns[:smart_contract]
+    to_string(smart_contract.deployment_tx_hash)
+  end
 end
