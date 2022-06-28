@@ -6,6 +6,6 @@ defmodule GodwokenExplorerWeb.Admin.SmartContractView do
 
   def deployment_tx_hash(conn) do
     smart_contract = conn.assigns[:smart_contract]
-    to_string(smart_contract.deployment_tx_hash)
+    if smart_contract, do: to_string(smart_contract.deployment_tx_hash)
   end
 end
