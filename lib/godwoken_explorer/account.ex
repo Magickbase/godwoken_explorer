@@ -21,6 +21,7 @@ defmodule GodwokenExplorer.Account do
 
   @polyjuice_creator_args_length 74
   @yok_mainnet_account_id 12119
+  @erc20_mainnet_v1_account_id 33
 
   @derive {Jason.Encoder, except: [:__meta__]}
   @primary_key {:id, :integer, autogenerate: false}
@@ -671,6 +672,16 @@ defmodule GodwokenExplorer.Account do
     else
       account = Repo.get(Account, @yok_mainnet_account_id)
       FastGlobal.put(:yok_contract_code, account.contract_code)
+      account.contract_code
+    end
+  end
+
+  def erc20_contract_code do
+    if FastGlobal.get(:erc20_contract_code) do
+      FastGlobal.get(:erc20_contract_code)
+    else
+      account = Repo.get(Account, @erc20_mainnet_v1_account_id)
+      FastGlobal.put(:erc20_contract_code, account.contract_code)
       account.contract_code
     end
   end
