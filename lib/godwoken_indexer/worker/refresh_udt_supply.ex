@@ -3,7 +3,7 @@ defmodule GodwokenIndexer.Worker.RefreshUDTSupply do
 
   import Ecto.Query, only: [from: 2]
 
-  alias GodwokenExplorer.{Repo, KeyValue, DepositHistory, WithdrawalHistory, UDT}
+  alias GodwokenExplorer.{Account, Repo, KeyValue, DepositHistory, WithdrawalHistory, UDT}
 
   @impl Oban.Worker
   def perform(%Oban.Job{}) do
