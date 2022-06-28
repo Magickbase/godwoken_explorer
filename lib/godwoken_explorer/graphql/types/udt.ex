@@ -1,7 +1,6 @@
 defmodule GodwokenExplorer.Graphql.Types.UDT do
   use Absinthe.Schema.Notation
   alias GodwokenExplorer.Graphql.Resolvers, as: Resolvers
-  alias GodwokenExplorer.Graphql.Middleware.TermRange, as: MTermRange
 
   object :udt_querys do
     @desc """
@@ -80,43 +79,55 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
 
     request-example:
     query {
-      udts{
-        id
-        name
-        type
-        supply
-        account{
-          eth_address
-          script_hash
+      udts(
+        input: {
+          limit: 1
+          after: "g3QAAAABZAACaWRhAQ=="
+          sorter: [{ sort_type: ASC, sort_value: ID }]
+        }
+      ) {
+        entries {
+          id
+          name
+          type
+          supply
+          account {
+            eth_address
+            script_hash
+          }
+        }
+        metadata {
+          total_count
+          after
+          before
         }
       }
     }
 
+
+
     result-example:
     {
       "data": {
-        "udts": [
-          {
-            "account": {
-              "eth_address": null,
-              "script_hash": "0xbf1f27daea43849b67f839fd101569daaa321e2c"
-            },
-            "id": "1",
-            "name": "Nervos Token",
-            "supply": "693247799.35570027",
-            "type": "BRIDGE"
-          },
-          {
-            "account": {
-              "eth_address": null,
-              "script_hash": "0x21ad25fab1d759da1a419a589c0f36dee5e7fe3d"
-            },
-            "id": "17",
-            "name": null,
-            "supply": "400000002840",
-            "type": "BRIDGE"
+        "udts": {
+          "entries": [
+            {
+              "account": {
+                "eth_address": null,
+                "script_hash": "0x64050af0d25c38ddf9455b8108654f7c5cc30fe6d871a303d83b1020edddd7a7"
+              },
+              "id": "80",
+              "name": null,
+              "supply": null,
+              "type": "BRIDGE"
+            }
+          ],
+          "metadata": {
+            "after": "g3QAAAABZAACaWRhUA==",
+            "before": "g3QAAAABZAACaWRhUA==",
+            "total_count": 14
           }
-        ]
+        }
       }
     }
     """

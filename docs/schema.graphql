@@ -449,6 +449,11 @@ type PaginateTrasactions {
   metadata: PaginateMetadata
 }
 
+type PaginateUdts {
+  entries: [Udt]
+  metadata: PaginateMetadata
+}
+
 type Polyjuice {
   created_contract_address_hash: HashAddress
   gas_limit: Bigint
@@ -1960,47 +1965,59 @@ type RootQueryType {
   
   request-example:
   query {
-    udts(input: {page: 1, page_size: 2, sort_type: ASC}){
-      id
-      name
-      type
-      supply
-      account{
-        eth_address
-        script_hash
+    udts(
+      input: {
+        limit: 1
+        after: "g3QAAAABZAACaWRhAQ=="
+        sorter: [{ sort_type: ASC, sort_value: ID }]
+      }
+    ) {
+      entries {
+        id
+        name
+        type
+        supply
+        account {
+          eth_address
+          script_hash
+        }
+      }
+      metadata {
+        total_count
+        after
+        before
       }
     }
   }
   
+  
+  
   result-example:
   {
     "data": {
-      "udts": [
-        {
-          "account": {
-            "eth_address": null,
-            "script_hash": "0xbf1f27daea43849b67f839fd101569daaa321e2c"
-          },
-          "id": "1",
-          "name": "Nervos Token",
-          "supply": "693247799.35570027",
-          "type": "BRIDGE"
-        },
-        {
-          "account": {
-            "eth_address": null,
-            "script_hash": "0x21ad25fab1d759da1a419a589c0f36dee5e7fe3d"
-          },
-          "id": "17",
-          "name": null,
-          "supply": "400000002840",
-          "type": "BRIDGE"
+      "udts": {
+        "entries": [
+          {
+            "account": {
+              "eth_address": null,
+              "script_hash": "0x64050af0d25c38ddf9455b8108654f7c5cc30fe6d871a303d83b1020edddd7a7"
+            },
+            "id": "80",
+            "name": null,
+            "supply": null,
+            "type": "BRIDGE"
+          }
+        ],
+        "metadata": {
+          "after": "g3QAAAABZAACaWRhUA==",
+          "before": "g3QAAAABZAACaWRhUA==",
+          "total_count": 14
         }
-      ]
+      }
     }
   }
   """
-  udts(input: UdtsInput = {page: 1, page_size: 10, sort_type: ASC, type: BRIDGE}): [Udt]
+  udts(input: UdtsInput = {limit: 20, sorter: [{sort_type: ASC, sort_value: NAME}]}): PaginateUdts
 }
 
 type SmartContract {
@@ -2184,29 +2201,31 @@ type Udt {
 }
 
 input UdtsInput {
-  """
-  argument: the page of query result, the relations of postgres offset: offset = (page - 1) * page_size
-  
-  default: 1
-  limit: > 0
-  """
-  page: Int = 1
+  """Fetch the records after this cursor."""
+  after: String
+
+  """Fetch the records before this cursor."""
+  before: String
+  fuzzy_name: String
 
   """
-  argument: the page_size of query result, it's the same of postgres limit
-  
-  default: 20
-  limit: > 0
+  Limits the number of records returned per page. Note that this number will be capped by maximum_limit=100. Defaults to 20.
   """
-  page_size: Int = 20
-
-  """
-  argument: the sort of type by custom condition
-  
-  default: desc
-  """
-  sort_type: SortType = DESC
+  limit: Int = 20
+  sorter: [UdtsSorterInput] = [{sort_type: ASC, sort_value: NAME}]
   type: UdtType
+}
+
+enum UdtsSorter {
+  HOLDERS
+  ID
+  NAME
+  SUPPLY
+}
+
+input UdtsSorterInput {
+  sort_type: SortType
+  sort_value: UdtsSorter
 }
 
 enum UdtType {

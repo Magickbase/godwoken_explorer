@@ -111,27 +111,27 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
 
   defp udts_sorter(sorter, type) when type in [:order, :cursor] do
     sorter
-    |> Enum.map(fn %{sort_type: k, sort_value: v} ->
-      case k do
+    |> Enum.map(fn %{sort_type: st, sort_value: sv} ->
+      case sv do
         :name ->
           if type == :order do
-            {v, :name}
+            {st, :name}
           else
-            {:name, v}
+            {:name, st}
           end
 
         :supply ->
           if type == :order do
-            {v, :supply}
+            {st, :supply}
           else
-            {:supply, v}
+            {:supply, st}
           end
 
         :id ->
           if type == :order do
-            {v, :id}
+            {st, :id}
           else
-            {:id, v}
+            {:id, st}
           end
 
         _ ->
