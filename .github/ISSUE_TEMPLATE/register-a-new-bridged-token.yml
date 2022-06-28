@@ -74,6 +74,7 @@ body:
     attributes:
       label: SUDT Script Arguments
       description: SUDT args of the bridged token on the layer1
+      render: shell
 
   - type: input
     id: contract-address
