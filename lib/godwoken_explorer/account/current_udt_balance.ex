@@ -191,7 +191,7 @@ defmodule GodwokenExplorer.Account.CurrentUDTBalance do
             on: a.eth_address == q.eth_address,
             select: %{
               eth_address: q.eth_address,
-              balance: q.value,
+              balance: q.balance,
               tx_count: a.transaction_count
             },
             order_by: [desc: :updated_at, desc: :balance],
