@@ -138,7 +138,7 @@ defmodule GodwokenRPC.Util do
 
   def timestamp_to_datetime(timestamp) do
     timestamp
-    |> DateTime.from_unix!(:microsecond)
+    |> DateTime.from_unix!(:millisecond)
   end
 
   def parse_polyjuice_args(hex_string) do
