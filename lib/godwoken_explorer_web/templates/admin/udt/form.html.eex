@@ -71,7 +71,7 @@
 
     <div class="torch-form-group">
       <%= label f, :script_hash, "Layer1 Script Hash" %>
-      <%= text_input f, :script_hash %>
+      <input id="torch-form_udt_script_hash" name="udt[script_hash]" type="text" value="<%= script_hash(@conn) %>" >
       <%= error_tag f, :script_hash %>
     </div>
 
