@@ -1431,76 +1431,8 @@ type RootQueryType {
   query {
     transactions(
       input: {
-        address: "0x57f2e7809ec800ea742fa7a5974aa106b14afab5"
-        end_block_number: 4000
-        sort_type: DESC
-        limit: 2
-      }
-    ) {
-      entries {
-        block_hash
-        block_number
-        type
-        from_account_id
-        from_account {
-          id
-          eth_address
-        }
-        to_account_id
-      }
-  
-      metadata {
-        total_count
-        before
-        after
-      }
-    }
-  }
-  
-  {
-    "data": {
-      "transactions": {
-        "entries": [
-          {
-            "block_hash": "0x2f85c0b373c7bd770478472dd03c0b66cb4656184aaa99d49b666122c2bfe703",
-            "block_number": 3971,
-            "from_account": {
-              "eth_address": "0x57f2e7809ec800ea742fa7a5974aa106b14afab5",
-              "id": 110
-            },
-            "from_account_id": 110,
-            "to_account_id": 136,
-            "type": "POLYJUICE"
-          },
-          {
-            "block_hash": "0x2f85c0b373c7bd770478472dd03c0b66cb4656184aaa99d49b666122c2bfe703",
-            "block_number": 3971,
-            "from_account": {
-              "eth_address": "0x57f2e7809ec800ea742fa7a5974aa106b14afab5",
-              "id": 110
-            },
-            "from_account_id": 110,
-            "to_account_id": 137,
-            "type": "POLYJUICE"
-          }
-        ],
-        "metadata": {
-          "after": "g3QAAAADZAAMYmxvY2tfbnVtYmVyYgAAD4NkAARoYXNobQAAAEIweDU0MzNiMTE5ZmIwNTQ4NjM0YTY0NDAwNjZmNzUxNThlYWMyODk0MDgxNmU4YzlkYmVjZTk2ZTczMGUwMWU3MjZkAAVpbmRleGEA",
-          "before": null,
-          "total_count": 77
-        }
-      }
-    }
-  }
-  
-  
-  request-result-example-1:
-  query {
-    transactions(
-      input: {
         script_hash: "0x08c9937e412e135928fd6dec7255965ddd7df4d5a163564b60895100bb3b2f9e"
-        sort_type: ASC
-        limit: 2
+        limit: 1
       }
     ) {
       entries {
@@ -1539,22 +1471,10 @@ type RootQueryType {
             "from_account_id": 242,
             "to_account_id": 2,
             "type": "ETH_ADDRESS_REGISTRY"
-          },
-          {
-            "block_hash": "0x727fdf656aa2484caa923e3479bbde3af75deab6db85cfbda523d4866cd28e1e",
-            "block_number": 30047,
-            "from_account": {
-              "eth_address": "0xa86e2b58f987d298c6103fc72592a19451fb49a4",
-              "id": 242,
-              "script_hash": "0x3c256a6acbf96338077c7cac3d69c8caf00bf4f9a964959bbc8dabcede7d7d6e"
-            },
-            "from_account_id": 242,
-            "to_account_id": 2,
-            "type": "ETH_ADDRESS_REGISTRY"
           }
         ],
         "metadata": {
-          "after": "g3QAAAADZAAMYmxvY2tfbnVtYmVyYgAAdV9kAARoYXNobQAAAEIweGQ4MmFlYzliMjM2NDlhYmFkNGQzMDJkYTc2ZjFkZDIwNzI5NTI1NTU4YzgyMWY4ODVjYzgwMWJjNGM4ZmMyZDRkAAVpbmRleGEB",
+          "after": "g3QAAAADZAAMYmxvY2tfbnVtYmVyYgAAZoNkAARoYXNodAAAAANkAApfX3N0cnVjdF9fZAAiRWxpeGlyLkdvZHdva2VuRXhwbG9yZXIuQ2hhaW4uSGFzaGQACmJ5dGVfY291bnRhIGQABWJ5dGVzbQAAACCdFvEWpH7mWgPRMtbxa2y1A3YHRBFnLJalEsne6iehXWQABWluZGV4YQE=",
           "before": null,
           "total_count": 1198
         }
@@ -1563,12 +1483,77 @@ type RootQueryType {
   }
   
   
-  request-result-example-2:
+  request-result-example-1:
   query {
     transactions(
       input: {
-        sort_type: DESC
-        limit: 2
+        limit: 1
+        sorter: [
+          { sort_type: ASC, sort_value: BLOCK_NUMBER }
+          { sort_type: ASC, sort_value: HASH }
+          { sort_type: ASC, sort_value: INDEX }
+        ]
+      }
+    ) {
+      entries {
+        hash
+        eth_hash
+        block_hash
+        block_number
+        type
+        from_account_id
+        from_account {
+          script_hash
+          id
+          eth_address
+        }
+        to_account_id
+      }
+  
+      metadata {
+        total_count
+        before
+        after
+      }
+    }
+  }
+  
+  {
+    "data": {
+      "transactions": {
+        "entries": [
+          {
+            "block_hash": "0x4ed214a4aa0085da12c80468ea299d85ea043d04b38b93e26218bab7849f5e40",
+            "block_number": 6,
+            "eth_hash": null,
+            "from_account": {
+              "eth_address": "0x715ab282b873b79a7be8b0e8c13c4e8966a52040",
+              "id": 3,
+              "script_hash": "0x495d9cfb7b6faeaeb0f5a7ed81a830a477f7aeea8d53ef73abdc2ec2f5fed07c"
+            },
+            "from_account_id": 3,
+            "hash": "0xc621e5cd5a7d49c32e87b59956886c3747be77ecf7a7942ebaa5e2de96e9aad3",
+            "to_account_id": 0,
+            "type": "POLYJUICE_CREATOR"
+          }
+        ],
+        "metadata": {
+          "after": "g3QAAAADZAAMYmxvY2tfbnVtYmVyYQZkAARoYXNodAAAAANkAApfX3N0cnVjdF9fZAAiRWxpeGlyLkdvZHdva2VuRXhwbG9yZXIuQ2hhaW4uSGFzaGQACmJ5dGVfY291bnRhIGQABWJ5dGVzbQAAACDGIeXNWn1Jwy6HtZlWiGw3R7537PenlC66peLelumq02QABWluZGV4YQA=",
+          "before": null,
+          "total_count": 10000
+        }
+      }
+    }
+  }
+  
+  request-result-example:
+  query {
+    transactions(
+      input: {
+        script_hash: "0x08c9937e412e135928fd6dec7255965ddd7df4d5a163564b60895100bb3b2f9e"
+        start_block_number: 26243
+        end_block_number: 26243
+        limit: 1
       }
     ) {
       entries {
@@ -1597,40 +1582,28 @@ type RootQueryType {
       "transactions": {
         "entries": [
           {
-            "block_hash": "0x601bee02331b89ad675e231aa670c95715c4a999e3a12306aadc2c69f7b0e1f3",
-            "block_number": 100532,
+            "block_hash": "0x3c864108150c7ee2a0a6e512d353a0aa812470d6fed3093daccef2007c307344",
+            "block_number": 26243,
             "from_account": {
-              "eth_address": "0x934f1ebcb57ce1d9985a4c4f8811d17b04342067",
-              "id": 5684,
-              "script_hash": "0x9457ac2c7346092eb6f475c12c9b11eab23a6281429261c20f47910603ead343"
+              "eth_address": "0xa86e2b58f987d298c6103fc72592a19451fb49a4",
+              "id": 242,
+              "script_hash": "0x3c256a6acbf96338077c7cac3d69c8caf00bf4f9a964959bbc8dabcede7d7d6e"
             },
-            "from_account_id": 5684,
-            "to_account_id": 29352,
-            "type": "POLYJUICE"
-          },
-          {
-            "block_hash": "0x601bee02331b89ad675e231aa670c95715c4a999e3a12306aadc2c69f7b0e1f3",
-            "block_number": 100532,
-            "from_account": {
-              "eth_address": "0xb243e6840e99d6fd89e5075b0e1d3efa810cf653",
-              "id": 24426,
-              "script_hash": "0x035d5694f35baf9f8ed9b07cc2dcf22ac98eff06ee7729b5190f9659da0c73fc"
-            },
-            "from_account_id": 24426,
-            "to_account_id": 4,
-            "type": "POLYJUICE"
+            "from_account_id": 242,
+            "to_account_id": 2,
+            "type": "ETH_ADDRESS_REGISTRY"
           }
         ],
         "metadata": {
-          "after": "g3QAAAADZAAMYmxvY2tfbnVtYmVyYgABiLRkAARoYXNobQAAAEIweGJiNjVlYjM4YTdkN2U2NWZkNzA0YTY2ZTcxZjFhYTg5MjJiOGY2NDYzZDZhNjZiMDZkYjA0Y2QyY2IyZDk4YzZkAAVpbmRleGEB",
+          "after": null,
           "before": null,
-          "total_count": 10000
+          "total_count": 1
         }
       }
     }
   }
   """
-  transactions(input: TransactionsInput!): PaginateTrasactions
+  transactions(input: TransactionsInput = {limit: 20, sorter: [{sort_type: ASC, sort_value: BLOCK_NUMBER}, {sort_type: ASC, sort_value: INDEX}, {sort_type: ASC, sort_value: HASH}]}): PaginateTrasactions
 
   """
   function: get udt by contract address
@@ -1873,17 +1846,21 @@ input TransactionsInput {
   """
   limit: Int = 20
   script_hash: HashFull
-  sort: SortType
-
-  """
-  argument: the sort of type by custom condition
-  
-  default: desc
-  """
-  sort_type: SortType = DESC
+  sorter: [TransactionsSorterInput] = [{sort_type: ASC, sort_value: BLOCK_NUMBER}, {sort_type: ASC, sort_value: INDEX}, {sort_type: ASC, sort_value: HASH}]
 
   """argument: the start of block number(inclusive) for search query"""
   start_block_number: Int
+}
+
+enum TransactionsSorter {
+  BLOCK_NUMBER
+  HASH
+  INDEX
+}
+
+input TransactionsSorterInput {
+  sort_type: SortType
+  sort_value: TransactionsSorter
 }
 
 enum TransactionType {

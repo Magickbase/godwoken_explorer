@@ -2,10 +2,12 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
   alias GodwokenExplorer.Repo
   alias GodwokenExplorer.{Account, Transaction, Block, Polyjuice, PolyjuiceCreator}
 
-  import GodwokenExplorer.Graphql.Resolvers.Common, only: [paginate_query_with_sort_type: 3]
-
+  import GodwokenExplorer.Graphql.Resolvers.Common, only: [paginate_query: 3]
+  import GodwokenExplorer.Graphql.Common, only: [cursor_order_sorter: 3]
   import Ecto.Query
-  import GodwokenExplorer.Graphql.Common, only: [sort_type: 3]
+
+  @sorter_fields [:block_number, :index, :hash]
+  @default_sorter [:block_number, :index, :hash]
 
   def transaction(_parent, %{input: input} = _args, _resolution) do
     query = query_with_eth_hash_or_tx_hash(input)
@@ -35,9 +37,9 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
     from(t in Transaction)
     |> query_with_account_address(input)
     |> query_with_block_range(input)
-    |> sort_type(input, [:block_number, :index, :hash])
-    |> paginate_query_with_sort_type(input, %{
-      cursor_fields: [:block_number, :index, :hash],
+    |> transactions_order_by(input)
+    |> paginate_query(input, %{
+      cursor_fields: paginate_cursor(input),
       total_count_primary_key_field: :hash
     })
     |> do_transactions()
@@ -115,6 +117,27 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
       |> where([t], t.block_number <= ^end_block_number)
     else
       query
+    end
+  end
+
+  defp transactions_order_by(query, input) do
+    sorter = Map.get(input, :sorter)
+
+    if sorter do
+      order_params = cursor_order_sorter(sorter, :order, @sorter_fields)
+      order_by(query, [u], ^order_params)
+    else
+      order_by(query, [u], @default_sorter)
+    end
+  end
+
+  defp paginate_cursor(input) do
+    sorter = Map.get(input, :sorter)
+
+    if sorter do
+      cursor_order_sorter(sorter, :cursor, @sorter_fields)
+    else
+      @default_sorter
     end
   end
 
