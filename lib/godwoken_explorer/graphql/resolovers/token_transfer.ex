@@ -4,15 +4,17 @@ defmodule GodwokenExplorer.Graphql.Resolvers.TokenTransfer do
   alias GodwokenExplorer.Repo
 
   import Ecto.Query
-  import GodwokenExplorer.Graphql.Common, only: [sort_type: 3]
+  import GodwokenExplorer.Graphql.Common, only: [cursor_order_sorter: 3]
   import GodwokenExplorer.Graphql.Resolvers.Common, only: [paginate_query: 3]
+
+  @sorter_fields [:transaction_hash, :log_index, :block_number, :updated_at]
 
   def token_transfers(_parent, %{input: input}, _resolution) do
     return =
       input
       |> query_token_transfers()
       |> paginate_query(input, %{
-        cursor_fields: [:block_number, :log_index, :transaction_hash],
+        cursor_fields:  paginate_cursor(input),
         total_count_primary_key_field: :transaction_hash
       })
 
@@ -134,6 +136,28 @@ defmodule GodwokenExplorer.Graphql.Resolvers.TokenTransfer do
       end
 
     from(tt in TokenTransfer, where: ^conditions)
-    |> sort_type(input, [:block_number, :log_index])
+    |> token_transfers_order_by(input)
+  end
+
+
+  defp token_transfers_order_by(query, input) do
+    sorter = Map.get(input, :sorter)
+
+    if sorter do
+      order_params = cursor_order_sorter(sorter, :order, @sorter_fields)
+      order_by(query, [u], ^order_params)
+    else
+      order_by(query, [u], [:block_number, :transaction_hash, :log_index])
+    end
+  end
+
+  defp paginate_cursor(input) do
+    sorter = Map.get(input, :sorter)
+
+    if sorter do
+      cursor_order_sorter(sorter, :cursor, @sorter_fields)
+    else
+      [:block_number, :transaction_hash, :log_index]
+    end
   end
 end

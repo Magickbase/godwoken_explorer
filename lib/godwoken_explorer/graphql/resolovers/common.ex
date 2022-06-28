@@ -1,8 +1,6 @@
 defmodule GodwokenExplorer.Graphql.Resolvers.Common do
   alias GodwokenExplorer.PaginateRepo
 
-
-
   def paginate_query_with_sort_type(query, input, %{cursor_fields: cursor_fields} = params) do
     sort_condtion = Map.get(input, :sort_type)
 

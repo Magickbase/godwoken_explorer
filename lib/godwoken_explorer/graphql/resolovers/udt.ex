@@ -4,8 +4,13 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
 
   import Ecto.Query
   import Ecto.Query.API, only: [ilike: 2, like: 2]
-  import GodwokenExplorer.Graphql.Common, only: [page_and_size: 2, sort_type: 3]
+
+  import GodwokenExplorer.Graphql.Common,
+    only: [cursor_order_sorter: 3]
+
   import GodwokenExplorer.Graphql.Resolvers.Common, only: [paginate_query: 3]
+
+  @sorter_fields [:name, :supply, :id]
 
   def udt(
         _parent,
@@ -77,7 +82,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
     {:ok, return}
   end
 
-  def udts_where_fuzzy_name(query, input) do
+  defp udts_where_fuzzy_name(query, input) do
     fuzzy_name = Map.get(input, :fuzzy_name)
 
     if fuzzy_name do
@@ -88,57 +93,25 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
     end
   end
 
-  def udts_order_by(query, input) do
-    sorter = Map.get(input, :sorter) |> IO.inspect()
+  defp udts_order_by(query, input) do
+    sorter = Map.get(input, :sorter)
 
     if sorter do
-      order_params = udts_sorter(sorter, :order) |> IO.inspect()
+      order_params = cursor_order_sorter(sorter, :order, @sorter_fields)
       order_by(query, [u], ^order_params)
     else
       order_by(query, [u], [:id])
     end
   end
 
-  def paginate_cursor(input) do
+  defp paginate_cursor(input) do
     sorter = Map.get(input, :sorter)
 
     if sorter do
-      udts_sorter(sorter, :cursor)
+      cursor_order_sorter(sorter, :cursor, @sorter_fields)
     else
       [:id]
     end
-  end
-
-  defp udts_sorter(sorter, type) when type in [:order, :cursor] do
-    sorter
-    |> Enum.map(fn %{sort_type: st, sort_value: sv} ->
-      case sv do
-        :name ->
-          if type == :order do
-            {st, :name}
-          else
-            {:name, st}
-          end
-
-        :supply ->
-          if type == :order do
-            {st, :supply}
-          else
-            {:supply, st}
-          end
-
-        :id ->
-          if type == :order do
-            {st, :id}
-          else
-            {:id, st}
-          end
-
-        _ ->
-          :todo
-      end
-    end)
-    |> Enum.filter(&(&1 != :todo))
   end
 
   def account(%UDT{id: id} = _parent, _args, _resolution) do

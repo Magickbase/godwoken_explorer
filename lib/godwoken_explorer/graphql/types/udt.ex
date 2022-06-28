@@ -132,7 +132,7 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
     }
     """
     field :udts, :paginate_udts do
-      arg(:input, :udts_input, default_value: %{sorter: [%{sort_type: :asc, sort_value: :name}]})
+      arg(:input, :udts_input, default_value: %{})
       resolve(&Resolvers.UDT.udts/3)
     end
   end
@@ -172,7 +172,7 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
     value(:id)
     value(:name)
     value(:supply)
-    value(:holders)
+    # value(:holders)
   end
 
   input_object :account_id_input do
