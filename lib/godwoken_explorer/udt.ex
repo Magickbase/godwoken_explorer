@@ -1,7 +1,7 @@
 defmodule GodwokenExplorer.UDT do
   use GodwokenExplorer, :schema
 
-  import GodwokenRPC.Util, only: [hex_to_number: 1]
+  import GodwokenRPC.Util, only: [hex_to_number: 1, script_to_hash: 1]
 
   alias GodwokenExplorer.Chain.Hash
 
@@ -223,5 +223,56 @@ defmodule GodwokenExplorer.UDT do
 
     not_exist_udt_script_hashes = udt_script_hashes -- exist_udt_script_hashes
     Map.take(udt_script_and_hashes, not_exist_udt_script_hashes)
+  end
+
+  def import_from_github(url) do
+    %{body: body} = HTTPoison.get!(url)
+
+    udt_list = Jason.decode(body)
+
+    l2_udt_code_hash = Application.get_env(:godwoken_explorer, :l2_udt_code_hash)
+    rollup_type_hash = Application.get_env(:godwoken_explorer, :rollup_type_hash)
+    l1_udt_code_hash = Application.get_env(:godwoken_explorer, :l1_udt_code_hash)
+
+    udt_params =
+      udt_list
+      |> Enum.map(fn %{
+                       "erc20Info" => %{
+                         "ethAddress" => eth_address,
+                         "sudtScriptArgs" => l1_udt_script_args
+                       },
+                       "info" => %{"decimals" => decimal, "name" => name, "symbol" => symbol}
+                     } ->
+        l1_udt_script = %{
+          "code_hash" => l1_udt_code_hash,
+          "hash_type" => "type",
+          "args" => l1_udt_script_args
+        }
+
+        l1_script_hash = script_to_hash(l1_udt_script)
+
+        l2_account_script = %{
+          "code_hash" => l2_udt_code_hash,
+          "hash_type" => "type",
+          "args" => rollup_type_hash <> String.slice(l1_script_hash, 2..-1)
+        }
+
+        l2_script_hash = script_to_hash(l2_account_script)
+
+        with %Account{id: bridge_account_id} <- Repo.get_by(Account, eth_address: eth_address),
+             %Account{id: udt_id} <- Repo.get_by(Account, script_hash: l2_script_hash) do
+          %{
+            id: udt_id,
+            name: name,
+            symbol: symbol,
+            decimal: decimal,
+            bridge_account_id: bridge_account_id,
+            script_hash: l1_script_hash,
+            type_script: l1_udt_script
+          }
+        end
+      end)
+
+    Repo.insert_all(UDT, udt_params, on_conflict: :nothing)
   end
 end
