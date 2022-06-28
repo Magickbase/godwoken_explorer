@@ -1,6 +1,23 @@
 defmodule GodwokenExplorer.Graphql.Common do
   import Ecto.Query
 
+  def cursor_order_sorter(sorter, type, fields) when type in [:order, :cursor] do
+    sorter
+    |> Enum.map(fn %{sort_type: st, sort_value: sv} ->
+      case {type, sv in fields} do
+        {:order, true} ->
+          {st, sv}
+
+        {:cursor, true} ->
+          {sv, st}
+
+        _ ->
+          :skip
+      end
+    end)
+    |> Enum.filter(&(&1 != :skip))
+  end
+
   def page_and_size(query, input), do: page_and_size(query, input, 100)
 
   def page_and_size({:error, _} = error, _input, _max_limit), do: error

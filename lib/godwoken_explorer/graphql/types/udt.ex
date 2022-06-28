@@ -1,7 +1,6 @@
 defmodule GodwokenExplorer.Graphql.Types.UDT do
   use Absinthe.Schema.Notation
   alias GodwokenExplorer.Graphql.Resolvers, as: Resolvers
-  alias GodwokenExplorer.Graphql.Middleware.TermRange, as: MTermRange
 
   object :udt_querys do
     @desc """
@@ -80,54 +79,67 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
 
     request-example:
     query {
-      udts(input: {page: 1, page_size: 2, sort_type: ASC}){
-        id
-        name
-        type
-        supply
-        account{
-          eth_address
-          script_hash
+      udts(
+        input: {
+          limit: 1
+          after: "g3QAAAABZAACaWRhAQ=="
+          sorter: [{ sort_type: ASC, sort_value: ID }]
+        }
+      ) {
+        entries {
+          id
+          name
+          type
+          supply
+          account {
+            eth_address
+            script_hash
+          }
+        }
+        metadata {
+          total_count
+          after
+          before
         }
       }
     }
 
+
+
     result-example:
     {
       "data": {
-        "udts": [
-          {
-            "account": {
-              "eth_address": null,
-              "script_hash": "0xbf1f27daea43849b67f839fd101569daaa321e2c"
-            },
-            "id": "1",
-            "name": "Nervos Token",
-            "supply": "693247799.35570027",
-            "type": "BRIDGE"
-          },
-          {
-            "account": {
-              "eth_address": null,
-              "script_hash": "0x21ad25fab1d759da1a419a589c0f36dee5e7fe3d"
-            },
-            "id": "17",
-            "name": null,
-            "supply": "400000002840",
-            "type": "BRIDGE"
+        "udts": {
+          "entries": [
+            {
+              "account": {
+                "eth_address": null,
+                "script_hash": "0x64050af0d25c38ddf9455b8108654f7c5cc30fe6d871a303d83b1020edddd7a7"
+              },
+              "id": "80",
+              "name": null,
+              "supply": null,
+              "type": "BRIDGE"
+            }
+          ],
+          "metadata": {
+            "after": "g3QAAAABZAACaWRhUA==",
+            "before": "g3QAAAABZAACaWRhUA==",
+            "total_count": 14
           }
-        ]
+        }
       }
     }
     """
-    field :udts, list_of(:udt) do
-      arg(:input, :udts_input,
-        default_value: %{type: :bridge, page: 1, page_size: 10, sort_type: :asc}
-      )
-
-      middleware(MTermRange, MTermRange.page_and_size_default_config())
+    field :udts, :paginate_udts do
+      arg(:input, :udts_input, default_value: %{})
       resolve(&Resolvers.UDT.udts/3)
     end
+  end
+
+  object :paginate_udts do
+    field :entries, list_of(:udt)
+    field :metadata, :paginate_metadata
   end
 
   object :udt do
@@ -156,13 +168,29 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
     value(:native)
   end
 
+  enum :udts_sorter do
+    value(:id)
+    value(:name)
+    value(:supply)
+    # value(:holders)
+  end
+
   input_object :account_id_input do
     field :account_id, :integer
   end
 
   input_object :udts_input do
     field :type, :udt_type
-    import_fields(:page_and_size_input)
-    import_fields(:sort_type_input)
+    field :fuzzy_name, :string
+
+    field :sorter, list_of(:udts_sorter_input),
+      default_value: [%{sort_type: :asc, sort_value: :name}]
+
+    import_fields(:paginate_input)
+  end
+
+  input_object :udts_sorter_input do
+    field :sort_type, :sort_type
+    field :sort_value, :udts_sorter
   end
 end
