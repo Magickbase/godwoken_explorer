@@ -76,7 +76,7 @@ WORKDIR "/app"
 ENV MIX_ENV="prod"
 
 # contract compile needs solc
-RUN npm install -g solc
+RUN npm install --save solc
 
 # Only copy the final release from the build stage
 COPY --from=builder --chown=nobody:root /app/_build/${MIX_ENV}/rel/godwoken_explorer ./
