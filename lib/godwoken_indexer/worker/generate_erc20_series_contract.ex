@@ -20,7 +20,8 @@ defmodule GodwokenIndexer.Worker.GenerateERC20SeriesContract do
           name: "ERC20",
           account_id: account.id,
           abi: erc20_account.smart_contract.abi,
-          contract_source_code: erc20_account.smart_contract.contract_source_code
+          contract_source_code: erc20_account.smart_contract.contract_source_code,
+          compiler_version: erc20_account.smart_contract.compiler_version
         })
       end)
     end
