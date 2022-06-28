@@ -6,7 +6,7 @@ defmodule GodwokenExplorerWeb.Admin.UDTView do
 
   def script_hash(conn) do
     udt = conn.assigns[:udt]
-    to_string(udt.script_hash)
+    if udt, do: to_string(udt.script_hash)
   end
 
   def type_script_value(conn, key) do
