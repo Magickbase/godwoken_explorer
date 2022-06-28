@@ -1,7 +1,7 @@
 defmodule GodwokenExplorer.UDT do
   use GodwokenExplorer, :schema
 
-  import GodwokenRPC.Util, only: [hex_to_number: 1, script_to_hash: 1]
+  import GodwokenRPC.Util, only: [hex_to_number: 1, script_to_hash: 1, import_timestamps: 0]
 
   alias GodwokenExplorer.Chain.Hash
 
@@ -228,7 +228,7 @@ defmodule GodwokenExplorer.UDT do
   def import_from_github(url) do
     %{body: body} = HTTPoison.get!(url)
 
-    udt_list = Jason.decode(body)
+    udt_list = Jason.decode!(body)
 
     l2_udt_code_hash = Application.get_env(:godwoken_explorer, :l2_udt_code_hash)
     rollup_type_hash = Application.get_env(:godwoken_explorer, :rollup_type_hash)
@@ -273,6 +273,11 @@ defmodule GodwokenExplorer.UDT do
         end
       end)
 
-    Repo.insert_all(UDT, udt_params, on_conflict: :nothing)
+    Import.insert_changes_list(
+      udt_params,
+      for: UDT,
+      timestamps: import_timestamps(),
+      on_conflict: :nothing
+    )
   end
 end
