@@ -7,6 +7,7 @@ defmodule GodwokenExplorer.Transaction do
   alias GodwokenExplorer.Chain
   alias GodwokenExplorer.Chain.{Hash, Data}
 
+  @export_limit 5_000
   @tx_limit 500_000
   @account_tx_limit 100_000
 
@@ -248,30 +249,46 @@ defmodule GodwokenExplorer.Transaction do
   end
 
   defp parse_result(tx_hashes, paging_options) do
-    tx_hashes_struct =
-      Repo.paginate(tx_hashes,
-        page: paging_options[:page],
-        page_size: paging_options[:page_size],
-        options: paging_options[:options] || []
-      )
+    if is_nil(paging_options) do
+      results =
+        tx_hashes
+        |> limit(@export_limit)
+        |> Repo.all()
+        |> list_transaction_by_tx_hash()
+        |> order_by([t], desc: t.block_number, desc: t.index)
+        |> Repo.all()
 
-    results =
-      list_transaction_by_tx_hash(tx_hashes_struct.entries)
-      |> order_by([t], desc: t.block_number, desc: t.index)
-      |> Repo.all()
-
-    parsed_result =
       Enum.map(results, fn record ->
         stringify_and_unix_maps(record)
         |> Map.merge(%{method: Polyjuice.get_method_name(record.to_account_id, record.input)})
         |> Map.drop([:input, :to_account_id])
       end)
+    else
+      tx_hashes_struct =
+        Repo.paginate(tx_hashes,
+          page: paging_options[:page],
+          page_size: paging_options[:page_size],
+          options: paging_options[:options] || []
+        )
 
-    %{
-      page: paging_options[:page],
-      total_count: tx_hashes_struct.total_entries,
-      txs: parsed_result
-    }
+      results =
+        list_transaction_by_tx_hash(tx_hashes_struct.entries)
+        |> order_by([t], desc: t.block_number, desc: t.index)
+        |> Repo.all()
+
+      parsed_result =
+        Enum.map(results, fn record ->
+          stringify_and_unix_maps(record)
+          |> Map.merge(%{method: Polyjuice.get_method_name(record.to_account_id, record.input)})
+          |> Map.drop([:input, :to_account_id])
+        end)
+
+      %{
+        page: paging_options[:page],
+        total_count: tx_hashes_struct.total_entries,
+        txs: parsed_result
+      }
+    end
   end
 
   def list_tx_hash_by_transaction_query(condition) do
