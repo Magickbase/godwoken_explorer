@@ -13,6 +13,7 @@ defmodule GodwokenExplorer.TokenTransfer do
   @transfer_function_signature "0xa9059cbb"
 
   @account_transfer_limit 100_000
+  @export_limit 5_000
 
   @derive {Jason.Encoder, except: [:__meta__]}
   @primary_key false
@@ -122,41 +123,78 @@ defmodule GodwokenExplorer.TokenTransfer do
         }
       )
 
-    paginate_result =
-      from(q in subquery(union_all(from_query, ^to_query)))
-      |> order_by([tt], desc: tt.block_number, desc: tt.log_index)
-      |> Repo.paginate(
-        page: paging_options[:page],
-        page_size: paging_options[:page_size],
-        options: paging_options[:options] || []
-      )
+    if is_nil(paging_options) do
+      results =
+        from(q in subquery(union_all(from_query, ^to_query)))
+        |> order_by([tt], desc: tt.block_number, desc: tt.log_index)
+        |> limit(@export_limit)
+        |> Repo.all()
 
-    parse_json_result(paginate_result, init_query())
+      query =
+        Enum.reduce(results, init_query(), fn %{
+                                                transaction_hash: transaction_hash,
+                                                log_index: log_index
+                                              },
+                                              query_acc ->
+          query_acc
+          |> or_where(
+            [tt],
+            tt.transaction_hash == ^transaction_hash and tt.log_index == ^log_index
+          )
+        end)
+
+      query
+      |> order_by([tt], desc: tt.block_number, desc: tt.log_index)
+      |> Repo.all()
+      |> Enum.map(fn transfer ->
+        transfer
+        |> Map.put(:timestamp, utc_to_unix(transfer[:timestamp]))
+        |> Map.merge(%{
+          hash: to_string(transfer[:hash]),
+          transfer_value: balance_to_view(transfer[:transfer_value], transfer[:udt_decimal] || 0)
+        })
+      end)
+    else
+      paginate_result =
+        from(q in subquery(union_all(from_query, ^to_query)))
+        |> order_by([tt], desc: tt.block_number, desc: tt.log_index)
+        |> Repo.paginate(
+          page: paging_options[:page],
+          page_size: paging_options[:page_size],
+          options: paging_options[:options] || []
+        )
+
+      parse_json_result(paginate_result, init_query())
+    end
   end
 
   def list(%{udt_address: udt_address}, paging_options) do
-    token_transfer_count =
-      case Repo.get_by(Account, eth_address: udt_address) do
-        %Account{token_transfer_count: token_transfer_count} -> token_transfer_count || 0
-        nil -> Chain.address_to_token_transfer_count(udt_address)
-      end
-
     condition =
       dynamic(
         [tt],
         tt.token_contract_address_hash == ^udt_address
       )
 
-    paging_options =
-      if token_transfer_count > @account_transfer_limit do
-        paging_options |> Map.merge(%{options: [total_entries: @account_transfer_limit]})
-      else
-        paging_options
-      end
+    if is_nil(paging_options) do
+      export_result(condition, init_query())
+    else
+      token_transfer_count =
+        case Repo.get_by(Account, eth_address: udt_address) do
+          %Account{token_transfer_count: token_transfer_count} -> token_transfer_count || 0
+          nil -> Chain.address_to_token_transfer_count(udt_address)
+        end
 
-    paginate_result = base_query_by(condition, paging_options)
+      paging_options =
+        if token_transfer_count > @account_transfer_limit do
+          paging_options |> Map.merge(%{options: [total_entries: @account_transfer_limit]})
+        else
+          paging_options
+        end
 
-    parse_json_result(paginate_result, init_query())
+      paginate_result = base_query_by(condition, paging_options)
+
+      parse_json_result(paginate_result, init_query())
+    end
   end
 
   def list(%{tx_hash: tx_hash}, paging_options) do
@@ -166,9 +204,13 @@ defmodule GodwokenExplorer.TokenTransfer do
         tt.transaction_hash == ^tx_hash
       )
 
-    paginate_result = base_query_by(condition, paging_options)
+    if is_nil(paging_options) do
+      export_result(condition, init_query())
+    else
+      paginate_result = base_query_by(condition, paging_options)
 
-    parse_json_result(paginate_result, init_query())
+      parse_json_result(paginate_result, init_query())
+    end
   end
 
   defp init_query do
@@ -228,6 +270,45 @@ defmodule GodwokenExplorer.TokenTransfer do
         log_index: tt.log_index
       }
     )
+  end
+
+  def export_result(condition, init_query) do
+    results =
+      from(tt in TokenTransfer,
+        where: ^condition,
+        select: %{
+          transaction_hash: tt.transaction_hash,
+          log_index: tt.log_index
+        },
+        order_by: [desc: tt.block_number, desc: tt.log_index]
+      )
+      |> limit(@export_limit)
+      |> Repo.all()
+
+    query =
+      Enum.reduce(results, init_query, fn %{
+                                            transaction_hash: transaction_hash,
+                                            log_index: log_index
+                                          },
+                                          query_acc ->
+        query_acc
+        |> or_where(
+          [tt],
+          tt.transaction_hash == ^transaction_hash and tt.log_index == ^log_index
+        )
+      end)
+
+    query
+    |> order_by([tt], desc: tt.block_number, desc: tt.log_index)
+    |> Repo.all()
+    |> Enum.map(fn transfer ->
+      transfer
+      |> Map.put(:timestamp, utc_to_unix(transfer[:timestamp]))
+      |> Map.merge(%{
+        hash: to_string(transfer[:hash]),
+        transfer_value: balance_to_view(transfer[:transfer_value], transfer[:udt_decimal] || 0)
+      })
+    end)
   end
 
   defp parse_json_result(paginate_result, init_query) do

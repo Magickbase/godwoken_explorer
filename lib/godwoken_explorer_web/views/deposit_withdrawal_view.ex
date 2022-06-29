@@ -3,14 +3,14 @@ defmodule GodwokenExplorer.DepositWithdrawalView do
 
   import GodwokenRPC.Util, only: [balance_to_view: 2]
 
+  @export_limit 5_000
+
   def list_by_block_number(block_number, page) do
-    parsed_struct =
+    if is_nil(page) do
       withdrawal_base_query(dynamic([w], w.block_number == ^block_number))
       |> order_by(desc: :inserted_at)
-      |> Repo.paginate(page: page)
-
-    parsed_entries =
-      parsed_struct.entries
+      |> limit(@export_limit)
+      |> Repo.all()
       |> Enum.map(fn struct ->
         struct
         |> Map.merge(%{
@@ -26,12 +26,36 @@ defmodule GodwokenExplorer.DepositWithdrawalView do
           sell_value: balance_to_view(struct[:sell_value], struct[:udt_decimal] || 0)
         })
       end)
+    else
+      parsed_struct =
+        withdrawal_base_query(dynamic([w], w.block_number == ^block_number))
+        |> order_by(desc: :inserted_at)
+        |> Repo.paginate(page: page)
 
-    %{
-      page: parsed_struct.page_number,
-      total_count: parsed_struct.total_entries,
-      data: parsed_entries
-    }
+      parsed_entries =
+        parsed_struct.entries
+        |> Enum.map(fn struct ->
+          struct
+          |> Map.merge(%{
+            script_hash: to_string(struct[:script_hash]),
+            eth_address: to_string(struct[:eth_address]),
+            owner_lock_hash: to_string(struct[:owner_lock_hash]),
+            payment_lock_hash: to_string(struct[:payment_lock_hash]),
+            block_hash: to_string(struct[:block_hash]),
+            sudt_script_hash: to_string(struct[:sudt_script_hash]),
+            ckb_lock_hash: to_string(struct[:ckb_lock_hash]),
+            layer1_tx_hash: to_string(struct[:layer1_tx_hash]),
+            value: balance_to_view(struct[:value], struct[:udt_decimal] || 0),
+            sell_value: balance_to_view(struct[:sell_value], struct[:udt_decimal] || 0)
+          })
+        end)
+
+      %{
+        page: parsed_struct.page_number,
+        total_count: parsed_struct.total_entries,
+        data: parsed_entries
+      }
+    end
   end
 
   def list_by_udt_id(udt_id, page) do
@@ -57,10 +81,10 @@ defmodule GodwokenExplorer.DepositWithdrawalView do
 
   @spec parse_struct(any, any) :: %{data: any, page: binary, total_count: binary}
   def parse_struct(original_struct, page) do
-    parsed_struct = Repo.paginate(original_struct, page: page)
-
-    parsed_entries =
-      parsed_struct.entries
+    if is_nil(page) do
+      original_struct
+      |> limit(@export_limit)
+      |> Repo.all()
       |> Enum.map(fn struct ->
         struct
         |> Map.merge(%{
@@ -76,12 +100,33 @@ defmodule GodwokenExplorer.DepositWithdrawalView do
           sell_value: balance_to_view(struct[:sell_value], struct[:udt_decimal] || 0)
         })
       end)
+    else
+      parsed_struct = Repo.paginate(original_struct, page: page)
 
-    %{
-      page: Integer.to_string(parsed_struct.page_number),
-      total_count: Integer.to_string(parsed_struct.total_entries),
-      data: parsed_entries
-    }
+      parsed_entries =
+        parsed_struct.entries
+        |> Enum.map(fn struct ->
+          struct
+          |> Map.merge(%{
+            script_hash: to_string(struct[:script_hash]),
+            eth_address: to_string(struct[:eth_address]),
+            owner_lock_hash: to_string(struct[:owner_lock_hash]),
+            payment_lock_hash: to_string(struct[:payment_lock_hash]),
+            block_hash: to_string(struct[:block_hash]),
+            sudt_script_hash: to_string(struct[:sudt_script_hash]),
+            ckb_lock_hash: to_string(struct[:ckb_lock_hash]),
+            layer1_tx_hash: to_string(struct[:layer1_tx_hash]),
+            value: balance_to_view(struct[:value], struct[:udt_decimal] || 0),
+            sell_value: balance_to_view(struct[:sell_value], struct[:udt_decimal] || 0)
+          })
+        end)
+
+      %{
+        page: Integer.to_string(parsed_struct.page_number),
+        total_count: Integer.to_string(parsed_struct.total_entries),
+        data: parsed_entries
+      }
+    end
   end
 
   def withdrawal_base_query(condition) do
