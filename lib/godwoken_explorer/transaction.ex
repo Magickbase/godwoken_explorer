@@ -111,7 +111,7 @@ defmodule GodwokenExplorer.Transaction do
         end
         |> limit(10)
         |> Repo.all()
-        |> list_transaction_by_tx_hash()
+        |> list_home_transaction_by_tx_hash()
         |> order_by([t], desc: t.block_number, desc: t.index)
         |> Repo.all()
     end
@@ -280,6 +280,65 @@ defmodule GodwokenExplorer.Transaction do
         fragment("CASE WHEN ? IS NOT NULL THEN ? ELSE ? END", t.eth_hash, t.eth_hash, t.hash),
       where: ^condition,
       order_by: [desc: t.inserted_at, desc: t.block_number, desc: t.index]
+    )
+  end
+
+  def list_home_transaction_by_tx_hash(hashes) do
+    from(t in Transaction,
+      join: b in Block,
+      on: [hash: t.block_hash],
+      join: a2 in Account,
+      on: a2.id == t.from_account_id,
+      join: a3 in Account,
+      on: a3.id == t.to_account_id,
+      left_join: s4 in SmartContract,
+      on: s4.account_id == t.to_account_id,
+      left_join: p in Polyjuice,
+      on: p.tx_hash == t.hash,
+      where: t.eth_hash in ^hashes or t.hash in ^hashes,
+      select: %{
+        hash:
+          fragment(
+            "'0x' || CASE WHEN ? IS NOT NULL THEN encode(?, 'hex') ELSE encode(?, 'hex') END",
+            t.eth_hash,
+            t.eth_hash,
+            t.hash
+          ),
+        block_number: b.number,
+        timestamp: b.timestamp,
+        from: a2.eth_address,
+        to:
+          fragment(
+            "'0x' || CASE WHEN ? IS NOT NULL THEN encode(?, 'hex') ELSE encode(?, 'hex') END",
+            a3.eth_address,
+            a3.eth_address,
+            a3.script_hash
+          ),
+        to_alias:
+          fragment(
+            "
+          CASE WHEN ? = 'eth_user' THEN '0x' || encode(?, 'hex')
+          WHEN ? = 'udt' THEN (CASE WHEN ? IS NOT NULL THEN ? ELSE '0x' || encode(?, 'hex') END)
+          WHEN ? = 'polyjuice_contract' THEN (CASE WHEN ? IS NOT NULL THEN ? ELSE '0x' || encode(?, 'hex') END)
+          WHEN ? = 'polyjuice_creator' THEN 'Deploy Contract'
+          ELSE '0x' ||encode(?, 'hex') END",
+            a3.type,
+            a3.eth_address,
+            a3.type,
+            s4.name,
+            s4.name,
+            a3.script_hash,
+            a3.type,
+            s4.name,
+            s4.name,
+            a3.eth_address,
+            a3.type,
+            a3.script_hash
+          ),
+        timestamp: b.timestamp,
+        index: p.transaction_index,
+        type: t.type
+      }
     )
   end
 
