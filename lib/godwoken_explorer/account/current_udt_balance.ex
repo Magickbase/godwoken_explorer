@@ -211,6 +211,8 @@ defmodule GodwokenExplorer.Account.CurrentUDTBalance do
   defp parse_holder_sort_results(address_and_balances, supply, decimal) do
     results =
       address_and_balances.entries
+      |> Enum.sort_by(& &1.balance)
+      |> Enum.reverse()
       |> Enum.map(fn %{balance: balance} = result ->
         percentage =
           if is_nil(supply) do
