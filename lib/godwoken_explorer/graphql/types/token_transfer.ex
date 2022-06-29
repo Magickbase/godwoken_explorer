@@ -147,9 +147,9 @@ defmodule GodwokenExplorer.Graphql.Types.TokenTransfer do
 
     field :sorter, list_of(:token_transfers_sorter_input),
       default_value: [
-        %{sort_type: :asc, sort_value: :block_number},
-        %{sort_type: :asc, sort_value: :transaction_hash},
-        %{sort_type: :asc, sort_value: :log_index}
+        %{sort_type: :desc, sort_value: :block_number},
+        %{sort_type: :desc, sort_value: :log_index},
+        %{sort_type: :asc, sort_value: :transaction_hash}
       ]
 
     field :from_address, :hash_address
