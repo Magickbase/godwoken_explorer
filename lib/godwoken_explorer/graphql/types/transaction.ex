@@ -343,8 +343,8 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
 
     field :sorter, list_of(:transactions_sorter_input),
       default_value: [
-        %{sort_type: :asc, sort_value: :block_number},
-        %{sort_type: :asc, sort_value: :index},
+        %{sort_type: :desc, sort_value: :block_number},
+        %{sort_type: :desc, sort_value: :index},
         %{sort_type: :asc, sort_value: :hash}
       ]
 

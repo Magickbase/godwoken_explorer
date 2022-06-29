@@ -192,7 +192,12 @@ defmodule GodwokenExplorer.Account.CurrentUDTBalance do
             select: %{
               eth_address: q.eth_address,
               balance: q.balance,
-              tx_count: a.transaction_count
+              tx_count:
+                fragment(
+                  "CASE WHEN ? is null THEN 0 ELSE ? END",
+                  a.transaction_count,
+                  a.transaction_count
+                )
             },
             order_by: [desc: :updated_at, desc: :balance],
             distinct: q.eth_address
