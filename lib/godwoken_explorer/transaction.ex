@@ -321,11 +321,11 @@ defmodule GodwokenExplorer.Transaction do
         to_alias:
           fragment(
             "
-          '0x' || CASE WHEN ? = 'user' THEN encode(?, 'hex')
-          WHEN ? = 'udt' THEN (CASE WHEN ? IS NOT NULL THEN ? ELSE encode(?, 'hex') END)
-          WHEN ? = 'polyjuice_contract' THEN (CASE WHEN ? IS NOT NULL THEN ? ELSE encode(?, 'hex') END)
+          CASE WHEN ? = 'eth_user' THEN '0x' || encode(?, 'hex')
+          WHEN ? = 'udt' THEN (CASE WHEN ? IS NOT NULL THEN ? ELSE '0x' || encode(?, 'hex') END)
+          WHEN ? = 'polyjuice_contract' THEN (CASE WHEN ? IS NOT NULL THEN ? ELSE '0x' || encode(?, 'hex') END)
           WHEN ? = 'polyjuice_creator' THEN 'Deploy Contract'
-          ELSE encode(?, 'hex') END",
+          ELSE '0x' ||encode(?, 'hex') END",
             a3.type,
             a3.eth_address,
             a3.type,
