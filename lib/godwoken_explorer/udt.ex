@@ -278,7 +278,8 @@ defmodule GodwokenExplorer.UDT do
       udt_params,
       for: UDT,
       timestamps: import_timestamps(),
-      on_conflict: :nothing
+      on_conflict: {:replace, [:name, :symbol, :updated_at]},
+      conflict_target: :id
     )
   end
 end
