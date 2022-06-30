@@ -1,5 +1,5 @@
 defmodule GodwokenRPC.Block do
-  import GodwokenRPC.Util, only: [hex_to_number: 1]
+  import GodwokenRPC.Util, only: [hex_to_number: 1, timestamp_to_utc_datetime: 1]
 
   def from_response(%{id: id, result: nil}, id_to_params) when is_map(id_to_params) do
     params = Map.fetch!(id_to_params, id)
@@ -44,8 +44,7 @@ defmodule GodwokenRPC.Block do
           hash: hash,
           parent_hash: parent_hash,
           number: hex_to_number(number),
-          timestamp:
-            timestamp |> hex_to_number() |> Kernel.*(1000) |> DateTime.from_unix!(:microsecond),
+          timestamp: timestamp |> hex_to_number() |> timestamp_to_utc_datetime(),
           aggregator_id: hex_to_number(aggregator_id),
           transaction_count: tx_count |> hex_to_number(),
           size: size |> hex_to_number(),
@@ -60,8 +59,7 @@ defmodule GodwokenRPC.Block do
           hash: hash,
           parent_hash: parent_hash,
           number: hex_to_number(number),
-          timestamp:
-            timestamp |> hex_to_number() |> Kernel.*(1000) |> DateTime.from_unix!(:microsecond),
+          timestamp: timestamp |> hex_to_number() |> timestamp_to_utc_datetime(),
           aggregator_id: hex_to_number(aggregator_id),
           transaction_count: tx_count |> hex_to_number(),
           status: :committed
