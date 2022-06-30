@@ -5,6 +5,7 @@ defmodule GodwokenExplorerWeb.API.TransactionController do
 
   import GodwokenRPC.Util, only: [balance_to_view: 2]
 
+  alias GodwokenExplorer.Chain.Exporter.TransactionCsv
   alias GodwokenExplorer.{Account, Chain, PendingTransaction, Repo, Transaction}
 
   # TODO: Remove after safepal is no longer used
@@ -36,6 +37,42 @@ defmodule GodwokenExplorerWeb.API.TransactionController do
     json(conn, results)
   end
 
+  def index(conn, %{"eth_address" => "0x" <> _, "export" => "true"} = params) do
+    with {:ok, address_hash} <-
+           Chain.string_to_address_hash(params["eth_address"]),
+         %Account{type: type} = account <-
+           Repo.get_by(Account, eth_address: address_hash) do
+      results =
+        Transaction.account_transactions_data(
+          %{type: type, account: account},
+          nil
+        )
+
+      TransactionCsv.export(results)
+      |> Enum.reduce_while(
+        conn
+        |> put_resp_content_type("application/csv")
+        |> put_resp_header("content-disposition", "attachment; filename=transactions.csv")
+        |> send_chunked(200),
+        fn chunk, conn ->
+          case Plug.Conn.chunk(
+                 conn,
+                 chunk
+               ) do
+            {:ok, conn} ->
+              {:cont, conn}
+
+            {:error, :closed} ->
+              {:halt, conn}
+          end
+        end
+      )
+    else
+      _ ->
+        {:error, :not_found}
+    end
+  end
+
   def index(conn, %{"eth_address" => "0x" <> _} = params) do
     results =
       with {:ok, address_hash} <-
@@ -59,6 +96,34 @@ defmodule GodwokenExplorerWeb.API.TransactionController do
       end
 
     json(conn, results)
+  end
+
+  def index(conn, %{"block_hash" => "0x" <> _, "export" => "true"} = params) do
+    results =
+      Transaction.account_transactions_data(
+        %{block_hash: params["block_hash"]},
+        nil
+      )
+
+    TransactionCsv.export(results)
+    |> Enum.reduce_while(
+      conn
+      |> put_resp_content_type("application/csv")
+      |> put_resp_header("content-disposition", "attachment; filename=transactions.csv")
+      |> send_chunked(200),
+      fn chunk, conn ->
+        case Plug.Conn.chunk(
+               conn,
+               chunk
+             ) do
+          {:ok, conn} ->
+            {:cont, conn}
+
+          {:error, :closed} ->
+            {:halt, conn}
+        end
+      end
+    )
   end
 
   def index(conn, %{"block_hash" => "0x" <> _} = params) do

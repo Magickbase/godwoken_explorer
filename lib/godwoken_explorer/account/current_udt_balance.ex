@@ -8,6 +8,8 @@ defmodule GodwokenExplorer.Account.CurrentUDTBalance do
   alias GodwokenRPC
   alias GodwokenExplorer.Chain.Hash
 
+  @export_limit 5_000
+
   @derive {Jason.Encoder, except: [:__meta__]}
   schema "account_current_udt_balances" do
     field :value, :decimal
@@ -135,76 +137,97 @@ defmodule GodwokenExplorer.Account.CurrentUDTBalance do
   end
 
   def sort_holder_list(udt_id, paging_options) do
-    case Repo.get(UDT, udt_id) do
-      %UDT{type: :native, supply: supply, decimal: decimal} ->
-        [token_contract_address_hashes] = UDT.list_address_by_udt_id(udt_id)
+    {query, supply, decimal} =
+      case Repo.get(UDT, udt_id) do
+        %UDT{type: :native, supply: supply, decimal: decimal} ->
+          [token_contract_address_hashes] = UDT.list_address_by_udt_id(udt_id)
 
-        address_and_balances =
-          from(cub in CurrentUDTBalance,
-            join: a1 in Account,
-            on: a1.eth_address == cub.address_hash,
-            where:
-              cub.token_contract_address_hash == ^token_contract_address_hashes and cub.value > 0,
-            select: %{
-              eth_address: cub.address_hash,
-              balance: cub.value,
-              tx_count:
-                fragment(
-                  "CASE WHEN ? is null THEN 0 ELSE ? END",
-                  a1.transaction_count,
-                  a1.transaction_count
-                )
-            },
-            order_by: [desc: cub.balance]
-          )
-          |> Repo.paginate(page: paging_options[:page], page_size: paging_options[:page_size])
+          {from(cub in CurrentUDTBalance,
+             join: a1 in Account,
+             on: a1.eth_address == cub.address_hash,
+             where:
+               cub.token_contract_address_hash == ^token_contract_address_hashes and
+                 cub.value > 0,
+             select: %{
+               eth_address: cub.address_hash,
+               balance: cub.value,
+               tx_count:
+                 fragment(
+                   "CASE WHEN ? is null THEN 0 ELSE ? END",
+                   a1.transaction_count,
+                   a1.transaction_count
+                 )
+             },
+             order_by: [desc: cub.value]
+           ), supply, decimal}
 
-        parse_holder_sort_results(address_and_balances, supply, decimal || 0)
+        %UDT{type: :bridge, supply: supply, decimal: decimal} ->
+          [udt_script_hash, token_contract_address_hashes] = UDT.list_address_by_udt_id(udt_id)
 
-      %UDT{type: :bridge, supply: supply, decimal: decimal} ->
-        [udt_script_hash, token_contract_address_hashes] = UDT.list_address_by_udt_id(udt_id)
+          udt_balance_query =
+            from(cub in CurrentUDTBalance,
+              where:
+                cub.token_contract_address_hash == ^token_contract_address_hashes and
+                  cub.value > 0,
+              select: %{
+                eth_address: cub.address_hash,
+                balance: cub.value,
+                updated_at: cub.updated_at
+              }
+            )
 
-        udt_balance_query =
-          from(cub in CurrentUDTBalance,
-            where:
-              cub.token_contract_address_hash == ^token_contract_address_hashes and cub.value > 0,
-            select: %{
-              eth_address: cub.address_hash,
-              balance: cub.value,
-              updated_at: cub.updated_at
-            }
-          )
+          bridged_udt_balance_query =
+            from(cbub in CurrentBridgedUDTBalance,
+              where: cbub.udt_script_hash == ^udt_script_hash and cbub.value > 0,
+              select: %{
+                eth_address: cbub.address_hash,
+                balance: cbub.value,
+                updated_at: cbub.updated_at
+              }
+            )
 
-        bridged_udt_balance_query =
-          from(cbub in CurrentBridgedUDTBalance,
-            where: cbub.udt_script_hash == ^udt_script_hash and cbub.value > 0,
-            select: %{
-              eth_address: cbub.address_hash,
-              balance: cbub.value,
-              updated_at: cbub.updated_at
-            }
-          )
+          {from(q in subquery(union_all(udt_balance_query, ^bridged_udt_balance_query)),
+             join: a in Account,
+             on: a.eth_address == q.eth_address,
+             select: %{
+               eth_address: q.eth_address,
+               balance: q.balance,
+               tx_count:
+                 fragment(
+                   "CASE WHEN ? is null THEN 0 ELSE ? END",
+                   a.transaction_count,
+                   a.transaction_count
+                 )
+             },
+             order_by: [desc: :updated_at, desc: :balance],
+             distinct: q.eth_address
+           ), supply, decimal}
+      end
 
-        address_and_balances =
-          from(q in subquery(union_all(udt_balance_query, ^bridged_udt_balance_query)),
-            join: a in Account,
-            on: a.eth_address == q.eth_address,
-            select: %{
-              eth_address: q.eth_address,
-              balance: q.balance,
-              tx_count:
-                fragment(
-                  "CASE WHEN ? is null THEN 0 ELSE ? END",
-                  a.transaction_count,
-                  a.transaction_count
-                )
-            },
-            order_by: [desc: :updated_at, desc: :balance],
-            distinct: q.eth_address
-          )
-          |> Repo.paginate(page: paging_options[:page], page_size: paging_options[:page_size])
+    if is_nil(paging_options) do
+      query
+      |> limit(@export_limit)
+      |> Repo.all()
+      |> Enum.sort_by(& &1.balance)
+      |> Enum.reverse()
+      |> Enum.map(fn %{balance: balance} = result ->
+        percentage =
+          if is_nil(supply) do
+            0.0
+          else
+            D.div(balance, supply) |> D.mult(D.new(100)) |> D.round(2) |> D.to_string()
+          end
 
-        parse_holder_sort_results(address_and_balances, supply, decimal || 0)
+        result
+        |> Map.merge(%{
+          percentage: percentage,
+          balance: D.div(balance, Integer.pow(10, decimal))
+        })
+      end)
+    else
+      query
+      |> Repo.paginate(page: paging_options[:page], page_size: paging_options[:page_size])
+      |> parse_holder_sort_results(supply, decimal || 0)
     end
   end
 
