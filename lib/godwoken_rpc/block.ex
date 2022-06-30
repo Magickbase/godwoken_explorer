@@ -1,5 +1,6 @@
 defmodule GodwokenRPC.Block do
-  import GodwokenRPC.Util, only: [hex_to_number: 1, parse_block_producer: 1]
+  import GodwokenRPC.Util,
+    only: [hex_to_number: 1, parse_block_producer: 1, timestamp_to_utc_datetime: 1]
 
   require Logger
 
@@ -55,8 +56,7 @@ defmodule GodwokenRPC.Block do
       hash: hash,
       parent_hash: parent_hash,
       number: hex_to_number(number),
-      timestamp:
-        timestamp |> hex_to_number() |> Kernel.*(1000) |> DateTime.from_unix!(:microsecond),
+      timestamp: timestamp |> hex_to_number() |> timestamp_to_utc_datetime(),
       registry_id: registry_id,
       producer_address: producer_address,
       transaction_count: tx_count |> hex_to_number(),
