@@ -454,6 +454,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
                      hash_type: hash_type,
                      script_args: script_args,
                      fee_amount: fee_amount,
+                     fee_registry_id: fee_registry_id,
                      hash: hash
                    } ->
       %{
@@ -461,6 +462,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
         hash_type: hash_type,
         script_args: script_args,
         fee_amount: fee_amount,
+        fee_registry_id: fee_registry_id,
         tx_hash: hash
       }
     end)
