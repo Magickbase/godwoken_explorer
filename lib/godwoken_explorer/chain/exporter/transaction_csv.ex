@@ -20,7 +20,9 @@ defmodule GodwokenExplorer.Chain.Exporter.TransactionCsv do
       "FromAddress",
       "ToAddress",
       "Value",
-      "Type"
+      "Type",
+      "PolyjuiceStatus",
+      "BlockStatus"
     ]
 
     transaction_lists =
@@ -33,7 +35,9 @@ defmodule GodwokenExplorer.Chain.Exporter.TransactionCsv do
           transaction[:from],
           transaction[:to_alias],
           transaction[:value],
-          transaction[:type]
+          transaction[:type],
+          transaction[:polyjuice_status],
+          transaction[:status]
         ]
       end)
 

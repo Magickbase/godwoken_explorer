@@ -130,30 +130,35 @@ defmodule GodwokenExplorer.TokenTransfer do
         |> limit(@export_limit)
         |> Repo.all()
 
-      query =
-        Enum.reduce(results, init_query(), fn %{
-                                                transaction_hash: transaction_hash,
-                                                log_index: log_index
-                                              },
-                                              query_acc ->
-          query_acc
-          |> or_where(
-            [tt],
-            tt.transaction_hash == ^transaction_hash and tt.log_index == ^log_index
-          )
-        end)
+      if results == [] do
+        []
+      else
+        query =
+          Enum.reduce(results, init_query(), fn %{
+                                                  transaction_hash: transaction_hash,
+                                                  log_index: log_index
+                                                },
+                                                query_acc ->
+            query_acc
+            |> or_where(
+              [tt],
+              tt.transaction_hash == ^transaction_hash and tt.log_index == ^log_index
+            )
+          end)
 
-      query
-      |> order_by([tt], desc: tt.block_number, desc: tt.log_index)
-      |> Repo.all()
-      |> Enum.map(fn transfer ->
-        transfer
-        |> Map.put(:timestamp, utc_to_unix(transfer[:timestamp]))
-        |> Map.merge(%{
-          hash: to_string(transfer[:hash]),
-          transfer_value: balance_to_view(transfer[:transfer_value], transfer[:udt_decimal] || 0)
-        })
-      end)
+        query
+        |> order_by([tt], desc: tt.block_number, desc: tt.log_index)
+        |> Repo.all()
+        |> Enum.map(fn transfer ->
+          transfer
+          |> Map.put(:timestamp, utc_to_unix(transfer[:timestamp]))
+          |> Map.merge(%{
+            hash: to_string(transfer[:hash]),
+            transfer_value:
+              balance_to_view(transfer[:transfer_value], transfer[:udt_decimal] || 0)
+          })
+        end)
+      end
     else
       paginate_result =
         from(q in subquery(union_all(from_query, ^to_query)))
