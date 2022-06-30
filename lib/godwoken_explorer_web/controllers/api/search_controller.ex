@@ -37,7 +37,7 @@ defmodule GodwokenExplorerWeb.API.SearchController do
   end
 
   defp render_search_results(conn, %Transaction{} = item) do
-    json(conn, %{type: "transaction", id: item.hash})
+    json(conn, %{type: "transaction", id: item.eth_hash || item.hash})
   end
 
   defp render_search_results(conn, %PendingTransaction{} = item) do
