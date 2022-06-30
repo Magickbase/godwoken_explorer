@@ -158,7 +158,7 @@ defmodule GodwokenExplorer.Account.CurrentUDTBalance do
                    a1.transaction_count
                  )
              },
-             order_by: [desc: cub.balance]
+             order_by: [desc: cub.value]
            ), supply, decimal}
 
         %UDT{type: :bridge, supply: supply, decimal: decimal} ->
