@@ -242,7 +242,7 @@ defmodule GodwokenExplorer.UDT do
                          "sudtScriptArgs" => l1_udt_script_args
                        },
                        "info" => %{"decimals" => decimal, "name" => name, "symbol" => symbol}
-                     } ->
+                     } = udt_info ->
         l1_udt_script = %{
           "code_hash" => l1_udt_code_hash,
           "hash_type" => "type",
@@ -263,8 +263,8 @@ defmodule GodwokenExplorer.UDT do
              %Account{id: udt_id} <- Repo.get_by(Account, script_hash: l2_script_hash) do
           %{
             id: udt_id,
-            name: name,
-            symbol: symbol,
+            name: udt_info["displayName"] || name,
+            symbol: udt_info["UAN"] || symbol,
             decimal: decimal,
             bridge_account_id: bridge_account_id,
             script_hash: l1_script_hash,
