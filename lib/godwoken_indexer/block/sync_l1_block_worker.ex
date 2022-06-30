@@ -33,8 +33,11 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
   }
 
   @default_worker_interval 5
-  @smallest_ckb_capacity 290 * :math.pow(10, 8)
-  @smallest_udt_ckb_capacity 371 * :math.pow(10, 8)
+  @smallest_deposit_ckb_capacity 298 * :math.pow(10, 8)
+  @smallest_deposit_udt_ckb_capacity 379 * :math.pow(10, 8)
+  @smallest_withdrawal_ckb_capacity 266 * :math.pow(10, 8)
+  @smallest_withdrawal_udt_ckb_capacity 347 * :math.pow(10, 8)
+
   @buffer_block_for_create_account 20
 
   def start_link(state \\ []) do
@@ -139,9 +142,9 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
                output["lock"]["hash_type"] == deposition_lock.hash_type &&
                String.starts_with?(output["lock"]["args"], deposition_lock.args) &&
                ((is_nil(Map.get(output, "type")) &&
-                   hex_to_number(output["capacity"]) >= @smallest_ckb_capacity) ||
+                   hex_to_number(output["capacity"]) >= @smallest_deposit_ckb_capacity) ||
                   (not is_nil(Map.get(output, "type")) &&
-                     hex_to_number(output["capacity"]) >= @smallest_udt_ckb_capacity)) do
+                     hex_to_number(output["capacity"]) >= @smallest_deposit_udt_ckb_capacity)) do
             [
               %{
                 output: output,
@@ -167,7 +170,11 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
         |> Enum.reduce([], fn {output, index}, acc ->
           if output["lock"]["code_hash"] == withdrawal_lock.code_hash &&
                output["lock"]["hash_type"] == withdrawal_lock.hash_type &&
-               String.starts_with?(output["lock"]["args"], withdrawal_lock.args) do
+               String.starts_with?(output["lock"]["args"], withdrawal_lock.args) &&
+               ((is_nil(Map.get(output, "type")) &&
+                   hex_to_number(output["capacity"]) >= @smallest_withdrawal_ckb_capacity) ||
+                  (not is_nil(Map.get(output, "type")) &&
+                     hex_to_number(output["capacity"]) >= @smallest_withdrawal_udt_ckb_capacity)) do
             [
               %{
                 block_number: tx["block_number"],
