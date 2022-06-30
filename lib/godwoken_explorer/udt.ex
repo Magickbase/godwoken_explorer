@@ -1,9 +1,9 @@
 defmodule GodwokenExplorer.UDT do
   use GodwokenExplorer, :schema
 
-  import GodwokenRPC.Util, only: [hex_to_number: 1, script_to_hash: 1]
+  import GodwokenRPC.Util, only: [hex_to_number: 1, script_to_hash: 1, import_timestamps: 0]
 
-  alias GodwokenExplorer.Chain.Hash
+  alias GodwokenExplorer.Chain.{Hash, Import}
 
   @derive {Jason.Encoder, except: [:__meta__]}
   @primary_key {:id, :integer, autogenerate: false}
@@ -273,6 +273,12 @@ defmodule GodwokenExplorer.UDT do
         end
       end)
 
-    Repo.insert_all(UDT, udt_params, on_conflict: :nothing)
+    Import.insert_changes_list(
+      udt_params,
+      for: UDT,
+      timestamps: import_timestamps(),
+      on_conflict: {:replace, [:name, :symbol, :updated_at]},
+      conflict_target: :id
+    )
   end
 end
