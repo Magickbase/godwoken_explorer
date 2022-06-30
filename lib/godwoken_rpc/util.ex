@@ -148,6 +148,12 @@ defmodule GodwokenRPC.Util do
     |> DateTime.from_unix!(:millisecond)
   end
 
+  def timestamp_to_utc_datetime(timestamp) do
+    timestamp
+    |> Kernel.*(1000)
+    |> DateTime.from_unix!(:microsecond)
+  end
+
   def parse_polyjuice_args(hex_string) do
     is_create = hex_string |> String.slice(14, 2) == "03"
 

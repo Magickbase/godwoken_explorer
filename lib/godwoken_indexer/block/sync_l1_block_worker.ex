@@ -12,7 +12,7 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
       hex_to_number: 1,
       script_to_hash: 1,
       parse_le_number: 1,
-      timestamp_to_datetime: 1,
+      timestamp_to_utc_datetime: 1,
       import_timestamps: 0
     ]
 
@@ -126,7 +126,7 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
           |> Map.merge(%{"block_number" => response["header"]["number"] |> hex_to_number()})
           |> Map.merge(%{
             "timestamp" =>
-              response["header"]["timestamp"] |> hex_to_number() |> timestamp_to_datetime()
+              response["header"]["timestamp"] |> hex_to_number() |> timestamp_to_utc_datetime()
           })
         end)
       end)
