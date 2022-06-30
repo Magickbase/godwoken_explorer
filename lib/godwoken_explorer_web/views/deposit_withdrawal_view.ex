@@ -14,14 +14,6 @@ defmodule GodwokenExplorer.DepositWithdrawalView do
       |> Enum.map(fn struct ->
         struct
         |> Map.merge(%{
-          script_hash: to_string(struct[:script_hash]),
-          eth_address: to_string(struct[:eth_address]),
-          owner_lock_hash: to_string(struct[:owner_lock_hash]),
-          payment_lock_hash: to_string(struct[:payment_lock_hash]),
-          block_hash: to_string(struct[:block_hash]),
-          sudt_script_hash: to_string(struct[:sudt_script_hash]),
-          ckb_lock_hash: to_string(struct[:ckb_lock_hash]),
-          layer1_tx_hash: to_string(struct[:layer1_tx_hash]),
           value: balance_to_view(struct[:value], struct[:udt_decimal] || 0),
           sell_value: balance_to_view(struct[:sell_value], struct[:udt_decimal] || 0)
         })
@@ -37,14 +29,6 @@ defmodule GodwokenExplorer.DepositWithdrawalView do
         |> Enum.map(fn struct ->
           struct
           |> Map.merge(%{
-            script_hash: to_string(struct[:script_hash]),
-            eth_address: to_string(struct[:eth_address]),
-            owner_lock_hash: to_string(struct[:owner_lock_hash]),
-            payment_lock_hash: to_string(struct[:payment_lock_hash]),
-            block_hash: to_string(struct[:block_hash]),
-            sudt_script_hash: to_string(struct[:sudt_script_hash]),
-            ckb_lock_hash: to_string(struct[:ckb_lock_hash]),
-            layer1_tx_hash: to_string(struct[:layer1_tx_hash]),
             value: balance_to_view(struct[:value], struct[:udt_decimal] || 0),
             sell_value: balance_to_view(struct[:sell_value], struct[:udt_decimal] || 0)
           })
@@ -88,14 +72,6 @@ defmodule GodwokenExplorer.DepositWithdrawalView do
       |> Enum.map(fn struct ->
         struct
         |> Map.merge(%{
-          script_hash: to_string(struct[:script_hash]),
-          eth_address: to_string(struct[:eth_address]),
-          owner_lock_hash: to_string(struct[:owner_lock_hash]),
-          payment_lock_hash: to_string(struct[:payment_lock_hash]),
-          block_hash: to_string(struct[:block_hash]),
-          sudt_script_hash: to_string(struct[:sudt_script_hash]),
-          ckb_lock_hash: to_string(struct[:ckb_lock_hash]),
-          layer1_tx_hash: to_string(struct[:layer1_tx_hash]),
           value: balance_to_view(struct[:value], struct[:udt_decimal] || 0),
           sell_value: balance_to_view(struct[:sell_value], struct[:udt_decimal] || 0)
         })
@@ -108,14 +84,6 @@ defmodule GodwokenExplorer.DepositWithdrawalView do
         |> Enum.map(fn struct ->
           struct
           |> Map.merge(%{
-            script_hash: to_string(struct[:script_hash]),
-            eth_address: to_string(struct[:eth_address]),
-            owner_lock_hash: to_string(struct[:owner_lock_hash]),
-            payment_lock_hash: to_string(struct[:payment_lock_hash]),
-            block_hash: to_string(struct[:block_hash]),
-            sudt_script_hash: to_string(struct[:sudt_script_hash]),
-            ckb_lock_hash: to_string(struct[:ckb_lock_hash]),
-            layer1_tx_hash: to_string(struct[:layer1_tx_hash]),
             value: balance_to_view(struct[:value], struct[:udt_decimal] || 0),
             sell_value: balance_to_view(struct[:sell_value], struct[:udt_decimal] || 0)
           })
@@ -137,24 +105,24 @@ defmodule GodwokenExplorer.DepositWithdrawalView do
       on: a2.script_hash == w.l2_script_hash,
       where: ^condition,
       select: %{
-        script_hash: w.l2_script_hash,
-        eth_address: a2.eth_address,
+        script_hash: fragment("'0x' || encode(?, 'hex')", w.l2_script_hash),
+        eth_address: fragment("'0x' || encode(?, 'hex')", a2.eth_address),
         value: w.amount,
-        owner_lock_hash: w.owner_lock_hash,
-        payment_lock_hash: w.payment_lock_hash,
+        owner_lock_hash: fragment("'0x' || encode(?, 'hex')", w.owner_lock_hash),
+        payment_lock_hash: fragment("'0x' || encode(?, 'hex')", w.payment_lock_hash),
         sell_value: w.sell_amount,
         sell_capacity: w.sell_capacity,
-        sudt_script_hash: w.udt_script_hash,
+        sudt_script_hash: fragment("'0x' || encode(?, 'hex')", w.udt_script_hash),
         udt_id: w.udt_id,
         udt_name: u.name,
         udt_symbol: u.symbol,
         udt_icon: u.icon,
         udt_decimal: u.decimal,
-        block_hash: w.block_hash,
+        block_hash: fragment("'0x' || encode(?, 'hex')", w.block_hash),
         block_number: w.block_number,
         timestamp: w.timestamp,
         layer1_block_number: w.layer1_block_number,
-        layer1_tx_hash: w.layer1_tx_hash,
+        layer1_tx_hash: fragment("'0x' || encode(?, 'hex')", w.layer1_tx_hash),
         layer1_output_index: w.layer1_output_index,
         ckb_lock_hash: nil,
         state: w.state,
@@ -172,8 +140,8 @@ defmodule GodwokenExplorer.DepositWithdrawalView do
       on: a2.script_hash == d.script_hash,
       where: ^condition,
       select: %{
-        script_hash: d.script_hash,
-        eth_address: a2.eth_address,
+        script_hash: fragment("'0x' || encode(?, 'hex')", d.script_hash),
+        eth_address: fragment("'0x' || encode(?, 'hex')", a2.eth_address),
         value: d.amount,
         owner_lock_hash: nil,
         payment_lock_hash: nil,
@@ -189,9 +157,9 @@ defmodule GodwokenExplorer.DepositWithdrawalView do
         block_number: nil,
         timestamp: d.timestamp,
         layer1_block_number: d.layer1_block_number,
-        layer1_tx_hash: d.layer1_tx_hash,
+        layer1_tx_hash: fragment("'0x' || encode(?, 'hex')", d.layer1_tx_hash),
         layer1_output_index: d.layer1_output_index,
-        ckb_lock_hash: d.ckb_lock_hash,
+        ckb_lock_hash: fragment("'0x' || encode(?, 'hex')", d.ckb_lock_hash),
         state: "succeed",
         type: "deposit",
         capacity: d.capacity
