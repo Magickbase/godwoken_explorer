@@ -3,7 +3,12 @@ defmodule GodwokenExplorer.Graphql.Resolvers.SmartContract do
   alias GodwokenExplorer.{SmartContract, Account}
 
   import Ecto.Query
-  import GodwokenExplorer.Graphql.Common, only: [page_and_size: 2, sort_type: 3]
+  import GodwokenExplorer.Graphql.Common, only: [cursor_order_sorter: 3]
+  import GodwokenExplorer.Graphql.Resolvers.Common, only: [paginate_query: 3]
+
+  @sorter_fields [:id]
+  @ex_sorter_fields [:ex_balance, :ex_tx_count]
+  @default_sorter [:id]
 
   def smart_contract(
         _parent,
@@ -40,11 +45,34 @@ defmodule GodwokenExplorer.Graphql.Resolvers.SmartContract do
   def smart_contracts(_parent, %{input: input} = _args, _resolution) do
     return =
       from(sc in SmartContract)
-      |> page_and_size(input)
-      |> sort_type(input, :inserted_at)
-      |> Repo.all()
+      |> smart_contracts_order_by(input)
+      |> paginate_query(input, %{
+        cursor_fields: paginate_cursor(input),
+        total_count_primary_key_field: :id
+      })
 
     {:ok, return}
+  end
+
+  defp smart_contracts_order_by(query, input) do
+    sorter = Map.get(input, :sorter)
+
+    if sorter do
+      order_params = cursor_order_sorter(sorter, :order, @sorter_fields)
+      order_by(query, [u], ^order_params)
+    else
+      order_by(query, [u], @default_sorter)
+    end
+  end
+
+  defp paginate_cursor(input) do
+    sorter = Map.get(input, :sorter)
+
+    if sorter do
+      cursor_order_sorter(sorter, :cursor, @sorter_fields)
+    else
+      @default_sorter
+    end
   end
 
   def account(%SmartContract{account_id: account_id} = _parent, _args, _resolution) do

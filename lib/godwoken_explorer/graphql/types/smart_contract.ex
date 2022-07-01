@@ -65,37 +65,57 @@ defmodule GodwokenExplorer.Graphql.Types.SmartContract do
     @desc """
     function: get list of smart contracts
 
-    request-example:
+    request-result-example:
     query {
-      smart_contracts(input: {page: 1, page_size: 2}) {
-        name
-        account_id
-        account {
-          eth_address
+      smart_contracts(input: { sorter: [{ sort_type: ASC, sort_value: ID }] }) {
+        entries {
+          name
+          account_id
+          account {
+            eth_address
+          }
+        }
+        metadata {
+          total_count
+          after
+          before
         }
       }
     }
 
-    result-example:
+
     {
       "data": {
-        "smart_contracts": [
-          {
-            "account": {
-              "eth_address": "0x2503a1a79a443f3961ee96a8c5ec513638129614"
-            },
-            "account_id": "6841",
-            "name": "EIP20"
+        "smart_contracts": {
+          "entries": [
+            {
+              "account": {
+                "eth_address": "0x2503a1a79a443f3961ee96a8c5ec513638129614"
+              },
+              "account_id": "6841",
+              "name": "EIP20"
+            }
+          ],
+          "metadata": {
+            "after": null,
+            "before": null,
+            "total_count": 1
           }
-        ]
+        }
       }
     }
     """
-    field :smart_contracts, list_of(:smart_contract) do
-      arg(:input, :smart_contracts_input, default_value: %{page: 1, page_size: 20, sort_type: :asc})
+    field :smart_contracts, :paginate_smart_contracts do
+      arg(:input, :smart_contracts_input)
+
       middleware(MTermRange, MTermRange.page_and_size_default_config())
       resolve(&Resolvers.SmartContract.smart_contracts/3)
     end
+  end
+
+  object :paginate_smart_contracts do
+    field :entries, list_of(:smart_contract)
+    field :metadata, :paginate_metadata
   end
 
   object :smart_contract do
@@ -111,8 +131,15 @@ defmodule GodwokenExplorer.Graphql.Types.SmartContract do
     field :other_info, :string
 
     field :account, :account do
-    resolve(&Resolvers.SmartContract.account/3)
+      resolve(&Resolvers.SmartContract.account/3)
     end
+  end
+
+  enum :smart_contracts_sorter do
+    value(:id)
+    value(:name)
+    value(:ex_balance)
+    value(:ex_tx_count)
   end
 
   input_object :smart_contract_input do
@@ -121,7 +148,17 @@ defmodule GodwokenExplorer.Graphql.Types.SmartContract do
   end
 
   input_object :smart_contracts_input do
-    import_fields :page_and_size_input
-    import_fields :sort_type_input
+    import_fields(:paginate_input)
+
+    field :sorter, list_of(:smart_contracts_sorter_input),
+      default_value: [
+        %{sort_type: :asc, sort_value: :id},
+        %{sort_type: :asc, sort_value: :name}
+      ]
+  end
+
+  input_object :smart_contracts_sorter_input do
+    field :sort_type, :sort_type
+    field :sort_value, :smart_contracts_sorter
   end
 end

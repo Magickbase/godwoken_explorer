@@ -439,6 +439,11 @@ type PaginateMetadata {
   total_count_cap_exceeded: Boolean
 }
 
+type PaginateSmartContracts {
+  entries: [SmartContract]
+  metadata: PaginateMetadata
+}
+
 type PaginateTokenTransfers {
   entries: [TokenTransfer]
   metadata: PaginateMetadata
@@ -1235,33 +1240,47 @@ type RootQueryType {
   """
   function: get list of smart contracts
   
-  request-example:
+  request-result-example:
   query {
-    smart_contracts(input: {page: 1, page_size: 2}) {
-      name
-      account_id
-      account {
-        eth_address
+    smart_contracts(input: { sorter: [{ sort_type: ASC, sort_value: ID }] }) {
+      entries {
+        name
+        account_id
+        account {
+          eth_address
+        }
+      }
+      metadata {
+        total_count
+        after
+        before
       }
     }
   }
   
-  result-example:
+  
   {
     "data": {
-      "smart_contracts": [
-        {
-          "account": {
-            "eth_address": "0x2503a1a79a443f3961ee96a8c5ec513638129614"
-          },
-          "account_id": "6841",
-          "name": "EIP20"
+      "smart_contracts": {
+        "entries": [
+          {
+            "account": {
+              "eth_address": "0x2503a1a79a443f3961ee96a8c5ec513638129614"
+            },
+            "account_id": "6841",
+            "name": "EIP20"
+          }
+        ],
+        "metadata": {
+          "after": null,
+          "before": null,
+          "total_count": 1
         }
-      ]
+      }
     }
   }
   """
-  smart_contracts(input: SmartContractsInput = {page: 1, page_size: 20, sort_type: ASC}): [SmartContract]
+  smart_contracts(input: SmartContractsInput): PaginateSmartContracts
 
   """
   function: get list of token transfers by filter
@@ -1340,7 +1359,7 @@ type RootQueryType {
     }
   }
   """
-  token_transfers(input: TokenTransferInput! = {combine_from_to: true, limit: 20, sorter: [{sort_type: ASC, sort_value: BLOCK_NUMBER}, {sort_type: ASC, sort_value: TRANSACTION_HASH}, {sort_type: ASC, sort_value: LOG_INDEX}]}): PaginateTokenTransfers
+  token_transfers(input: TokenTransferInput! = {combine_from_to: true, limit: 20, sorter: [{sort_type: DESC, sort_value: BLOCK_NUMBER}, {sort_type: DESC, sort_value: LOG_INDEX}, {sort_type: ASC, sort_value: TRANSACTION_HASH}]}): PaginateTokenTransfers
 
   """
   function: get transaction by transaction_hash
@@ -1603,7 +1622,7 @@ type RootQueryType {
     }
   }
   """
-  transactions(input: TransactionsInput = {limit: 20, sorter: [{sort_type: ASC, sort_value: BLOCK_NUMBER}, {sort_type: ASC, sort_value: INDEX}, {sort_type: ASC, sort_value: HASH}]}): PaginateTrasactions
+  transactions(input: TransactionsInput = {limit: 20, sorter: [{sort_type: DESC, sort_value: BLOCK_NUMBER}, {sort_type: DESC, sort_value: INDEX}, {sort_type: ASC, sort_value: HASH}]}): PaginateTrasactions
 
   """
   function: get udt by contract address
@@ -1718,28 +1737,29 @@ input SmartContractInput {
 }
 
 input SmartContractsInput {
-  """
-  argument: the page of query result, the relations of postgres offset: offset = (page - 1) * page_size
-  
-  default: 1
-  limit: > 0
-  """
-  page: Int = 1
+  """Fetch the records after this cursor."""
+  after: String
+
+  """Fetch the records before this cursor."""
+  before: String
 
   """
-  argument: the page_size of query result, it's the same of postgres limit
-  
-  default: 20
-  limit: > 0
+  Limits the number of records returned per page. Note that this number will be capped by maximum_limit=100. Defaults to 20.
   """
-  page_size: Int = 20
+  limit: Int = 20
+  sorter: [SmartContractsSorterInput] = [{sort_type: ASC, sort_value: ID}, {sort_type: ASC, sort_value: NAME}]
+}
 
-  """
-  argument: the sort of type by custom condition
-  
-  default: desc
-  """
-  sort_type: SortType = DESC
+enum SmartContractsSorter {
+  EX_BALANCE
+  EX_TX_COUNT
+  ID
+  NAME
+}
+
+input SmartContractsSorterInput {
+  sort_type: SortType
+  sort_value: SmartContractsSorter
 }
 
 enum SortType {
@@ -1786,7 +1806,7 @@ input TokenTransferInput {
   Limits the number of records returned per page. Note that this number will be capped by maximum_limit=100. Defaults to 20.
   """
   limit: Int = 20
-  sorter: [TokenTransfersSorterInput] = [{sort_type: ASC, sort_value: BLOCK_NUMBER}, {sort_type: ASC, sort_value: TRANSACTION_HASH}, {sort_type: ASC, sort_value: LOG_INDEX}]
+  sorter: [TokenTransfersSorterInput] = [{sort_type: DESC, sort_value: BLOCK_NUMBER}, {sort_type: DESC, sort_value: LOG_INDEX}, {sort_type: ASC, sort_value: TRANSACTION_HASH}]
 
   """argument: the start of block number(inclusive) for search query"""
   start_block_number: Int
@@ -1846,7 +1866,7 @@ input TransactionsInput {
   """
   limit: Int = 20
   script_hash: HashFull
-  sorter: [TransactionsSorterInput] = [{sort_type: ASC, sort_value: BLOCK_NUMBER}, {sort_type: ASC, sort_value: INDEX}, {sort_type: ASC, sort_value: HASH}]
+  sorter: [TransactionsSorterInput] = [{sort_type: DESC, sort_value: BLOCK_NUMBER}, {sort_type: DESC, sort_value: INDEX}, {sort_type: ASC, sort_value: HASH}]
 
   """argument: the start of block number(inclusive) for search query"""
   start_block_number: Int
