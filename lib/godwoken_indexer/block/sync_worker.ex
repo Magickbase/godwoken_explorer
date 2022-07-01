@@ -155,7 +155,9 @@ defmodule GodwokenIndexer.Block.SyncWorker do
 
   defp async_contract_code(polyjuice_with_receipts) do
     polyjuice_with_receipts
-    |> Enum.filter(fn attrs -> attrs[:created_contract_address_hash] != nil end)
+    |> Enum.filter(fn attrs ->
+      attrs[:created_contract_address_hash] != nil and attrs[:status] != :failed
+    end)
     |> Enum.each(fn attrs ->
       %{block_number: attrs[:block_number], address: attrs[:created_contract_address_hash]}
       |> ImportContractCode.new()
