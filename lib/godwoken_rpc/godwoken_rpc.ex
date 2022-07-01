@@ -6,7 +6,6 @@ defmodule GodwokenRPC do
   alias GodwokenRPC.{Blocks, Block, HTTP, Receipts, Contract}
 
   alias GodwokenRPC.Web3.{
-    FetchedTransactionReceipt,
     FetchedBlockByHash,
     FetchedCodes,
     EthCall,
@@ -321,19 +320,6 @@ defmodule GodwokenRPC do
     options = Application.get_env(:godwoken_explorer, :json_rpc_named_arguments)
 
     Receipts.fetch(transactions_params, options)
-  end
-
-  def fetch_receipt(tx_hash) do
-    options = Application.get_env(:godwoken_explorer, :json_rpc_named_arguments)
-
-    case FetchedTransactionReceipt.request(tx_hash) |> HTTP.json_rpc(options) do
-      {:ok, response} ->
-        {:ok, response}
-
-      _ ->
-        Logger.error("Failed to fetch tx receipt: #{tx_hash}")
-        {:error, 0}
-    end
   end
 
   def fetch_codes(params) do
