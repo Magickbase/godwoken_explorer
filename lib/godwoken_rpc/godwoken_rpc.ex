@@ -38,6 +38,8 @@ defmodule GodwokenRPC do
 
   alias GodwokenRPC.Block.{FetchedTipBlockHash, ByHash}
 
+  alias GodwokenRPC.Transaction.Receipts, as: GWReceipts
+
   @type block_number :: non_neg_integer()
   @type hash :: String.t()
 
@@ -320,6 +322,12 @@ defmodule GodwokenRPC do
     options = Application.get_env(:godwoken_explorer, :json_rpc_named_arguments)
 
     Receipts.fetch(transactions_params, options)
+  end
+
+  def fetch_gw_transaction_receipts(transactions_params) when is_list(transactions_params) do
+    options = Application.get_env(:godwoken_explorer, :json_rpc_named_arguments)
+
+    GWReceipts.fetch(transactions_params, options)
   end
 
   def fetch_codes(params) do

@@ -3,7 +3,6 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
   alias GodwokenExplorer.Repo
 
   import Ecto.Query
-  import Ecto.Query.API, only: [ilike: 2]
 
   import GodwokenExplorer.Graphql.Common,
     only: [cursor_order_sorter: 3]

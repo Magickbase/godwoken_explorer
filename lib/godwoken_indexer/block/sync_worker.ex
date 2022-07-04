@@ -10,6 +10,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
   alias GodwokenIndexer.Transform.{TokenTransfers, TokenBalances}
   alias GodwokenRPC.{Blocks, Receipts}
   alias GodwokenExplorer.Chain.Import
+  alias GodwokenExplorer.GW.Log, as: GWLog
 
   alias GodwokenExplorer.{
     Block,
@@ -86,6 +87,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
     {:ok, inserted_transactions} =
       if transactions_params_without_receipts != [] do
         import_account(transactions_params_without_receipts)
+        handle_gw_transaction_receipts(transactions_params_without_receipts)
 
         {polyjuice_without_receipts, polyjuice_creator_params, _eth_addr_reg_params} =
           group_transaction_params(transactions_params_without_receipts)
@@ -114,6 +116,12 @@ defmodule GodwokenIndexer.Block.SyncWorker do
     else
       {:ok, next_block_number + 1}
     end
+  end
+
+  defp handle_gw_transaction_receipts(transaction_params) do
+    gw_hashes = transaction_params |> Enum.map(&Map.take(&1, [:hash]))
+    {:ok, %{logs: logs}} = GodwokenRPC.fetch_gw_transaction_receipts(gw_hashes)
+    import_gw_logs(logs)
   end
 
   defp handle_polyjuice_transactions(polyjuice_without_receipts) do
@@ -151,6 +159,15 @@ defmodule GodwokenIndexer.Block.SyncWorker do
       if length(polyjuice_without_receipts) > 0,
         do: {:ok, :import} = update_ckb_balance(polyjuice_without_receipts)
     end
+  end
+
+  defp import_gw_logs(gw_logs) do
+    Import.insert_changes_list(
+      gw_logs,
+      for: GWLog,
+      timestamps: import_timestamps(),
+      on_conflict: :nothing
+    )
   end
 
   defp async_contract_code(polyjuice_with_receipts) do
