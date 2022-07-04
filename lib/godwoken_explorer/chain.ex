@@ -81,7 +81,7 @@ defmodule GodwokenExplorer.Chain do
   def address_to_token_transfer_count(script_hash) do
     eth_address =
       case Repo.get_by(Account, script_hash: script_hash) do
-        %Account{eth_address: eth_address} ->
+        %Account{eth_address: eth_address} when not is_nil(eth_address) ->
           eth_address
 
         nil ->
