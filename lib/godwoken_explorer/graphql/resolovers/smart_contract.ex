@@ -7,7 +7,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.SmartContract do
   import GodwokenExplorer.Graphql.Resolvers.Common, only: [paginate_query: 3]
 
   @sorter_fields [:id]
-  @ex_sorter_fields [:ex_balance, :ex_tx_count]
+  # @ex_sorter_fields [:ex_balance, :ex_tx_count]
   @default_sorter [:id]
 
   def smart_contract(
