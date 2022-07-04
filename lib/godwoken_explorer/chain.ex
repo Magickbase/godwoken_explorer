@@ -229,12 +229,8 @@ defmodule GodwokenExplorer.Chain do
 
   def string_to_transaction_hash(_), do: :error
 
-  @spec string_to_block_hash(String.t()) :: {:ok, Hash.t()} | :error
-  def string_to_block_hash(string) when is_binary(string) do
-    Hash.Full.cast(string)
-  end
-
-  def string_to_block_hash(_), do: :error
+  defdelegate string_to_script_hash(string), to: __MODULE__, as: :string_to_transaction_hash
+  defdelegate string_to_block_hash(string), to: __MODULE__, as: :string_to_transaction_hash
 
   def param_to_block_timestamp(timestamp_string) when is_binary(timestamp_string) do
     case Integer.parse(timestamp_string) do

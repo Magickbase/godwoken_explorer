@@ -31,7 +31,28 @@ defmodule GodwokenExplorerWeb.API.AccountController do
       end
     else
       :error ->
-        {:error, :address_format}
+        with {:ok, script_hash} <- Chain.string_to_script_hash(params["id"]) do
+          case Repo.get_by(Account, script_hash: script_hash) do
+            %Account{id: id} = account ->
+              Account.async_fetch_transfer_and_transaction_count(account)
+
+              result =
+                id
+                |> Account.find_by_id()
+                |> Account.account_to_view()
+
+              json(
+                conn,
+                result
+              )
+
+            nil ->
+              {:error, :not_found}
+          end
+        else
+          :error ->
+            {:error, :address_format}
+        end
     end
   end
 end
