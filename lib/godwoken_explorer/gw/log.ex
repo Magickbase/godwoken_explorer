@@ -4,10 +4,12 @@ defmodule GodwokenExplorer.GW.Log do
 
   alias GodwokenExplorer.Chain.{Data, Hash}
 
+  @primary_key false
   schema "gw_logs" do
     field :account_id, :integer
     field :data, Data
     field :service_flag, :integer
+    field :index, :integer, primary_key: true
 
     field(:type, Ecto.Enum,
       values: [:sudt_transfer, :sudt_pay_fee, :polyjuice_system, :polyjuce_user]
@@ -15,6 +17,7 @@ defmodule GodwokenExplorer.GW.Log do
 
     belongs_to(:transaction, GodwokenExplorer.Transaction,
       foreign_key: :transaction_hash,
+      primary_key: true,
       references: :hash,
       type: Hash.Full
     )
