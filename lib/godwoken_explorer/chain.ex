@@ -84,7 +84,7 @@ defmodule GodwokenExplorer.Chain do
         %Account{eth_address: eth_address} when not is_nil(eth_address) ->
           eth_address
 
-        nil ->
+        _ ->
           script_hash
       end
 
