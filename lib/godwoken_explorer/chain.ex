@@ -229,12 +229,8 @@ defmodule GodwokenExplorer.Chain do
 
   def string_to_transaction_hash(_), do: :error
 
-  @spec string_to_block_hash(String.t()) :: {:ok, Hash.t()} | :error
-  def string_to_block_hash(string) when is_binary(string) do
-    Hash.Full.cast(string)
-  end
-
-  def string_to_block_hash(_), do: :error
+  defdelegate string_to_script_hash(string), to: __MODULE__, as: :string_to_transaction_hash
+  defdelegate string_to_block_hash(string), to: __MODULE__, as: :string_to_transaction_hash
 
   def param_to_block_timestamp(timestamp_string) when is_binary(timestamp_string) do
     case Integer.parse(timestamp_string) do
@@ -432,7 +428,7 @@ defmodule GodwokenExplorer.Chain do
     with {:error, :not_found} <- transaction_from_param(param),
          {:error, :not_found} <- hash_string_to_block(param),
          {:error, :not_found} <- pending_transaction_from_param(param) do
-      address_from_param(param)
+      hash_string_to_account(param)
     end
   end
 
@@ -460,6 +456,16 @@ defmodule GodwokenExplorer.Chain do
     case string_to_block_hash(hash_string) do
       {:ok, hash} ->
         hash_to_block(hash)
+
+      :error ->
+        {:error, :not_found}
+    end
+  end
+
+  defp hash_string_to_account(hash_string) do
+    case string_to_script_hash(hash_string) do
+      {:ok, hash} ->
+        hash_to_account(hash)
 
       :error ->
         {:error, :not_found}
@@ -517,6 +523,19 @@ defmodule GodwokenExplorer.Chain do
 
       block ->
         {:ok, block}
+    end
+  end
+
+  def hash_to_account(%Hash{byte_count: unquote(Hash.Full.byte_count())} = hash) do
+    Account
+    |> where(script_hash: ^hash)
+    |> Repo.one()
+    |> case do
+      nil ->
+        {:error, :not_found}
+
+      account ->
+        {:ok, account}
     end
   end
 

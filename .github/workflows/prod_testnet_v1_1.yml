@@ -2,11 +2,11 @@ name: gwscan build and run
 on:
   push:
     branches:
-      - "godwoken-v1.1-prod"
+      - "godwoken-v1-testnet-prod"
 
 jobs:
   prod-testnet-v1-build-run:
-    runs-on: [self-hosted, prod_testnet_v1_1]
+    runs-on: [self-hosted, godwoken-v1-testnet-prod]
     environment: prod_testnet_v1_1
     env:
       ENV_FILE_PATH: ${{secrets.ENV_FILE_PATH}}
