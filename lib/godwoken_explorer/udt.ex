@@ -5,6 +5,8 @@ defmodule GodwokenExplorer.UDT do
 
   alias GodwokenExplorer.Chain.{Hash, Import}
 
+  @default_ckb_account_id 1
+
   @derive {Jason.Encoder, except: [:__meta__]}
   @primary_key {:id, :integer, autogenerate: false}
   schema "udts" do
@@ -92,7 +94,9 @@ defmodule GodwokenExplorer.UDT do
         id
       else
         _ ->
-          nil
+          Account.manual_create_account!(@default_ckb_account_id)
+          FastGlobal.put(:ckb_account_id, @default_ckb_account_id)
+          @default_ckb_account_id
       end
     end
   end

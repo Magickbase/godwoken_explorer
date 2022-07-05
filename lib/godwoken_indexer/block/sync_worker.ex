@@ -10,6 +10,8 @@ defmodule GodwokenIndexer.Block.SyncWorker do
   alias GodwokenIndexer.Transform.{TokenTransfers, TokenBalances}
   alias GodwokenRPC.{Blocks, Receipts}
   alias GodwokenExplorer.Chain.Import
+  alias GodwokenExplorer.GW.Log, as: GWLog
+  alias GodwokenExplorer.GW.{SudtPayFee, SudtTransfer}
 
   alias GodwokenExplorer.{
     Block,
@@ -86,6 +88,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
     {:ok, inserted_transactions} =
       if transactions_params_without_receipts != [] do
         import_account(transactions_params_without_receipts)
+        handle_gw_transaction_receipts(transactions_params_without_receipts, next_block_number)
 
         {polyjuice_without_receipts, polyjuice_creator_params, _eth_addr_reg_params} =
           group_transaction_params(transactions_params_without_receipts)
@@ -114,6 +117,75 @@ defmodule GodwokenIndexer.Block.SyncWorker do
     else
       {:ok, next_block_number + 1}
     end
+  end
+
+  defp handle_gw_transaction_receipts(transaction_params, block_number) do
+    gw_hashes = transaction_params |> Enum.map(&Map.take(&1, [:hash]))
+
+    {:ok, %{logs: logs, sudt_transfers: sudt_transfers, sudt_pay_fees: sudt_pay_fees}} =
+      GodwokenRPC.fetch_gw_transaction_receipts(gw_hashes)
+
+    import_gw_logs(logs)
+    {_, sudt_transfers} = import_sudt_transfers(sudt_transfers)
+    {_, sudt_pay_fees} = import_sudt_pay_fees(sudt_pay_fees)
+
+    transfer_account_udts =
+      (sudt_transfers || [])
+      |> Enum.reduce(MapSet.new(), fn transfer, map_set ->
+        map_set
+        |> MapSet.put(%{address: transfer.from_address, udt_id: transfer.udt_id})
+        |> MapSet.put(%{address: transfer.to_address, udt_id: transfer.udt_id})
+      end)
+      |> MapSet.to_list()
+
+    pay_fee_account_udts =
+      (sudt_pay_fees || [])
+      |> Enum.reduce(MapSet.new(), fn transfer, map_set ->
+        map_set
+        |> MapSet.put(%{address: transfer.from_address, udt_id: transfer.udt_id})
+        |> MapSet.put(%{address: transfer.block_producer_address, udt_id: transfer.udt_id})
+      end)
+      |> MapSet.to_list()
+
+    account_udts = transfer_account_udts ++ pay_fee_account_udts
+    udt_ids = account_udts |> Enum.map(&Map.get(&1, :udt_id))
+
+    exist_udt_ids = from(a in Account, where: a.id in ^udt_ids, select: a.id) |> Repo.all()
+    not_exist_udt_ids = udt_ids -- exist_udt_ids
+    Account.batch_import_accounts_with_ids(not_exist_udt_ids)
+
+    udt_id_script_hashes =
+      from(a in Account, where: a.id in ^udt_ids, select: %{id: a.id, script_hash: a.script_hash})
+      |> Repo.all()
+
+    params =
+      account_udts
+      |> Enum.map(fn %{address: address, udt_id: udt_id} ->
+        udt = udt_id_script_hashes |> Enum.find(fn account -> account[:id] == udt_id end)
+
+        %{
+          registry_address: address |> to_string() |> Account.eth_address_to_registry_address(),
+          account_id: nil,
+          udt_id: udt_id,
+          udt_script_hash: to_string(udt.script_hash),
+          eth_address: address
+        }
+      end)
+
+    {:ok, %GodwokenRPC.Account.FetchedBalances{params_list: import_account_udts}} =
+      GodwokenRPC.fetch_balances(params)
+
+    import_account_udts =
+      import_account_udts
+      |> Enum.map(&Map.put(&1, :block_number, block_number))
+
+    Import.insert_changes_list(
+      import_account_udts,
+      for: CurrentBridgedUDTBalance,
+      timestamps: import_timestamps(),
+      on_conflict: {:replace, [:block_number, :value, :updated_at]},
+      conflict_target: [:address_hash, :udt_script_hash]
+    )
   end
 
   defp handle_polyjuice_transactions(polyjuice_without_receipts) do
@@ -151,6 +223,43 @@ defmodule GodwokenIndexer.Block.SyncWorker do
       if length(polyjuice_without_receipts) > 0,
         do: {:ok, :import} = update_ckb_balance(polyjuice_without_receipts)
     end
+  end
+
+  defp import_gw_logs(gw_logs) do
+    Import.insert_changes_list(
+      gw_logs,
+      for: GWLog,
+      timestamps: import_timestamps(),
+      on_conflict: :nothing
+    )
+  end
+
+  defp import_sudt_transfers(sudt_transfers) do
+    Import.insert_changes_list(
+      sudt_transfers,
+      for: SudtTransfer,
+      timestamps: import_timestamps(),
+      on_conflict: :nothing,
+      returning: [
+        :from_address,
+        :to_address,
+        :udt_id
+      ]
+    )
+  end
+
+  defp import_sudt_pay_fees(sudt_pay_fees) do
+    Import.insert_changes_list(
+      sudt_pay_fees,
+      for: SudtPayFee,
+      timestamps: import_timestamps(),
+      on_conflict: :nothing,
+      returning: [
+        :from_address,
+        :block_producer_address,
+        :udt_id
+      ]
+    )
   end
 
   defp async_contract_code(polyjuice_with_receipts) do
@@ -533,7 +642,6 @@ defmodule GodwokenIndexer.Block.SyncWorker do
 
         params =
           account_id_to_registry_addresses
-          |> Enum.reject(&is_nil(Map.fetch!(&1, :eth_address)))
           |> Enum.map(fn account ->
             %{
               registry_address: account.registry_address,
