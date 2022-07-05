@@ -7,6 +7,41 @@ defmodule GodwokenRPC.Util do
   @full_length_size 4
   @offset_size 4
 
+  def transform_hex_number_to_le(hex_number, bytes) do
+    hex_number
+    |> hex_to_number()
+    |> integer_to_le_binary()
+    |> pad_trailing(bytes)
+    |> Base.encode16(case: :lower)
+  end
+
+  def integer_to_le_hex(integer) do
+    integer |> :binary.encode_unsigned(:little) |> Base.encode16() |> String.downcase()
+  end
+
+  def integer_to_le_binary(integer) do
+    integer |> :binary.encode_unsigned(:little)
+  end
+
+  @spec pad_trailing(binary, non_neg_integer, byte) :: binary
+  def pad_trailing(binary, len, byte \\ 0)
+
+  # Return binary if it's already long enough
+  def pad_trailing(binary, len, byte)
+      when is_binary(binary) and is_integer(len) and is_integer(byte) and len > 0 and
+             byte_size(binary) >= len,
+      do: binary
+
+  def pad_trailing(binary, len, byte)
+      when is_binary(binary) and is_integer(len) and is_integer(byte) and len > 0 do
+    binary <> (<<byte>> |> copy(len - byte_size(binary)))
+  end
+
+  @spec copy(binary, non_neg_integer) :: binary
+  def copy(bin, n) when is_binary(bin) and is_integer(n) do
+    :binary.copy(bin, n)
+  end
+
   def parse_le_number(hex_string) do
     hex_string
     |> Base.decode16!(case: :lower)
@@ -61,11 +96,13 @@ defmodule GodwokenRPC.Util do
       [script["code_hash"], hash_type, serialized_args(String.slice(script["args"], 2..-1))]
       |> Enum.map(fn value -> String.slice(value, 2..-1) end)
 
-    body = values |> Enum.join()
+    body = values |> Enum.join() |> String.downcase()
     header_length = @full_length_size + @offset_size * Enum.count(values)
 
     full_length =
-      <<header_length + (body |> String.length() |> Kernel.div(2))::32-little>> |> Base.encode16()
+      <<header_length + (body |> String.length() |> Kernel.div(2))::32-little>>
+      |> Base.encode16()
+      |> String.downcase()
 
     offset_base = values |> Enum.map(&(&1 |> String.length() |> Kernel.div(2)))
 
@@ -102,6 +139,12 @@ defmodule GodwokenRPC.Util do
   def timestamp_to_datetime(timestamp) do
     timestamp
     |> DateTime.from_unix!(:millisecond)
+  end
+
+  def timestamp_to_utc_datetime(timestamp) do
+    timestamp
+    |> Kernel.*(1000)
+    |> DateTime.from_unix!(:microsecond)
   end
 
   def parse_polyjuice_args(hex_string) do

@@ -60,6 +60,7 @@ defmodule GodwokenExplorerWeb.Router do
     get("/account_udts", AccountUDTController, :index)
     get("/daily_stats", DailyStatController, :index)
     get("/txs/:hash/logs", Transaction.LogController, :index)
+    get("/accounts/:address/logs", Account.LogController, :index)
   end
 
   scope "/", GodwokenExplorerWeb do

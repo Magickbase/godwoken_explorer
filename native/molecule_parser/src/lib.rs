@@ -5,6 +5,7 @@ use packed::CreateAccount;
 use packed::GlobalState;
 use packed::GlobalStateV0;
 use packed::DepositLockArgs;
+use packed::V1DepositLockArgs;
 use packed::WithdrawalLockArgs;
 use molecule::prelude::Entity;
 use ckb_hash::blake2b_256;
@@ -104,6 +105,16 @@ fn parse_deposition_lock_args(arg: String) -> (String, String) {
 }
 
 #[rustler::nif]
+fn parse_v1_deposition_lock_args(arg: String) -> (String, String) {
+    let args = hex::decode(arg).unwrap();
+    let deposition_args = V1DepositLockArgs::from_slice(&args[32..]).unwrap();
+    let l2_lock_script = blake2b_256(deposition_args.layer2_lock().as_slice());
+    let l1_lock_hash = deposition_args.owner_lock_hash();
+
+    (hex::encode(l2_lock_script), hex::encode(l1_lock_hash.as_slice()))
+}
+
+#[rustler::nif]
 fn parse_withdrawal_lock_args(arg: String) -> (String, (String, u64), (String, String, u64), String, String) {
     let args = hex::decode(arg).unwrap();
     let withdrawal_args = WithdrawalLockArgs::from_slice(&args[32..]).unwrap();
@@ -143,6 +154,7 @@ rustler::init!(
         parse_global_state,
         parse_v0_global_state,
         parse_deposition_lock_args,
+        parse_v1_deposition_lock_args,
         parse_withdrawal_lock_args
     ]
 );

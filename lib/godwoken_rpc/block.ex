@@ -1,5 +1,5 @@
 defmodule GodwokenRPC.Block do
-  import GodwokenRPC.Util, only: [hex_to_number: 1]
+  import GodwokenRPC.Util, only: [hex_to_number: 1, timestamp_to_utc_datetime: 1]
 
   def from_response(%{id: id, result: nil}, id_to_params) when is_map(id_to_params) do
     params = Map.fetch!(id_to_params, id)
@@ -32,28 +32,39 @@ defmodule GodwokenRPC.Block do
           }
         }
       }) do
-    {:ok,
-     %{
-       "gasLimit" => gas_limit,
-       "gasUsed" => gas_used,
-       "size" => size,
-       "logsBloom" => logs_bloom
-     }} = GodwokenRPC.fetch_eth_block_by_hash(hash)
+    case GodwokenRPC.fetch_eth_block_by_hash(hash) do
+      {:ok,
+       %{
+         "gasLimit" => gas_limit,
+         "gasUsed" => gas_used,
+         "size" => size,
+         "logsBloom" => logs_bloom
+       }} ->
+        %{
+          hash: hash,
+          parent_hash: parent_hash,
+          number: hex_to_number(number),
+          timestamp: timestamp |> hex_to_number() |> timestamp_to_utc_datetime(),
+          aggregator_id: hex_to_number(aggregator_id),
+          transaction_count: tx_count |> hex_to_number(),
+          size: size |> hex_to_number(),
+          logs_bloom: logs_bloom,
+          status: :committed,
+          gas_limit: gas_limit |> hex_to_number(),
+          gas_used: gas_used |> hex_to_number()
+        }
 
-    %{
-      hash: hash,
-      parent_hash: parent_hash,
-      number: hex_to_number(number),
-      timestamp:
-        timestamp |> hex_to_number() |> Kernel.*(1000) |> DateTime.from_unix!(:microsecond),
-      aggregator_id: hex_to_number(aggregator_id),
-      transaction_count: tx_count |> hex_to_number(),
-      size: size |> hex_to_number(),
-      logs_bloom: logs_bloom,
-      status: :committed,
-      gas_limit: gas_limit |> hex_to_number(),
-      gas_used: gas_used |> hex_to_number()
-    }
+      {:ok, nil} ->
+        %{
+          hash: hash,
+          parent_hash: parent_hash,
+          number: hex_to_number(number),
+          timestamp: timestamp |> hex_to_number() |> timestamp_to_utc_datetime(),
+          aggregator_id: hex_to_number(aggregator_id),
+          transaction_count: tx_count |> hex_to_number(),
+          status: :committed
+        }
+    end
   end
 
   def elixir_to_transactions(%{

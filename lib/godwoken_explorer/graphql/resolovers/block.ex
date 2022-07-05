@@ -44,7 +44,6 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Block do
   end
 
   def transactions(%Block{hash: hash}, %{input: input} = _args, _resolution) do
-    IO.inspect(input)
     return =
       from(t in Transaction)
       |> where([t], t.block_hash == ^hash)
