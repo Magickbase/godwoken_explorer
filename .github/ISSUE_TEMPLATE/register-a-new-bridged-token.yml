@@ -1,6 +1,6 @@
 name: Register a new bridged token
 description: Required information to register a new bridged token
-title: '[Bridged Token] **Token Name**'
+title: '[Bridged Token] **Display Name**'
 labels:
   - Token Registration
 assignees:
@@ -12,9 +12,9 @@ body:
     validations:
       required: true
     attributes:
-      label: Token Name
-      description: Identifies the asset represented by this token.
-      placeholder: e.g. Nervos CKB
+      label: Display Name
+      description: Identifies the asset represented by this token. Following [UAN](https://github.com/nervosnetwork/rfcs/pull/335)
+      placeholder: e.g. WBTC (via Forcebridge from ETH)
 
   - type: textarea
     id: description
@@ -25,13 +25,13 @@ body:
       description: Describe the asset represented by this token.
 
   - type: input
-    id: symbol
+    id: uan
     validations:
       required: true
     attributes:
-      label: Symbol
-      description: The symbol of the token
-      placeholder: e.g. CKB
+      label: UAN
+      description: The UAN of the token. Following [UAN](https://github.com/nervosnetwork/rfcs/pull/335)
+      placeholder: e.g. WBTC.ckb|fb.eth
 
   - type: input
     id: decimals
