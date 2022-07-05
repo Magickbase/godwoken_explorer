@@ -78,21 +78,12 @@ defmodule GodwokenExplorer.Chain do
     end
   end
 
-  def address_to_token_transfer_count(script_hash) do
-    eth_address =
-      case Repo.get_by(Account, script_hash: script_hash) do
-        %Account{eth_address: eth_address} when not is_nil(eth_address) ->
-          eth_address
-
-        _ ->
-          script_hash
-      end
-
+  def address_to_token_transfer_count(eth_address) do
     udt_type? =
       from(u in UDT,
         join: a in Account,
         on: a.id == u.bridge_account_id,
-        where: a.script_hash == ^script_hash
+        where: a.eth_address == ^eth_address
       )
       |> Repo.exists?()
 

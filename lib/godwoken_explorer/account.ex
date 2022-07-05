@@ -691,9 +691,11 @@ defmodule GodwokenExplorer.Account do
   end
 
   def async_fetch_transfer_and_transaction_count(account) do
-    Task.async(fn ->
-      AddressTokenTransfersCounter.fetch(account)
-    end)
+    if account.eth_address != nil do
+      Task.async(fn ->
+        AddressTokenTransfersCounter.fetch(account)
+      end)
+    end
 
     Task.async(fn ->
       AddressTransactionsCounter.fetch(account)

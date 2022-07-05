@@ -6,7 +6,6 @@ defmodule GodwokenRPC do
   alias GodwokenRPC.{Blocks, Block, HTTP, Receipts, Contract}
 
   alias GodwokenRPC.Web3.{
-    FetchedTransactionReceipt,
     FetchedBlockByHash,
     FetchedCodes,
     EthCall,
@@ -38,6 +37,9 @@ defmodule GodwokenRPC do
   }
 
   alias GodwokenRPC.Block.{FetchedTipBlockHash, ByHash}
+
+  alias GodwokenRPC.Transaction.Receipts, as: GWReceipts
+  alias GodwokenExplorer.Chain.Hash
 
   @type block_number :: non_neg_integer()
   @type hash :: String.t()
@@ -293,6 +295,15 @@ defmodule GodwokenRPC do
     end
   end
 
+  @spec fetch_balances([
+          %{
+            registry_address: String.t(),
+            udt_id: integer,
+            account_id: integer | nil,
+            udt_script_hash: Hash.Full | nil,
+            eth_address: Hash.Address | nil
+          }
+        ]) :: any
   def fetch_balances(params) do
     id_to_params = id_to_params(params)
     options = Application.get_env(:godwoken_explorer, :json_rpc_named_arguments)
@@ -323,17 +334,10 @@ defmodule GodwokenRPC do
     Receipts.fetch(transactions_params, options)
   end
 
-  def fetch_receipt(tx_hash) do
+  def fetch_gw_transaction_receipts(transactions_params) when is_list(transactions_params) do
     options = Application.get_env(:godwoken_explorer, :json_rpc_named_arguments)
 
-    case FetchedTransactionReceipt.request(tx_hash) |> HTTP.json_rpc(options) do
-      {:ok, response} ->
-        {:ok, response}
-
-      _ ->
-        Logger.error("Failed to fetch tx receipt: #{tx_hash}")
-        {:error, 0}
-    end
+    GWReceipts.fetch(transactions_params, options)
   end
 
   def fetch_codes(params) do

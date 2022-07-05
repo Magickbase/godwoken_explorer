@@ -33,7 +33,9 @@ defmodule GodwokenExplorer.Graphql.Resolvers.AccountUDT do
     query =
       from(cu in CurrentUDTBalance)
       |> join(:inner, [cu], a1 in subquery(squery), on: cu.address_hash == a1.eth_address)
-      |> join(:inner, [cu, _a1], a2 in Account, on: cu.token_contract_address_hash == a2.eth_address)
+      |> join(:inner, [cu, _a1], a2 in Account,
+        on: cu.token_contract_address_hash == a2.eth_address
+      )
       |> join(:inner, [_cu, _a1, a2], u in UDT, on: u.id == a2.id)
       |> order_by([cu], desc: cu.updated_at)
 
@@ -65,7 +67,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.AccountUDT do
       from(a in Account)
       |> where([a], a.eth_address in ^address_hashes or a.script_hash in ^script_hashes)
 
-    Repo.all(squery) |> IO.inspect(label: :xxxx)
+    Repo.all(squery)
 
     query =
       from(cbu in CurrentBridgedUDTBalance)
@@ -82,67 +84,58 @@ defmodule GodwokenExplorer.Graphql.Resolvers.AccountUDT do
     end
   end
 
-  def udt(
-        %CurrentUDTBalance{
-          udt_id: udt_id,
-          token_contract_address_hash: token_contract_address_hash
-        } = _parent,
-        _args,
-        _resolution
-      ) do
-    return =
-      if udt_id do
-        from(u in UDT)
-        |> where([u], u.id == ^udt_id)
-        |> Repo.one()
-      else
-        result =
-          from(u in UDT)
-          |> join(:inner, [u], a in Account,
-            on: a.eth_address == ^token_contract_address_hash and u.bridge_account_id == a.id
-          )
-          |> order_by([u], desc: u.updated_at)
-          |> first()
-          |> Repo.all()
-
-        if result == [] do
-          nil
-        else
-          hd(result)
-        end
-      end
-
+  def udt(parent, _args, _resolution) do
+    return = do_udt(parent)
     {:ok, return}
   end
 
-  def udt(
-        %CurrentBridgedUDTBalance{udt_id: udt_id, udt_script_hash: udt_script_hash} = _parent,
-        _args,
-        _resolution
-      ) do
-    return =
-      if udt_id do
+  defp do_udt(%CurrentUDTBalance{
+         udt_id: udt_id,
+         token_contract_address_hash: token_contract_address_hash
+       }) do
+    if udt_id do
+      from(u in UDT)
+      |> where([u], u.id == ^udt_id)
+      |> Repo.one()
+    else
+      result =
         from(u in UDT)
-        |> where([u], u.id == ^udt_id)
-        |> Repo.one()
+        |> join(:inner, [u], a in Account,
+          on: a.eth_address == ^token_contract_address_hash and u.bridge_account_id == a.id
+        )
+        |> order_by([u], desc: u.updated_at)
+        |> first()
+        |> Repo.all()
+
+      if result == [] do
+        nil
       else
-        result =
-          from(u in UDT)
-          |> join(:inner, [u], a in Account,
-            on: a.script_hash == ^udt_script_hash and u.id == a.id
-          )
-          |> order_by([u], desc: u.updated_at)
-          |> first()
-          |> Repo.all()
-
-        if result == [] do
-          nil
-        else
-          hd(result)
-        end
+        hd(result)
       end
+    end
+  end
 
-    {:ok, return}
+  defp do_udt(
+         %CurrentBridgedUDTBalance{udt_id: udt_id, udt_script_hash: udt_script_hash} = _parent
+       ) do
+    if udt_id do
+      from(u in UDT)
+      |> where([u], u.id == ^udt_id)
+      |> Repo.one()
+    else
+      result =
+        from(u in UDT)
+        |> join(:inner, [u], a in Account, on: a.script_hash == ^udt_script_hash and u.id == a.id)
+        |> order_by([u], desc: u.updated_at)
+        |> first()
+        |> Repo.all()
+
+      if result == [] do
+        nil
+      else
+        hd(result)
+      end
+    end
   end
 
   def account(
@@ -209,28 +202,91 @@ defmodule GodwokenExplorer.Graphql.Resolvers.AccountUDT do
     ckb_account_id = UDT.ckb_account_id()
 
     if ckb_account_id do
-      do_account_ckbs(address_hashes, script_hashes, ckb_account_id)
+      [ckb_bridged_address, ckb_contract_address] =
+        UDT.ckb_account_id() |> UDT.list_address_by_udt_id()
+
+      cbus =
+        search_account_current_brideged_udts(
+          address_hashes,
+          script_hashes,
+          ckb_bridged_address
+        )
+        |> Repo.all()
+        |> IO.inspect()
+
+      cus =
+        search_account_current_udts(address_hashes, script_hashes, ckb_contract_address)
+        |> Repo.all()
+        |> IO.inspect()
+
+      result =
+        (cbus ++ cus)
+        |> Enum.sort_by(&Map.fetch(&1, :updated_at))
+        |> Enum.uniq_by(&Map.fetch(&1, :address_hash))
+
+      {:ok, result}
     else
       {:error, :ckb_account_not_found}
     end
   end
 
-  defp do_account_ckbs(address_hashes, script_hashes, ckb_account_id) do
-    %Account{script_hash: token_contract_address_hash} = Repo.get(Account, ckb_account_id)
+  def account_udts(_parent, %{input: input} = _args, _resolution) do
+    address_hashes = Map.get(input, :address_hashes)
+    script_hashes = Map.get(input, :script_hashes)
+    token_contract_address_hash = Map.get(input, :token_contract_address_hash)
+    udt_script_hash = Map.get(input, :udt_script_hash)
 
-    if length(address_hashes) > @addresses_max_limit do
-      {:error, :too_many_addresses}
+    account_query =
+      if token_contract_address_hash do
+        from(a in Account, where: a.eth_address == ^token_contract_address_hash)
+      else
+        if udt_script_hash do
+          from(a in Account, where: a.script_hash == ^udt_script_hash)
+        else
+          nil
+        end
+      end
+
+    if length(address_hashes) > @addresses_max_limit or
+         length(script_hashes) > @addresses_max_limit do
+      {:error, :too_many_inputs}
     else
-      query =
-        search_account_current_brideged_udts(
-          address_hashes,
-          script_hashes,
-          token_contract_address_hash
-        )
+      if account_query do
+        account = Repo.one(account_query)
 
-      return = Repo.all(query)
+        cus =
+          if account.eth_address do
+            search_account_current_udts(
+              address_hashes,
+              script_hashes,
+              token_contract_address_hash
+            )
+            |> Repo.all()
+          else
+            []
+          end
 
-      {:ok, return}
+        cbus =
+          if account.script_hash do
+            search_account_current_brideged_udts(
+              address_hashes,
+              script_hashes,
+              udt_script_hash
+            )
+            |> Repo.all()
+          else
+            []
+          end
+
+        result =
+          (cbus ++ cus)
+          |> Enum.sort_by(&Map.fetch(&1, :updated_at))
+          |> Enum.uniq_by(&Map.fetch(&1, :address_hash))
+
+        {:ok, result}
+      else
+        {:error, :need_token_contract_address_hash_or_udt_script_hash}
+      end
     end
   end
 end

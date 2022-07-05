@@ -1,6 +1,6 @@
 defmodule GodwokenRPC.Block do
   import GodwokenRPC.Util,
-    only: [hex_to_number: 1, parse_block_producer: 1, timestamp_to_utc_datetime: 1]
+    only: [hex_to_number: 1, parse_gw_address: 1, timestamp_to_utc_datetime: 1]
 
   require Logger
 
@@ -41,7 +41,7 @@ defmodule GodwokenRPC.Block do
       if block_producer == "0x" do
         {nil, nil}
       else
-        block_producer |> String.slice(2..-1) |> parse_block_producer()
+        block_producer |> String.slice(2..-1) |> parse_gw_address()
       end
 
     {:ok,

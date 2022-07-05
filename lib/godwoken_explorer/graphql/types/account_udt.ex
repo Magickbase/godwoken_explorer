@@ -113,14 +113,11 @@ defmodule GodwokenExplorer.Graphql.Types.AccountUDT do
     @desc """
     request-result-example:
     query {
-      account_current_bridged_udts_of_ckb(
+      account_ckbs(
         input: { address_hashes: ["0x715AB282B873B79A7BE8B0E8C13C4E8966A52040"] }
       ) {
-        block_number
-        id
         udt_script_hash
         value
-        value_fetched_at
         udt {
           id
           name
@@ -139,35 +136,89 @@ defmodule GodwokenExplorer.Graphql.Types.AccountUDT do
 
     {
       "data": {
-        "account_current_bridged_udts_of_ckb": [
+        "account_ckbs": [
           {
             "account": {
               "eth_address": null,
               "id": 1,
               "script_hash": "0x595cc14e574a708dc70a320d2026f79374246ed4659261131cdda7dd5814b5ca"
             },
-            "block_number": null,
-            "id": 1,
             "udt": {
-              "bridge_account_id": null,
-              "decimal": null,
+              "bridge_account_id": 375,
+              "decimal": 18,
               "id": "1",
-              "name": null,
+              "name": "pCKB",
               "script_hash": "0x0000000000000000000000000000000000000000000000000000000000000000",
               "value": null
             },
             "udt_script_hash": "0x595cc14e574a708dc70a320d2026f79374246ed4659261131cdda7dd5814b5ca",
-            "value": "1165507481400061309833",
-            "value_fetched_at": null
+            "value": "1165507481400061309833"
           }
         ]
       }
     }
-
     """
-    field :account_current_bridged_udts_of_ckb, list_of(:account_current_bridged_udt) do
+    field :account_ckbs, list_of(:account_udt) do
       arg(:input, non_null(:account_ckbs_input))
       resolve(&Resolvers.AccountUDT.account_ckbs/3)
+    end
+
+
+    @desc """
+    request-result-example:
+    query {
+      account_udts(
+        input: {
+          address_hashes: ["0x715AB282B873B79A7BE8B0E8C13C4E8966A52040"],
+
+          udt_script_hash: "0x595cc14e574a708dc70a320d2026f79374246ed4659261131cdda7dd5814b5ca"
+        }
+      ) {
+        udt_script_hash
+        value
+        udt {
+          id
+          name
+          bridge_account_id
+          script_hash
+          decimal
+          value
+        }
+        account {
+          id
+          eth_address
+          script_hash
+        }
+      }
+    }
+
+    {
+      "data": {
+        "account_udts": [
+          {
+            "account": {
+              "eth_address": null,
+              "id": 1,
+              "script_hash": "0x595cc14e574a708dc70a320d2026f79374246ed4659261131cdda7dd5814b5ca"
+            },
+            "udt": {
+              "bridge_account_id": 375,
+              "decimal": 18,
+              "id": "1",
+              "name": "pCKB",
+              "script_hash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+              "value": null
+            },
+            "udt_script_hash": "0x595cc14e574a708dc70a320d2026f79374246ed4659261131cdda7dd5814b5ca",
+            "value": "1165507481400061309833"
+          }
+        ]
+      }
+    }
+    """
+    field :account_udts, list_of(:account_udt) do
+      arg(:input, non_null(:account_udts_input))
+      resolve(&Resolvers.AccountUDT.account_udts/3)
     end
 
     @desc """
@@ -292,6 +343,21 @@ defmodule GodwokenExplorer.Graphql.Types.AccountUDT do
     end
   end
 
+  object :account_udt do
+    field :value, :bigint
+    field :address_hash, :hash_address
+    field :token_contract_address_hash, :hash_address
+    field :udt_script_hash, :hash_full
+
+    field :udt, :udt do
+      resolve(&Resolvers.AccountUDT.udt/3)
+    end
+
+    field :account, :account do
+      resolve(&Resolvers.AccountUDT.account/3)
+    end
+  end
+
   object :account_current_udt do
     field :id, :integer
     field :value, :bigint
@@ -307,6 +373,8 @@ defmodule GodwokenExplorer.Graphql.Types.AccountUDT do
     field :account, :account do
       resolve(&Resolvers.AccountUDT.account/3)
     end
+
+    import_fields(:ecto_datetime)
   end
 
   object :account_current_bridged_udt do
@@ -325,11 +393,20 @@ defmodule GodwokenExplorer.Graphql.Types.AccountUDT do
     field :account, :account do
       resolve(&Resolvers.AccountUDT.account/3)
     end
+
+    import_fields(:ecto_datetime)
   end
 
   input_object :account_ckbs_input do
     field :address_hashes, list_of(:string), default_value: []
     field :script_hashes, list_of(:string), default_value: []
+  end
+
+  input_object :account_udts_input do
+    field :address_hashes, list_of(:string), default_value: []
+    field :script_hashes, list_of(:string), default_value: []
+    field :token_contract_address_hash, :hash_address
+    field :udt_script_hash, :hash_full
   end
 
   input_object :account_current_udts_input do
