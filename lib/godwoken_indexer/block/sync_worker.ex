@@ -11,6 +11,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
   alias GodwokenRPC.{Blocks, Receipts}
   alias GodwokenExplorer.Chain.Import
   alias GodwokenExplorer.GW.Log, as: GWLog
+  alias GodwokenExplorer.GW.{SudtPayFee, SudtTransfer}
 
   alias GodwokenExplorer.{
     Block,
@@ -120,8 +121,13 @@ defmodule GodwokenIndexer.Block.SyncWorker do
 
   defp handle_gw_transaction_receipts(transaction_params) do
     gw_hashes = transaction_params |> Enum.map(&Map.take(&1, [:hash]))
-    {:ok, %{logs: logs}} = GodwokenRPC.fetch_gw_transaction_receipts(gw_hashes)
+
+    {:ok, %{logs: logs, sudt_transfers: sudt_transfers, sudt_pay_fees: sudt_pay_fees}} =
+      GodwokenRPC.fetch_gw_transaction_receipts(gw_hashes)
+
     import_gw_logs(logs)
+    import_sudt_transfers(sudt_transfers)
+    import_sudt_pay_fees(sudt_pay_fees)
   end
 
   defp handle_polyjuice_transactions(polyjuice_without_receipts) do
@@ -165,6 +171,24 @@ defmodule GodwokenIndexer.Block.SyncWorker do
     Import.insert_changes_list(
       gw_logs,
       for: GWLog,
+      timestamps: import_timestamps(),
+      on_conflict: :nothing
+    )
+  end
+
+  defp import_sudt_transfers(sudt_transfers) do
+    Import.insert_changes_list(
+      sudt_transfers,
+      for: SudtTransfer,
+      timestamps: import_timestamps(),
+      on_conflict: :nothing
+    )
+  end
+
+  defp import_sudt_pay_fees(sudt_pay_fees) do
+    Import.insert_changes_list(
+      sudt_pay_fees,
+      for: SudtPayFee,
       timestamps: import_timestamps(),
       on_conflict: :nothing
     )

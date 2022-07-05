@@ -1,6 +1,7 @@
 defmodule GodwokenRPC.Transaction.Receipts do
   import GodwokenRPC, only: [request: 1]
   import GodwokenRPC.HTTP, only: [json_rpc: 2]
+  import GodwokenRPC.Util, only: [parse_gw_address: 1, parse_le_number: 1]
 
   alias GodwokenRPC.Transaction.Receipt
 
@@ -8,7 +9,7 @@ defmodule GodwokenRPC.Transaction.Receipts do
     {requests, id_to_transaction_params} =
       transaction_hashes
       |> Stream.with_index()
-      |> Enum.reduce({[], %{}}, fn {%{gw_hash: transaction_hash} = transaction_params, id},
+      |> Enum.reduce({[], %{}}, fn {%{hash: transaction_hash} = transaction_params, id},
                                    {acc_requests, acc_id_to_transaction_params} ->
         requests = [request(id, transaction_hash) | acc_requests]
         id_to_transaction_params = Map.put(acc_id_to_transaction_params, id, transaction_params)
@@ -19,8 +20,10 @@ defmodule GodwokenRPC.Transaction.Receipts do
          {:ok, receipts} <- reduce_responses(responses, id_to_transaction_params) do
       elixir_receipts = to_elixir(receipts)
       elixir_logs = elixir_to_logs(elixir_receipts)
+      sudt_transfers = filter_sudt_transfers(elixir_logs)
+      sudt_pay_fees = filter_sudt_pay_fees(elixir_logs)
 
-      {:ok, %{logs: elixir_logs}}
+      {:ok, %{logs: elixir_logs, sudt_transfers: sudt_transfers, sudt_pay_fees: sudt_pay_fees}}
     end
   end
 
@@ -45,9 +48,10 @@ defmodule GodwokenRPC.Transaction.Receipts do
     {:error, %{code: -32602, data: data, message: "Not Found"}}
   end
 
-  defp response_to_receipt(%{id: _id, result: receipt}, _id_to_transaction_params) do
-    # gas from the transaction is needed for pre-Byzantium derived status
-    {:ok, receipt}
+  defp response_to_receipt(%{id: id, result: receipt}, id_to_transaction_params) do
+    {:ok,
+     receipt
+     |> Map.merge(%{"transaction_hash" => id_to_transaction_params |> get_in([id, :hash])})}
   end
 
   defp response_to_receipt(%{id: id, error: reason}, id_to_transaction_params) do
@@ -71,4 +75,59 @@ defmodule GodwokenRPC.Transaction.Receipts do
 
   defp reduce_receipt({:error, reason}, {:error, reasons}) when is_list(reasons),
     do: {:error, [reason | reasons]}
+
+  defp filter_sudt_transfers(elixir_logs) do
+    elixir_logs
+    |> Enum.filter(fn log -> log[:type] == :sudt_transfer end)
+    |> Enum.map(fn log ->
+      {{from_registry_id, from_address}, {to_registry_id, to_address}, amount} =
+        parse_log_data(log[:data])
+
+      %{
+        transaction_hash: log[:transaction_hash],
+        log_index: log[:index],
+        udt_id: log[:account_id],
+        from_address: from_address,
+        to_address: to_address,
+        amount: amount,
+        from_registry_id: from_registry_id,
+        to_registry_id: to_registry_id
+      }
+    end)
+  end
+
+  defp filter_sudt_pay_fees(elixir_logs) do
+    elixir_logs
+    |> Enum.filter(fn log -> log[:type] == :sudt_pay_fee end)
+    |> Enum.map(fn log ->
+      {{from_registry_id, from_address}, {block_producer_registry_id, block_producer_address},
+       amount} = parse_log_data(log[:data])
+
+      %{
+        transaction_hash: log[:transaction_hash],
+        log_index: log[:index],
+        udt_id: log[:account_id],
+        from_address: from_address,
+        block_producer_address: block_producer_address,
+        amount: amount,
+        from_registry_id: from_registry_id,
+        block_producer_registry_id: block_producer_registry_id
+      }
+    end)
+  end
+
+  # data format should be from_registry_address + to_registry_address + amount
+  # registry address format: 4 bytes registry id(u32) in little endian, 4 bytes address byte size(u32) in little endian, and 0 or 20 bytes address
+  # registry address can be 8-bytes(empty address) or 28-bytes(eth address)
+  # amount is a u256 number in little endian format
+  # so data can be (8 + 8 + 32) or (8 + 28 + 32) or (28 + 8 + 32) or (28 + 28 + 32) bytes
+  def parse_log_data(data) do
+    {from_registry_id, from_address} = data |> String.slice(2, 56) |> parse_gw_address()
+    to_start = if from_address == "0x", do: 18, else: 58
+    {to_registry_id, to_address} = data |> String.slice(to_start, 56) |> parse_gw_address()
+    amount_start = if to_address == "0x", do: to_start + 16, else: to_start + 56
+
+    amount = data |> String.slice(amount_start..-1) |> parse_le_number()
+    {{from_registry_id, from_address}, {to_registry_id, to_address}, amount}
+  end
 end

@@ -1,5 +1,8 @@
 defmodule GodwokenRPC.Transaction.Receipt do
-  def elixir_to_logs(%{"logs" => logs}), do: logs
+  import GodwokenRPC.Util, only: [hex_to_number: 1]
+
+  def elixir_to_logs(%{"logs" => logs, "transaction_hash" => transaction_hash}),
+    do: logs |> Enum.map(&Map.put(&1, :transaction_hash, transaction_hash))
 
   def to_elixir(receipt) when is_map(receipt) do
     receipt
@@ -49,8 +52,12 @@ defmodule GodwokenRPC.Transaction.Receipt do
       logs
       |> Enum.with_index()
       |> Enum.map(fn {log, index} ->
-        merge_type_and_index(log, index)
+        elixir_to_params(log, index)
       end)}}
+  end
+
+  defp entry_to_elixir({"transaction_hash" = key, transaction_hash}) do
+    {:ok, {key, transaction_hash}}
   end
 
   # Nethermind field
@@ -67,15 +74,34 @@ defmodule GodwokenRPC.Transaction.Receipt do
     {:error, {:unknown_key, %{key: key, value: value}}}
   end
 
-  defp merge_type_and_index(log, index) do
+  defp elixir_to_params(
+         %{
+           "account_id" => account_id,
+           "service_flag" => service_flag,
+           "data" => data
+         } = log,
+         index
+       ) do
+    %{
+      account_id: hex_to_number(account_id),
+      index: index,
+      service_flag: hex_to_number(service_flag),
+      data: data
+    }
+    |> put_type(log)
+  end
+
+  defp put_type(params, %{"service_flag" => service_flag}) do
     type =
       cond do
-        log["service_flag"] == "0x0" -> :sudt_transfer
-        log["service_flag"] == "0x1" -> :sudt_pay_fee
-        log["service_flag"] == "0x2" -> :polyjuice_system
-        log["service_flag"] == "0x3" -> :polyjuce_user
+        service_flag == "0x0" -> :sudt_transfer
+        service_flag == "0x1" -> :sudt_pay_fee
+        service_flag == "0x2" -> :polyjuice_system
+        service_flag == "0x3" -> :polyjuce_user
       end
 
-    Map.merge(log, %{"type" => type, "index" => index})
+    Map.put(params, :type, type)
   end
+
+  defp put_type(params, _), do: params
 end
