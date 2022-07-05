@@ -323,7 +323,7 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
       for: DepositHistory,
       timestamps: import_timestamps(),
       on_conflict: :nothing,
-      returning: [:script_hash, :udt_id, :layer1_block_number, :udt_script_hash]
+      returning: [:script_hash, :udt_id, :layer1_block_number]
     )
   end
 
@@ -334,11 +334,10 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
         |> Enum.sort_by(&Map.fetch!(&1, :layer1_block_number))
         |> Enum.reverse()
         |> Enum.uniq_by(&{Map.fetch!(&1, :script_hash), Map.fetch!(&1, :udt_id)})
-        |> Enum.map(
-          &Map.take(&1, [:script_hash, :layer1_block_number, :udt_id, :udt_script_hash])
-        )
+        |> Enum.map(&Map.take(&1, [:script_hash, :layer1_block_number, :udt_id]))
 
       script_hashes = Enum.map(parsed_deposit_histories, &Map.fetch!(&1, :script_hash))
+      udt_ids = Enum.map(parsed_deposit_histories, &Map.fetch!(&1, :udt_id))
 
       exist_script_hashes =
         from(a in Account, where: a.script_hash in ^script_hashes, select: a.script_hash)
@@ -359,11 +358,19 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
         )
         |> Repo.all()
 
+      udt_id_and_l2_script_hash =
+        from(a in Account, where: a.id in ^udt_ids, select: {a.id, a.script_hash})
+        |> Repo.all()
+        |> Enum.into(%{})
+
       depoist_histories_and_account_infos =
         (parsed_deposit_histories ++ script_hash_with_account_infos)
         |> Enum.group_by(&Map.get(&1, :script_hash))
         |> Enum.map(fn {_, list} ->
           list |> Enum.concat() |> Enum.into(%{})
+        end)
+        |> Enum.map(fn param ->
+          Map.put(param, :udt_script_hash, udt_id_and_l2_script_hash[param[:udt_id]])
         end)
 
       depoist_histories_and_account_infos
