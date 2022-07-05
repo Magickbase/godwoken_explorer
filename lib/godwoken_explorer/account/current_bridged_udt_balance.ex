@@ -9,6 +9,7 @@ defmodule GodwokenExplorer.Account.CurrentBridgedUDTBalance do
     field(:value_fetched_at, :utc_datetime_usec)
     field(:layer1_block_number, :integer)
     field(:block_number, :integer)
+    # layer2 udt account script hash
     field(:udt_script_hash, Hash.Full)
     field(:address_hash, Hash.Address)
 
