@@ -167,8 +167,12 @@ defmodule GodwokenExplorer.Graphql.Types.AccountUDT do
     @desc """
     request-result-example:
     query {
-      account_ckbs(
-        input: { address_hashes: ["0x715AB282B873B79A7BE8B0E8C13C4E8966A52040"], }
+      account_udts(
+        input: {
+          address_hashes: ["0x715AB282B873B79A7BE8B0E8C13C4E8966A52040"],
+
+          udt_script_hash: "0x595cc14e574a708dc70a320d2026f79374246ed4659261131cdda7dd5814b5ca"
+        }
       ) {
         udt_script_hash
         value
@@ -185,6 +189,30 @@ defmodule GodwokenExplorer.Graphql.Types.AccountUDT do
           eth_address
           script_hash
         }
+      }
+    }
+
+    {
+      "data": {
+        "account_udts": [
+          {
+            "account": {
+              "eth_address": null,
+              "id": 1,
+              "script_hash": "0x595cc14e574a708dc70a320d2026f79374246ed4659261131cdda7dd5814b5ca"
+            },
+            "udt": {
+              "bridge_account_id": 375,
+              "decimal": 18,
+              "id": "1",
+              "name": "pCKB",
+              "script_hash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+              "value": null
+            },
+            "udt_script_hash": "0x595cc14e574a708dc70a320d2026f79374246ed4659261131cdda7dd5814b5ca",
+            "value": "1165507481400061309833"
+          }
+        ]
       }
     }
     """
