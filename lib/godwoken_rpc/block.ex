@@ -1,4 +1,6 @@
 defmodule GodwokenRPC.Block do
+  use Retry
+
   import GodwokenRPC.Util,
     only: [hex_to_number: 1, parse_gw_address: 1, timestamp_to_utc_datetime: 1]
 
@@ -50,7 +52,14 @@ defmodule GodwokenRPC.Block do
        "gasUsed" => gas_used,
        "size" => size,
        "logsBloom" => logs_bloom
-     }} = GodwokenRPC.fetch_eth_block_by_hash(hash)
+     }} =
+      retry with: constant_backoff(1000) |> Stream.take(3) do
+        GodwokenRPC.fetch_eth_block_by_hash(hash)
+      after
+        result -> result
+      else
+        _error -> {:ok, nil}
+      end
 
     %{
       hash: hash,
