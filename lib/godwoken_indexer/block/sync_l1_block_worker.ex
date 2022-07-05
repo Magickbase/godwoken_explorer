@@ -379,8 +379,9 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
         {:ok, %GodwokenRPC.Account.FetchedBalances{params_list: import_account_udts}} =
           GodwokenRPC.fetch_balances(params)
 
-        import_account_udts
-        |> Enum.map(&Map.merge(&1, %{layer1_block_number: layer1_block_number}))
+        import_account_udts =
+          import_account_udts
+          |> Enum.map(&Map.put(&1, :layer1_block_number, layer1_block_number))
 
         Import.insert_changes_list(
           import_account_udts,
