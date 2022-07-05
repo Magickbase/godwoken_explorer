@@ -107,8 +107,6 @@ defmodule GodwokenExplorer.Graphql.Types.SmartContract do
     """
     field :smart_contracts, :paginate_smart_contracts do
       arg(:input, :smart_contracts_input)
-
-      middleware(MTermRange, MTermRange.page_and_size_default_config())
       resolve(&Resolvers.SmartContract.smart_contracts/3)
     end
   end
