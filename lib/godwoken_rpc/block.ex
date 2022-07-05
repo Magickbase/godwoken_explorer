@@ -53,7 +53,7 @@ defmodule GodwokenRPC.Block do
        "size" => size,
        "logsBloom" => logs_bloom
      }} =
-      retry with: constant_backoff(1000) |> Stream.take(3) do
+      retry with: constant_backoff(5000) |> Stream.take(3) do
         GodwokenRPC.fetch_eth_block_by_hash(hash)
       after
         result -> result
