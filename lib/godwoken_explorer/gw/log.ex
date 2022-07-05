@@ -28,7 +28,7 @@ defmodule GodwokenExplorer.GW.Log do
   @doc false
   def changeset(log, attrs) do
     log
-    |> cast(attrs, [:transaction_hash, :account_id, :service_flag, :data, :type])
-    |> validate_required([:transaction_hash, :account_id, :service_flag, :data, :type])
+    |> cast(attrs, [:transaction_hash, :account_id, :service_flag, :data, :type, :index])
+    |> validate_required([:transaction_hash, :account_id, :service_flag, :data, :type, :index])
   end
 end
