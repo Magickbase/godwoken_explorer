@@ -39,6 +39,7 @@ defmodule GodwokenRPC do
   alias GodwokenRPC.Block.{FetchedTipBlockHash, ByHash}
 
   alias GodwokenRPC.Transaction.Receipts, as: GWReceipts
+  alias GodwokenExplorer.Chain.Hash
 
   @type block_number :: non_neg_integer()
   @type hash :: String.t()
@@ -294,6 +295,15 @@ defmodule GodwokenRPC do
     end
   end
 
+  @spec fetch_balances([
+          %{
+            registry_address: String.t(),
+            udt_id: integer,
+            account_id: integer | nil,
+            udt_script_hash: Hash.Full | nil,
+            eth_address: Hash.Address | nil
+          }
+        ]) :: any
   def fetch_balances(params) do
     id_to_params = id_to_params(params)
     options = Application.get_env(:godwoken_explorer, :json_rpc_named_arguments)

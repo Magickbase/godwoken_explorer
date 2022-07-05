@@ -4,6 +4,7 @@ defmodule GodwokenExplorer.GW.Log do
 
   alias GodwokenExplorer.Chain.{Data, Hash}
 
+  @derive {Jason.Encoder, except: [:__meta__]}
   @primary_key false
   schema "gw_logs" do
     field :account_id, :integer

@@ -4,6 +4,7 @@ defmodule GodwokenExplorer.GW.SudtTransfer do
 
   alias GodwokenExplorer.Chain.Hash
 
+  @derive {Jason.Encoder, except: [:__meta__]}
   @primary_key false
   schema "gw_sudt_transfers" do
     field :amount, :decimal
