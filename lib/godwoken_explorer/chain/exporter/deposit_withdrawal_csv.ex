@@ -16,6 +16,7 @@ defmodule GodwokenExplorer.Chain.Exporter.DepositWithdrawalCsv do
     row_names = [
       "Type",
       "Value",
+      "UDT Symbol",
       "Capacity",
       "UnixTimestamp",
       "Address",
@@ -29,6 +30,7 @@ defmodule GodwokenExplorer.Chain.Exporter.DepositWithdrawalCsv do
         [
           deposit_withdrawal[:type],
           deposit_withdrawal[:value],
+          deposit_withdrawal[:udt_symbol],
           deposit_withdrawal[:capacity],
           deposit_withdrawal[:timestamp],
           deposit_withdrawal[:eth_address],
