@@ -3,7 +3,7 @@ defmodule GodwokenExplorer.SmartContract.Solidity.PublisherWorker do
   Background smart contract verification worker.
   """
 
-  use Oban.Worker, queue: :default
+  use Oban.Worker, queue: :default, max_attempts: 3
 
   alias GodwokenExplorer.SmartContract.Solidity.Publisher
 
