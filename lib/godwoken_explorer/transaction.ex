@@ -279,7 +279,9 @@ defmodule GodwokenExplorer.Transaction do
       parsed_result =
         Enum.map(results, fn record ->
           stringify_and_unix_maps(record)
-          |> Map.merge(%{method: Polyjuice.get_method_name(record.to_account_id, record.input)})
+          |> Map.merge(%{
+            method: Polyjuice.get_method_name(record.to_account_id, to_string(record.input))
+          })
           |> Map.drop([:input, :to_account_id])
         end)
 
