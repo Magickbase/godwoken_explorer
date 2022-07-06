@@ -6,6 +6,11 @@ defmodule GodwokenExplorer.Graphql.Types.Common do
     field :updated_at, :datetime
   end
 
+  object :ecto_naive_datetime do
+    field :inserted_at, :naive_datetime
+    field :updated_at, :naive_datetime
+  end
+
   object :paginate_metadata do
     field :after, :string
     field :before, :string
@@ -40,6 +45,11 @@ defmodule GodwokenExplorer.Graphql.Types.Common do
     limit: > 0
     """
     field :page_size, :integer, default_value: 20
+  end
+
+  input_object :age_range_input do
+    field :age_range_start, :naive_datetime
+    field :age_range_end, :naive_datetime
   end
 
   input_object :block_range_input do

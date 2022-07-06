@@ -266,6 +266,80 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
         }
       }
     }
+
+    example:
+    query {
+      transactions(
+        input: {
+          script_hash: "0x08c9937e412e135928fd6dec7255965ddd7df4d5a163564b60895100bb3b2f9e"
+          start_block_number: 1
+          end_block_number: 2624399
+          limit: 2
+          age_range_start: "2022-06-11T16:32:04"
+					age_range_end: "2022-06-11T16:32:54"
+        }
+      ) {
+        entries {
+          block_hash
+          block_number
+          type
+          from_account_id
+          from_account {
+            script_hash
+            id
+            eth_address
+          }
+          to_account_id
+          updated_at
+        }
+
+        metadata {
+          total_count
+          before
+          after
+        }
+      }
+    }
+
+    {
+      "data": {
+        "transactions": {
+          "entries": [
+            {
+              "block_hash": "0x23ae98d322fb7d0a991e5cf5f55a421040131b4423cf1c47965ddc30458aa3c5",
+              "block_number": 95495,
+              "from_account": {
+                "eth_address": "0x2088d0e35c23e7c344f96e57be19043d6e2a44f3",
+                "id": 14578,
+                "script_hash": "0x07cb90b74c9b22a6ff8357332b589e8dbfc3cb119d4535c76cc51c43ab9c5f9d"
+              },
+              "from_account_id": 14578,
+              "to_account_id": 2,
+              "type": "ETH_ADDRESS_REGISTRY",
+              "updated_at": "2022-06-11T16:32:54"
+            },
+            {
+              "block_hash": "0xa89010460abfb53bf85fc74ae98480d3d6c1708c2ce8586aac549544289e5a23",
+              "block_number": 95494,
+              "from_account": {
+                "eth_address": "0x2088d0e35c23e7c344f96e57be19043d6e2a44f3",
+                "id": 14578,
+                "script_hash": "0x07cb90b74c9b22a6ff8357332b589e8dbfc3cb119d4535c76cc51c43ab9c5f9d"
+              },
+              "from_account_id": 14578,
+              "to_account_id": 2,
+              "type": "ETH_ADDRESS_REGISTRY",
+              "updated_at": "2022-06-11T16:32:04"
+            }
+          ],
+          "metadata": {
+            "after": "g3QAAAADZAAMYmxvY2tfbnVtYmVyYgABdQZkAARoYXNodAAAAANkAApfX3N0cnVjdF9fZAAiRWxpeGlyLkdvZHdva2VuRXhwbG9yZXIuQ2hhaW4uSGFzaGQACmJ5dGVfY291bnRhIGQABWJ5dGVzbQAAACB83ranDTslB0BzAXr7QxE-g_1Q9DwOZymXEuZVtgw5gGQABWluZGV4YQI=",
+            "before": null,
+            "total_count": 3
+          }
+        }
+      }
+    }
     """
     field :transactions, :paginate_trasactions do
       arg(:input, :transactions_input, default_value: %{})
@@ -307,6 +381,8 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
     field :block, :block do
       resolve(&Resolvers.Transaction.block/3)
     end
+
+    import_fields (:ecto_naive_datetime)
   end
 
   object :paginate_trasactions do
@@ -348,6 +424,7 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
         %{sort_type: :asc, sort_value: :hash}
       ]
 
+    import_fields(:age_range_input)
     import_fields(:paginate_input)
     import_fields(:block_range_input)
   end
