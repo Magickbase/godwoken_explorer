@@ -225,7 +225,7 @@ defmodule GodwokenExplorer.Account.CurrentUDTBalance do
         result
         |> Map.merge(%{
           percentage: percentage,
-          balance: D.div(balance, Integer.pow(10, decimal))
+          balance: D.div(balance, Integer.pow(10, decimal || 0))
         })
       end)
     else
