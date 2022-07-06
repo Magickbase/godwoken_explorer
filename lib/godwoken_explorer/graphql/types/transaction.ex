@@ -90,64 +90,7 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
 
     @desc """
     function: list transactions by account address
-
-    request-result-example:
-    query {
-      transactions(
-        input: {
-          script_hash: "0x08c9937e412e135928fd6dec7255965ddd7df4d5a163564b60895100bb3b2f9e"
-          limit: 1
-        }
-      ) {
-        entries {
-          block_hash
-          block_number
-          type
-          from_account_id
-          from_account {
-            script_hash
-            id
-            eth_address
-          }
-          to_account_id
-        }
-
-        metadata {
-          total_count
-          before
-          after
-        }
-      }
-    }
-
-    {
-      "data": {
-        "transactions": {
-          "entries": [
-            {
-              "block_hash": "0x3c864108150c7ee2a0a6e512d353a0aa812470d6fed3093daccef2007c307344",
-              "block_number": 26243,
-              "from_account": {
-                "eth_address": "0xa86e2b58f987d298c6103fc72592a19451fb49a4",
-                "id": 242,
-                "script_hash": "0x3c256a6acbf96338077c7cac3d69c8caf00bf4f9a964959bbc8dabcede7d7d6e"
-              },
-              "from_account_id": 242,
-              "to_account_id": 2,
-              "type": "ETH_ADDRESS_REGISTRY"
-            }
-          ],
-          "metadata": {
-            "after": "g3QAAAADZAAMYmxvY2tfbnVtYmVyYgAAZoNkAARoYXNodAAAAANkAApfX3N0cnVjdF9fZAAiRWxpeGlyLkdvZHdva2VuRXhwbG9yZXIuQ2hhaW4uSGFzaGQACmJ5dGVfY291bnRhIGQABWJ5dGVzbQAAACCdFvEWpH7mWgPRMtbxa2y1A3YHRBFnLJalEsne6iehXWQABWluZGV4YQE=",
-            "before": null,
-            "total_count": 1198
-          }
-        }
-      }
-    }
-
-
-    request-result-example-1:
+    example:
     query {
       transactions(
         input: {
@@ -210,73 +153,16 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
       }
     }
 
-    request-result-example:
-    query {
-      transactions(
-        input: {
-          script_hash: "0x08c9937e412e135928fd6dec7255965ddd7df4d5a163564b60895100bb3b2f9e"
-          start_block_number: 26243
-          end_block_number: 26243
-          limit: 1
-        }
-      ) {
-        entries {
-          block_hash
-          block_number
-          type
-          from_account_id
-          from_account {
-            script_hash
-            id
-            eth_address
-          }
-          to_account_id
-        }
-
-        metadata {
-          total_count
-          before
-          after
-        }
-      }
-    }
-
-    {
-      "data": {
-        "transactions": {
-          "entries": [
-            {
-              "block_hash": "0x3c864108150c7ee2a0a6e512d353a0aa812470d6fed3093daccef2007c307344",
-              "block_number": 26243,
-              "from_account": {
-                "eth_address": "0xa86e2b58f987d298c6103fc72592a19451fb49a4",
-                "id": 242,
-                "script_hash": "0x3c256a6acbf96338077c7cac3d69c8caf00bf4f9a964959bbc8dabcede7d7d6e"
-              },
-              "from_account_id": 242,
-              "to_account_id": 2,
-              "type": "ETH_ADDRESS_REGISTRY"
-            }
-          ],
-          "metadata": {
-            "after": null,
-            "before": null,
-            "total_count": 1
-          }
-        }
-      }
-    }
-
     example:
     query {
       transactions(
         input: {
-          script_hash: "0x08c9937e412e135928fd6dec7255965ddd7df4d5a163564b60895100bb3b2f9e"
+          to_script_hash: "0x08c9937e412e135928fd6dec7255965ddd7df4d5a163564b60895100bb3b2f9e"
           start_block_number: 1
           end_block_number: 2624399
           limit: 2
           age_range_start: "2022-06-11T16:32:04"
-					age_range_end: "2022-06-11T16:32:54"
+    	    age_range_end: "2022-06-11T16:32:54"
         }
       ) {
         entries {
@@ -382,7 +268,7 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
       resolve(&Resolvers.Transaction.block/3)
     end
 
-    import_fields (:ecto_naive_datetime)
+    import_fields(:ecto_naive_datetime)
   end
 
   object :paginate_trasactions do
@@ -414,8 +300,10 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
   end
 
   input_object :transactions_input do
-    field :address, :hash_address
-    field :script_hash, :hash_full
+    field :from_eth_address, :hash_address
+    field :to_eth_address, :hash_address
+    field :from_script_hash, :hash_full
+    field :to_script_hash, :hash_full
 
     field :sorter, list_of(:transactions_sorter_input),
       default_value: [

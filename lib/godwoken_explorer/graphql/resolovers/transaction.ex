@@ -34,8 +34,15 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
   end
 
   def transactions(_parent, %{input: input} = _args, _resolution) do
+    from_eth_address = Map.get(input, :from_eth_address)
+    to_eth_address = Map.get(input, :to_eth_address)
+
+    from_script_hash = Map.get(input, :from_script_hash)
+    to_script_hash = Map.get(input, :to_script_hash)
+
     from(t in Transaction)
-    |> query_with_account_address(input)
+    |> query_with_account_address(from_eth_address, to_eth_address)
+    |> query_with_account_address(from_script_hash, to_script_hash)
     |> query_with_block_range(input)
     |> query_with_age_range(input)
     |> transactions_order_by(input)
@@ -53,53 +60,88 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
     {:ok, result}
   end
 
-  defp query_with_account_address(query, input) do
-    address = Map.get(input, :address)
-    script_hash = Map.get(input, :script_hash)
+  defp query_with_account_address(query, from_address, to_address) do
+    {from_account, to_account} =
+      case {from_address, to_address} do
+        {nil, nil} = p ->
+          p
 
-    account_or_skip =
-      case {address, script_hash} do
-        {nil, nil} ->
-          :skip
+        {from_address, nil} ->
+          from_account = Account.search(from_address)
 
-        {nil, script_hash} when not is_nil(script_hash) ->
-          Account.search(script_hash)
+          if from_account do
+            {from_account, nil}
+          else
+            {:not_found, nil}
+          end
 
-        {address, _} when not is_nil(address) ->
-          Account.search(address)
+        {nil, to_address} ->
+          to_account = Account.search(to_address)
+
+          if to_account do
+            {nil, to_account}
+          else
+            {nil, :not_found}
+          end
+
+        {from_address, to_address} ->
+          from_account = Account.search(from_address)
+          to_account = Account.search(to_address)
+
+          case {from_account, to_account} do
+            {nil, nil} ->
+              {:not_found, :not_found}
+
+            {nil, _} ->
+              {:not_found, to_account}
+
+            {_, nil} ->
+              {from_account, :not_found}
+
+            _ ->
+              {from_account, to_account}
+          end
       end
 
-    if account_or_skip == :skip do
-      query
-    else
-      account = account_or_skip
+    query
+    |> process_from_account(from_account)
+    |> process_to_account(to_account)
+  end
 
-      case account do
-        %Account{type: :eth_user} ->
-          query
-          |> where([t], t.from_account_id == ^account.id)
+  defp process_from_account({:error, _} = error, _), do: error
 
-        %Account{type: type}
-        when type in [
-               :meta_contract,
-               :udt,
-               :polyjuice_creator,
-               :polyjuice_contract,
-               :eth_addr_reg
-             ] ->
-          query
-          |> where([t], t.to_account_id == ^account.id)
+  defp process_from_account(query, from_account) do
+    case from_account do
+      :not_found ->
+        {:error, :not_found_from_account}
 
-        nil ->
-          {:error, {:not_found_account, []}}
+      nil ->
+        query
 
-        error ->
-          {:error, "internal error with: #{error}"}
-      end
+      _ ->
+        query
+        |> where([t], t.from_account_id == ^from_account.id)
+    end
+  end
+
+  defp process_to_account({:error, _} = error, _), do: error
+
+  defp process_to_account(query, to_account) do
+    case to_account do
+      :not_found ->
+        {:error, :not_found_to_account}
+
+      nil ->
+        query
+
+      _ ->
+        query
+        |> where([t], t.to_account_id == ^to_account.id)
     end
   end
 
   defp query_with_age_range({:error, _} = error, _input), do: error
+
   defp query_with_age_range(query, input) do
     age_range_start = Map.get(input, :age_range_start)
     age_range_end = Map.get(input, :age_range_end)
