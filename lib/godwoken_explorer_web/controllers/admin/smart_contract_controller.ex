@@ -30,10 +30,21 @@ defmodule GodwokenExplorerWeb.Admin.SmartContractController do
          %Account{id: id, type: :polyjuice_contract} <-
            Repo.get_by(Account, eth_address: address_hash) do
       if smart_contract_params["abi"] != "" do
-        Admin.create_smart_contract(smart_contract_params)
+        case Admin.create_smart_contract(
+               smart_contract_params
+               |> Map.merge(%{
+                 "account_id" => id,
+                 "abi" => Jason.decode!(smart_contract_params["abi"])
+               })
+             ) do
+          {:ok, smart_contract} ->
+            conn
+            |> put_flash(:info, "Smart Contract created successfully.")
+            |> redirect(to: Routes.admin_smart_contract_path(conn, :show, smart_contract))
 
-        conn
-        |> redirect(to: Routes.admin_smart_contract_path(conn, :index))
+          {:error, %Ecto.Changeset{} = changeset} ->
+            render(conn, "new.html", changeset: changeset)
+        end
       else
         Admin.verify_smart_contract(
           smart_contract_params
