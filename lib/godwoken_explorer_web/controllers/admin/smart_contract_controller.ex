@@ -29,18 +29,36 @@ defmodule GodwokenExplorerWeb.Admin.SmartContractController do
            Chain.string_to_address_hash(smart_contract_params["eth_address"]),
          %Account{id: id, type: :polyjuice_contract} <-
            Repo.get_by(Account, eth_address: address_hash) do
-      Admin.create_smart_contract(
-        smart_contract_params
-        |> Map.merge(%{
-          "address_hash" => to_string(address_hash),
-          "account_id" => id,
-          "optimization" => false
-        })
-      )
+      if smart_contract_params["abi"] != "" do
+        case Admin.create_smart_contract(
+               smart_contract_params
+               |> Map.merge(%{
+                 "account_id" => id,
+                 "abi" => Jason.decode!(smart_contract_params["abi"])
+               })
+             ) do
+          {:ok, smart_contract} ->
+            conn
+            |> put_flash(:info, "Smart Contract created successfully.")
+            |> redirect(to: Routes.admin_smart_contract_path(conn, :show, smart_contract))
 
-      conn
-      |> put_flash(:info, "Smart contract is under verified")
-      |> redirect(to: Routes.admin_smart_contract_path(conn, :index))
+          {:error, %Ecto.Changeset{} = changeset} ->
+            render(conn, "new.html", changeset: changeset)
+        end
+      else
+        Admin.verify_smart_contract(
+          smart_contract_params
+          |> Map.merge(%{
+            "address_hash" => to_string(address_hash),
+            "account_id" => id,
+            "optimization" => false
+          })
+        )
+
+        conn
+        |> put_flash(:info, "Smart contract is under verified")
+        |> redirect(to: Routes.admin_smart_contract_path(conn, :index))
+      end
     else
       _ ->
         changeset = Admin.change_smart_contract(%SmartContract{})
