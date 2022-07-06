@@ -28,7 +28,7 @@ defmodule GodwokenExplorer.Chain.Exporter.DepositWithdrawalCsv do
       |> Stream.map(fn deposit_withdrawal ->
         [
           deposit_withdrawal[:type],
-          deposit_withdrawal[:value],
+          "#{deposit_withdrawal[:value]} #{deposit_withdrawal[:symbol]}",
           deposit_withdrawal[:capacity],
           deposit_withdrawal[:timestamp],
           deposit_withdrawal[:eth_address],
