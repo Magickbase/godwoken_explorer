@@ -33,7 +33,7 @@ defmodule GodwokenExplorer.Chain.Exporter.TransactionCsv do
           transaction[:block_number],
           transaction[:timestamp],
           transaction[:from],
-          transaction[:to_alias],
+          transaction[:to],
           transaction[:value],
           transaction[:type],
           transaction[:polyjuice_status],

@@ -125,11 +125,11 @@ defmodule GodwokenExplorer.Account do
     account = Repo.get(Account, id)
 
     ckb_balance =
-      with udt_id when is_integer(udt_id) <- UDT.ckb_account_id(),
-           {:ok, balance} <- GodwokenRPC.fetch_balance(account.registry_address, udt_id) do
+      with %{balance: balance} <-
+             CurrentUDTBalance.get_ckb_balance([account.eth_address]) |> List.first() do
         balance
       else
-        _ -> ""
+        nil -> ""
       end
 
     base_map = %{
