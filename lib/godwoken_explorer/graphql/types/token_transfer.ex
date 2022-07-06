@@ -6,7 +6,7 @@ defmodule GodwokenExplorer.Graphql.Types.TokenTransfer do
     @desc """
     function: get list of token transfers by filter
 
-    request-result-example:
+    example:
     query {
       token_transfers(
         input: {
@@ -79,6 +79,73 @@ defmodule GodwokenExplorer.Graphql.Types.TokenTransfer do
         }
       }
     }
+
+    example2:
+    query {
+      token_transfers(
+        input: {
+          from_address: "0x966b30e576a4d6731996748b48dd67c94ef29067"
+          to_address: "0xbd6250d17fc557dfe39a9eb3882c421d4c7f6413"
+          start_block_number: 90
+          end_block_number: 909999
+          age_range_start: "2022-06-01T04:59:29"
+          age_range_end: "2022-06-01T06:59:29"
+          limit: 1
+          combine_from_to: true
+
+          sorter: [
+            { sort_type: ASC, sort_value: BLOCK_NUMBER }
+            { sort_type: ASC, sort_value: TRANSACTION_HASH }
+            { sort_type: ASC, sort_value: LOG_INDEX }
+          ]
+        }
+      ) {
+        entries {
+          transaction_hash
+          block_number
+          updated_at
+          to_account {
+            eth_address
+          }
+          to_address
+          from_account {
+            eth_address
+          }
+        }
+
+        metadata {
+          total_count
+          before
+          after
+        }
+      }
+    }
+
+    {
+      "data": {
+        "token_transfers": {
+          "entries": [
+            {
+              "block_number": 1396,
+              "from_account": {
+                "eth_address": "0x966b30e576a4d6731996748b48dd67c94ef29067"
+              },
+              "to_account": {
+                "eth_address": "0x074182e2558a108f3f310c29f6fb1b3bd31908ed"
+              },
+              "to_address": "0x074182e2558a108f3f310c29f6fb1b3bd31908ed",
+              "transaction_hash": "0x74c0a1d269a3f8107e5b62f25aad6663f8905086423894c265007b2befc8f919",
+              "updated_at": "2022-06-01T05:29:35"
+            }
+          ],
+          "metadata": {
+            "after": "g3QAAAADZAAMYmxvY2tfbnVtYmVyYgAABXRkAAlsb2dfaW5kZXhhAWQAEHRyYW5zYWN0aW9uX2hhc2h0AAAAA2QACl9fc3RydWN0X19kACJFbGl4aXIuR29kd29rZW5FeHBsb3Jlci5DaGFpbi5IYXNoZAAKYnl0ZV9jb3VudGEgZAAFYnl0ZXNtAAAAIHTAodJpo_gQflti8lqtZmP4kFCGQjiUwmUAeyvvyPkZ",
+            "before": null,
+            "total_count": 16
+          }
+        }
+      }
+    }
     """
     field :token_transfers, :paginate_token_transfers do
       arg(:input, non_null(:token_transfer_input), default_value: %{})
@@ -133,6 +200,8 @@ defmodule GodwokenExplorer.Graphql.Types.TokenTransfer do
     field :transaction, :transaction do
       resolve(&Resolvers.TokenTransfer.transaction/3)
     end
+
+    import_fields(:ecto_naive_datetime)
   end
 
   enum :token_transfers_sorter do
@@ -160,6 +229,7 @@ defmodule GodwokenExplorer.Graphql.Types.TokenTransfer do
     """
     field :combine_from_to, :boolean, default_value: true
     field :token_contract_address_hash, :hash_address
+    import_fields(:age_range_input)
     import_fields(:paginate_input)
     import_fields(:block_range_input)
   end

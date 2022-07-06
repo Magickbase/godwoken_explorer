@@ -5,7 +5,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.TokenTransfer do
 
   import Ecto.Query
   import GodwokenExplorer.Graphql.Common, only: [cursor_order_sorter: 3]
-  import GodwokenExplorer.Graphql.Resolvers.Common, only: [paginate_query: 3]
+  import GodwokenExplorer.Graphql.Resolvers.Common, only: [paginate_query: 3, query_with_age_range: 2]
 
   @sorter_fields [:transaction_hash, :log_index, :block_number, :updated_at]
 
@@ -136,6 +136,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.TokenTransfer do
       end
 
     from(tt in TokenTransfer, where: ^conditions)
+    |> query_with_age_range(input)
     |> token_transfers_order_by(input)
   end
 
