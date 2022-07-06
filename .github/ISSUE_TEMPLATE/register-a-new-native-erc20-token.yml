@@ -1,6 +1,6 @@
 name: Register a new native ERC20 token
 description: Required information to register a new native erc20 token
-title: '[Native ERC20 Token] **Token Name**'
+title: '[Native ERC20 Token] **Display Name**'
 labels:
   - Token Registration
 assignees:
@@ -8,13 +8,13 @@ assignees:
 
 body:
   - type: input
-    id: token-name
+    id: display-name
     validations:
       required: true
     attributes:
-      label: Token Name
-      description: Identifies the asset represented by this token.
-      placeholder: e.g. Nervos CKB
+      label: display Name
+      description: Identifies the asset represented by this token. Following [UAN](https://github.com/nervosnetwork/rfcs/pull/335)
+      placeholder: e.g. WBTC
 
   - type: textarea
     id: description
