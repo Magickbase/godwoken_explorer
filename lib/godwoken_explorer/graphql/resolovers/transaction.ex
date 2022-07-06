@@ -37,6 +37,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
     from(t in Transaction)
     |> query_with_account_address(input)
     |> query_with_block_range(input)
+    |> query_with_age_range(input)
     |> transactions_order_by(input)
     |> paginate_query(input, %{
       cursor_fields: paginate_cursor(input),
@@ -95,6 +96,27 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
         error ->
           {:error, "internal error with: #{error}"}
       end
+    end
+  end
+
+  defp query_with_age_range({:error, _} = error, _input), do: error
+  defp query_with_age_range(query, input) do
+    age_range_start = Map.get(input, :age_range_start)
+    age_range_end = Map.get(input, :age_range_end)
+
+    query =
+      if age_range_start do
+        query
+        |> where([t], t.updated_at >= ^age_range_start)
+      else
+        query
+      end
+
+    if age_range_end do
+      query
+      |> where([t], t.updated_at <= ^age_range_end)
+    else
+      query
     end
   end
 
