@@ -6,7 +6,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.SmartContract do
   import GodwokenExplorer.Graphql.Common, only: [cursor_order_sorter: 3]
   import GodwokenExplorer.Graphql.Resolvers.Common, only: [paginate_query: 3]
 
-  @sorter_fields [:id]
+  @sorter_fields [:id, :name]
   # @ex_sorter_fields [:ex_balance, :ex_tx_count]
   @default_sorter [:id]
 
