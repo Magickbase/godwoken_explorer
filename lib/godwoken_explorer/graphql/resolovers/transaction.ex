@@ -2,7 +2,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
   alias GodwokenExplorer.Repo
   alias GodwokenExplorer.{Account, Transaction, Block, Polyjuice, PolyjuiceCreator}
 
-  import GodwokenExplorer.Graphql.Resolvers.Common, only: [paginate_query: 3]
+  import GodwokenExplorer.Graphql.Resolvers.Common, only: [paginate_query: 3, query_with_age_range: 2]
   import GodwokenExplorer.Graphql.Common, only: [cursor_order_sorter: 3]
   import Ecto.Query
 
@@ -137,28 +137,6 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
       _ ->
         query
         |> where([t], t.to_account_id == ^to_account.id)
-    end
-  end
-
-  defp query_with_age_range({:error, _} = error, _input), do: error
-
-  defp query_with_age_range(query, input) do
-    age_range_start = Map.get(input, :age_range_start)
-    age_range_end = Map.get(input, :age_range_end)
-
-    query =
-      if age_range_start do
-        query
-        |> where([t], t.updated_at >= ^age_range_start)
-      else
-        query
-      end
-
-    if age_range_end do
-      query
-      |> where([t], t.updated_at <= ^age_range_end)
-    else
-      query
     end
   end
 

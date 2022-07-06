@@ -89,7 +89,6 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
     end
 
     @desc """
-    function: list transactions by account address
     sorter-example:
     query {
       transactions(
@@ -153,7 +152,7 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
       }
     }
 
-    age-range-example:
+    block-number-and-age-range-example:
     query {
       transactions(
         input: {
@@ -162,7 +161,7 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
           end_block_number: 2624399
           limit: 2
           age_range_start: "2022-06-11T16:32:04"
-    	    age_range_end: "2022-06-11T16:32:54"
+          age_range_end: "2022-06-11T16:32:54"
         }
       ) {
         entries {
