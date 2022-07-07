@@ -232,7 +232,7 @@ defmodule GodwokenExplorer.UDT do
   def import_from_github(url) do
     %{body: body} = HTTPoison.get!(url)
 
-    udt_list = Jason.decode(body)
+    udt_list = Jason.decode!(body)
 
     l2_udt_code_hash = Application.get_env(:godwoken_explorer, :l2_udt_code_hash)
     rollup_type_hash = Application.get_env(:godwoken_explorer, :rollup_type_hash)
@@ -276,6 +276,7 @@ defmodule GodwokenExplorer.UDT do
           }
         end
       end)
+      |> Enum.reject(&is_nil(&1))
 
     Import.insert_changes_list(
       udt_params,
