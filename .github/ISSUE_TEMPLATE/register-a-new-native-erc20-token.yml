@@ -14,7 +14,7 @@ body:
     attributes:
       label: display Name
       description: Identifies the asset represented by this token. Following [UAN](https://github.com/nervosnetwork/rfcs/pull/335)
-      placeholder: e.g. WBTC
+      placeholder: Wrapped WBTC (ForceBridge from Ethereum)
 
   - type: textarea
     id: description
