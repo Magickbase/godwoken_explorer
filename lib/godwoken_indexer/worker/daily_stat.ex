@@ -7,8 +7,13 @@ defmodule GodwokenIndexer.Worker.DailyStat do
   alias Decimal, as: D
 
   @impl Oban.Worker
-  def perform(%Oban.Job{}) do
-    datetime = DateTime.utc_now()
+  def perform(%Oban.Job{args: %{"datetime" => datetime_str}}) do
+    datetime =
+      if is_nil(datetime_str) do
+        DateTime.utc_now()
+      else
+        datetime_str |> DateTime.from_iso8601() |> elem(1)
+      end
 
     start_time =
       datetime
