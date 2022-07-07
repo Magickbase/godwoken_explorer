@@ -80,6 +80,12 @@ defmodule GodwokenExplorer.Admin.SmartContract do
 
   """
   def create_smart_contract(attrs \\ %{}) do
+    %SmartContract{}
+    |> SmartContract.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  def verify_smart_contract(attrs \\ %{}) do
     attrs
     |> PublisherWorker.new()
     |> Oban.insert()
