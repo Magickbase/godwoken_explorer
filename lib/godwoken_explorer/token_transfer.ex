@@ -125,8 +125,11 @@ defmodule GodwokenExplorer.TokenTransfer do
 
     if is_nil(paging_options) do
       results =
-        from(q in subquery(union_all(from_query, ^to_query)))
-        |> order_by([tt], desc: tt.block_number, desc: tt.log_index)
+        from(q in subquery(union_all(from_query, ^to_query)),
+          join: t in Transaction,
+          on: t.eth_hash == q.transaction_hash
+        )
+        |> order_by([tt, t], desc: tt.block_number, desc: t.index, desc: tt.log_index)
         |> limit(@export_limit)
         |> Repo.all()
 
@@ -280,12 +283,14 @@ defmodule GodwokenExplorer.TokenTransfer do
   def export_result(condition, init_query) do
     results =
       from(tt in TokenTransfer,
+        join: t in Transaction,
+        on: t.eth_hash == tt.transaction_hash,
         where: ^condition,
         select: %{
           transaction_hash: tt.transaction_hash,
           log_index: tt.log_index
         },
-        order_by: [desc: tt.block_number, desc: tt.log_index]
+        order_by: [desc: tt.block_number, desc: t.index, desc: tt.log_index]
       )
       |> limit(@export_limit)
       |> Repo.all()
@@ -304,7 +309,11 @@ defmodule GodwokenExplorer.TokenTransfer do
       end)
 
     query
-    |> order_by([tt], desc: tt.block_number, desc: tt.log_index)
+    |> order_by([tt, a1, a2, b, a4, u5, t],
+      desc: tt.block_number,
+      desc: t.index,
+      desc: tt.log_index
+    )
     |> Repo.all()
     |> Enum.map(fn transfer ->
       transfer
@@ -333,7 +342,11 @@ defmodule GodwokenExplorer.TokenTransfer do
 
       parsed_results =
         query
-        |> order_by([tt], desc: tt.block_number, desc: tt.log_index)
+        |> order_by([tt, a1, a2, b, a4, u5, t],
+          desc: tt.block_number,
+          desc: t.index,
+          desc: tt.log_index
+        )
         |> Repo.all()
         |> Enum.map(fn transfer ->
           transfer
@@ -361,12 +374,14 @@ defmodule GodwokenExplorer.TokenTransfer do
 
   defp base_query_by(condition, paging_options) do
     from(tt in TokenTransfer,
+      join: t in Transaction,
+      on: t.eth_hash == tt.transaction_hash,
       where: ^condition,
       select: %{
         transaction_hash: tt.transaction_hash,
         log_index: tt.log_index
       },
-      order_by: [desc: tt.block_number, desc: tt.log_index]
+      order_by: [desc: tt.block_number, desc: t.index, desc: tt.log_index]
     )
     |> Repo.paginate(
       page: paging_options[:page],
