@@ -7,15 +7,20 @@ defmodule GodwokenIndexer.Worker.DailyStat do
   alias Decimal, as: D
 
   @impl Oban.Worker
-  def perform(%Oban.Job{args: %{"datetime" => datetime}}) do
+  def perform(%Oban.Job{args: %{"datetime" => datetime_str}}) do
+    datetime =
+      if is_nil(datetime_str) do
+        DateTime.utc_now()
+      else
+        datetime_str |> DateTime.from_iso8601() |> elem(1)
+      end
+
     start_time =
       datetime
-      |> DateTime.from_iso8601()
-      |> elem(1)
       |> Timex.shift(days: -1)
       |> Timex.beginning_of_day()
 
-    end_time = datetime |> DateTime.from_iso8601() |> elem(1) |> Timex.beginning_of_day()
+    end_time = datetime |> Timex.beginning_of_day()
     date = start_time |> Timex.to_date()
 
     with blocks when blocks != [] <-
