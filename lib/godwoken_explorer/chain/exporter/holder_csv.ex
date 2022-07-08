@@ -27,7 +27,7 @@ defmodule GodwokenExplorer.Chain.Exporter.HolderCsv do
           holder[:eth_address],
           holder[:balance],
           holder[:percentage],
-          holder[:transaction_count]
+          holder[:tx_count]
         ]
       end)
 
