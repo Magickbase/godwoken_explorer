@@ -121,6 +121,10 @@ defmodule GodwokenExplorer.UDT do
     end
   end
 
+  def list_address_by_udt_id(nil) do
+    []
+  end
+
   def list_address_by_udt_id(udt_id) do
     case Repo.get(UDT, udt_id) do
       %UDT{type: :bridge} = udt ->
