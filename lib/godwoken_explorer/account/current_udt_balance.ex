@@ -157,8 +157,7 @@ defmodule GodwokenExplorer.Account.CurrentUDTBalance do
                    a1.transaction_count,
                    a1.transaction_count
                  )
-             },
-             order_by: [desc: cub.value]
+             }
            ), supply, decimal}
 
         %UDT{type: :bridge, supply: supply, decimal: decimal} ->
@@ -202,18 +201,16 @@ defmodule GodwokenExplorer.Account.CurrentUDTBalance do
                      a.transaction_count
                    )
                },
-               order_by: [desc: :updated_at, desc: :balance],
+               order_by: [desc: :updated_at],
                distinct: q.eth_address
              ), supply, decimal}
           end
       end
 
     if is_nil(paging_options) do
-      query
+      from(q in subquery(query), order_by: [desc: q.balance])
       |> limit(@export_limit)
       |> Repo.all()
-      |> Enum.sort_by(& &1.balance)
-      |> Enum.reverse()
       |> Enum.map(fn %{balance: balance} = result ->
         percentage =
           if is_nil(supply) do
@@ -229,7 +226,7 @@ defmodule GodwokenExplorer.Account.CurrentUDTBalance do
         })
       end)
     else
-      query
+      from(q in subquery(query), order_by: [desc: q.balance])
       |> Repo.paginate(page: paging_options[:page], page_size: paging_options[:page_size])
       |> parse_holder_sort_results(supply, decimal || 0)
     end
@@ -238,8 +235,6 @@ defmodule GodwokenExplorer.Account.CurrentUDTBalance do
   defp parse_holder_sort_results(address_and_balances, supply, decimal) do
     results =
       address_and_balances.entries
-      |> Enum.sort_by(& &1.balance)
-      |> Enum.reverse()
       |> Enum.map(fn %{balance: balance} = result ->
         percentage =
           if is_nil(supply) do
