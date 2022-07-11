@@ -124,6 +124,7 @@ defmodule GodwokenExplorer.Account.CurrentUDTBalance do
 
       (bridged_results ++ results)
       |> Enum.sort_by(&Map.fetch(&1, :updated_at))
+      |> Enum.reverse()
       |> Enum.uniq_by(&Map.fetch(&1, :address_hash))
     else
       bridged_results
