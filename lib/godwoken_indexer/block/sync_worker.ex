@@ -333,15 +333,48 @@ defmodule GodwokenIndexer.Block.SyncWorker do
   end
 
   defp import_token_transfers(logs) do
-    %{token_transfers: token_transfers, tokens: _tokens} = TokenTransfers.parse(logs)
+    %{token_transfers: token_transfers, tokens: tokens} = TokenTransfers.parse(logs)
 
-    Import.insert_changes_list(token_transfers,
-      for: TokenTransfer,
-      timestamps: import_timestamps(),
-      on_conflict: :nothing
-    )
+    if length(token_transfers) > 0 do
+      Import.insert_changes_list(token_transfers,
+        for: TokenTransfer,
+        timestamps: import_timestamps(),
+        on_conflict: :nothing
+      )
 
-    if length(token_transfers) > 0, do: update_erc20_balance(token_transfers)
+      update_erc20_balance(token_transfers)
+    end
+
+    if length(tokens) > 0 do
+      uniq_tokens = Enum.uniq(tokens)
+
+      contract_address_hashes =
+        uniq_tokens
+        |> Enum.map(fn %{contract_address_hash: contract_address_hash} ->
+          contract_address_hash
+        end)
+
+      eth_address_to_ids =
+        from(a in Account,
+          where: a.eth_adddress in ^contract_address_hashes,
+          select: {a.eth_address, a.id}
+        )
+        |> Repo.all()
+        |> Enum.into(%{})
+
+      token_params =
+        uniq_tokens
+        |> Enum.map(fn token ->
+          token
+          |> Map.merge(%{id: eth_address_to_ids[token[:contract_address_hash]], type: :native})
+        end)
+
+      Import.insert_changes_list(token_params,
+        for: UDT,
+        timestamps: import_timestamps(),
+        on_conflict: :nothing
+      )
+    end
   end
 
   defp import_transactions(block_params, transactions_params_without_receipts) do
