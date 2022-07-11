@@ -106,7 +106,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
         {:ok, []}
       end
 
-    import_withdrawal_requests(withdrawal_params)
+    import_withdrawal_requests(withdrawal_params, next_block_number)
     inserted_blocks = import_block(blocks_params)
     update_block_cache(inserted_blocks)
 
@@ -400,12 +400,68 @@ defmodule GodwokenIndexer.Block.SyncWorker do
     )
   end
 
-  defp import_withdrawal_requests(withdrawal_params) do
+  defp import_withdrawal_requests(withdrawal_params, block_number) do
     if withdrawal_params != [] do
       Import.insert_changes_list(withdrawal_params,
         for: WithdrawalRequest,
         timestamps: import_timestamps(),
         on_conflict: :nothing
+      )
+
+      account_script_hashes =
+        withdrawal_params
+        |> Enum.map(fn %{account_script_hash: account_script_hash} -> account_script_hash end)
+
+      udt_ids =
+        withdrawal_params
+        |> Enum.map(fn %{udt_id: udt_id} -> udt_id end)
+
+      script_hash_to_eth_addresses =
+        from(a in Account,
+          where: a.script_hash in ^account_script_hashes,
+          select: {fragment("'0x' || encode(?, 'hex')", a.script_hash), a.eth_address}
+        )
+        |> Repo.all()
+        |> Enum.into(%{})
+
+      udt_id_to_script_hashes =
+        from(a in Account,
+          where: a.id in ^udt_ids,
+          select: {a.id, a.script_hash}
+        )
+        |> Repo.all()
+        |> Enum.into(%{})
+
+      params =
+        withdrawal_params
+        |> Enum.map(fn %{
+                         account_script_hash: account_script_hash,
+                         udt_id: udt_id
+                       } ->
+          address = script_hash_to_eth_addresses[account_script_hash]
+
+          %{
+            registry_address: address |> to_string() |> Account.eth_address_to_registry_address(),
+            eth_address: address,
+            account_id: nil,
+            udt_id: udt_id,
+            udt_script_hash: udt_id_to_script_hashes[udt_id]
+          }
+        end)
+
+      {:ok, %GodwokenRPC.Account.FetchedBalances{params_list: import_account_udts}} =
+        GodwokenRPC.fetch_balances(params)
+
+      import_account_udts =
+        import_account_udts
+        |> Enum.map(&Map.put(&1, :block_number, block_number))
+
+      Import.insert_changes_list(
+        import_account_udts,
+        for: CurrentBridgedUDTBalance,
+        timestamps: import_timestamps(),
+        on_conflict: {:replace, [:block_number, :value, :updated_at]},
+        conflict_target: [:address_hash, :udt_script_hash]
       )
     end
   end

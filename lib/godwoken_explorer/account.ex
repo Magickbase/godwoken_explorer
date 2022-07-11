@@ -449,7 +449,7 @@ defmodule GodwokenExplorer.Account do
   end
 
   def eth_address_to_registry_address(eth_address) do
-    if eth_address != nil do
+    if eth_address != nil && eth_address != "" do
       eth_address = String.slice(eth_address, 2..-1)
       eth_addr_reg_id = Application.get_env(:godwoken_explorer, :eth_addr_reg_id)
 
@@ -458,6 +458,8 @@ defmodule GodwokenExplorer.Account do
       "0x" <>
         transform_hex_number_to_le(eth_addr_reg_id, 4) <>
         transform_hex_number_to_le(address_byte_count, 4) <> eth_address
+    else
+      nil
     end
   end
 
