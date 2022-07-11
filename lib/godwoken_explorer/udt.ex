@@ -22,8 +22,9 @@ defmodule GodwokenExplorer.UDT do
     field(:value, :decimal)
     field(:price, :decimal)
     field(:bridge_account_id, :integer)
-    field(:bridge_account_eth_address, :binary, virtual: true)
+    field(:contract_address_hash, :binary)
     field(:type, Ecto.Enum, values: [:bridge, :native])
+    field(:eth_type, Ecto.Enum, values: [:erc20, :erc721, :erc1155])
 
     belongs_to(:account, Account,
       foreign_key: :bridge_account_id,
@@ -50,7 +51,7 @@ defmodule GodwokenExplorer.UDT do
       :official_site,
       :type,
       :value,
-      :bridge_account_eth_address,
+      :contract_address_hash,
       :bridge_account_id
     ])
     |> unique_constraint(:id, name: :udts_pkey)
