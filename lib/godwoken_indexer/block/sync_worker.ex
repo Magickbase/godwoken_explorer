@@ -356,7 +356,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
 
       eth_address_to_ids =
         from(a in Account,
-          where: a.eth_adddress in ^contract_address_hashes,
+          where: a.eth_address in ^contract_address_hashes,
           select: {a.eth_address, a.id}
         )
         |> Repo.all()
