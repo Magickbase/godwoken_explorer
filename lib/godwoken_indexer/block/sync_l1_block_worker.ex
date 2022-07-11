@@ -40,7 +40,7 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
   @smallest_withdrawal_ckb_capacity 266 * :math.pow(10, 8)
   @smallest_withdrawal_udt_ckb_capacity 347 * :math.pow(10, 8)
 
-  @buffer_block_for_create_account 10
+  @buffer_block_for_create_account 15
 
   def start_link(state \\ []) do
     GenServer.start_link(__MODULE__, state)
