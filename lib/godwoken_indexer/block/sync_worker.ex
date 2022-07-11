@@ -419,7 +419,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
       script_hash_to_eth_addresses =
         from(a in Account,
           where: a.script_hash in ^account_script_hashes,
-          select: {a.script_hash, a.eth_address}
+          select: {fragment("'0x' || encode(?, 'hex')", a.script_hash), a.eth_address}
         )
         |> Repo.all()
         |> Enum.into(%{})
