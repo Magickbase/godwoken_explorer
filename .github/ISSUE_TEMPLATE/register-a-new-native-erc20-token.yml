@@ -25,6 +25,15 @@ body:
       description: Describe the asset represented by this token.
 
   - type: input
+    id: uan
+    validations:
+      required: false
+    attributes:
+      label: UAN
+      description: The UAN of the token. Following [UAN](https://github.com/nervosnetwork/rfcs/pull/335)
+      placeholder: e.g. WBTC.ckb|fb.eth
+
+  - type: input
     id: max-supply
     validations:
       required: false
