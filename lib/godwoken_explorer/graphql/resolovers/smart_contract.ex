@@ -44,7 +44,8 @@ defmodule GodwokenExplorer.Graphql.Resolvers.SmartContract do
 
   def smart_contracts(_parent, %{input: input} = _args, _resolution) do
     return =
-      from(sc in SmartContract)
+      from(sc in SmartContract, as: :smart_contract)
+      |> join(:inner, [sc], a in Account, on: sc.account_id == a.id, as: :account)
       |> smart_contracts_order_by(input)
       |> paginate_query(input, %{
         cursor_fields: paginate_cursor(input),
@@ -58,10 +59,25 @@ defmodule GodwokenExplorer.Graphql.Resolvers.SmartContract do
     sorter = Map.get(input, :sorter)
 
     if sorter do
-      order_params = cursor_order_sorter(sorter, :order, @sorter_fields)
-      order_by(query, [u], ^order_params)
+      order_params =
+        sorter
+        |> Enum.map(fn e ->
+          case e do
+            %{sort_type: st, sort_value: :ex_tx_count} ->
+              {st, dynamic([_s, a], a.transaction_count)}
+
+            _ ->
+              case cursor_order_sorter([e], :order, @sorter_fields) do
+                [h | _] -> h
+                _ -> :skip
+              end
+          end
+        end)
+        |> Enum.filter(&(&1 != :skip))
+
+      order_by(query, [], ^order_params)
     else
-      order_by(query, [u], @default_sorter)
+      order_by(query, [], @default_sorter)
     end
   end
 
@@ -69,9 +85,22 @@ defmodule GodwokenExplorer.Graphql.Resolvers.SmartContract do
     sorter = Map.get(input, :sorter)
 
     if sorter do
-      cursor_order_sorter(sorter, :cursor, @sorter_fields)
+      sorter
+      |> Enum.map(fn e ->
+        case e do
+          %{sort_type: st, sort_value: :ex_tx_count} ->
+            {{:account, :transaction_count}, st}
+
+          _ ->
+            case cursor_order_sorter([e], :cursor, @sorter_fields) do
+              [h | _] -> h
+              _ -> :skip
+            end
+        end
+      end)
+      |> Enum.filter(&(&1 != :skip))
     else
-      @default_sorter
+      cursor_order_sorter(sorter, :cursor, @sorter_fields)
     end
   end
 
