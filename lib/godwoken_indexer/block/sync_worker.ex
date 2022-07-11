@@ -366,7 +366,11 @@ defmodule GodwokenIndexer.Block.SyncWorker do
         uniq_tokens
         |> Enum.map(fn token ->
           token
-          |> Map.merge(%{id: eth_address_to_ids[token[:contract_address_hash]], type: :native})
+          |> Map.merge(%{
+            id: eth_address_to_ids[token[:contract_address_hash]],
+            bridge_account_id: eth_address_to_ids[token[:contract_address_hash]],
+            type: :native
+          })
         end)
 
       Import.insert_changes_list(token_params,

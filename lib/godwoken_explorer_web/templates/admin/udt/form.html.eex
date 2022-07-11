@@ -12,6 +12,11 @@
       <%= select f, :type, ["Bridge": "bridge", "Native": "native"] %>
       <%= error_tag f, :type %>
     </div>
+    <div class="torch-form-group">
+      <%= label f, :eth_type %>
+      <%= select f, :eth_type, ["ERC20": "erc20", "ERC721": "erc721", "ERC1155": "erc1155"] %>
+      <%= error_tag f, :eth_type %>
+    </div>
 
     <%= if @conn.request_path == "/admin/udts/new" do %>
       <div class="torch-form-group">
