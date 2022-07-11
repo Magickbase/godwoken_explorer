@@ -33,14 +33,18 @@ defmodule GodwokenExplorerWeb.Admin.UDTController do
 
     udt_params =
       if udt_params["type"] == "native" do
-        udt_params |> Map.merge(%{"bridge_account_id" => udt_id})
+        udt_params
+        |> Map.merge(%{
+          "bridge_account_id" => udt_id,
+          "contract_address_hash" => udt_params["udt_address"]
+        })
       else
         with {:ok, address_hash} <-
-               Chain.string_to_address_hash(udt_params["bridge_account_eth_address"]),
+               Chain.string_to_address_hash(udt_params["contract_address_hash"]),
              %Account{id: id, type: :polyjuice_contract} <-
                Repo.get_by(Account, eth_address: address_hash) do
           udt_params
-          |> Map.merge(%{"bridge_account_id" => id})
+          |> Map.merge(%{"bridge_account_id" => id, "contract_address_hash" => address_hash})
         else
           _ -> udt_params |> Map.merge(%{"bridge_account_id" => nil})
         end
@@ -89,17 +93,6 @@ defmodule GodwokenExplorerWeb.Admin.UDTController do
     udt = Admin.get_udt!(id)
     changeset = Admin.change_udt(udt)
 
-    changeset =
-      if is_nil(udt.bridge_account_id) do
-        changeset
-      else
-        Ecto.Changeset.put_change(
-          changeset,
-          :bridge_account_eth_address,
-          to_string(udt.account.eth_address)
-        )
-      end
-
     render(conn, "edit.html", udt: udt, changeset: changeset)
   end
 
@@ -111,7 +104,7 @@ defmodule GodwokenExplorerWeb.Admin.UDTController do
         udt_params |> Map.merge(%{"bridge_account_id" => id})
       else
         with {:ok, address_hash} <-
-               Chain.string_to_address_hash(udt_params["bridge_account_eth_address"]),
+               Chain.string_to_address_hash(udt_params["contract_address_hash"]),
              %Account{id: id, type: :polyjuice_contract} <-
                Repo.get_by(Account, eth_address: address_hash) do
           udt_params |> Map.merge(%{"bridge_account_id" => id})
