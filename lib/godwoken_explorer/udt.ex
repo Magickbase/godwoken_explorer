@@ -52,7 +52,8 @@ defmodule GodwokenExplorer.UDT do
       :type,
       :value,
       :contract_address_hash,
-      :bridge_account_id
+      :bridge_account_id,
+      :eth_type
     ])
     |> unique_constraint(:id, name: :udts_pkey)
   end
