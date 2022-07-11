@@ -22,7 +22,7 @@ defmodule GodwokenExplorer.UDT do
     field(:value, :decimal)
     field(:price, :decimal)
     field(:bridge_account_id, :integer)
-    field(:contract_address_hash, :binary)
+    field(:contract_address_hash, Hash.Address)
     field(:type, Ecto.Enum, values: [:bridge, :native])
     field(:eth_type, Ecto.Enum, values: [:erc20, :erc721, :erc1155])
 
