@@ -9,6 +9,11 @@ defmodule GodwokenExplorerWeb.Admin.UDTView do
     if udt, do: to_string(udt.script_hash)
   end
 
+  def contract_address_hash(conn) do
+    udt = conn.assigns[:udt]
+    if udt, do: to_string(udt.contract_address_hash)
+  end
+
   def type_script_value(conn, key) do
     udt = conn.assigns[:udt]
 
