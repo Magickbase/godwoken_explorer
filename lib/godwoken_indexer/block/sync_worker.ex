@@ -354,30 +354,44 @@ defmodule GodwokenIndexer.Block.SyncWorker do
           contract_address_hash
         end)
 
-      eth_address_to_ids =
-        from(a in Account,
-          where: a.eth_address in ^contract_address_hashes,
-          select: {fragment("'0x' || encode(?, 'hex')", a.eth_address), a.id}
+      exist_contract_addresses =
+        from(u in UDT,
+          where: u.contract_address_hash in ^contract_address_hashes,
+          select: fragment("'0x' || encode(?, 'hex')", u.contract_address_hash)
         )
         |> Repo.all()
-        |> Enum.into(%{})
 
-      token_params =
-        uniq_tokens
-        |> Enum.map(fn token ->
-          token
-          |> Map.merge(%{
-            id: eth_address_to_ids[token[:contract_address_hash]],
-            bridge_account_id: eth_address_to_ids[token[:contract_address_hash]],
-            type: :native
-          })
-        end)
+      not_exist_contract_address = contract_address_hashes -- exist_contract_addresses
 
-      Import.insert_changes_list(token_params,
-        for: UDT,
-        timestamps: import_timestamps(),
-        on_conflict: :nothing
-      )
+      if length(not_exist_contract_address) > 0 do
+        eth_address_to_ids =
+          from(a in Account,
+            where: a.eth_address in ^not_exist_contract_address,
+            select: {fragment("'0x' || encode(?, 'hex')", a.eth_address), a.id}
+          )
+          |> Repo.all()
+          |> Enum.into(%{})
+
+        token_params =
+          uniq_tokens
+          |> Enum.filter(fn token ->
+            token[:contract_address_hash] in not_exist_contract_address
+          end)
+          |> Enum.map(fn token ->
+            token
+            |> Map.merge(%{
+              id: eth_address_to_ids[token[:contract_address_hash]],
+              bridge_account_id: eth_address_to_ids[token[:contract_address_hash]],
+              type: :native
+            })
+          end)
+
+        Import.insert_changes_list(token_params,
+          for: UDT,
+          timestamps: import_timestamps(),
+          on_conflict: :nothing
+        )
+      end
     end
   end
 
