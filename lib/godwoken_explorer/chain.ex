@@ -81,9 +81,7 @@ defmodule GodwokenExplorer.Chain do
   def address_to_token_transfer_count(eth_address) do
     udt_type? =
       from(u in UDT,
-        join: a in Account,
-        on: a.id == u.bridge_account_id,
-        where: a.eth_address == ^eth_address
+        where: u.contract_address_hash == ^eth_address
       )
       |> Repo.exists?()
 
