@@ -75,7 +75,7 @@ defmodule GodwokenExplorer.UDTView do
     from(
       u in UDT,
       preload: :account,
-      where: u.id == ^id or u.bridge_account_id == ^id,
+      where: u.id == ^id,
       select: map(u, ^select_fields())
     )
     |> Repo.one()
@@ -96,7 +96,7 @@ defmodule GodwokenExplorer.UDTView do
         from(
           u in UDT,
           preload: :account,
-          where: u.type == :native,
+          where: u.type == :native and u.eth_type == :erc20,
           select: map(u, ^select_fields()),
           order_by: [asc: :name]
         )

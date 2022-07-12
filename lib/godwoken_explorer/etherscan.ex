@@ -80,10 +80,8 @@ defmodule GodwokenExplorer.Etherscan do
     tt_query =
       from(
         tt in TokenTransfer,
-        join: a4 in Account,
-        on: a4.eth_address == tt.token_contract_address_hash,
         left_join: tkn in UDT,
-        on: tkn.bridge_account_id == a4.id,
+        on: tkn.contract_address_hash == tt.token_contract_address_hash,
         where: tt.from_address_hash == ^eth_address,
         or_where: tt.to_address_hash == ^eth_address,
         order_by: [

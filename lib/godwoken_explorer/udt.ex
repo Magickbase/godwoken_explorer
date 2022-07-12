@@ -76,7 +76,7 @@ defmodule GodwokenExplorer.UDT do
   end
 
   def get_decimal(id) do
-    case from(u in UDT, where: u.id == ^id or u.bridge_account_id == ^id) |> Repo.one() do
+    case from(u in UDT, where: u.id == ^id) |> Repo.one() do
       nil ->
         0
 
@@ -103,6 +103,7 @@ defmodule GodwokenExplorer.UDT do
     end
   end
 
+  # TODO unused function
   def find_by_name_or_token(keyword) do
     from(u in UDT,
       where:
@@ -113,12 +114,11 @@ defmodule GodwokenExplorer.UDT do
   end
 
   def get_by_contract_address(contract_address) do
-    with %Account{id: id} <- Account |> Repo.get_by(eth_address: contract_address),
-         %UDT{} = udt <-
-           from(u in UDT, where: u.id == ^id or u.bridge_account_id == ^id) |> Repo.one() do
-      udt
-    else
-      _ ->
+    case from(u in UDT, where: u.contract_address_hash == ^contract_address) |> Repo.one() do
+      %UDT{} = udt ->
+        udt
+
+      nil ->
         %{id: nil, name: "", decimal: 0, symbol: ""}
     end
   end

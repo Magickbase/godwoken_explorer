@@ -375,8 +375,6 @@ defmodule GodwokenExplorer.Transaction do
       on: s4.account_id == t.to_account_id,
       left_join: p in Polyjuice,
       on: p.tx_hash == t.hash,
-      left_join: u6 in UDT,
-      on: u6.bridge_account_id == s4.account_id,
       where: t.eth_hash in ^hashes or t.hash in ^hashes,
       select: %{
         hash:
