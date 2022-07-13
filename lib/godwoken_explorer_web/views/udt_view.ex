@@ -10,7 +10,6 @@ defmodule GodwokenExplorer.UDTView do
   def fields do
     [
       :id,
-      :script_hash,
       :symbol,
       :decimal,
       :name,
@@ -18,7 +17,6 @@ defmodule GodwokenExplorer.UDTView do
       :holder_count,
       :type,
       :eth_address,
-      :type_script,
       :official_site,
       :description,
       :value,
@@ -27,16 +25,8 @@ defmodule GodwokenExplorer.UDTView do
     ]
   end
 
-  def script_hash(udt, _conn) do
-    to_string(udt.script_hash)
-  end
-
   def eth_address(udt, _conn) do
-    if is_nil(udt.account) do
-      ""
-    else
-      to_string(udt.account.eth_address)
-    end
+    to_string(udt.contract_address_hash)
   end
 
   def supply(udt, _conn) do
@@ -59,7 +49,7 @@ defmodule GodwokenExplorer.UDTView do
 
   def transfer_count(udt, _conn) do
     if udt.account != nil do
-      case Repo.get(Account, udt.bridge_account_id) do
+      case Repo.get_by(Account, eth_address: udt.contract_address_hash) do
         %Account{token_transfer_count: token_transfer_count} ->
           token_transfer_count
 
@@ -74,61 +64,30 @@ defmodule GodwokenExplorer.UDTView do
   def get_udt(id) do
     from(
       u in UDT,
-      preload: :account,
-      where: u.id == ^id,
-      select: map(u, ^select_fields())
+      where: u.id == ^id
     )
     |> Repo.one()
   end
 
   def list(type, page) do
+    bridge_account_ids =
+      from(u in UDT,
+        where: u.type == :bridge and not is_nil(u.bridge_account_id),
+        select: u.bridge_account_id
+      )
+      |> Repo.all()
+
     cond do
       type == "bridge" ->
-        from(
-          u in UDT,
-          preload: :account,
-          where: u.type == :bridge and not is_nil(u.bridge_account_id),
-          select: map(u, ^select_fields()),
-          order_by: [asc: :name]
-        )
+        from(u in UDT, where: u.id in ^bridge_account_ids, order_by: [asc: :name])
 
       type == "native" ->
         from(
           u in UDT,
-          preload: :account,
-          where: u.type == :native and u.eth_type == :erc20,
-          select: map(u, ^select_fields()),
+          where: u.type == :native and u.eth_type == :erc20 and u.id not in ^bridge_account_ids,
           order_by: [asc: :name]
-        )
-
-      true ->
-        from(
-          u in UDT,
-          preload: :account,
-          select: map(u, ^select_fields())
         )
     end
     |> Repo.paginate(page: page)
-  end
-
-  def select_fields do
-    udt_fields = [
-      :id,
-      :script_hash,
-      :symbol,
-      :decimal,
-      :name,
-      :supply,
-      :type,
-      :official_site,
-      :description,
-      :icon,
-      :type_script,
-      :bridge_account_id
-    ]
-
-    account_fields = [:eth_address]
-
-    udt_fields ++ [account: account_fields]
   end
 end
