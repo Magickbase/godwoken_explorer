@@ -8,14 +8,13 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
 
     request-example:
     query {
-      udt(input: {script_hash: "0x64050AF0D25C38DDF9455B8108654F7C5CC30FE6D871A303D83B1020EDDDD7A7"}){
+      udt(
+        input: { contract_address: "0x2275AFE815DE66BEABE7A2C03005537AB843AFB2" }
+      ) {
         id
         name
-        type
-        supply
-        account{
-          eth_address
-        }
+        script_hash
+        contract_address_hash
       }
     }
 
@@ -23,19 +22,16 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
     {
       "data": {
         "udt": {
-          "account": {
-            "eth_address": null
-          },
-          "id": "80",
-          "name": null,
-          "supply": null,
-          "type": "BRIDGE"
+          "contract_address_hash": "0x2275afe815de66beabe7a2c03005537ab843afb2",
+          "id": "36050",
+          "name": "GodwokenToken on testnet_v1",
+          "script_hash": null
         }
       }
     }
     """
     field :udt, :udt do
-      arg(:input, non_null(:smart_contract_input))
+      arg(:input, non_null(:udt_input))
       resolve(&Resolvers.UDT.udt/3)
     end
 
@@ -350,6 +346,7 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
     field :contract_address_hash, :hash_address
     field :type, :udt_type
     field :eth_type, :eth_type
+
     field :account, :account do
       resolve(&Resolvers.UDT.account/3)
     end
@@ -371,6 +368,10 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
     value(:name)
     value(:supply)
     # value(:holders)
+  end
+
+  input_object :udt_input do
+    field :contract_address, non_null(:hash_address)
   end
 
   input_object :account_id_input do

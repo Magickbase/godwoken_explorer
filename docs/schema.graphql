@@ -1833,14 +1833,13 @@ type RootQueryType {
   
   request-example:
   query {
-    udt(input: {script_hash: "0x64050AF0D25C38DDF9455B8108654F7C5CC30FE6D871A303D83B1020EDDDD7A7"}){
+    udt(
+      input: { contract_address: "0x2275AFE815DE66BEABE7A2C03005537AB843AFB2" }
+    ) {
       id
       name
-      type
-      supply
-      account{
-        eth_address
-      }
+      script_hash
+      contract_address_hash
     }
   }
   
@@ -1848,18 +1847,15 @@ type RootQueryType {
   {
     "data": {
       "udt": {
-        "account": {
-          "eth_address": null
-        },
-        "id": "80",
-        "name": null,
-        "supply": null,
-        "type": "BRIDGE"
+        "contract_address_hash": "0x2275afe815de66beabe7a2c03005537ab843afb2",
+        "id": "36050",
+        "name": "GodwokenToken on testnet_v1",
+        "script_hash": null
       }
     }
   }
   """
-  udt(input: SmartContractInput!): Udt
+  udt(input: UdtInput!): Udt
 
   """
   function: get list of udts
@@ -2308,6 +2304,10 @@ type Udt {
   type: UdtType
   type_script: Json
   value: Decimal
+}
+
+input UdtInput {
+  contract_address: HashAddress!
 }
 
 input UdtsInput {

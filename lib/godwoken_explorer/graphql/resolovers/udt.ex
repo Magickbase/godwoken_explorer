@@ -17,30 +17,16 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
         _resolution
       ) do
     contract_address = Map.get(input, :contract_address)
-    script_hash = Map.get(input, :script_hash)
 
-    account =
-      case {contract_address, script_hash} do
-        {nil, script_hash} when not is_nil(script_hash) ->
-          Account.search(script_hash)
+    query =
+      from(a in Account, where: a.eth_address == ^contract_address)
+      |> join(:inner, [a], u in UDT,
+        on: u.contract_address_hash == a.eth_address or u.script_hash == a.script_hash
+      )
+      |> select([_, u], u)
 
-        {contract_address, _} when not is_nil(contract_address) ->
-          Account.search(contract_address)
-
-        {nil, nil} ->
-          nil
-      end
-
-    if account do
-      udt =
-        from(u in UDT)
-        |> where([u], u.id == ^account.id or u.bridge_account_id == ^account.id)
-        |> Repo.one()
-
-      {:ok, udt}
-    else
-      {:ok, nil}
-    end
+    return = Repo.one(query)
+    {:ok, return}
   end
 
   def get_udt_by_account_id(
