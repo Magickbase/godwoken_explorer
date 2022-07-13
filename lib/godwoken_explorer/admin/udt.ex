@@ -76,7 +76,7 @@ defmodule GodwokenExplorer.Admin.UDT do
       ** (Ecto.NoResultsError)
 
   """
-  def get_udt!(id), do: UDT |> Repo.get!(id)
+  def get_udt!(id), do: UDT |> preload(:account) |> Repo.get!(id)
 
   @doc """
   Creates a udt.
