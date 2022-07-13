@@ -381,7 +381,6 @@ defmodule GodwokenIndexer.Block.SyncWorker do
             token
             |> Map.merge(%{
               id: eth_address_to_ids[token[:contract_address_hash]],
-              bridge_account_id: eth_address_to_ids[token[:contract_address_hash]],
               type: :native
             })
           end)

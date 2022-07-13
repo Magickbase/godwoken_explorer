@@ -47,6 +47,8 @@
               <th><%= table_link(@conn, "Symbol", :symbol) %></th>
 
               <th><%= table_link(@conn, "Script hash", :script_hash) %></th>
+              <th><%= table_link(@conn, "Contract Address", :contract_address_hash) %></th>
+
 
               <th><%= table_link(@conn, "Type", :type) %></th>
 
@@ -64,6 +66,7 @@
                 <td><%= udt.symbol %></td>
 
                 <td><%= to_string(udt.script_hash) %></td>
+                <td><%= to_string(udt.contract_address_hash) %></td>
 
                 <td><%= udt.type %></td>
 

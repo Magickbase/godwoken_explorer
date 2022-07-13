@@ -86,15 +86,22 @@ defmodule GodwokenExplorerWeb.Admin.UDTController do
         udt_params
         |> Map.merge(%{"decimal" => decimal, "supply" => total_supply})
       else
-        %Account{eth_address: eth_address} = Repo.get(Account, udt.bridge_account_id)
-        decimal = UDT.eth_call_decimal(eth_address)
-        total_supply = UDT.eth_call_total_supply(eth_address)
+        with {:ok, address_hash} <-
+               Chain.string_to_address_hash(udt_params["bridge_account_eth_address"]),
+             %Account{id: udt_id, eth_address: eth_address} <-
+               Repo.get_by(Account, eth_address: address_hash) do
+          decimal = eth_address |> to_string() |> UDT.eth_call_decimal()
+          total_supply = eth_address |> to_string() |> UDT.eth_call_total_supply()
 
-        udt_params
-        |> Map.merge(%{
-          "decimal" => decimal,
-          "supply" => total_supply
-        })
+          udt_params
+          |> Map.merge(%{
+            "bridge_account_id" => udt_id,
+            "decimal" => decimal,
+            "supply" => total_supply
+          })
+        else
+          _ -> udt_params
+        end
       end
 
     case Admin.update_udt(udt, udt_params) do

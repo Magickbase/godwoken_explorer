@@ -30,8 +30,14 @@
           <%= label f, :contract_address_hash, "contract_address_hash *" %>
           <%= text_input f, :contract_address_hash, required: true %>
           <%= error_tag f, :contract_address_hash %>
-        </div>
+      </div>
     <% end %>
+
+    <div class="torch-form-group">
+      <%= label f, :bridge_account_eth_address, "bridge_account_eth_address(polyjuice contract eth address)" %>
+      <%= text_input f, :bridge_account_eth_address %>
+      <%= error_tag f, :bridge_account_eth_address %>
+    </div>
 
     <div class="torch-form-group">
       <%= label f, :decimal %>
@@ -106,7 +112,7 @@
 <% end %>
 <script>
 const selectElement = document.querySelector('#torch-form_type');
-const bridgeAccountIdElement = document.querySelector('#torch-form_contract_address_hash');
+const bridgeAccountIdElement = document.querySelector('#torch-form_bridge_account_eth_address');
 const scriptHashElement = document.querySelector('#torch-form_udt_script_hash');
 const codeHashElement = document.querySelector('#torch-form_udt_type_script_code_hash');
 const argsElement = document.querySelector('#torch-form_udt_type_script_args');
