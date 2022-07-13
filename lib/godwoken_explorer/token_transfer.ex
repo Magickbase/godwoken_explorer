@@ -105,7 +105,10 @@ defmodule GodwokenExplorer.TokenTransfer do
 
     from_query =
       from(tt in TokenTransfer,
+        join: u in UDT,
+        on: u.contract_address_hash == tt.token_contract_address_hash,
         where: ^from_condition,
+        where: u.eth_type == :erc20,
         select: %{
           transaction_hash: tt.transaction_hash,
           log_index: tt.log_index,
@@ -115,7 +118,10 @@ defmodule GodwokenExplorer.TokenTransfer do
 
     to_query =
       from(tt in TokenTransfer,
+        join: u in UDT,
+        on: u.contract_address_hash == tt.token_contract_address_hash,
         where: ^to_condition,
+        where: u.eth_type == :erc20,
         select: %{
           transaction_hash: tt.transaction_hash,
           log_index: tt.log_index,
@@ -229,10 +235,8 @@ defmodule GodwokenExplorer.TokenTransfer do
       on: a2.eth_address == tt.to_address_hash,
       join: b in Block,
       on: b.hash == tt.block_hash,
-      join: a4 in Account,
-      on: a4.eth_address == tt.token_contract_address_hash,
-      left_join: u5 in UDT,
-      on: u5.bridge_account_id == a4.id,
+      left_join: u in UDT,
+      on: u.contract_address_hash == tt.token_contract_address_hash,
       join: t in Transaction,
       on: t.eth_hash == tt.transaction_hash,
       join: p in Polyjuice,
@@ -263,11 +267,11 @@ defmodule GodwokenExplorer.TokenTransfer do
             a2.eth_address,
             a2.script_hash
           ),
-        udt_id: u5.id,
-        udt_name: u5.name,
-        udt_symbol: u5.symbol,
+        udt_id: u.id,
+        udt_name: u.name,
+        udt_symbol: u.symbol,
         transfer_value: tt.amount,
-        udt_decimal: u5.decimal,
+        udt_decimal: u.decimal,
         status: b.status,
         polyjuice_status: p.status,
         gas_limit: p.gas_limit,
@@ -283,6 +287,8 @@ defmodule GodwokenExplorer.TokenTransfer do
   def export_result(condition, init_query) do
     results =
       from(tt in TokenTransfer,
+        join: u in UDT,
+        on: u.contract_address_hash == tt.token_contract_address_hash,
         join: t in Transaction,
         on: t.eth_hash == tt.transaction_hash,
         where: ^condition,
@@ -309,7 +315,7 @@ defmodule GodwokenExplorer.TokenTransfer do
       end)
 
     query
-    |> order_by([tt, a1, a2, b, a4, u5, t],
+    |> order_by([tt, a1, a2, b, u, t],
       desc: tt.block_number,
       desc: t.index,
       desc: tt.log_index
@@ -342,7 +348,7 @@ defmodule GodwokenExplorer.TokenTransfer do
 
       parsed_results =
         query
-        |> order_by([tt, a1, a2, b, a4, u5, t],
+        |> order_by([tt, a1, a2, b, u, t],
           desc: tt.block_number,
           desc: t.index,
           desc: tt.log_index
@@ -374,9 +380,12 @@ defmodule GodwokenExplorer.TokenTransfer do
 
   defp base_query_by(condition, paging_options) do
     from(tt in TokenTransfer,
+      join: u in UDT,
+      on: u.contract_address_hash == tt.token_contract_address_hash,
       join: t in Transaction,
       on: t.eth_hash == tt.transaction_hash,
       where: ^condition,
+      where: u.eth_type == :erc20,
       select: %{
         transaction_hash: tt.transaction_hash,
         log_index: tt.log_index

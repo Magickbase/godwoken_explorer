@@ -22,6 +22,11 @@
         </li>
 
         <li>
+          <div class="torch-show-label">Contract addresss:</div>
+          <div class="torch-show-data"><%= @udt.contract_address_hash |> to_string() %></div>
+        </li>
+
+        <li>
           <div class="torch-show-label">Decimal:</div>
           <div class="torch-show-data"><%= @udt.decimal %></div>
         </li>

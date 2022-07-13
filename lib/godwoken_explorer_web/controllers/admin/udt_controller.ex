@@ -26,47 +26,30 @@ defmodule GodwokenExplorerWeb.Admin.UDTController do
 
   def create(conn, %{"udt" => udt_params}) do
     udt_id =
-      with {:ok, address_hash} <- Chain.string_to_address_hash(udt_params["udt_address"]),
+      with {:ok, address_hash} <-
+             Chain.string_to_address_hash(udt_params["contract_address_hash"]),
            %Account{id: udt_id} <- Repo.get_by(Account, eth_address: address_hash) do
         udt_id
       end
 
     udt_params =
       if udt_params["type"] == "native" do
-        udt_params |> Map.merge(%{"bridge_account_id" => udt_id})
-      else
-        with {:ok, address_hash} <-
-               Chain.string_to_address_hash(udt_params["bridge_account_eth_address"]),
-             %Account{id: id, type: :polyjuice_contract} <-
-               Repo.get_by(Account, eth_address: address_hash) do
-          udt_params
-          |> Map.merge(%{"bridge_account_id" => id})
-        else
-          _ -> udt_params |> Map.merge(%{"bridge_account_id" => nil})
-        end
-      end
-      |> Map.merge(%{"id" => udt_id})
+        decimal = UDT.eth_call_decimal(udt_params["contract_address_hash"])
+        total_supply = UDT.eth_call_total_supply(udt_params["contract_address_hash"])
 
-    udt_params =
-      if udt_params["bridge_account_id"] != nil do
-        %Account{eth_address: eth_address} = Repo.get(Account, udt_params["bridge_account_id"])
-
-        udt_params =
-          if udt_params["decimal"] == "" do
-            decimal = UDT.eth_call_decimal(eth_address)
-            udt_params |> Map.merge(%{"decimal" => decimal})
-          else
-            udt_params
-          end
-
-        if udt_params["supply"] == "" do
-          supply = UDT.eth_call_total_supply(eth_address)
-          udt_params |> Map.merge(%{"supply" => supply})
-        else
-          udt_params
-        end
-      else
         udt_params
+        |> Map.merge(%{"id" => udt_id, "decimal" => decimal, "supply" => total_supply})
+      else
+        %Account{eth_address: eth_address} = Repo.get(Account, udt_id)
+        decimal = UDT.eth_call_decimal(eth_address)
+        total_supply = UDT.eth_call_total_supply(eth_address)
+
+        udt_params
+        |> Map.merge(%{
+          "bridge_account_id" => udt_id,
+          "decimal" => decimal,
+          "supply" => total_supply
+        })
       end
 
     case Admin.create_udt(udt_params) do
@@ -89,17 +72,6 @@ defmodule GodwokenExplorerWeb.Admin.UDTController do
     udt = Admin.get_udt!(id)
     changeset = Admin.change_udt(udt)
 
-    changeset =
-      if is_nil(udt.bridge_account_id) do
-        changeset
-      else
-        Ecto.Changeset.put_change(
-          changeset,
-          :bridge_account_eth_address,
-          to_string(udt.account.eth_address)
-        )
-      end
-
     render(conn, "edit.html", udt: udt, changeset: changeset)
   end
 
@@ -108,38 +80,28 @@ defmodule GodwokenExplorerWeb.Admin.UDTController do
 
     udt_params =
       if udt_params["type"] == "native" do
-        udt_params |> Map.merge(%{"bridge_account_id" => id})
+        decimal = UDT.eth_call_decimal(to_string(udt.contract_address_hash))
+        total_supply = UDT.eth_call_total_supply(to_string(udt.contract_address_hash))
+
+        udt_params
+        |> Map.merge(%{"decimal" => decimal, "supply" => total_supply})
       else
         with {:ok, address_hash} <-
                Chain.string_to_address_hash(udt_params["bridge_account_eth_address"]),
-             %Account{id: id, type: :polyjuice_contract} <-
+             %Account{id: udt_id, eth_address: eth_address} <-
                Repo.get_by(Account, eth_address: address_hash) do
-          udt_params |> Map.merge(%{"bridge_account_id" => id})
-        else
-          _ -> udt_params |> Map.merge(%{"bridge_account_id" => nil})
-        end
-      end
+          decimal = eth_address |> to_string() |> UDT.eth_call_decimal()
+          total_supply = eth_address |> to_string() |> UDT.eth_call_total_supply()
 
-    udt_params =
-      if udt_params["bridge_account_id"] != nil do
-        %Account{eth_address: eth_address} = Repo.get(Account, udt_params["bridge_account_id"])
-
-        udt_params =
-          if udt_params["decimal"] == "" do
-            decimal = UDT.eth_call_decimal(eth_address)
-            udt_params |> Map.merge(%{"decimal" => decimal})
-          else
-            udt_params
-          end
-
-        if udt_params["supply"] == "" do
-          supply = UDT.eth_call_total_supply(eth_address)
-          udt_params |> Map.merge(%{"supply" => supply})
-        else
           udt_params
+          |> Map.merge(%{
+            "bridge_account_id" => udt_id,
+            "decimal" => decimal,
+            "supply" => total_supply
+          })
+        else
+          _ -> udt_params
         end
-      else
-        udt_params
       end
 
     case Admin.update_udt(udt, udt_params) do

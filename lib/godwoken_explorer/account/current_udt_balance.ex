@@ -42,10 +42,8 @@ defmodule GodwokenExplorer.Account.CurrentUDTBalance do
   def list_udt_by_eth_address(eth_address) do
     udt_balances =
       from(cub in CurrentUDTBalance,
-        join: a1 in Account,
-        on: a1.eth_address == cub.token_contract_address_hash,
         join: u2 in UDT,
-        on: u2.bridge_account_id == a1.id,
+        on: u2.contract_address_hash == cub.token_contract_address_hash,
         where: cub.address_hash == ^eth_address and cub.value != 0,
         select: %{
           id: u2.id,
