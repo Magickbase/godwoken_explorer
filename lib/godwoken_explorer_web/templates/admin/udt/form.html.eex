@@ -127,7 +127,7 @@ const idElement = document.querySelector('#torch-form_id');
     codeHashElement.parentNode.style.display = 'none';
     argsElement.parentNode.style.display = 'none';
     hashTypeElement.parentNode.style.display = 'none';
-    idElement.parentNode.style.display = 'none';
+    idElement.parentNode.remove();
     contractAddressHashElement.parentNode.style.display = 'flex';
 
   }
@@ -137,7 +137,6 @@ const idElement = document.querySelector('#torch-form_id');
     codeHashElement.parentNode.style.display = 'flex';
     argsElement.parentNode.style.display = 'flex';
     hashTypeElement.parentNode.style.display = 'flex';
-    idElement.parentNode.style.display = 'flex';
     contractAddressHashElement.parentNode.style.display = 'none';
   }
 }, false);
@@ -149,7 +148,7 @@ selectElement.addEventListener('change', (event) =>{
     codeHashElement.parentNode.style.display = 'none';
     argsElement.parentNode.style.display = 'none';
     hashTypeElement.parentNode.style.display = 'none';
-    idElement.parentNode.style.display = 'none';
+    idElement.parentNode.remove();
     contractAddressHashElement.parentNode.style.display = 'flex';
   }
   else {
@@ -158,7 +157,6 @@ selectElement.addEventListener('change', (event) =>{
     codeHashElement.parentNode.style.display = 'flex';
     argsElement.parentNode.style.display = 'flex';
     hashTypeElement.parentNode.style.display = 'flex';
-    idElement.parentNode.style.display = 'flex';
     contractAddressHashElement.parentNode.style.display = 'none';
   }
 });
