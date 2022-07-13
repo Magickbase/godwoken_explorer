@@ -159,13 +159,17 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
           to_script_hash: "0x08c9937e412e135928fd6dec7255965ddd7df4d5a163564b60895100bb3b2f9e"
           start_block_number: 1
           end_block_number: 2624399
-          limit: 2
-          age_range_start: "2022-06-11T16:32:04"
-          age_range_end: "2022-06-11T16:32:54"
+          limit: 1
+          age_range_start: "2022-06-11T16:28:47Z"
+          age_range_end: "2022-06-11T16:29:01.455000Z"
+          sorter: [{ sort_type: ASC, sort_value: BLOCK_NUMBER }]
         }
       ) {
         entries {
           block_hash
+          block {
+            timestamp
+          }
           block_number
           type
           from_account_id
@@ -175,7 +179,6 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
             eth_address
           }
           to_account_id
-          updated_at
         }
 
         metadata {
@@ -186,24 +189,15 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
       }
     }
 
+
     {
       "data": {
         "transactions": {
           "entries": [
             {
-              "block_hash": "0x23ae98d322fb7d0a991e5cf5f55a421040131b4423cf1c47965ddc30458aa3c5",
-              "block_number": 95495,
-              "from_account": {
-                "eth_address": "0x2088d0e35c23e7c344f96e57be19043d6e2a44f3",
-                "id": 14578,
-                "script_hash": "0x07cb90b74c9b22a6ff8357332b589e8dbfc3cb119d4535c76cc51c43ab9c5f9d"
+              "block": {
+                "timestamp": "2022-06-11T16:28:47.111000Z"
               },
-              "from_account_id": 14578,
-              "to_account_id": 2,
-              "type": "ETH_ADDRESS_REGISTRY",
-              "updated_at": "2022-06-11T16:32:54"
-            },
-            {
               "block_hash": "0xa89010460abfb53bf85fc74ae98480d3d6c1708c2ce8586aac549544289e5a23",
               "block_number": 95494,
               "from_account": {
@@ -213,12 +207,11 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
               },
               "from_account_id": 14578,
               "to_account_id": 2,
-              "type": "ETH_ADDRESS_REGISTRY",
-              "updated_at": "2022-06-11T16:32:04"
+              "type": "ETH_ADDRESS_REGISTRY"
             }
           ],
           "metadata": {
-            "after": "g3QAAAADZAAMYmxvY2tfbnVtYmVyYgABdQZkAARoYXNodAAAAANkAApfX3N0cnVjdF9fZAAiRWxpeGlyLkdvZHdva2VuRXhwbG9yZXIuQ2hhaW4uSGFzaGQACmJ5dGVfY291bnRhIGQABWJ5dGVzbQAAACB83ranDTslB0BzAXr7QxE-g_1Q9DwOZymXEuZVtgw5gGQABWluZGV4YQI=",
+            "after": "g3QAAAABZAAMYmxvY2tfbnVtYmVyYgABdQY=",
             "before": null,
             "total_count": 3
           }
@@ -233,9 +226,8 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
           from_eth_address: "0x2088d0e35c23e7c344f96e57be19043d6e2a44f3"
           start_block_number: 1
           end_block_number: 2624399
-          limit: 5
-          age_range_start: "2022-06-11T16:32:04"
-          age_range_end: "2022-06-11T16:32:54"
+          limit: 1
+          sorter: [{sort_type: ASC, sort_value: BLOCK_NUMBER}]
         }
       ) {
         entries {
@@ -254,7 +246,6 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
             id
             eth_address
           }
-          updated_at
         }
 
         metadata {
@@ -270,8 +261,8 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
         "transactions": {
           "entries": [
             {
-              "block_hash": "0x23ae98d322fb7d0a991e5cf5f55a421040131b4423cf1c47965ddc30458aa3c5",
-              "block_number": 95495,
+              "block_hash": "0x9e12e1de57b66f0d84c95a6a9369715f82d21bbf1ff943ae891739c6343ea781",
+              "block_number": 61049,
               "from_account": {
                 "eth_address": "0x2088d0e35c23e7c344f96e57be19043d6e2a44f3",
                 "id": 14578,
@@ -279,91 +270,18 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
               },
               "from_account_id": 14578,
               "to_account": {
-                "eth_address": null,
-                "id": 2,
-                "script_hash": "0x08c9937e412e135928fd6dec7255965ddd7df4d5a163564b60895100bb3b2f9e"
+                "eth_address": "0x07fc54ff9f92bfa3679104778252a1c42f7b48d9",
+                "id": 18576,
+                "script_hash": "0xaae0058ff21c2d8e2fc02821e12ef074f846ff66c0f1689020c48fbcc481677f"
               },
-              "to_account_id": 2,
-              "type": "ETH_ADDRESS_REGISTRY",
-              "updated_at": "2022-06-11T16:32:54"
-            },
-            {
-              "block_hash": "0x23ae98d322fb7d0a991e5cf5f55a421040131b4423cf1c47965ddc30458aa3c5",
-              "block_number": 95495,
-              "from_account": {
-                "eth_address": "0x2088d0e35c23e7c344f96e57be19043d6e2a44f3",
-                "id": 14578,
-                "script_hash": "0x07cb90b74c9b22a6ff8357332b589e8dbfc3cb119d4535c76cc51c43ab9c5f9d"
-              },
-              "from_account_id": 14578,
-              "to_account": {
-                "eth_address": null,
-                "id": 0,
-                "script_hash": "0x946d08cc356c4fe13bc49929f1f709611fe0a2aaa336efb579dad4ca197d1551"
-              },
-              "to_account_id": 0,
-              "type": "POLYJUICE_CREATOR",
-              "updated_at": "2022-06-11T16:32:54"
-            },
-            {
-              "block_hash": "0xa89010460abfb53bf85fc74ae98480d3d6c1708c2ce8586aac549544289e5a23",
-              "block_number": 95494,
-              "from_account": {
-                "eth_address": "0x2088d0e35c23e7c344f96e57be19043d6e2a44f3",
-                "id": 14578,
-                "script_hash": "0x07cb90b74c9b22a6ff8357332b589e8dbfc3cb119d4535c76cc51c43ab9c5f9d"
-              },
-              "from_account_id": 14578,
-              "to_account": {
-                "eth_address": null,
-                "id": 2,
-                "script_hash": "0x08c9937e412e135928fd6dec7255965ddd7df4d5a163564b60895100bb3b2f9e"
-              },
-              "to_account_id": 2,
-              "type": "ETH_ADDRESS_REGISTRY",
-              "updated_at": "2022-06-11T16:32:04"
-            },
-            {
-              "block_hash": "0xa89010460abfb53bf85fc74ae98480d3d6c1708c2ce8586aac549544289e5a23",
-              "block_number": 95494,
-              "from_account": {
-                "eth_address": "0x2088d0e35c23e7c344f96e57be19043d6e2a44f3",
-                "id": 14578,
-                "script_hash": "0x07cb90b74c9b22a6ff8357332b589e8dbfc3cb119d4535c76cc51c43ab9c5f9d"
-              },
-              "from_account_id": 14578,
-              "to_account": {
-                "eth_address": null,
-                "id": 0,
-                "script_hash": "0x946d08cc356c4fe13bc49929f1f709611fe0a2aaa336efb579dad4ca197d1551"
-              },
-              "to_account_id": 0,
-              "type": "POLYJUICE_CREATOR",
-              "updated_at": "2022-06-11T16:32:04"
-            },
-            {
-              "block_hash": "0xa89010460abfb53bf85fc74ae98480d3d6c1708c2ce8586aac549544289e5a23",
-              "block_number": 95494,
-              "from_account": {
-                "eth_address": "0x2088d0e35c23e7c344f96e57be19043d6e2a44f3",
-                "id": 14578,
-                "script_hash": "0x07cb90b74c9b22a6ff8357332b589e8dbfc3cb119d4535c76cc51c43ab9c5f9d"
-              },
-              "from_account_id": 14578,
-              "to_account": {
-                "eth_address": null,
-                "id": 2,
-                "script_hash": "0x08c9937e412e135928fd6dec7255965ddd7df4d5a163564b60895100bb3b2f9e"
-              },
-              "to_account_id": 2,
-              "type": "ETH_ADDRESS_REGISTRY",
-              "updated_at": "2022-06-11T16:32:04"
+              "to_account_id": 18576,
+              "type": "POLYJUICE"
             }
           ],
           "metadata": {
-            "after": null,
+            "after": "g3QAAAABZAAMYmxvY2tfbnVtYmVyYgAA7nk=",
             "before": null,
-            "total_count": 5
+            "total_count": 962
           }
         }
       }
@@ -409,8 +327,6 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
     field :block, :block do
       resolve(&Resolvers.Transaction.block/3)
     end
-
-    import_fields(:ecto_naive_datetime)
   end
 
   object :paginate_trasactions do
@@ -433,7 +349,6 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
     value(:block_number)
     value(:index)
     value(:hash)
-    # value(:updated_at)
   end
 
   input_object :transactions_sorter_input do

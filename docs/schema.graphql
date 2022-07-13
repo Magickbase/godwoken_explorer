@@ -364,6 +364,12 @@ Some numeric strings are:
 """
 scalar Decimal
 
+enum EthType {
+  ERC1155
+  ERC20
+  ERC721
+}
+
 """
 The address (40 (hex) characters / 160 bits / 20 bytes) is derived from the public key (128 (hex) characters /
 512 bits / 64 bytes) which is derived from the private key (64 (hex) characters / 256 bits / 32 bytes).
@@ -432,13 +438,6 @@ input LogInput {
   third_topic: String
   transaction_hash: HashFull
 }
-
-"""
-The `Naive DateTime` scalar type represents a naive date and time without
-timezone. The DateTime appears in a JSON response as an ISO8601 formatted
-string.
-"""
-scalar NaiveDateTime
 
 input PageAndSizeInput {
   """
@@ -1482,11 +1481,9 @@ type RootQueryType {
         to_address: "0xbd6250d17fc557dfe39a9eb3882c421d4c7f6413"
         start_block_number: 90
         end_block_number: 909999
-        age_range_start: "2022-06-01T04:59:29"
-        age_range_end: "2022-06-01T06:59:29"
+        age_range_end: "2022-05-08T05:19:26.237000Z"
         limit: 1
         combine_from_to: true
-  
         sorter: [
           { sort_type: ASC, sort_value: BLOCK_NUMBER }
           { sort_type: ASC, sort_value: TRANSACTION_HASH }
@@ -1495,9 +1492,11 @@ type RootQueryType {
       }
     ) {
       entries {
+        block {
+          timestamp
+        }
         transaction_hash
         block_number
-        updated_at
         to_account {
           eth_address
         }
@@ -1515,27 +1514,30 @@ type RootQueryType {
     }
   }
   
+  
   {
     "data": {
       "token_transfers": {
         "entries": [
           {
-            "block_number": 1396,
+            "block": {
+              "timestamp": "2022-05-08T05:19:25.237000Z"
+            },
+            "block_number": 90,
             "from_account": {
               "eth_address": "0x966b30e576a4d6731996748b48dd67c94ef29067"
             },
             "to_account": {
-              "eth_address": "0x074182e2558a108f3f310c29f6fb1b3bd31908ed"
+              "eth_address": "0xc6a44e4d2216a98b3a5086a64a33d94fbcc8fec3"
             },
-            "to_address": "0x074182e2558a108f3f310c29f6fb1b3bd31908ed",
-            "transaction_hash": "0x74c0a1d269a3f8107e5b62f25aad6663f8905086423894c265007b2befc8f919",
-            "updated_at": "2022-06-01T05:29:35"
+            "to_address": "0xc6a44e4d2216a98b3a5086a64a33d94fbcc8fec3",
+            "transaction_hash": "0x65ea60c7291f5aec6e9f86f6b4af97f6287409fc72f66975af6203721d10d409"
           }
         ],
         "metadata": {
-          "after": "g3QAAAADZAAMYmxvY2tfbnVtYmVyYgAABXRkAAlsb2dfaW5kZXhhAWQAEHRyYW5zYWN0aW9uX2hhc2h0AAAAA2QACl9fc3RydWN0X19kACJFbGl4aXIuR29kd29rZW5FeHBsb3Jlci5DaGFpbi5IYXNoZAAKYnl0ZV9jb3VudGEgZAAFYnl0ZXNtAAAAIHTAodJpo_gQflti8lqtZmP4kFCGQjiUwmUAeyvvyPkZ",
+          "after": "g3QAAAADZAAMYmxvY2tfbnVtYmVyYVpkAAlsb2dfaW5kZXhhAWQAEHRyYW5zYWN0aW9uX2hhc2h0AAAAA2QACl9fc3RydWN0X19kACJFbGl4aXIuR29kd29rZW5FeHBsb3Jlci5DaGFpbi5IYXNoZAAKYnl0ZV9jb3VudGEgZAAFYnl0ZXNtAAAAIGXqYMcpH1rsbp-G9rSvl_YodAn8cvZpda9iA3IdENQJ",
           "before": null,
-          "total_count": 16
+          "total_count": 3
         }
       }
     }
@@ -1696,13 +1698,17 @@ type RootQueryType {
         to_script_hash: "0x08c9937e412e135928fd6dec7255965ddd7df4d5a163564b60895100bb3b2f9e"
         start_block_number: 1
         end_block_number: 2624399
-        limit: 2
-        age_range_start: "2022-06-11T16:32:04"
-        age_range_end: "2022-06-11T16:32:54"
+        limit: 1
+        age_range_start: "2022-06-11T16:28:47Z"
+        age_range_end: "2022-06-11T16:29:01.455000Z"
+        sorter: [{ sort_type: ASC, sort_value: BLOCK_NUMBER }]
       }
     ) {
       entries {
         block_hash
+        block {
+          timestamp
+        }
         block_number
         type
         from_account_id
@@ -1712,7 +1718,6 @@ type RootQueryType {
           eth_address
         }
         to_account_id
-        updated_at
       }
   
       metadata {
@@ -1723,24 +1728,15 @@ type RootQueryType {
     }
   }
   
+  
   {
     "data": {
       "transactions": {
         "entries": [
           {
-            "block_hash": "0x23ae98d322fb7d0a991e5cf5f55a421040131b4423cf1c47965ddc30458aa3c5",
-            "block_number": 95495,
-            "from_account": {
-              "eth_address": "0x2088d0e35c23e7c344f96e57be19043d6e2a44f3",
-              "id": 14578,
-              "script_hash": "0x07cb90b74c9b22a6ff8357332b589e8dbfc3cb119d4535c76cc51c43ab9c5f9d"
+            "block": {
+              "timestamp": "2022-06-11T16:28:47.111000Z"
             },
-            "from_account_id": 14578,
-            "to_account_id": 2,
-            "type": "ETH_ADDRESS_REGISTRY",
-            "updated_at": "2022-06-11T16:32:54"
-          },
-          {
             "block_hash": "0xa89010460abfb53bf85fc74ae98480d3d6c1708c2ce8586aac549544289e5a23",
             "block_number": 95494,
             "from_account": {
@@ -1750,12 +1746,11 @@ type RootQueryType {
             },
             "from_account_id": 14578,
             "to_account_id": 2,
-            "type": "ETH_ADDRESS_REGISTRY",
-            "updated_at": "2022-06-11T16:32:04"
+            "type": "ETH_ADDRESS_REGISTRY"
           }
         ],
         "metadata": {
-          "after": "g3QAAAADZAAMYmxvY2tfbnVtYmVyYgABdQZkAARoYXNodAAAAANkAApfX3N0cnVjdF9fZAAiRWxpeGlyLkdvZHdva2VuRXhwbG9yZXIuQ2hhaW4uSGFzaGQACmJ5dGVfY291bnRhIGQABWJ5dGVzbQAAACB83ranDTslB0BzAXr7QxE-g_1Q9DwOZymXEuZVtgw5gGQABWluZGV4YQI=",
+          "after": "g3QAAAABZAAMYmxvY2tfbnVtYmVyYgABdQY=",
           "before": null,
           "total_count": 3
         }
@@ -1770,9 +1765,8 @@ type RootQueryType {
         from_eth_address: "0x2088d0e35c23e7c344f96e57be19043d6e2a44f3"
         start_block_number: 1
         end_block_number: 2624399
-        limit: 5
-        age_range_start: "2022-06-11T16:32:04"
-        age_range_end: "2022-06-11T16:32:54"
+        limit: 1
+        sorter: [{sort_type: ASC, sort_value: BLOCK_NUMBER}]
       }
     ) {
       entries {
@@ -1791,7 +1785,6 @@ type RootQueryType {
           id
           eth_address
         }
-        updated_at
       }
   
       metadata {
@@ -1807,8 +1800,8 @@ type RootQueryType {
       "transactions": {
         "entries": [
           {
-            "block_hash": "0x23ae98d322fb7d0a991e5cf5f55a421040131b4423cf1c47965ddc30458aa3c5",
-            "block_number": 95495,
+            "block_hash": "0x9e12e1de57b66f0d84c95a6a9369715f82d21bbf1ff943ae891739c6343ea781",
+            "block_number": 61049,
             "from_account": {
               "eth_address": "0x2088d0e35c23e7c344f96e57be19043d6e2a44f3",
               "id": 14578,
@@ -1816,91 +1809,18 @@ type RootQueryType {
             },
             "from_account_id": 14578,
             "to_account": {
-              "eth_address": null,
-              "id": 2,
-              "script_hash": "0x08c9937e412e135928fd6dec7255965ddd7df4d5a163564b60895100bb3b2f9e"
+              "eth_address": "0x07fc54ff9f92bfa3679104778252a1c42f7b48d9",
+              "id": 18576,
+              "script_hash": "0xaae0058ff21c2d8e2fc02821e12ef074f846ff66c0f1689020c48fbcc481677f"
             },
-            "to_account_id": 2,
-            "type": "ETH_ADDRESS_REGISTRY",
-            "updated_at": "2022-06-11T16:32:54"
-          },
-          {
-            "block_hash": "0x23ae98d322fb7d0a991e5cf5f55a421040131b4423cf1c47965ddc30458aa3c5",
-            "block_number": 95495,
-            "from_account": {
-              "eth_address": "0x2088d0e35c23e7c344f96e57be19043d6e2a44f3",
-              "id": 14578,
-              "script_hash": "0x07cb90b74c9b22a6ff8357332b589e8dbfc3cb119d4535c76cc51c43ab9c5f9d"
-            },
-            "from_account_id": 14578,
-            "to_account": {
-              "eth_address": null,
-              "id": 0,
-              "script_hash": "0x946d08cc356c4fe13bc49929f1f709611fe0a2aaa336efb579dad4ca197d1551"
-            },
-            "to_account_id": 0,
-            "type": "POLYJUICE_CREATOR",
-            "updated_at": "2022-06-11T16:32:54"
-          },
-          {
-            "block_hash": "0xa89010460abfb53bf85fc74ae98480d3d6c1708c2ce8586aac549544289e5a23",
-            "block_number": 95494,
-            "from_account": {
-              "eth_address": "0x2088d0e35c23e7c344f96e57be19043d6e2a44f3",
-              "id": 14578,
-              "script_hash": "0x07cb90b74c9b22a6ff8357332b589e8dbfc3cb119d4535c76cc51c43ab9c5f9d"
-            },
-            "from_account_id": 14578,
-            "to_account": {
-              "eth_address": null,
-              "id": 2,
-              "script_hash": "0x08c9937e412e135928fd6dec7255965ddd7df4d5a163564b60895100bb3b2f9e"
-            },
-            "to_account_id": 2,
-            "type": "ETH_ADDRESS_REGISTRY",
-            "updated_at": "2022-06-11T16:32:04"
-          },
-          {
-            "block_hash": "0xa89010460abfb53bf85fc74ae98480d3d6c1708c2ce8586aac549544289e5a23",
-            "block_number": 95494,
-            "from_account": {
-              "eth_address": "0x2088d0e35c23e7c344f96e57be19043d6e2a44f3",
-              "id": 14578,
-              "script_hash": "0x07cb90b74c9b22a6ff8357332b589e8dbfc3cb119d4535c76cc51c43ab9c5f9d"
-            },
-            "from_account_id": 14578,
-            "to_account": {
-              "eth_address": null,
-              "id": 0,
-              "script_hash": "0x946d08cc356c4fe13bc49929f1f709611fe0a2aaa336efb579dad4ca197d1551"
-            },
-            "to_account_id": 0,
-            "type": "POLYJUICE_CREATOR",
-            "updated_at": "2022-06-11T16:32:04"
-          },
-          {
-            "block_hash": "0xa89010460abfb53bf85fc74ae98480d3d6c1708c2ce8586aac549544289e5a23",
-            "block_number": 95494,
-            "from_account": {
-              "eth_address": "0x2088d0e35c23e7c344f96e57be19043d6e2a44f3",
-              "id": 14578,
-              "script_hash": "0x07cb90b74c9b22a6ff8357332b589e8dbfc3cb119d4535c76cc51c43ab9c5f9d"
-            },
-            "from_account_id": 14578,
-            "to_account": {
-              "eth_address": null,
-              "id": 2,
-              "script_hash": "0x08c9937e412e135928fd6dec7255965ddd7df4d5a163564b60895100bb3b2f9e"
-            },
-            "to_account_id": 2,
-            "type": "ETH_ADDRESS_REGISTRY",
-            "updated_at": "2022-06-11T16:32:04"
+            "to_account_id": 18576,
+            "type": "POLYJUICE"
           }
         ],
         "metadata": {
-          "after": null,
+          "after": "g3QAAAABZAAMYmxvY2tfbnVtYmVyYgAA7nk=",
           "before": null,
-          "total_count": 5
+          "total_count": 962
         }
       }
     }
@@ -2250,7 +2170,6 @@ type TokenTransfer {
   block_number: Int
   from_account: Account
   from_address: HashAddress
-  inserted_at: NaiveDateTime
   log_index: Int
   polyjuice: Polyjuice
   to_account: Account
@@ -2260,14 +2179,13 @@ type TokenTransfer {
   transaction: Transaction
   transaction_hash: HashFull
   udt: Udt
-  updated_at: NaiveDateTime
 }
 
 input TokenTransferInput {
   """Fetch the records after this cursor."""
   after: String
-  age_range_end: NaiveDateTime
-  age_range_start: NaiveDateTime
+  age_range_end: DateTime
+  age_range_start: DateTime
 
   """Fetch the records before this cursor."""
   before: String
@@ -2316,14 +2234,12 @@ type Transaction {
   from_account_id: Int
   hash: HashFull
   index: Int
-  inserted_at: NaiveDateTime
   nonce: Int
   polyjuice: Polyjuice
   polyjuice_creator: PolyjuiceCreator
   to_account: Account
   to_account_id: Int
   type: TransactionType
-  updated_at: NaiveDateTime
 }
 
 input TransactionInput {
@@ -2334,8 +2250,8 @@ input TransactionInput {
 input TransactionsInput {
   """Fetch the records after this cursor."""
   after: String
-  age_range_end: NaiveDateTime
-  age_range_start: NaiveDateTime
+  age_range_end: DateTime
+  age_range_start: DateTime
 
   """Fetch the records before this cursor."""
   before: String
@@ -2377,8 +2293,10 @@ enum TransactionType {
 type Udt {
   account: Account
   bridge_account_id: Int
+  contract_address_hash: HashAddress
   decimal: Int
   description: String
+  eth_type: EthType
   icon: String
   id: String
   name: String

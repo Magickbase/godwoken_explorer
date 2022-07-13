@@ -48,6 +48,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Block do
       from(t in Transaction)
       |> where([t], t.block_hash == ^hash)
       |> page_and_size(input)
+      |> order_by([t], [asc: t.index, asc: t.hash])
       |> Repo.all()
 
     {:ok, return}

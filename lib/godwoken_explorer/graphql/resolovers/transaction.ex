@@ -2,7 +2,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
   alias GodwokenExplorer.Repo
   alias GodwokenExplorer.{Account, Transaction, Block, Polyjuice, PolyjuiceCreator}
 
-  import GodwokenExplorer.Graphql.Resolvers.Common, only: [paginate_query: 3, query_with_age_range: 2]
+  import GodwokenExplorer.Graphql.Resolvers.Common, only: [paginate_query: 3, query_with_block_age_range: 2]
   import GodwokenExplorer.Graphql.Common, only: [cursor_order_sorter: 3]
   import Ecto.Query
 
@@ -41,10 +41,11 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
     to_script_hash = Map.get(input, :to_script_hash)
 
     from(t in Transaction)
+    |> join(:inner, [t], b in Block, as: :block, on: b.hash == t.block_hash)
     |> query_with_account_address(from_eth_address, to_eth_address)
     |> query_with_account_address(from_script_hash, to_script_hash)
     |> query_with_block_range(input)
-    |> query_with_age_range(input)
+    |> query_with_block_age_range(input)
     |> transactions_order_by(input)
     |> paginate_query(input, %{
       cursor_fields: paginate_cursor(input),

@@ -48,8 +48,8 @@ defmodule GodwokenExplorer.Graphql.Types.Common do
   end
 
   input_object :age_range_input do
-    field :age_range_start, :naive_datetime
-    field :age_range_end, :naive_datetime
+    field :age_range_start, :datetime
+    field :age_range_end, :datetime
   end
 
   input_object :block_range_input do

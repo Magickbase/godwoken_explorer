@@ -2,23 +2,23 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Common do
   alias GodwokenExplorer.PaginateRepo
   import Ecto.Query
 
-  def query_with_age_range({:error, _} = error, _input), do: error
+  def query_with_block_age_range({:error, _} = error, _input), do: error
 
-  def query_with_age_range(query, input) do
+  def query_with_block_age_range(query, input) do
     age_range_start = Map.get(input, :age_range_start)
     age_range_end = Map.get(input, :age_range_end)
 
     query =
       if age_range_start do
         query
-        |> where([t], t.updated_at >= ^age_range_start)
+        |> where([t], as(:block).timestamp >= ^age_range_start)
       else
         query
       end
 
     if age_range_end do
       query
-      |> where([t], t.updated_at <= ^age_range_end)
+      |> where([t], as(:block).timestamp <= ^age_range_end)
     else
       query
     end
