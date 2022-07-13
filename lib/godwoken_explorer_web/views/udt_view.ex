@@ -84,7 +84,9 @@ defmodule GodwokenExplorer.UDTView do
       type == "native" ->
         from(
           u in UDT,
-          where: u.type == :native and u.eth_type == :erc20 and u.id not in ^bridge_account_ids,
+          where:
+            u.type == :native and u.eth_type == :erc20 and u.id not in ^bridge_account_ids and
+              not is_nil(u.name),
           order_by: [asc: :name]
         )
     end
