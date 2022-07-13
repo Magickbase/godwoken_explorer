@@ -347,11 +347,18 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
     field :value, :decimal
     field :price, :decimal
     field :bridge_account_id, :integer
+    field :contract_address_hash, :hash_address
     field :type, :udt_type
-
+    field :eth_type, :eth_type
     field :account, :account do
       resolve(&Resolvers.UDT.account/3)
     end
+  end
+
+  enum :eth_type do
+    value(:erc20)
+    value(:erc721)
+    value(:erc1155)
   end
 
   enum :udt_type do

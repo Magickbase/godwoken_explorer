@@ -44,10 +44,9 @@ defmodule GodwokenExplorer.Graphql.Resolvers.AccountUDT do
     query =
       from(cu in CurrentUDTBalance)
       |> join(:inner, [cu], a1 in subquery(squery), on: cu.address_hash == a1.eth_address)
-      |> join(:inner, [cu, _a1], a2 in Account,
-        on: cu.token_contract_address_hash == a2.eth_address
+      |> join(:inner, [cu], u in UDT,
+        on: u.contract_address_hash == cu.token_contract_address_hash
       )
-      |> join(:inner, [_cu, _a1, a2], u in UDT, on: u.bridge_account_id == a2.id)
       |> order_by([cu], desc: cu.updated_at)
 
     if is_nil(token_contract_address_hash) do
@@ -123,10 +122,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.AccountUDT do
     else
       result =
         from(u in UDT)
-        |> join(:inner, [u], a in Account,
-          on: a.eth_address == ^token_contract_address_hash and u.bridge_account_id == a.id
-        )
-        |> order_by([u], desc: u.updated_at)
+        |> where([u], u.contract_address_hash == ^token_contract_address_hash)
         |> first()
         |> Repo.all()
 
