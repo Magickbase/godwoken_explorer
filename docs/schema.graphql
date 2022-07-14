@@ -2105,6 +2105,61 @@ type RootQueryType {
       }
     }
   }
+  
+  holders example:
+  query {
+    udts(
+      input: {
+        limit: 1
+        sorter: [
+          { sort_type: DESC, sort_value: EX_HOLDERS }
+          { sort_type: ASC, sort_value: NAME }
+        ]
+      }
+    ) {
+      entries {
+        id
+        name
+        holders_count
+        type
+        supply
+        account {
+          eth_address
+          script_hash
+        }
+      }
+      metadata {
+        total_count
+        after
+        before
+      }
+    }
+  }
+  
+  {
+    "data": {
+      "udts": {
+        "entries": [
+          {
+            "account": {
+              "eth_address": null,
+              "script_hash": "0x595cc14e574a708dc70a320d2026f79374246ed4659261131cdda7dd5814b5ca"
+            },
+            "holders_count": 13563,
+            "id": "1",
+            "name": "pCKB",
+            "supply": "13930369823571892421855103",
+            "type": "BRIDGE"
+          }
+        ],
+        "metadata": {
+          "after": "g3QAAAABZAACaWRhAQ==",
+          "before": null,
+          "total_count": 14
+        }
+      }
+    }
+  }
   """
   udts(input: UdtsInput = {limit: 20, sorter: [{sort_type: ASC, sort_value: NAME}]}): PaginateUdts
 }
@@ -2293,6 +2348,7 @@ type Udt {
   decimal: Int
   description: String
   eth_type: EthType
+  holders_count: Int
   icon: String
   id: String
   name: String
@@ -2327,6 +2383,7 @@ input UdtsInput {
 }
 
 enum UdtsSorter {
+  EX_HOLDERS
   ID
   NAME
   SUPPLY

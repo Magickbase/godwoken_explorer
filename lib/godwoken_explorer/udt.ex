@@ -32,6 +32,8 @@ defmodule GodwokenExplorer.UDT do
       define_field: false
     )
 
+    field(:holders_count, :integer, virtual: true)
+
     timestamps()
   end
 

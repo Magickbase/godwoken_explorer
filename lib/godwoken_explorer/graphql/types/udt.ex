@@ -317,6 +317,61 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         }
       }
     }
+
+    holders example:
+    query {
+      udts(
+        input: {
+          limit: 1
+          sorter: [
+            { sort_type: DESC, sort_value: EX_HOLDERS }
+            { sort_type: ASC, sort_value: NAME }
+          ]
+        }
+      ) {
+        entries {
+          id
+          name
+          holders_count
+          type
+          supply
+          account {
+            eth_address
+            script_hash
+          }
+        }
+        metadata {
+          total_count
+          after
+          before
+        }
+      }
+    }
+
+    {
+      "data": {
+        "udts": {
+          "entries": [
+            {
+              "account": {
+                "eth_address": null,
+                "script_hash": "0x595cc14e574a708dc70a320d2026f79374246ed4659261131cdda7dd5814b5ca"
+              },
+              "holders_count": 13563,
+              "id": "1",
+              "name": "pCKB",
+              "supply": "13930369823571892421855103",
+              "type": "BRIDGE"
+            }
+          ],
+          "metadata": {
+            "after": "g3QAAAABZAACaWRhAQ==",
+            "before": null,
+            "total_count": 14
+          }
+        }
+      }
+    }
     """
     field :udts, :paginate_udts do
       arg(:input, :udts_input, default_value: %{})
@@ -350,6 +405,10 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
     field :account, :account do
       resolve(&Resolvers.UDT.account/3)
     end
+
+    field :holders_count, :integer do
+      resolve(&Resolvers.UDT.holders_count/3)
+    end
   end
 
   enum :eth_type do
@@ -367,7 +426,7 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
     value(:id)
     value(:name)
     value(:supply)
-    # value(:holders)
+    value(:ex_holders)
   end
 
   input_object :udt_input do
