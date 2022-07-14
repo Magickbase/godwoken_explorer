@@ -256,7 +256,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.AccountUDT do
     account_query =
       if token_contract_address_hash do
         from(a in Account, where: a.eth_address == ^token_contract_address_hash)
-        |> join(:inner, [a], u in UDT, on: a.id == u.bridge_account_id)
+        |> join(:inner, [a], u in UDT, on: a.eth_address == u.contract_address_hash)
         |> join(:inner, [a, u], a2 in Account, on: a2.id == u.id)
         |> select([a, _, a2], %{
           token_contract_address_hash: a.eth_address,

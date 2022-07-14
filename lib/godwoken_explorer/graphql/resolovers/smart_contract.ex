@@ -21,10 +21,10 @@ defmodule GodwokenExplorer.Graphql.Resolvers.SmartContract do
     account =
       case {contract_address, script_hash} do
         {nil, script_hash} when not is_nil(script_hash) ->
-          Account.search(script_hash)
+          Repo.get_by(Account, script_hash: script_hash)
 
         {contract_address, _} when not is_nil(contract_address) ->
-          Account.search(contract_address)
+          Repo.get_by(Account, eth_address: contract_address)
 
         {nil, nil} ->
           nil

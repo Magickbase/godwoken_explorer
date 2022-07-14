@@ -135,28 +135,33 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
     end
   end
 
-  defp paginate_cursor(input) do
-    sorter = Map.get(input, :sorter)
+  defp paginate_cursor(_input) do
     [:id]
-    # if sorter do
-    #   sorter
-    #   |> Enum.map(fn e ->
-    #     case e do
-    #       %{sort_type: st, sort_value: :ex_holders} ->
-    #         {{:holders, :ex_holders}, st}
-
-    #       _ ->
-    #         case cursor_order_sorter([e], :cursor, @sorter_fields) do
-    #           [h | _] -> h
-    #           _ -> :skip
-    #         end
-    #     end
-    #   end)
-    #   |> Enum.filter(&(&1 != :skip))
-    # else
-    #   [:id]
-    # end
   end
+
+  # defp paginate_cursor(input) do
+  #   sorter = Map.get(input, :sorter)
+
+  #   if sorter do
+  #     sorter
+  #     |> Enum.map(fn e ->
+  #       case e do
+  #         %{sort_type: st, sort_value: :ex_holders} ->
+  #           {{:holders, :ex_holders}, st}
+
+  #         _ ->
+  #           case cursor_order_sorter([e], :cursor, @sorter_fields) do
+  #             [h | _] -> h
+  #             _ -> :skip
+  #           end
+  #       end
+  #     end)
+  #     |> Enum.filter(&(&1 != :skip))
+  #     |> IO.inspect()
+  #   else
+  #     [:id]
+  #   end
+  # end
 
   def account(%UDT{id: id} = _parent, _args, _resolution) do
     return =

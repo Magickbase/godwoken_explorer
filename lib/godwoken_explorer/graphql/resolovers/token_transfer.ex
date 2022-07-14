@@ -52,7 +52,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.TokenTransfer do
 
   def from_account(%TokenTransfer{from_address_hash: from_address_hash}, _args, _resolution) do
     if from_address_hash do
-      return = Account.search(from_address_hash)
+      return = Repo.get_by(Account, eth_address: from_address_hash)
       {:ok, return}
     else
       {:ok, nil}
@@ -61,7 +61,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.TokenTransfer do
 
   def to_account(%TokenTransfer{to_address_hash: to_address_hash}, _args, _resolution) do
     if to_address_hash do
-      return = Account.search(to_address_hash)
+      return = Repo.get_by(Account, eth_address: to_address_hash)
       {:ok, return}
     else
       {:ok, nil}

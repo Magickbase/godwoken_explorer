@@ -39,7 +39,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Block do
   end
 
   def account(%Block{producer_address: producer_address}, _args, _resolution) do
-    return = Account.search(producer_address)
+    return = Repo.get_by(Account, eth_address: producer_address)
     {:ok, return}
   end
 
@@ -48,7 +48,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Block do
       from(t in Transaction)
       |> where([t], t.block_hash == ^hash)
       |> page_and_size(input)
-      |> order_by([t], [asc: t.index, asc: t.hash])
+      |> order_by([t], asc: t.index, asc: t.hash)
       |> Repo.all()
 
     {:ok, return}

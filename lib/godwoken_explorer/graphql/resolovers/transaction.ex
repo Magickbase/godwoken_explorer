@@ -2,7 +2,9 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
   alias GodwokenExplorer.Repo
   alias GodwokenExplorer.{Account, Transaction, Block, Polyjuice, PolyjuiceCreator}
 
-  import GodwokenExplorer.Graphql.Resolvers.Common, only: [paginate_query: 3, query_with_block_age_range: 2]
+  import GodwokenExplorer.Graphql.Resolvers.Common,
+    only: [paginate_query: 3, query_with_block_age_range: 2]
+
   import GodwokenExplorer.Graphql.Common, only: [cursor_order_sorter: 3]
   import Ecto.Query
 
@@ -68,7 +70,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
           p
 
         {from_address, nil} ->
-          from_account = Account.search(from_address)
+          from_account = Repo.get_by(Account, eth_address: from_address)
 
           if from_account do
             {from_account, nil}
@@ -77,7 +79,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
           end
 
         {nil, to_address} ->
-          to_account = Account.search(to_address)
+          to_account = Repo.get_by(Account, eth_address: to_address)
 
           if to_account do
             {nil, to_account}
@@ -86,8 +88,8 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
           end
 
         {from_address, to_address} ->
-          from_account = Account.search(from_address)
-          to_account = Account.search(to_address)
+          from_account = Repo.get_by(Account, eth_address: from_address)
+          to_account = Repo.get_by(Account, eth_address: to_address)
 
           case {from_account, to_account} do
             {nil, nil} ->
