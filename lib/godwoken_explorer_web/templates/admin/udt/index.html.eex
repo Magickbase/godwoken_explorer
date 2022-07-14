@@ -27,6 +27,16 @@
             <%= filter_string_input(:udt, :script_hash, @conn.params) %>
           </div>
 
+          <div class="field">
+            <label>Eth Type</label>
+            <%= filter_assoc_select(:udt, :eth_type, [{"erc20", :erc20}, {"erc721", :erc721}, {"erc1155", :erc1155}], @conn.params) %>
+          </div>
+
+          <div class="field">
+            <label>Contract Address</label>
+            <%= filter_select(:udt, :contract_address_hash, @conn.params) %>
+            <%= filter_string_input(:udt, :contract_address_hash, @conn.params) %>
+          </div>
 
         <button type="submit" class="torch-button">Search</button>
         <%= link "Clear Filters", to: Routes.admin_udt_path(@conn, :index) %>
