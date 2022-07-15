@@ -3,7 +3,8 @@ defmodule GodwokenExplorer.Factory do
 
   use GodwokenExplorer.UtilFactory
   use GodwokenExplorer.AccountFactory
-  use GodwokenExplorer.AccountUDTFactory
+  use GodwokenExplorer.CurrentBridgedUDTBalanceFactory
+  use GodwokenExplorer.CurrentUDTBalanceFactory
   use GodwokenExplorer.BlockFactory
   use GodwokenExplorer.LogFactory
   use GodwokenExplorer.PolyjuiceFactory

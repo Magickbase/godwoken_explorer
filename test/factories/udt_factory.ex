@@ -15,7 +15,7 @@ defmodule GodwokenExplorer.UDTFactory do
         }
       end
 
-      def udt_factory do
+      def native_udt_factory do
         id = sequence(:id, & &1)
 
         %UDT{
@@ -23,7 +23,7 @@ defmodule GodwokenExplorer.UDTFactory do
           script_hash: block_hash(),
           type: :native,
           name: sequence("UDT", &"UDT#{&1}"),
-          bridge_account_id: id
+          contract_address_hash: address_hash()
         }
       end
     end

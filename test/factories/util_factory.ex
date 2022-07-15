@@ -34,6 +34,15 @@ defmodule GodwokenExplorer.UtilFactory do
         transaction_hash
       end
 
+      def udt_script_hash do
+        {:ok, udt_script_hssh} =
+          "udt_script_hash"
+          |> sequence(& &1)
+          |> Hash.Full.cast()
+
+        udt_script_hssh
+      end
+
       def transaction_input do
         data(:transaction_input)
       end

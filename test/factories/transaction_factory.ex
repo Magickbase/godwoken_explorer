@@ -10,6 +10,7 @@ defmodule GodwokenExplorer.TransactionFactory do
           args:
             "0x01000000060000001600000000000000000000000000000001000000000000000000000000000000",
           hash: transaction_hash(),
+          eth_hash: transaction_hash(),
           nonce: Enum.random(1..1_000),
           type: :polyjuice
         }
