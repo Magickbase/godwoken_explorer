@@ -73,6 +73,7 @@ config :godwoken_explorer, Oban,
      crontab: [
        {"01 00 * * *", GodwokenIndexer.Worker.RefreshUDTSupply},
        {"10 00 * * *", GodwokenIndexer.Worker.DailyStat},
+       {"*/2 * * * *", GodwokenIndexer.Worker.CheckFastWithdrawal},
        {"*/2 * * * *", GodwokenIndexer.Worker.CheckLostAccount},
        {"*/10 * * * *", GodwokenIndexer.Worker.CheckContractCode},
        {"* */4 * * *", GodwokenIndexer.Worker.RefreshNativeUDTSupply}
