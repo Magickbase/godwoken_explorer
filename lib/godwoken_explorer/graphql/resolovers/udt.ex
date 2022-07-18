@@ -90,13 +90,13 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
       from(cbub in CurrentBridgedUDTBalance)
       |> group_by([cbub], cbub.udt_id)
       # |> order_by([c], desc: count(c.id))
-      |> select([c], %{id: c.udt_id, ex_holders: count(c.id)})
+      |> select([c], %{id: c.udt_id, holders_count: count(c.id)})
 
     if sorter do
-      ex_holders =
+      holders_count =
         Enum.find(sorter, fn e ->
           case e do
-            %{sort_type: _st, sort_value: :ex_holders} ->
+            %{sort_type: _st, sort_value: :ex_holders_count} ->
               true
 
             _ ->
@@ -104,17 +104,20 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
           end
         end)
 
-      if ex_holders do
+      if holders_count do
         query =
           query
           |> join(:inner, [u], h in subquery(holders_query), on: u.id == h.id, as: :holders)
+          |> select_merge([_u, holders: h], %{holders_count: h.holders_count})
 
         order_params =
           sorter
           |> Enum.map(fn e ->
             case e do
-              %{sort_type: st, sort_value: :ex_holders} ->
-                {st, dynamic([_u, holders: h], h.ex_holders)}
+              %{sort_type: st, sort_value: :ex_holders_count} ->
+                # {st, :holders_count}
+
+                {st, dynamic([_u, holders: h], h.holders_count)}
 
               _ ->
                 case cursor_order_sorter([e], :order, @sorter_fields) do
@@ -135,33 +138,28 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
     end
   end
 
-  defp paginate_cursor(_input) do
-    [:id]
+  defp paginate_cursor(input) do
+    sorter = Map.get(input, :sorter)
+
+    if sorter do
+      sorter
+      |> Enum.map(fn e ->
+        case e do
+          %{sort_type: st, sort_value: :holders_count} ->
+            {:holders_count, st}
+
+          _ ->
+            case cursor_order_sorter([e], :cursor, @sorter_fields) do
+              [h | _] -> h
+              _ -> :skip
+            end
+        end
+      end)
+      |> Enum.filter(&(&1 != :skip))
+    else
+      [:id]
+    end
   end
-
-  # defp paginate_cursor(input) do
-  #   sorter = Map.get(input, :sorter)
-
-  #   if sorter do
-  #     sorter
-  #     |> Enum.map(fn e ->
-  #       case e do
-  #         %{sort_type: st, sort_value: :ex_holders} ->
-  #           {{:holders, :ex_holders}, st}
-
-  #         _ ->
-  #           case cursor_order_sorter([e], :cursor, @sorter_fields) do
-  #             [h | _] -> h
-  #             _ -> :skip
-  #           end
-  #       end
-  #     end)
-  #     |> Enum.filter(&(&1 != :skip))
-  #     |> IO.inspect()
-  #   else
-  #     [:id]
-  #   end
-  # end
 
   def account(%UDT{id: id} = _parent, _args, _resolution) do
     return =

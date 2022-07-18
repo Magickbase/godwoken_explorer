@@ -324,7 +324,7 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         input: {
           limit: 1
           sorter: [
-            { sort_type: DESC, sort_value: EX_HOLDERS }
+            { sort_type: DESC, sort_value: EX_HOLDERS_COUNT }
             { sort_type: ASC, sort_value: NAME }
           ]
         }
@@ -426,7 +426,7 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
     value(:id)
     value(:name)
     value(:supply)
-    value(:ex_holders)
+    value(:ex_holders_count)
   end
 
   input_object :udt_input do
