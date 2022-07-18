@@ -2198,7 +2198,6 @@ input SmartContractsInput {
 }
 
 enum SmartContractsSorter {
-  EX_BALANCE
   EX_TX_COUNT
   ID
   NAME

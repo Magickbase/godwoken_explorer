@@ -175,7 +175,7 @@ defmodule GodwokenExplorer.Graphql.Types.SmartContract do
   enum :smart_contracts_sorter do
     value(:id)
     value(:name)
-    value(:ex_balance)
+    # value(:ex_balance)
     value(:ex_tx_count)
   end
 
