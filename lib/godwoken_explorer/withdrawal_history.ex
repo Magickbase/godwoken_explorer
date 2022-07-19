@@ -12,9 +12,6 @@ defmodule GodwokenExplorer.WithdrawalHistory do
     field :layer1_output_index, :integer
     field :layer1_tx_hash, Hash.Full
     field :owner_lock_hash, Hash.Full
-    field :payment_lock_hash, Hash.Full
-    field :sell_amount, :decimal
-    field :sell_capacity, :decimal
     field :udt_script_hash, Hash.Full
     field :amount, :decimal
     field :udt_id, :integer

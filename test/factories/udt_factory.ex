@@ -6,8 +6,8 @@ defmodule GodwokenExplorer.UDTFactory do
       def ckb_udt_factory do
         %UDT{
           id: 1,
-          name: "CKB",
-          decimal: 8,
+          name: "pCKB",
+          decimal: 18,
           script_hash: "0x0000000000000000000000000000000000000000000000000000000000000000",
           type: :bridge,
           supply: Enum.random(1_000_000_000..1_000_000_000),
@@ -16,14 +16,16 @@ defmodule GodwokenExplorer.UDTFactory do
       end
 
       def native_udt_factory do
-        id = sequence(:id, & &1)
+        id = sequence(:id, & &1, start_at: 1000)
 
         %UDT{
           id: id,
           script_hash: block_hash(),
           type: :native,
           name: sequence("UDT", &"UDT#{&1}"),
-          contract_address_hash: address_hash()
+          contract_address_hash: address_hash(),
+          decimal: 18,
+          supply: Enum.random(1_000_000_000..1_000_000_000)
         }
       end
     end

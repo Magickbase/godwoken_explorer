@@ -8,11 +8,8 @@ defmodule GodwokenExplorer.WithdrawalRequestView do
     [
       :account_script_hash,
       :value,
-      :ckb,
+      :capacity,
       :owner_lock_hash,
-      :payment_lock_hash,
-      :sell_value,
-      :sell_ckb,
       :sudt_script_hash,
       :udt_id,
       :block_hash,
@@ -37,27 +34,8 @@ defmodule GodwokenExplorer.WithdrawalRequestView do
     to_string(withdrawal_request.owner_lock_hash)
   end
 
-  def payment_lock_hash(withdrawal_request, _connn) do
-    to_string(withdrawal_request.payment_lock_hash)
-  end
-
-  def ckb(withdrawal_request, _connn) do
-    balance_to_view(withdrawal_request.capacity, 8)
-  end
-
-  def sell_ckb(withdrawal_request, _connn) do
-    balance_to_view(withdrawal_request.sell_capacity, 8)
-  end
-
   def value(withdrawal_request, _connn) do
     balance_to_view(withdrawal_request.amount, UDT.get_decimal(withdrawal_request.udt_id) || 0)
-  end
-
-  def sell_value(withdrawal_request, _connn) do
-    balance_to_view(
-      withdrawal_request.sell_amount,
-      UDT.get_decimal(withdrawal_request.udt_id) || 0
-    )
   end
 
   def relationships do

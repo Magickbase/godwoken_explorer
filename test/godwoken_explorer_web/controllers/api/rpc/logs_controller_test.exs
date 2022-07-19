@@ -273,7 +273,7 @@ defmodule GodwokenExplorerWeb.API.RPC.LogsControllerTest do
     end
 
     test "with a valid contract address", %{conn: conn} do
-      contract = insert(:polyjuice_contract)
+      contract = insert(:polyjuice_contract_account)
 
       block = insert(:block)
 

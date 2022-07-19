@@ -184,7 +184,7 @@ defmodule GodwokenExplorerWeb.API.RPC.AccountControllerTest do
 
     test "with a valid address", %{conn: conn} do
       user = insert(:user)
-      contract = insert(:polyjuice_contract)
+      contract = insert(:polyjuice_contract_account)
       block = insert(:block)
 
       transaction =
@@ -295,7 +295,7 @@ defmodule GodwokenExplorerWeb.API.RPC.AccountControllerTest do
     test "returns all the required fields", %{conn: conn} do
       user = insert(:user)
       user2 = insert(:user)
-      contract = insert(:polyjuice_contract)
+      contract = insert(:polyjuice_contract_account)
 
       udt =
         insert(:native_udt,

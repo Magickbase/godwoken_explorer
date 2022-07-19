@@ -1,5 +1,4 @@
 defmodule GodwokenExplorerWeb.API.SearchControllerTest do
-  use GodwokenExplorer, :schema
   use GodwokenExplorerWeb.ConnCase
 
   describe "index" do
@@ -7,9 +6,7 @@ defmodule GodwokenExplorerWeb.API.SearchControllerTest do
       conn =
         get(
           conn,
-          Routes.search_path(conn, :index,
-            keyword: 932955726849138728
-          )
+          Routes.search_path(conn, :index, keyword: 932_955_726_849_138_728)
         )
 
       assert json_response(conn, 404) ==
