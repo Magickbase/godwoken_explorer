@@ -359,12 +359,16 @@ defmodule GodwokenExplorer.Chain do
   @spec number_to_block(Block.block_number(), []) ::
           {:ok, Block.t()} | {:error, :not_found}
   def number_to_block(number, options \\ []) when is_list(options) do
-    Block
-    |> where(number: ^number)
-    |> Repo.one()
-    |> case do
-      nil -> {:error, :not_found}
-      block -> {:ok, block}
+    try do
+      Block
+      |> where(number: ^number)
+      |> Repo.one()
+      |> case do
+        nil -> {:error, :not_found}
+        block -> {:ok, block}
+      end
+    rescue
+      _ -> {:error, :not_found}
     end
   end
 
@@ -487,15 +491,9 @@ defmodule GodwokenExplorer.Chain do
         options \\ []
       )
       when is_list(options) do
-    PendingTransaction
-    |> where(hash: ^hash)
-    |> Repo.one()
-    |> case do
-      nil ->
-        {:error, :not_found}
-
-      transaction ->
-        {:ok, transaction}
+    case hash |> to_string() |> PendingTransaction.find_by_hash() do
+      %PendingTransaction{} = transaction -> {:ok, transaction}
+      _ -> {:error, :not_found}
     end
   end
 
