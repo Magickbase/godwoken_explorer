@@ -286,6 +286,58 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
         }
       }
     }
+
+    combine-example:
+    query {
+      transactions(
+        input: {
+          from_eth_address: "0x2088d0e35c23e7c344f96e57be19043d6e2a44f3"
+          to_eth_address: "0x2088d0e35c23e7c344f96e57be19043d6e2a44f3"
+          combine_from_to: false
+          start_block_number: 1
+          end_block_number: 2624399
+          limit: 1
+          sorter: [{ sort_type: ASC, sort_value: BLOCK_NUMBER }]
+        }
+      ) {
+        entries {
+          block_hash
+          block_number
+          type
+          from_account_id
+          from_account {
+            script_hash
+            id
+            eth_address
+          }
+          to_account_id
+          to_account {
+            script_hash
+            id
+            eth_address
+          }
+        }
+
+        metadata {
+          total_count
+          before
+          after
+        }
+      }
+    }
+
+    {
+      "data": {
+        "transactions": {
+          "entries": [],
+          "metadata": {
+            "after": null,
+            "before": null,
+            "total_count": 0
+          }
+        }
+      }
+    }
     """
     field :transactions, :paginate_trasactions do
       arg(:input, :transactions_input, default_value: %{})
@@ -361,6 +413,11 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
     field :to_eth_address, :hash_address
     field :from_script_hash, :hash_full
     field :to_script_hash, :hash_full
+
+    @desc """
+    if combine_from_to is true, then from_address and to_address are combined into query condition like `address = from_address OR address = to_address`
+    """
+    field :combine_from_to, :boolean, default_value: true
 
     field :sorter, list_of(:transactions_sorter_input),
       default_value: [

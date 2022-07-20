@@ -44,8 +44,8 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
 
     from(t in Transaction)
     |> join(:inner, [t], b in Block, as: :block, on: b.hash == t.block_hash)
-    |> query_with_account_address(from_eth_address, to_eth_address)
-    |> query_with_account_address(from_script_hash, to_script_hash)
+    |> query_with_account_address(input, from_eth_address, to_eth_address)
+    |> query_with_account_address(input, from_script_hash, to_script_hash)
     |> query_with_block_range(input)
     |> query_with_block_age_range(input)
     |> transactions_order_by(input)
@@ -56,14 +56,14 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
     |> do_transactions()
   end
 
-  defp do_transactions({:error, {:not_found_account, []}}), do: {:ok, nil}
+  defp do_transactions({:error, {:not_found, []}}), do: {:ok, nil}
   defp do_transactions({:error, _} = error), do: error
 
   defp do_transactions(result) do
     {:ok, result}
   end
 
-  defp query_with_account_address(query, from_address, to_address) do
+  defp query_with_account_address(query, input, from_address, to_address) do
     {from_account, to_account} =
       case {from_address, to_address} do
         {nil, nil} = p ->
@@ -107,39 +107,44 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
       end
 
     query
-    |> process_from_account(from_account)
-    |> process_to_account(to_account)
+    |> process_from_to_account(input, from_account, to_account)
   end
 
-  defp process_from_account({:error, _} = error, _), do: error
+  defp process_from_to_account({:error, _} = error, _, _, _), do: error
 
-  defp process_from_account(query, from_account) do
-    case from_account do
-      :not_found ->
-        {:error, :not_found_from_account}
+  defp process_from_to_account(query, input, from_account, to_account) do
+    case {from_account, to_account} do
+      {:not_found, _} ->
+        {:error, :not_found}
 
-      nil ->
+      {_, :not_found} ->
+        {:error, :not_found}
+
+      {nil, nil} ->
         query
 
-      _ ->
-        query
-        |> where([t], t.from_account_id == ^from_account.id)
-    end
-  end
-
-  defp process_to_account({:error, _} = error, _), do: error
-
-  defp process_to_account(query, to_account) do
-    case to_account do
-      :not_found ->
-        {:error, :not_found_to_account}
-
-      nil ->
-        query
-
-      _ ->
+      {nil, to_account} ->
         query
         |> where([t], t.to_account_id == ^to_account.id)
+
+      {from_account, nil} ->
+        query
+        |> where([t], t.from_account_id == ^from_account.id)
+
+      {from_account, to_account} ->
+        if input[:combine_from_to] do
+          query
+          |> where(
+            [t],
+            t.to_account_id == ^to_account.id or t.from_account_id == ^from_account.id
+          )
+        else
+          query
+          |> where(
+            [t],
+            t.to_account_id == ^to_account.id and t.from_account_id == ^from_account.id
+          )
+        end
     end
   end
 

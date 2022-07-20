@@ -1825,8 +1825,60 @@ type RootQueryType {
       }
     }
   }
+  
+  combine-example:
+  query {
+    transactions(
+      input: {
+        from_eth_address: "0x2088d0e35c23e7c344f96e57be19043d6e2a44f3"
+        to_eth_address: "0x2088d0e35c23e7c344f96e57be19043d6e2a44f3"
+        combine_from_to: false
+        start_block_number: 1
+        end_block_number: 2624399
+        limit: 1
+        sorter: [{ sort_type: ASC, sort_value: BLOCK_NUMBER }]
+      }
+    ) {
+      entries {
+        block_hash
+        block_number
+        type
+        from_account_id
+        from_account {
+          script_hash
+          id
+          eth_address
+        }
+        to_account_id
+        to_account {
+          script_hash
+          id
+          eth_address
+        }
+      }
+  
+      metadata {
+        total_count
+        before
+        after
+      }
+    }
+  }
+  
+  {
+    "data": {
+      "transactions": {
+        "entries": [],
+        "metadata": {
+          "after": null,
+          "before": null,
+          "total_count": 0
+        }
+      }
+    }
+  }
   """
-  transactions(input: TransactionsInput = {limit: 20, sorter: [{sort_type: DESC, sort_value: BLOCK_NUMBER}, {sort_type: DESC, sort_value: INDEX}, {sort_type: ASC, sort_value: HASH}]}): PaginateTrasactions
+  transactions(input: TransactionsInput = {combine_from_to: true, limit: 20, sorter: [{sort_type: DESC, sort_value: BLOCK_NUMBER}, {sort_type: DESC, sort_value: INDEX}, {sort_type: ASC, sort_value: HASH}]}): PaginateTrasactions
 
   """
   function: get udt by contract address
@@ -2305,6 +2357,12 @@ input TransactionsInput {
 
   """Fetch the records before this cursor."""
   before: String
+
+  """
+  if combine_from_to is true, then from_address and to_address are combined into
+  query condition like `address = from_address OR address = to_address`
+  """
+  combine_from_to: Boolean = true
 
   """argument: the end of block number(inclusive) for search query"""
   end_block_number: Int
