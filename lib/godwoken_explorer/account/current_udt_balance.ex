@@ -79,8 +79,7 @@ defmodule GodwokenExplorer.Account.CurrentUDTBalance do
       |> Repo.all()
 
     (bridged_udt_balances ++ udt_balances)
-    |> Enum.sort_by(&Map.fetch(&1, :updated_at))
-    |> Enum.reverse()
+    |> Enum.sort_by(&Map.fetch(&1, :updated_at), :desc)
     |> Enum.uniq_by(&Map.fetch(&1, :id))
     |> Enum.map(fn record ->
       record
@@ -122,8 +121,7 @@ defmodule GodwokenExplorer.Account.CurrentUDTBalance do
         |> Repo.all()
 
       (bridged_results ++ results)
-      |> Enum.sort_by(&Map.fetch(&1, :updated_at))
-      |> Enum.reverse()
+      |> Enum.sort_by(&Map.fetch(&1, :updated_at), :desc)
       |> Enum.uniq_by(&Map.fetch(&1, :address_hash))
     else
       bridged_results
