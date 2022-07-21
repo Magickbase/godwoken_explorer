@@ -103,6 +103,22 @@ defmodule GodwokenExplorer.UDT do
     end
   end
 
+  def ckb_bridge_account_id do
+    if FastGlobal.get(:ckb_bridge_account_id) do
+      FastGlobal.get(:ckb_bridge_account_id)
+    else
+      with %__MODULE__{bridge_account_id: bridge_account_id} when not is_nil(bridge_account_id) <-
+             Repo.get(__MODULE__, ckb_account_id()) do
+        FastGlobal.put(:ckb_bridge_account_id, bridge_account_id)
+
+        bridge_account_id
+      else
+        _ ->
+          nil
+      end
+    end
+  end
+
   # TODO unused function
   def find_by_name_or_token(keyword) do
     from(u in UDT,
