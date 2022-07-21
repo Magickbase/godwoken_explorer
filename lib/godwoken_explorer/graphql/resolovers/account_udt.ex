@@ -304,7 +304,28 @@ defmodule GodwokenExplorer.Graphql.Resolvers.AccountUDT do
 
         {:ok, result}
       else
-        {:error, :need_token_contract_address_hash_or_udt_script_hash}
+        cus =
+          from(cu in CurrentUDTBalance)
+          |> where(
+            [cu],
+            cu.address_hash in ^address_hashes
+          )
+          |> Repo.all()
+
+        cbus =
+          from(cbu in CurrentBridgedUDTBalance)
+          |> where(
+            [cbu],
+            cbu.address_hash in ^address_hashes
+          )
+          |> Repo.all()
+
+        result =
+          (cbus ++ cus)
+          |> Enum.sort_by(&Map.fetch(&1, :updated_at))
+          |> Enum.uniq_by(&Map.fetch(&1, :address_hash))
+
+        {:ok, result}
       end
     end
   end
