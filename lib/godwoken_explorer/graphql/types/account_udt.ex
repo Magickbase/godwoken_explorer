@@ -374,7 +374,7 @@ defmodule GodwokenExplorer.Graphql.Types.AccountUDT do
       resolve(&Resolvers.AccountUDT.account/3)
     end
 
-    import_fields(:ecto_datetime)
+    import_fields(:ecto_naive_datetime)
   end
 
   object :account_current_bridged_udt do
@@ -394,7 +394,7 @@ defmodule GodwokenExplorer.Graphql.Types.AccountUDT do
       resolve(&Resolvers.AccountUDT.account/3)
     end
 
-    import_fields(:ecto_datetime)
+    import_fields(:ecto_naive_datetime)
   end
 
   input_object :account_ckbs_input do

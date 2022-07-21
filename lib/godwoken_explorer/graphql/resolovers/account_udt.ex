@@ -45,7 +45,9 @@ defmodule GodwokenExplorer.Graphql.Resolvers.AccountUDT do
       from(cu in CurrentUDTBalance)
       |> join(:inner, [cu], a1 in subquery(squery), on: cu.address_hash == a1.eth_address)
       |> join(:inner, [cu], u in UDT,
-        on: u.contract_address_hash == cu.token_contract_address_hash
+        on:
+          u.contract_address_hash == cu.token_contract_address_hash and not is_nil(u.name) and
+            cu.value != 0
       )
       |> order_by([cu], desc: cu.updated_at)
 
@@ -95,7 +97,9 @@ defmodule GodwokenExplorer.Graphql.Resolvers.AccountUDT do
       from(cbu in CurrentBridgedUDTBalance)
       |> join(:inner, [cbu], a1 in subquery(squery), on: cbu.address_hash == a1.eth_address)
       |> join(:inner, [cbu], a2 in Account, on: cbu.udt_script_hash == a2.script_hash)
-      |> join(:inner, [_cbu, _a1, a2], u in UDT, on: u.id == a2.id)
+      |> join(:inner, [cbu, _a1, a2], u in UDT,
+        on: u.id == a2.id and not is_nil(u.bridge_account_id) and cbu.value != 0
+      )
       |> order_by([cbu], desc: cbu.updated_at)
 
     if is_nil(udt_script_hash) do
@@ -238,7 +242,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.AccountUDT do
 
       result =
         (cbus ++ cus)
-        |> Enum.sort_by(&Map.fetch(&1, :updated_at))
+        |> Enum.sort_by(&Map.fetch(&1, :updated_at), :desc)
         |> Enum.uniq_by(&Map.fetch(&1, :address_hash))
 
       {:ok, result}
@@ -310,6 +314,9 @@ defmodule GodwokenExplorer.Graphql.Resolvers.AccountUDT do
             [cu],
             cu.address_hash in ^address_hashes
           )
+          |> join(:inner, [cu], u in UDT,
+            on: cu.udt_id == u.id and cu.value != 0 and not is_nil(u.name)
+          )
           |> Repo.all()
 
         cbus =
@@ -318,12 +325,15 @@ defmodule GodwokenExplorer.Graphql.Resolvers.AccountUDT do
             [cbu],
             cbu.address_hash in ^address_hashes
           )
+          |> join(:inner, [cbu], u in UDT,
+            on: cbu.udt_id == u.id and cbu.value != 0 and not is_nil(u.bridge_account_id)
+          )
           |> Repo.all()
 
         result =
           (cbus ++ cus)
-          |> Enum.sort_by(&Map.fetch(&1, :updated_at))
-          |> Enum.uniq_by(&Map.fetch(&1, :address_hash))
+          |> Enum.sort_by(&Map.fetch(&1, :updated_at), :desc)
+          |> Enum.uniq_by(&{Map.fetch(&1, :address_hash), Map.fetch(&1, :udt_id)})
 
         {:ok, result}
       end

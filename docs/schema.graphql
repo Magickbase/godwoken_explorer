@@ -80,11 +80,11 @@ type AccountCurrentBridgedUdt {
   address_hash: HashAddress
   block_number: Int
   id: Int
-  inserted_at: DateTime
+  inserted_at: NaiveDateTime
   layer1_block_number: Int
   udt: Udt
   udt_script_hash: HashFull
-  updated_at: DateTime
+  updated_at: NaiveDateTime
   value: Bigint
   value_fetched_at: DateTime
 }
@@ -125,10 +125,10 @@ type AccountCurrentUdt {
   address_hash: HashAddress
   block_number: Int
   id: Int
-  inserted_at: DateTime
+  inserted_at: NaiveDateTime
   token_contract_address_hash: HashAddress
   udt: Udt
-  updated_at: DateTime
+  updated_at: NaiveDateTime
   value: Bigint
   value_fetched_at: DateTime
 }
@@ -438,6 +438,13 @@ input LogInput {
   third_topic: String
   transaction_hash: HashFull
 }
+
+"""
+The `Naive DateTime` scalar type represents a naive date and time without
+timezone. The DateTime appears in a JSON response as an ISO8601 formatted
+string.
+"""
+scalar NaiveDateTime
 
 input PageAndSizeInput {
   """
