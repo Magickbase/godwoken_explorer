@@ -2,7 +2,9 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
   alias GodwokenExplorer.Repo
   alias GodwokenExplorer.{Account, Transaction, Block, Polyjuice, PolyjuiceCreator}
 
-  import GodwokenExplorer.Graphql.Resolvers.Common, only: [paginate_query: 3]
+  import GodwokenExplorer.Graphql.Resolvers.Common,
+    only: [paginate_query: 3, query_with_block_age_range: 2]
+
   import GodwokenExplorer.Graphql.Common, only: [cursor_order_sorter: 3]
   import Ecto.Query
 
@@ -34,9 +36,18 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
   end
 
   def transactions(_parent, %{input: input} = _args, _resolution) do
+    from_eth_address = Map.get(input, :from_eth_address)
+    to_eth_address = Map.get(input, :to_eth_address)
+
+    from_script_hash = Map.get(input, :from_script_hash)
+    to_script_hash = Map.get(input, :to_script_hash)
+
     from(t in Transaction)
-    |> query_with_account_address(input)
+    |> join(:inner, [t], b in Block, as: :block, on: b.hash == t.block_hash)
+    |> query_with_account_address(input, from_eth_address, to_eth_address)
+    |> query_with_account_address(input, from_script_hash, to_script_hash)
     |> query_with_block_range(input)
+    |> query_with_block_age_range(input)
     |> transactions_order_by(input)
     |> paginate_query(input, %{
       cursor_fields: paginate_cursor(input),
@@ -45,56 +56,95 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
     |> do_transactions()
   end
 
-  defp do_transactions({:error, {:not_found_account, []}}), do: {:ok, nil}
+  defp do_transactions({:error, {:not_found, []}}), do: {:ok, nil}
   defp do_transactions({:error, _} = error), do: error
 
   defp do_transactions(result) do
     {:ok, result}
   end
 
-  defp query_with_account_address(query, input) do
-    address = Map.get(input, :address)
-    script_hash = Map.get(input, :script_hash)
+  defp query_with_account_address(query, input, from_address, to_address) do
+    {from_account, to_account} =
+      case {from_address, to_address} do
+        {nil, nil} = p ->
+          p
 
-    account_or_skip =
-      case {address, script_hash} do
-        {nil, nil} ->
-          :skip
+        {from_address, nil} ->
+          from_account = Repo.get_by(Account, eth_address: from_address)
 
-        {nil, script_hash} when not is_nil(script_hash) ->
-          Account.search(script_hash)
+          if from_account do
+            {from_account, nil}
+          else
+            {:not_found, nil}
+          end
 
-        {address, _} when not is_nil(address) ->
-          Account.search(address)
+        {nil, to_address} ->
+          to_account = Repo.get_by(Account, eth_address: to_address)
+
+          if to_account do
+            {nil, to_account}
+          else
+            {nil, :not_found}
+          end
+
+        {from_address, to_address} ->
+          from_account = Repo.get_by(Account, eth_address: from_address)
+          to_account = Repo.get_by(Account, eth_address: to_address)
+
+          case {from_account, to_account} do
+            {nil, nil} ->
+              {:not_found, :not_found}
+
+            {nil, _} ->
+              {:not_found, to_account}
+
+            {_, nil} ->
+              {from_account, :not_found}
+
+            _ ->
+              {from_account, to_account}
+          end
       end
 
-    if account_or_skip == :skip do
-      query
-    else
-      account = account_or_skip
+    query
+    |> process_from_to_account(input, from_account, to_account)
+  end
 
-      case account do
-        %Account{type: :eth_user} ->
+  defp process_from_to_account({:error, _} = error, _, _, _), do: error
+
+  defp process_from_to_account(query, input, from_account, to_account) do
+    case {from_account, to_account} do
+      {:not_found, _} ->
+        {:error, :not_found}
+
+      {_, :not_found} ->
+        {:error, :not_found}
+
+      {nil, nil} ->
+        query
+
+      {nil, to_account} ->
+        query
+        |> where([t], t.to_account_id == ^to_account.id)
+
+      {from_account, nil} ->
+        query
+        |> where([t], t.from_account_id == ^from_account.id)
+
+      {from_account, to_account} ->
+        if input[:combine_from_to] do
           query
-          |> where([t], t.from_account_id == ^account.id)
-
-        %Account{type: type}
-        when type in [
-               :meta_contract,
-               :udt,
-               :polyjuice_creator,
-               :polyjuice_contract,
-               :eth_addr_reg
-             ] ->
+          |> where(
+            [t],
+            t.to_account_id == ^to_account.id or t.from_account_id == ^from_account.id
+          )
+        else
           query
-          |> where([t], t.to_account_id == ^account.id)
-
-        nil ->
-          {:error, {:not_found_account, []}}
-
-        error ->
-          {:error, "internal error with: #{error}"}
-      end
+          |> where(
+            [t],
+            t.to_account_id == ^to_account.id and t.from_account_id == ^from_account.id
+          )
+        end
     end
   end
 

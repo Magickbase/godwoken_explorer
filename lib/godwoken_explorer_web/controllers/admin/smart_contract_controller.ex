@@ -59,7 +59,7 @@ defmodule GodwokenExplorerWeb.Admin.SmartContractController do
         |> put_flash(:info, "Smart contract is under verified")
         |> redirect(to: Routes.admin_smart_contract_path(conn, :index))
       end
-    else
+  else
       _ ->
         changeset = Admin.change_smart_contract(%SmartContract{})
         changeset = Ecto.Changeset.add_error(changeset, :eth_address, "can't find this account")

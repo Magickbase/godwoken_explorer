@@ -89,65 +89,7 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
     end
 
     @desc """
-    function: list transactions by account address
-
-    request-result-example:
-    query {
-      transactions(
-        input: {
-          script_hash: "0x08c9937e412e135928fd6dec7255965ddd7df4d5a163564b60895100bb3b2f9e"
-          limit: 1
-        }
-      ) {
-        entries {
-          block_hash
-          block_number
-          type
-          from_account_id
-          from_account {
-            script_hash
-            id
-            eth_address
-          }
-          to_account_id
-        }
-
-        metadata {
-          total_count
-          before
-          after
-        }
-      }
-    }
-
-    {
-      "data": {
-        "transactions": {
-          "entries": [
-            {
-              "block_hash": "0x3c864108150c7ee2a0a6e512d353a0aa812470d6fed3093daccef2007c307344",
-              "block_number": 26243,
-              "from_account": {
-                "eth_address": "0xa86e2b58f987d298c6103fc72592a19451fb49a4",
-                "id": 242,
-                "script_hash": "0x3c256a6acbf96338077c7cac3d69c8caf00bf4f9a964959bbc8dabcede7d7d6e"
-              },
-              "from_account_id": 242,
-              "to_account_id": 2,
-              "type": "ETH_ADDRESS_REGISTRY"
-            }
-          ],
-          "metadata": {
-            "after": "g3QAAAADZAAMYmxvY2tfbnVtYmVyYgAAZoNkAARoYXNodAAAAANkAApfX3N0cnVjdF9fZAAiRWxpeGlyLkdvZHdva2VuRXhwbG9yZXIuQ2hhaW4uSGFzaGQACmJ5dGVfY291bnRhIGQABWJ5dGVzbQAAACCdFvEWpH7mWgPRMtbxa2y1A3YHRBFnLJalEsne6iehXWQABWluZGV4YQE=",
-            "before": null,
-            "total_count": 1198
-          }
-        }
-      }
-    }
-
-
-    request-result-example-1:
+    sorter-example:
     query {
       transactions(
         input: {
@@ -210,18 +152,24 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
       }
     }
 
-    request-result-example:
+    block-number-and-age-range-example:
     query {
       transactions(
         input: {
-          script_hash: "0x08c9937e412e135928fd6dec7255965ddd7df4d5a163564b60895100bb3b2f9e"
-          start_block_number: 26243
-          end_block_number: 26243
+          to_script_hash: "0x08c9937e412e135928fd6dec7255965ddd7df4d5a163564b60895100bb3b2f9e"
+          start_block_number: 1
+          end_block_number: 2624399
           limit: 1
+          age_range_start: "2022-06-11T16:28:47Z"
+          age_range_end: "2022-06-11T16:29:01.455000Z"
+          sorter: [{ sort_type: ASC, sort_value: BLOCK_NUMBER }]
         }
       ) {
         entries {
           block_hash
+          block {
+            timestamp
+          }
           block_number
           type
           from_account_id
@@ -241,27 +189,151 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
       }
     }
 
+
     {
       "data": {
         "transactions": {
           "entries": [
             {
-              "block_hash": "0x3c864108150c7ee2a0a6e512d353a0aa812470d6fed3093daccef2007c307344",
-              "block_number": 26243,
-              "from_account": {
-                "eth_address": "0xa86e2b58f987d298c6103fc72592a19451fb49a4",
-                "id": 242,
-                "script_hash": "0x3c256a6acbf96338077c7cac3d69c8caf00bf4f9a964959bbc8dabcede7d7d6e"
+              "block": {
+                "timestamp": "2022-06-11T16:28:47.111000Z"
               },
-              "from_account_id": 242,
+              "block_hash": "0xa89010460abfb53bf85fc74ae98480d3d6c1708c2ce8586aac549544289e5a23",
+              "block_number": 95494,
+              "from_account": {
+                "eth_address": "0x2088d0e35c23e7c344f96e57be19043d6e2a44f3",
+                "id": 14578,
+                "script_hash": "0x07cb90b74c9b22a6ff8357332b589e8dbfc3cb119d4535c76cc51c43ab9c5f9d"
+              },
+              "from_account_id": 14578,
               "to_account_id": 2,
               "type": "ETH_ADDRESS_REGISTRY"
             }
           ],
           "metadata": {
+            "after": "g3QAAAABZAAMYmxvY2tfbnVtYmVyYgABdQY=",
+            "before": null,
+            "total_count": 3
+          }
+        }
+      }
+    }
+
+    from-to-example:
+    query {
+      transactions(
+        input: {
+          from_eth_address: "0x2088d0e35c23e7c344f96e57be19043d6e2a44f3"
+          start_block_number: 1
+          end_block_number: 2624399
+          limit: 1
+          sorter: [{sort_type: ASC, sort_value: BLOCK_NUMBER}]
+        }
+      ) {
+        entries {
+          block_hash
+          block_number
+          type
+          from_account_id
+          from_account {
+            script_hash
+            id
+            eth_address
+          }
+          to_account_id
+          to_account {
+            script_hash
+            id
+            eth_address
+          }
+        }
+
+        metadata {
+          total_count
+          before
+          after
+        }
+      }
+    }
+
+    {
+      "data": {
+        "transactions": {
+          "entries": [
+            {
+              "block_hash": "0x9e12e1de57b66f0d84c95a6a9369715f82d21bbf1ff943ae891739c6343ea781",
+              "block_number": 61049,
+              "from_account": {
+                "eth_address": "0x2088d0e35c23e7c344f96e57be19043d6e2a44f3",
+                "id": 14578,
+                "script_hash": "0x07cb90b74c9b22a6ff8357332b589e8dbfc3cb119d4535c76cc51c43ab9c5f9d"
+              },
+              "from_account_id": 14578,
+              "to_account": {
+                "eth_address": "0x07fc54ff9f92bfa3679104778252a1c42f7b48d9",
+                "id": 18576,
+                "script_hash": "0xaae0058ff21c2d8e2fc02821e12ef074f846ff66c0f1689020c48fbcc481677f"
+              },
+              "to_account_id": 18576,
+              "type": "POLYJUICE"
+            }
+          ],
+          "metadata": {
+            "after": "g3QAAAABZAAMYmxvY2tfbnVtYmVyYgAA7nk=",
+            "before": null,
+            "total_count": 962
+          }
+        }
+      }
+    }
+
+    combine-example:
+    query {
+      transactions(
+        input: {
+          from_eth_address: "0x2088d0e35c23e7c344f96e57be19043d6e2a44f3"
+          to_eth_address: "0x2088d0e35c23e7c344f96e57be19043d6e2a44f3"
+          combine_from_to: false
+          start_block_number: 1
+          end_block_number: 2624399
+          limit: 1
+          sorter: [{ sort_type: ASC, sort_value: BLOCK_NUMBER }]
+        }
+      ) {
+        entries {
+          block_hash
+          block_number
+          type
+          from_account_id
+          from_account {
+            script_hash
+            id
+            eth_address
+          }
+          to_account_id
+          to_account {
+            script_hash
+            id
+            eth_address
+          }
+        }
+
+        metadata {
+          total_count
+          before
+          after
+        }
+      }
+    }
+
+    {
+      "data": {
+        "transactions": {
+          "entries": [],
+          "metadata": {
             "after": null,
             "before": null,
-            "total_count": 1
+            "total_count": 0
           }
         }
       }
@@ -329,7 +401,6 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
     value(:block_number)
     value(:index)
     value(:hash)
-    # value(:updated_at)
   end
 
   input_object :transactions_sorter_input do
@@ -338,8 +409,15 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
   end
 
   input_object :transactions_input do
-    field :address, :hash_address
-    field :script_hash, :hash_full
+    field :from_eth_address, :hash_address
+    field :to_eth_address, :hash_address
+    field :from_script_hash, :hash_full
+    field :to_script_hash, :hash_full
+
+    @desc """
+    if combine_from_to is true, then from_address and to_address are combined into query condition like `address = from_address OR address = to_address`
+    """
+    field :combine_from_to, :boolean, default_value: true
 
     field :sorter, list_of(:transactions_sorter_input),
       default_value: [
@@ -348,6 +426,7 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
         %{sort_type: :asc, sort_value: :hash}
       ]
 
+    import_fields(:age_range_input)
     import_fields(:paginate_input)
     import_fields(:block_range_input)
   end

@@ -32,6 +32,8 @@ defmodule GodwokenExplorer.UDT do
       define_field: false
     )
 
+    field(:holders_count, :integer, virtual: true)
+
     timestamps()
   end
 
@@ -137,6 +139,10 @@ defmodule GodwokenExplorer.UDT do
       nil ->
         %{id: nil, name: "", decimal: 0, symbol: ""}
     end
+  end
+
+  def list_address_by_udt_id(nil) do
+    []
   end
 
   def list_address_by_udt_id(udt_id) do

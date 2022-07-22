@@ -20,7 +20,7 @@ defmodule GodwokenExplorer.Account.CurrentUDTBalance do
     belongs_to(:account, GodwokenExplorer.Account, foreign_key: :account_id, references: :id)
     belongs_to(:udt, GodwokenExplorer.UDT, foreign_key: :udt_id, references: :id)
 
-    timestamps()
+    timestamps(type: :utc_datetime_usec)
   end
 
   @doc false

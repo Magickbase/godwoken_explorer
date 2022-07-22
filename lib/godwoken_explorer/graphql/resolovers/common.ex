@@ -1,5 +1,28 @@
 defmodule GodwokenExplorer.Graphql.Resolvers.Common do
   alias GodwokenExplorer.PaginateRepo
+  import Ecto.Query
+
+  def query_with_block_age_range({:error, _} = error, _input), do: error
+
+  def query_with_block_age_range(query, input) do
+    age_range_start = Map.get(input, :age_range_start)
+    age_range_end = Map.get(input, :age_range_end)
+
+    query =
+      if age_range_start do
+        query
+        |> where([t], as(:block).timestamp >= ^age_range_start)
+      else
+        query
+      end
+
+    if age_range_end do
+      query
+      |> where([t], as(:block).timestamp <= ^age_range_end)
+    else
+      query
+    end
+  end
 
   def paginate_query_with_sort_type(query, input, %{cursor_fields: cursor_fields} = params) do
     sort_condtion = Map.get(input, :sort_type)

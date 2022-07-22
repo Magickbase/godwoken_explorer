@@ -1,6 +1,7 @@
 defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
   alias GodwokenExplorer.{UDT, Account}
   alias GodwokenExplorer.Repo
+  alias GodwokenExplorer.Account.CurrentBridgedUDTBalance
 
   import Ecto.Query
 
@@ -11,36 +12,26 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
 
   @sorter_fields [:name, :supply, :id]
 
+  def holders_count(%UDT{id: id}, _args, _resolution) do
+    {:ok, UDT.count_holder(id)}
+  end
+
   def udt(
         _parent,
         %{input: input},
         _resolution
       ) do
     contract_address = Map.get(input, :contract_address)
-    script_hash = Map.get(input, :script_hash)
 
-    account =
-      case {contract_address, script_hash} do
-        {nil, script_hash} when not is_nil(script_hash) ->
-          Account.search(script_hash)
+    query =
+      from(a in Account, where: a.eth_address == ^contract_address)
+      |> join(:inner, [a], u in UDT,
+        on: u.contract_address_hash == a.eth_address or u.script_hash == a.script_hash
+      )
+      |> select([_, u], u)
 
-        {contract_address, _} when not is_nil(contract_address) ->
-          Account.search(contract_address)
-
-        {nil, nil} ->
-          nil
-      end
-
-    if account do
-      udt =
-        from(u in UDT)
-        |> where([u], u.id == ^account.id or u.bridge_account_id == ^account.id)
-        |> Repo.one()
-
-      {:ok, udt}
-    else
-      {:ok, nil}
-    end
+    return = Repo.one(query)
+    {:ok, return}
   end
 
   def get_udt_by_account_id(
@@ -95,9 +86,53 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
   defp udts_order_by(query, input) do
     sorter = Map.get(input, :sorter)
 
+    holders_query =
+      from(cbub in CurrentBridgedUDTBalance)
+      |> group_by([cbub], cbub.udt_id)
+      # |> order_by([c], desc: count(c.id))
+      |> select([c], %{id: c.udt_id, holders_count: count(c.id)})
+
     if sorter do
-      order_params = cursor_order_sorter(sorter, :order, @sorter_fields)
-      order_by(query, [u], ^order_params)
+      holders_count =
+        Enum.find(sorter, fn e ->
+          case e do
+            %{sort_type: _st, sort_value: :ex_holders_count} ->
+              true
+
+            _ ->
+              false
+          end
+        end)
+
+      if holders_count do
+        query =
+          query
+          |> join(:inner, [u], h in subquery(holders_query), on: u.id == h.id, as: :holders)
+          |> select_merge([_u, holders: h], %{holders_count: h.holders_count})
+
+        order_params =
+          sorter
+          |> Enum.map(fn e ->
+            case e do
+              %{sort_type: st, sort_value: :ex_holders_count} ->
+                # {st, :holders_count}
+
+                {st, dynamic([_u, holders: h], h.holders_count)}
+
+              _ ->
+                case cursor_order_sorter([e], :order, @sorter_fields) do
+                  [h | _] -> h
+                  _ -> :skip
+                end
+            end
+          end)
+          |> Enum.filter(&(&1 != :skip))
+
+        order_by(query, [], ^order_params)
+      else
+        order_params = cursor_order_sorter(sorter, :order, @sorter_fields)
+        order_by(query, [], ^order_params)
+      end
     else
       order_by(query, [u], [:id])
     end
@@ -107,7 +142,20 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
     sorter = Map.get(input, :sorter)
 
     if sorter do
-      cursor_order_sorter(sorter, :cursor, @sorter_fields)
+      sorter
+      |> Enum.map(fn e ->
+        case e do
+          %{sort_type: st, sort_value: :holders_count} ->
+            {:holders_count, st}
+
+          _ ->
+            case cursor_order_sorter([e], :cursor, @sorter_fields) do
+              [h | _] -> h
+              _ -> :skip
+            end
+        end
+      end)
+      |> Enum.filter(&(&1 != :skip))
     else
       [:id]
     end

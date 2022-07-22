@@ -147,6 +147,7 @@ defmodule GodwokenExplorer.Admin.UDT do
     defconfig do
       text(:name)
       text(:symbol)
+      text(:type)
       text(:eth_type)
       text(:script_hash)
       text(:contract_address_hash)

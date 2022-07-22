@@ -79,6 +79,7 @@ defmodule GodwokenExplorer.Admin.SmartContract do
       {:error, %Ecto.Changeset{}}
 
   """
+
   def create_smart_contract(attrs \\ %{}) do
     %SmartContract{}
     |> SmartContract.changeset(attrs)
