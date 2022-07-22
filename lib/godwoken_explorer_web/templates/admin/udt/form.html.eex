@@ -13,12 +13,24 @@
       <%= error_tag f, :type %>
     </div>
 
+    <div class="torch-form-group">
+      <%= label f, :eth_type %>
+      <%= select f, :eth_type, ["ERC20": "erc20", "ERC721": "erc721", "ERC1155": "erc1155"] %>
+      <%= error_tag f, :eth_type %>
+    </div>
+
     <%= if @conn.request_path == "/admin/udts/new" do %>
       <div class="torch-form-group">
-          <%= label f, :udt_address, "udt_address *" %>
-          <%= text_input f, :udt_address, required: true %>
-          <%= error_tag f, :udt_address %>
-        </div>
+        <%= label f, :id, "id *" %>
+        <%= text_input f, :id, required: true %>
+        <%= error_tag f, :id %>
+      </div>
+
+      <div class="torch-form-group">
+          <%= label f, :contract_address_hash, "contract_address_hash *" %>
+          <%= text_input f, :contract_address_hash, required: true %>
+          <%= error_tag f, :contract_address_hash %>
+      </div>
     <% end %>
 
     <div class="torch-form-group">
@@ -101,10 +113,13 @@
 <script>
 const selectElement = document.querySelector('#torch-form_type');
 const bridgeAccountIdElement = document.querySelector('#torch-form_bridge_account_eth_address');
-const scriptHashElement = document.querySelector('#torch-form_script_hash');
+const scriptHashElement = document.querySelector('#torch-form_udt_script_hash');
 const codeHashElement = document.querySelector('#torch-form_udt_type_script_code_hash');
 const argsElement = document.querySelector('#torch-form_udt_type_script_args');
 const hashTypeElement = document.querySelector('#torch-form_udt_type_script_hash_type');
+const contractAddressHashElement = document.querySelector('#torch-form_contract_address_hash');
+const idElement = document.querySelector('#torch-form_id');
+
   document.addEventListener('DOMContentLoaded', function() {
   if(selectElement.value == "native") {
     bridgeAccountIdElement.parentNode.style.display = 'none';
@@ -112,6 +127,8 @@ const hashTypeElement = document.querySelector('#torch-form_udt_type_script_hash
     codeHashElement.parentNode.style.display = 'none';
     argsElement.parentNode.style.display = 'none';
     hashTypeElement.parentNode.style.display = 'none';
+    idElement.parentNode.remove();
+    contractAddressHashElement.parentNode.style.display = 'flex';
 
   }
   else {
@@ -120,6 +137,7 @@ const hashTypeElement = document.querySelector('#torch-form_udt_type_script_hash
     codeHashElement.parentNode.style.display = 'flex';
     argsElement.parentNode.style.display = 'flex';
     hashTypeElement.parentNode.style.display = 'flex';
+    contractAddressHashElement.parentNode.style.display = 'none';
   }
 }, false);
 
@@ -130,7 +148,8 @@ selectElement.addEventListener('change', (event) =>{
     codeHashElement.parentNode.style.display = 'none';
     argsElement.parentNode.style.display = 'none';
     hashTypeElement.parentNode.style.display = 'none';
-
+    idElement.parentNode.remove();
+    contractAddressHashElement.parentNode.style.display = 'flex';
   }
   else {
     bridgeAccountIdElement.parentNode.style.display = 'flex';
@@ -138,6 +157,7 @@ selectElement.addEventListener('change', (event) =>{
     codeHashElement.parentNode.style.display = 'flex';
     argsElement.parentNode.style.display = 'flex';
     hashTypeElement.parentNode.style.display = 'flex';
+    contractAddressHashElement.parentNode.style.display = 'none';
   }
 });
 

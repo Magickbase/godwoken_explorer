@@ -42,11 +42,9 @@ defmodule GodwokenExplorer.Account.CurrentUDTBalance do
   def list_udt_by_eth_address(eth_address) do
     udt_balances =
       from(cub in CurrentUDTBalance,
-        join: a1 in Account,
-        on: a1.eth_address == cub.token_contract_address_hash,
         join: u2 in UDT,
-        on: u2.bridge_account_id == a1.id,
-        where: cub.address_hash == ^eth_address and cub.value != 0,
+        on: u2.contract_address_hash == cub.token_contract_address_hash,
+        where: cub.address_hash == ^eth_address and cub.value != 0 and not is_nil(u2.name),
         select: %{
           id: u2.id,
           type: u2.type,
@@ -62,13 +60,13 @@ defmodule GodwokenExplorer.Account.CurrentUDTBalance do
 
     bridged_udt_balances =
       from(cbub in CurrentBridgedUDTBalance,
-        join: a1 in Account,
-        on: a1.script_hash == cbub.udt_script_hash,
         join: u2 in UDT,
-        on: u2.id == a1.id,
-        where: cbub.address_hash == ^eth_address and cbub.value != 0,
+        on: u2.id == cbub.udt_id,
+        where:
+          cbub.address_hash == ^eth_address and cbub.value != 0 and
+            not is_nil(u2.bridge_account_id),
         select: %{
-          id: u2.id,
+          id: u2.bridge_account_id,
           type: u2.type,
           name: u2.name,
           symbol: u2.symbol,
@@ -81,7 +79,7 @@ defmodule GodwokenExplorer.Account.CurrentUDTBalance do
       |> Repo.all()
 
     (bridged_udt_balances ++ udt_balances)
-    |> Enum.sort_by(&Map.fetch(&1, :updated_at))
+    |> Enum.sort_by(&Map.fetch(&1, :updated_at), :desc)
     |> Enum.uniq_by(&Map.fetch(&1, :id))
     |> Enum.map(fn record ->
       record
@@ -90,7 +88,7 @@ defmodule GodwokenExplorer.Account.CurrentUDTBalance do
   end
 
   def filter_ckb_balance(udt_balances) do
-    udt_balances |> Enum.filter(fn ub -> ub.id == UDT.ckb_account_id() end)
+    udt_balances |> Enum.filter(fn ub -> ub.id == UDT.ckb_bridge_account_id() end)
   end
 
   def get_ckb_balance(addresses) do
@@ -123,8 +121,7 @@ defmodule GodwokenExplorer.Account.CurrentUDTBalance do
         |> Repo.all()
 
       (bridged_results ++ results)
-      |> Enum.sort_by(&Map.fetch(&1, :updated_at))
-      |> Enum.reverse()
+      |> Enum.sort_by(&Map.fetch(&1, :updated_at), :desc)
       |> Enum.uniq_by(&Map.fetch(&1, :address_hash))
     else
       bridged_results

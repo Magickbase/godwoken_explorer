@@ -97,7 +97,7 @@ defmodule GodwokenIndexer.Transform.TokenTransfers do
 
     token = %{
       contract_address_hash: log.address_hash,
-      type: "ERC-20"
+      eth_type: :erc20
     }
 
     {token, token_transfer}
@@ -123,7 +123,7 @@ defmodule GodwokenIndexer.Transform.TokenTransfers do
 
     token = %{
       contract_address_hash: log.address_hash,
-      type: "ERC-721"
+      eth_type: :erc721
     }
 
     {token, token_transfer}
@@ -155,7 +155,7 @@ defmodule GodwokenIndexer.Transform.TokenTransfers do
 
     token = %{
       contract_address_hash: log.address_hash,
-      type: "ERC-721"
+      eth_type: :erc721
     }
 
     {token, token_transfer}
@@ -211,7 +211,7 @@ defmodule GodwokenIndexer.Transform.TokenTransfers do
 
     token = %{
       contract_address_hash: log.address_hash,
-      type: "ERC-1155"
+      eth_type: :erc1155
     }
 
     {token, token_transfer}
@@ -236,7 +236,7 @@ defmodule GodwokenIndexer.Transform.TokenTransfers do
 
     token = %{
       contract_address_hash: log.address_hash,
-      type: "ERC-1155"
+      eth_type: :erc1155
     }
 
     {token, token_transfer}
