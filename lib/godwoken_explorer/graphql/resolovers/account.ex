@@ -31,7 +31,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Account do
   def udt(%Account{id: id}, _args, _resolution) do
     udt =
       from(u in UDT)
-      |> where([u], u.id == ^id or u.bridge_account_id == ^id)
+      |> where([u], u.id == ^id)
       |> Repo.one()
 
     {:ok, udt}
