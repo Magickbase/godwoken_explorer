@@ -48,16 +48,27 @@ defmodule GodwokenExplorer.UDTView do
   end
 
   def transfer_count(udt, _conn) do
-    if udt.account != nil do
-      case Repo.get_by(Account, eth_address: udt.contract_address_hash) do
-        %Account{token_transfer_count: token_transfer_count} ->
-          token_transfer_count
+    cond do
+      udt.type == :bridge and udt.bridge_account_id != nil ->
+        case Repo.get_by(Account, eth_address: udt.account.eth_address) do
+          %Account{token_transfer_count: token_transfer_count} ->
+            token_transfer_count
 
-        _ ->
-          0
-      end
-    else
-      0
+          nil ->
+            0
+        end
+
+      udt.type == :native and udt.eth_type == :erc20 and udt.contract_address_hash != nil ->
+        case Repo.get_by(Account, eth_address: udt.contract_address_hash) do
+          %Account{token_transfer_count: token_transfer_count} ->
+            token_transfer_count
+
+          nil ->
+            0
+        end
+
+      true ->
+        0
     end
   end
 
