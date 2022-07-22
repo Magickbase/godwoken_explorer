@@ -45,7 +45,7 @@ defmodule GodwokenRPC.Transaction do
       # hash_type: transform_hash_type(hash_type),
       # fee_amount: fee_amount,
       # fee_registry_id: registry_id,
-      script_args: "0x" <> script_args,
+      # script_args: "0x" <> script_args,
       account_ids: [from_account_id]
     }
   end
