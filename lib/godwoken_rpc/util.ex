@@ -211,6 +211,11 @@ defmodule GodwokenRPC.Util do
     %{inserted_at: now, updated_at: now}
   end
 
+  def import_utc_timestamps do
+    now = DateTime.utc_now()
+    %{inserted_at: now, updated_at: now}
+  end
+
   # registry_id (4 bytes) | address len (4 bytes) | address (n bytes)
   def parse_gw_address(address_struct) do
     registry_id = address_struct |> String.slice(0..7) |> parse_le_number()

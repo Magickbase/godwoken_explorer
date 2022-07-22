@@ -331,8 +331,7 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
     if deposit_histories != [] do
       parsed_deposit_histories =
         deposit_histories
-        |> Enum.sort_by(&Map.fetch!(&1, :layer1_block_number))
-        |> Enum.reverse()
+        |> Enum.sort_by(&Map.fetch!(&1, :layer1_block_number), :desc)
         |> Enum.uniq_by(&{Map.fetch!(&1, :script_hash), Map.fetch!(&1, :udt_id)})
         |> Enum.map(&Map.take(&1, [:script_hash, :layer1_block_number, :udt_id]))
 

@@ -25,6 +25,17 @@ defmodule GodwokenExplorer.Graphql.Resolvers.AccountUDT do
     end
   end
 
+  defp search_account_current_udts_with_address(_address_hashes, _script_hashes, nil), do: []
+
+  defp search_account_current_udts_with_address(
+         address_hashes,
+         script_hashes,
+         token_contract_address_hash
+       ) do
+    search_account_current_udts(address_hashes, script_hashes, token_contract_address_hash)
+    |> Repo.all()
+  end
+
   defp search_account_current_udts(address_hashes, script_hashes, token_contract_address_hash) do
     squery =
       from(a in Account)
@@ -33,10 +44,11 @@ defmodule GodwokenExplorer.Graphql.Resolvers.AccountUDT do
     query =
       from(cu in CurrentUDTBalance)
       |> join(:inner, [cu], a1 in subquery(squery), on: cu.address_hash == a1.eth_address)
-      |> join(:inner, [cu, _a1], a2 in Account,
-        on: cu.token_contract_address_hash == a2.eth_address
+      |> join(:inner, [cu], u in UDT,
+        on:
+          u.contract_address_hash == cu.token_contract_address_hash and not is_nil(u.name) and
+            cu.value != 0
       )
-      |> join(:inner, [_cu, _a1, a2], u in UDT, on: u.id == a2.id)
       |> order_by([cu], desc: cu.updated_at)
 
     if is_nil(token_contract_address_hash) do
@@ -62,6 +74,18 @@ defmodule GodwokenExplorer.Graphql.Resolvers.AccountUDT do
     end
   end
 
+  defp search_account_current_brideged_udts_with_address(_address_hashes, _script_hashes, nil),
+    do: []
+
+  defp search_account_current_brideged_udts_with_address(
+         address_hashes,
+         script_hashes,
+         udt_script_hash
+       ) do
+    search_account_current_brideged_udts(address_hashes, script_hashes, udt_script_hash)
+    |> Repo.all()
+  end
+
   defp search_account_current_brideged_udts(address_hashes, script_hashes, udt_script_hash) do
     squery =
       from(a in Account)
@@ -73,7 +97,9 @@ defmodule GodwokenExplorer.Graphql.Resolvers.AccountUDT do
       from(cbu in CurrentBridgedUDTBalance)
       |> join(:inner, [cbu], a1 in subquery(squery), on: cbu.address_hash == a1.eth_address)
       |> join(:inner, [cbu], a2 in Account, on: cbu.udt_script_hash == a2.script_hash)
-      |> join(:inner, [_cbu, _a1, a2], u in UDT, on: u.id == a2.id)
+      |> join(:inner, [cbu, _a1, a2], u in UDT,
+        on: u.id == a2.id and not is_nil(u.bridge_account_id) and cbu.value != 0
+      )
       |> order_by([cbu], desc: cbu.updated_at)
 
     if is_nil(udt_script_hash) do
@@ -100,10 +126,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.AccountUDT do
     else
       result =
         from(u in UDT)
-        |> join(:inner, [u], a in Account,
-          on: a.eth_address == ^token_contract_address_hash and u.bridge_account_id == a.id
-        )
-        |> order_by([u], desc: u.updated_at)
+        |> where([u], u.contract_address_hash == ^token_contract_address_hash)
         |> first()
         |> Repo.all()
 
@@ -212,16 +235,14 @@ defmodule GodwokenExplorer.Graphql.Resolvers.AccountUDT do
           ckb_bridged_address
         )
         |> Repo.all()
-        |> IO.inspect()
 
       cus =
         search_account_current_udts(address_hashes, script_hashes, ckb_contract_address)
         |> Repo.all()
-        |> IO.inspect()
 
       result =
         (cbus ++ cus)
-        |> Enum.sort_by(&Map.fetch(&1, :updated_at))
+        |> Enum.sort_by(&Map.fetch(&1, :updated_at), :desc)
         |> Enum.uniq_by(&Map.fetch(&1, :address_hash))
 
       {:ok, result}
@@ -239,9 +260,21 @@ defmodule GodwokenExplorer.Graphql.Resolvers.AccountUDT do
     account_query =
       if token_contract_address_hash do
         from(a in Account, where: a.eth_address == ^token_contract_address_hash)
+        |> join(:inner, [a], u in UDT, on: a.eth_address == u.contract_address_hash)
+        |> join(:inner, [a, u], a2 in Account, on: a2.id == u.id)
+        |> select([a, _, a2], %{
+          token_contract_address_hash: a.eth_address,
+          udt_script_hash: a2.script_hash
+        })
       else
         if udt_script_hash do
           from(a in Account, where: a.script_hash == ^udt_script_hash)
+          |> join(:inner, [a], u in UDT, on: a.id == u.id)
+          |> join(:left, [a, u], a2 in Account, on: a2.id == u.bridge_account_id)
+          |> select([a, _, a2], %{
+            token_contract_address_hash: a2.eth_address,
+            udt_script_hash: a.script_hash
+          })
         else
           nil
         end
@@ -252,40 +285,57 @@ defmodule GodwokenExplorer.Graphql.Resolvers.AccountUDT do
       {:error, :too_many_inputs}
     else
       if account_query do
-        account = Repo.one(account_query)
-
-        cus =
-          if account.eth_address do
-            search_account_current_udts(
-              address_hashes,
-              script_hashes,
-              token_contract_address_hash
-            )
-            |> Repo.all()
-          else
-            []
-          end
+        address_map = Repo.one(account_query)
 
         cbus =
-          if account.script_hash do
-            search_account_current_brideged_udts(
-              address_hashes,
-              script_hashes,
-              udt_script_hash
-            )
-            |> Repo.all()
-          else
-            []
-          end
+          search_account_current_brideged_udts_with_address(
+            address_hashes,
+            script_hashes,
+            address_map[:udt_script_hash]
+          )
+
+        cus =
+          search_account_current_udts_with_address(
+            address_hashes,
+            script_hashes,
+            address_map[:token_contract_address_hash]
+          )
 
         result =
           (cbus ++ cus)
-          |> Enum.sort_by(&Map.fetch(&1, :updated_at))
+          |> Enum.sort_by(&Map.fetch(&1, :updated_at), :desc)
           |> Enum.uniq_by(&Map.fetch(&1, :address_hash))
 
         {:ok, result}
       else
-        {:error, :need_token_contract_address_hash_or_udt_script_hash}
+        cus =
+          from(cu in CurrentUDTBalance)
+          |> where(
+            [cu],
+            cu.address_hash in ^address_hashes
+          )
+          |> join(:inner, [cu], u in UDT,
+            on: cu.udt_id == u.id and cu.value != 0 and not is_nil(u.name)
+          )
+          |> Repo.all()
+
+        cbus =
+          from(cbu in CurrentBridgedUDTBalance)
+          |> where(
+            [cbu],
+            cbu.address_hash in ^address_hashes
+          )
+          |> join(:inner, [cbu], u in UDT,
+            on: cbu.udt_id == u.id and cbu.value != 0 and not is_nil(u.bridge_account_id)
+          )
+          |> Repo.all()
+
+        result =
+          (cbus ++ cus)
+          |> Enum.sort_by(&Map.fetch(&1, :updated_at), :desc)
+          |> Enum.uniq_by(&{Map.fetch(&1, :address_hash), Map.fetch(&1, :udt_id)})
+
+        {:ok, result}
       end
     end
   end

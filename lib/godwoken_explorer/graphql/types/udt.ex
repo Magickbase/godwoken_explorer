@@ -8,14 +8,13 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
 
     request-example:
     query {
-      udt(input: {script_hash: "0x64050AF0D25C38DDF9455B8108654F7C5CC30FE6D871A303D83B1020EDDDD7A7"}){
+      udt(
+        input: { contract_address: "0x2275AFE815DE66BEABE7A2C03005537AB843AFB2" }
+      ) {
         id
         name
-        type
-        supply
-        account{
-          eth_address
-        }
+        script_hash
+        contract_address_hash
       }
     }
 
@@ -23,19 +22,16 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
     {
       "data": {
         "udt": {
-          "account": {
-            "eth_address": null
-          },
-          "id": "80",
-          "name": null,
-          "supply": null,
-          "type": "BRIDGE"
+          "contract_address_hash": "0x2275afe815de66beabe7a2c03005537ab843afb2",
+          "id": "36050",
+          "name": "GodwokenToken on testnet_v1",
+          "script_hash": null
         }
       }
     }
     """
     field :udt, :udt do
-      arg(:input, non_null(:smart_contract_input))
+      arg(:input, non_null(:udt_input))
       resolve(&Resolvers.UDT.udt/3)
     end
 
@@ -321,6 +317,61 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         }
       }
     }
+
+    holders example:
+    query {
+      udts(
+        input: {
+          limit: 1
+          sorter: [
+            { sort_type: DESC, sort_value: EX_HOLDERS_COUNT }
+            { sort_type: ASC, sort_value: NAME }
+          ]
+        }
+      ) {
+        entries {
+          id
+          name
+          holders_count
+          type
+          supply
+          account {
+            eth_address
+            script_hash
+          }
+        }
+        metadata {
+          total_count
+          after
+          before
+        }
+      }
+    }
+
+    {
+      "data": {
+        "udts": {
+          "entries": [
+            {
+              "account": {
+                "eth_address": null,
+                "script_hash": "0x595cc14e574a708dc70a320d2026f79374246ed4659261131cdda7dd5814b5ca"
+              },
+              "holders_count": 13563,
+              "id": "1",
+              "name": "pCKB",
+              "supply": "13930369823571892421855103",
+              "type": "BRIDGE"
+            }
+          ],
+          "metadata": {
+            "after": "g3QAAAABZAACaWRhAQ==",
+            "before": null,
+            "total_count": 14
+          }
+        }
+      }
+    }
     """
     field :udts, :paginate_udts do
       arg(:input, :udts_input, default_value: %{})
@@ -347,11 +398,23 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
     field :value, :decimal
     field :price, :decimal
     field :bridge_account_id, :integer
+    field :contract_address_hash, :hash_address
     field :type, :udt_type
+    field :eth_type, :eth_type
 
     field :account, :account do
       resolve(&Resolvers.UDT.account/3)
     end
+
+    field :holders_count, :integer do
+      resolve(&Resolvers.UDT.holders_count/3)
+    end
+  end
+
+  enum :eth_type do
+    value(:erc20)
+    value(:erc721)
+    value(:erc1155)
   end
 
   enum :udt_type do
@@ -363,7 +426,11 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
     value(:id)
     value(:name)
     value(:supply)
-    # value(:holders)
+    value(:ex_holders_count)
+  end
+
+  input_object :udt_input do
+    field :contract_address, non_null(:hash_address)
   end
 
   input_object :account_id_input do

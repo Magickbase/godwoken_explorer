@@ -15,12 +15,14 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Account do
         {:error, "address or script_hash is required"}
 
       {nil, _} ->
-        return = Account.search(script_hash)
+        return = Repo.get_by(Account, script_hash: script_hash)
+
         Account.async_fetch_transfer_and_transaction_count(return)
+
         {:ok, return}
 
       {_, _} ->
-        return = Account.search(address)
+        return = Repo.get_by(Account, eth_address: address)
         Account.async_fetch_transfer_and_transaction_count(return)
         {:ok, return}
     end
@@ -29,14 +31,17 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Account do
   def udt(%Account{id: id}, _args, _resolution) do
     udt =
       from(u in UDT)
-      |> where([u], u.id == ^id or u.bridge_account_id == ^id)
+      |> where([u], u.id == ^id)
       |> Repo.one()
 
     {:ok, udt}
   end
 
-  def account_current_udts(%Account{eth_address: eth_address}, %{input: input} = _args, _resolution) do
-
+  def account_current_udts(
+        %Account{eth_address: eth_address},
+        %{input: input} = _args,
+        _resolution
+      ) do
     return =
       from(cu in CurrentUDTBalance)
       |> where([cu], cu.address_hash == ^eth_address)
@@ -50,8 +55,11 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Account do
     {:ok, return}
   end
 
-  def account_current_bridged_udts(%Account{eth_address: eth_address}, %{input: input} = _args, _resolution) do
-
+  def account_current_bridged_udts(
+        %Account{eth_address: eth_address},
+        %{input: input} = _args,
+        _resolution
+      ) do
     return =
       from(cbu in CurrentBridgedUDTBalance)
       |> where([cbu], cbu.address_hash == ^eth_address)

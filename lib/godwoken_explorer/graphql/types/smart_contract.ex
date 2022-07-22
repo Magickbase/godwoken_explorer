@@ -1,7 +1,6 @@
 defmodule GodwokenExplorer.Graphql.Types.SmartContract do
   use Absinthe.Schema.Notation
   alias GodwokenExplorer.Graphql.Resolvers, as: Resolvers
-  alias GodwokenExplorer.Graphql.Middleware.TermRange, as: MTermRange
 
   object :smart_contract_querys do
     @desc """
@@ -104,6 +103,46 @@ defmodule GodwokenExplorer.Graphql.Types.SmartContract do
         }
       }
     }
+
+    multi-table-sorter-example:
+    query {
+      smart_contracts(
+        input: { sorter: [{ sort_type: ASC, sort_value: EX_TX_COUNT }] }
+      ) {
+        entries {
+          name
+          account_id
+          account {
+            eth_address
+          }
+        }
+        metadata {
+          total_count
+          after
+          before
+        }
+      }
+    }
+    {
+      "data": {
+        "smart_contracts": {
+          "entries": [
+            {
+              "account": {
+                "eth_address": "0x2503a1a79a443f3961ee96a8c5ec513638129614"
+              },
+              "account_id": "6841",
+              "name": "EIP20"
+            }
+          ],
+          "metadata": {
+            "after": null,
+            "before": null,
+            "total_count": 1
+          }
+        }
+      }
+    }
     """
     field :smart_contracts, :paginate_smart_contracts do
       arg(:input, :smart_contracts_input)
@@ -136,7 +175,7 @@ defmodule GodwokenExplorer.Graphql.Types.SmartContract do
   enum :smart_contracts_sorter do
     value(:id)
     value(:name)
-    value(:ex_balance)
+    # value(:ex_balance)
     value(:ex_tx_count)
   end
 

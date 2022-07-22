@@ -22,14 +22,17 @@ defmodule GodwokenExplorer.UDT do
     field(:value, :decimal)
     field(:price, :decimal)
     field(:bridge_account_id, :integer)
-    field(:bridge_account_eth_address, :binary, virtual: true)
+    field(:contract_address_hash, Hash.Address)
     field(:type, Ecto.Enum, values: [:bridge, :native])
+    field(:eth_type, Ecto.Enum, values: [:erc20, :erc721, :erc1155])
 
     belongs_to(:account, Account,
       foreign_key: :bridge_account_id,
       references: :id,
       define_field: false
     )
+
+    field(:holders_count, :integer, virtual: true)
 
     timestamps()
   end
@@ -50,8 +53,9 @@ defmodule GodwokenExplorer.UDT do
       :official_site,
       :type,
       :value,
-      :bridge_account_eth_address,
-      :bridge_account_id
+      :contract_address_hash,
+      :bridge_account_id,
+      :eth_type
     ])
     |> unique_constraint(:id, name: :udts_pkey)
   end
@@ -74,7 +78,7 @@ defmodule GodwokenExplorer.UDT do
   end
 
   def get_decimal(id) do
-    case from(u in UDT, where: u.id == ^id or u.bridge_account_id == ^id) |> Repo.one() do
+    case from(u in UDT, where: u.id == ^id) |> Repo.one() do
       nil ->
         0
 
@@ -101,6 +105,23 @@ defmodule GodwokenExplorer.UDT do
     end
   end
 
+  def ckb_bridge_account_id do
+    if FastGlobal.get(:ckb_bridge_account_id) do
+      FastGlobal.get(:ckb_bridge_account_id)
+    else
+      with %__MODULE__{bridge_account_id: bridge_account_id} when not is_nil(bridge_account_id) <-
+             Repo.get(__MODULE__, ckb_account_id()) do
+        FastGlobal.put(:ckb_bridge_account_id, bridge_account_id)
+
+        bridge_account_id
+      else
+        _ ->
+          nil
+      end
+    end
+  end
+
+  # TODO unused function
   def find_by_name_or_token(keyword) do
     from(u in UDT,
       where:
@@ -111,14 +132,17 @@ defmodule GodwokenExplorer.UDT do
   end
 
   def get_by_contract_address(contract_address) do
-    with %Account{id: id} <- Account |> Repo.get_by(eth_address: contract_address),
-         %UDT{} = udt <-
-           from(u in UDT, where: u.id == ^id or u.bridge_account_id == ^id) |> Repo.one() do
-      udt
-    else
-      _ ->
+    case from(u in UDT, where: u.contract_address_hash == ^contract_address) |> Repo.one() do
+      %UDT{} = udt ->
+        udt
+
+      nil ->
         %{id: nil, name: "", decimal: 0, symbol: ""}
     end
+  end
+
+  def list_address_by_udt_id(nil) do
+    []
   end
 
   def list_address_by_udt_id(udt_id) do
@@ -150,8 +174,8 @@ defmodule GodwokenExplorer.UDT do
            to: contract_address,
            data: method_sig
          }) do
-      {:ok, hex_number} -> hex_to_number(hex_number)
-      _ -> 0
+      {:ok, hex_number} when hex_number != "0x" -> hex_to_number(hex_number)
+      _ -> nil
     end
   end
 
@@ -162,8 +186,8 @@ defmodule GodwokenExplorer.UDT do
            to: contract_address,
            data: method_sig
          }) do
-      {:ok, hex_number} -> hex_to_number(hex_number)
-      _ -> 8
+      {:ok, hex_number} when hex_number != "0x" -> hex_to_number(hex_number)
+      _ -> nil
     end
   end
 
@@ -263,7 +287,8 @@ defmodule GodwokenExplorer.UDT do
 
         l2_script_hash = script_to_hash(l2_account_script)
 
-        with %Account{id: bridge_account_id} <- Repo.get_by(Account, eth_address: eth_address),
+        with %Account{id: bridge_account_id, eth_address: eth_address} <-
+               Repo.get_by(Account, eth_address: eth_address),
              %Account{id: udt_id} <- Repo.get_by(Account, script_hash: l2_script_hash) do
           %{
             id: udt_id,
@@ -272,17 +297,40 @@ defmodule GodwokenExplorer.UDT do
             decimal: decimal,
             bridge_account_id: bridge_account_id,
             script_hash: l1_script_hash,
-            type_script: l1_udt_script
+            type_script: l1_udt_script,
+            eth_type: :erc20,
+            contract_address_hash: eth_address
           }
         end
       end)
       |> Enum.reject(&is_nil(&1))
 
+    native_udt_params =
+      udt_params
+      |> Enum.map(fn udt ->
+        %{
+          id: udt.bridge_account_id,
+          name: udt.name,
+          symbol: udt.symbol,
+          contract_address_hash: udt.contract_address_hash,
+          type: :native,
+          eth_type: :erc20
+        }
+      end)
+
     Import.insert_changes_list(
-      udt_params,
+      udt_params |> Enum.map(fn udt -> Map.delete(udt, :contract_address_hash) end),
       for: UDT,
       timestamps: import_timestamps(),
-      on_conflict: {:replace, [:name, :symbol, :updated_at]},
+      on_conflict: {:replace, [:name, :symbol, :eth_type, :bridge_account_id, :updated_at]},
+      conflict_target: :id
+    )
+
+    Import.insert_changes_list(
+      native_udt_params,
+      for: UDT,
+      timestamps: import_timestamps(),
+      on_conflict: {:replace, [:name, :symbol, :eth_type, :updated_at]},
       conflict_target: :id
     )
   end

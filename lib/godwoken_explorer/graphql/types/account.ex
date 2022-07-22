@@ -25,7 +25,7 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
       }
     }
 
-    request-example-1:
+    request-example:
     query {
       account(input: {script_hash: "0x08c9937e412e135928fd6dec7255965ddd7df4d5a163564b60895100bb3b2f9e"}){
         type
@@ -34,7 +34,6 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
       }
     }
 
-    result-example:
     {
       "data": {
         "account": {
@@ -45,54 +44,7 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
       }
     }
 
-    request-example-2:
-    query {
-      account(input: {address: "0xcae7ac7ea158326cc16b4a5f1668924966419455"}){
-        type
-        eth_address
-        account_udts {
-          id
-          balance
-          udt {
-            id
-            name
-            decimal
-          }
-        }
-      }
-    }
-
-    result-example-2:
-    {
-      "data": {
-        "account": {
-          "account_udts": [
-            {
-              "balance": "2599999999999999997122",
-              "id": 527,
-              "udt": {
-                "decimal": null,
-                "id": "80",
-                "name": null
-              }
-            },
-            {
-              "balance": "2299999999989999656533",
-              "id": 524,
-              "udt": {
-                "decimal": null,
-                "id": "1",
-                "name": null
-              }
-            }
-          ],
-          "eth_address": "0xcae7ac7ea158326cc16b4a5f1668924966419455",
-          "type": "ETH_USER"
-        }
-      }
-    }
-
-    request-example-3:
+    request-example:
     query {
       account(
         input: {
@@ -133,7 +85,7 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
       }
     }
 
-    request-example-4:
+    request-example:
     query {
       account(
         input: {
@@ -170,7 +122,7 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
       }
     }
 
-    request-example-5:
+    request-example:
     query {
       account(
         input: {
@@ -199,7 +151,7 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
       }
     }
 
-    request-example-6:
+    request-example:
     query {
       account(
         input: {
@@ -228,7 +180,7 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
       }
     }
 
-    request-example-7:
+    request-example:
     query {
       account(
         input: {

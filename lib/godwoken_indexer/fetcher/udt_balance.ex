@@ -3,7 +3,8 @@ defmodule GodwokenIndexer.Fetcher.UDTBalance do
 
   import GodwokenRPC.Util,
     only: [
-      import_timestamps: 0
+      import_timestamps: 0,
+      import_utc_timestamps: 0
     ]
 
   alias GodwokenExplorer.Chain
@@ -70,14 +71,14 @@ defmodule GodwokenIndexer.Fetcher.UDTBalance do
 
     Import.insert_changes_list(formatted_token_balances_params,
       for: UDTBalance,
-      timestamps: import_timestamps(),
+      timestamps: import_utc_timestamps(),
       on_conflict: {:replace, [:value, :value_fetched_at, :updated_at]},
       conflict_target: [:token_contract_address_hash, :address_hash, :block_number]
     )
 
     Import.insert_changes_list(formatted_current_token_balances_params,
       for: CurrentUDTBalance,
-      timestamps: import_timestamps(),
+      timestamps: import_utc_timestamps(),
       on_conflict: {:replace, [:value, :value_fetched_at, :updated_at]},
       conflict_target: [:token_contract_address_hash, :address_hash]
     )
