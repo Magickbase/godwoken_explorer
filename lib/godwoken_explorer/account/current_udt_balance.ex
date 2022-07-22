@@ -211,7 +211,7 @@ defmodule GodwokenExplorer.Account.CurrentUDTBalance do
       |> Repo.all()
       |> Enum.map(fn %{balance: balance} = result ->
         percentage =
-          if is_nil(supply) do
+          if is_nil(supply) || D.compare(supply, D.new(0)) == :eq do
             0.0
           else
             D.div(balance, supply) |> D.mult(D.new(100)) |> D.round(2) |> D.to_string()
@@ -235,7 +235,7 @@ defmodule GodwokenExplorer.Account.CurrentUDTBalance do
       address_and_balances.entries
       |> Enum.map(fn %{balance: balance} = result ->
         percentage =
-          if is_nil(supply) do
+          if is_nil(supply) || D.compare(supply, D.new(0)) == :eq do
             0.0
           else
             D.div(balance, supply) |> D.mult(D.new(100)) |> D.round(2) |> D.to_string()
