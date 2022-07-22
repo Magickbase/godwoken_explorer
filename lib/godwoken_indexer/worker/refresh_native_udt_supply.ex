@@ -7,7 +7,7 @@ defmodule GodwokenIndexer.Worker.RefreshNativeUDTSupply do
 
   @impl Oban.Worker
   def perform(%Oban.Job{}) do
-    from(u in UDT, where: u.type == :native and u.eth_type == :erc20)
+    from(u in UDT, where: u.type == :native and u.eth_type == :erc20 and not is_nil(u.name))
     |> Repo.all()
     |> Enum.each(fn u ->
       decimal =
