@@ -95,7 +95,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
 
         handle_polyjuice_transactions(polyjuice_without_receipts)
 
-        import_polyjuice_creator(polyjuice_creator_params)
+        # import_polyjuice_creator(polyjuice_creator_params)
 
         inserted_transactions =
           import_transactions(blocks_params, transactions_params_without_receipts)
