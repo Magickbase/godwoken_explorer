@@ -1,7 +1,7 @@
 defmodule GodwokenIndexer.Block.SyncWorker do
   use GenServer
 
-  import GodwokenRPC.Util, only: [import_timestamps: 0]
+  import GodwokenRPC.Util, only: [import_timestamps: 0, import_utc_timestamps: 0]
   import Ecto.Query, only: [from: 2]
 
   require Logger
@@ -182,7 +182,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
     Import.insert_changes_list(
       import_account_udts,
       for: CurrentBridgedUDTBalance,
-      timestamps: import_timestamps(),
+      timestamps: import_utc_timestamps(),
       on_conflict: {:replace, [:block_number, :value, :updated_at]},
       conflict_target: [:address_hash, :udt_script_hash]
     )
@@ -509,7 +509,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
       Import.insert_changes_list(
         import_account_udts,
         for: CurrentBridgedUDTBalance,
-        timestamps: import_timestamps(),
+        timestamps: import_utc_timestamps(),
         on_conflict: {:replace, [:block_number, :value, :updated_at]},
         conflict_target: [:address_hash, :udt_script_hash]
       )
@@ -713,7 +713,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
 
     Import.insert_changes_list(address_token_balances,
       for: UDTBalance,
-      timestamps: import_timestamps(),
+      timestamps: import_utc_timestamps(),
       on_conflict: :nothing,
       conflict_target: [:address_hash, :token_contract_address_hash, :block_number]
     )
@@ -770,7 +770,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
         Import.insert_changes_list(
           bridged_ckbs,
           for: CurrentBridgedUDTBalance,
-          timestamps: import_timestamps(),
+          timestamps: import_utc_timestamps(),
           on_conflict: {:replace, [:block_number, :value, :updated_at]},
           conflict_target: [:address_hash, :udt_script_hash]
         )
