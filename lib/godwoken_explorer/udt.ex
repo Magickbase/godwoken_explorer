@@ -174,8 +174,8 @@ defmodule GodwokenExplorer.UDT do
            to: contract_address,
            data: method_sig
          }) do
-      {:ok, hex_number} -> hex_to_number(hex_number)
-      _ -> 0
+      {:ok, hex_number} when hex_number != "0x" -> hex_to_number(hex_number)
+      _ -> nil
     end
   end
 
@@ -186,8 +186,8 @@ defmodule GodwokenExplorer.UDT do
            to: contract_address,
            data: method_sig
          }) do
-      {:ok, hex_number} -> hex_to_number(hex_number)
-      _ -> 8
+      {:ok, hex_number} when hex_number != "0x" -> hex_to_number(hex_number)
+      _ -> nil
     end
   end
 
