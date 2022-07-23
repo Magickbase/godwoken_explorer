@@ -3,13 +3,20 @@ defmodule GodwokenExplorer.Factory do
 
   use GodwokenExplorer.UtilFactory
   use GodwokenExplorer.AccountFactory
-  use GodwokenExplorer.AccountUDTFactory
   use GodwokenExplorer.BlockFactory
+  use GodwokenExplorer.ContractMethodFactory
+  use GodwokenExplorer.CurrentBridgedUDTBalanceFactory
+  use GodwokenExplorer.CurrentUDTBalanceFactory
+  use GodwokenExplorer.DepositHistoryFactory
   use GodwokenExplorer.LogFactory
   use GodwokenExplorer.PolyjuiceFactory
+  use GodwokenExplorer.PolyjuiceCreatorFactory
+  use GodwokenExplorer.SmartContractFactory
   use GodwokenExplorer.TokenTransferFactory
   use GodwokenExplorer.TransactionFactory
   use GodwokenExplorer.UDTFactory
+  use GodwokenExplorer.WithdrawalHistoryFactory
+  use GodwokenExplorer.WithdrawalRequestFactory
 
   alias GodwokenExplorer.Repo
 

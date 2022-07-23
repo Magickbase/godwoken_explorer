@@ -1,14 +1,12 @@
 defmodule GodwokenExplorerWeb.API.BlockControllerTest do
-  use GodwokenExplorer, :schema
   use GodwokenExplorerWeb.ConnCase
 
   import GodwokenRPC.Util, only: [utc_to_unix: 1]
-
-  alias GodwokenExplorer.Factory
+  import GodwokenExplorer.Factory
 
   setup do
-    Repo.insert(Factory.meta_contract_factory())
-    block = Repo.insert!(Factory.block_factory())
+    insert(:meta_contract)
+    block = insert(:block)
 
     %{block: block}
   end
@@ -29,17 +27,16 @@ defmodule GodwokenExplorerWeb.API.BlockControllerTest do
                  "data" => [
                    %{
                      "attributes" => %{
-                       "finalize_state" => "finalized",
-                       "gas_limit" => "12500000",
-                       "gas_used" => "0",
-                       "hash" =>
-                         "0x9e449451846827df40c9a8bcb2809256011afbbf394de676d52535c3ca32a518",
-                       "miner_hash" => "0x5c84fc6078725df72052cc858dffc6f352a06970",
-                       "number" => 14,
-                       "timestamp" => utc_to_unix(block.inserted_at),
-                       "tx_count" => 1
+                       "finalize_state" => to_string(block.status),
+                       "gas_limit" => block.gas_limit |> Decimal.to_string(),
+                       "gas_used" => block.gas_used |> Decimal.to_string(),
+                       "hash" => to_string(block.hash),
+                       "miner_hash" => to_string(block.producer_address),
+                       "number" => block.number,
+                       "timestamp" => utc_to_unix(block.timestamp),
+                       "tx_count" => 0
                      },
-                     "id" => 14,
+                     "id" => block.number,
                      "relationships" => %{},
                      "type" => "block"
                    }
@@ -58,28 +55,25 @@ defmodule GodwokenExplorerWeb.API.BlockControllerTest do
           Routes.block_path(
             conn,
             :show,
-            "0x9e449451846827df40c9a8bcb2809256011afbbf394de676d52535c3ca32a518"
+            to_string(block.hash)
           )
         )
 
       assert json_response(conn, 200) ==
                %{
-                 "hash" => "0x9e449451846827df40c9a8bcb2809256011afbbf394de676d52535c3ca32a518",
-                 "number" => 14,
-                 "l1_block" => 2_345_241,
-                 "l1_tx_hash" =>
-                   "0xae12080b62ec17acc092b341a6ca17da0708e7a6d77e8033c785ea48cdbdbeef",
-                 "finalize_state" => "finalized",
-                 "tx_count" => 1,
-                 "miner_hash" => "0x5c84fc6078725df72052cc858dffc6f352a06970",
-                 "timestamp" => utc_to_unix(block.inserted_at),
-                 "gas_limit" => "12500000",
-                 "gas_used" => "0",
-                 "size" => 156,
-                 "parent_hash" =>
-                   "0xa04ecc2bb1bc634848535b60b3223c1cd5278aa93abb2c138687da8ffa9ffd48",
-                 "logs_bloom" =>
-                   "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+                 "finalize_state" => to_string(block.status),
+                 "gas_limit" => block.gas_limit |> Decimal.to_string(),
+                 "gas_used" => block.gas_used |> Decimal.to_string(),
+                 "hash" => to_string(block.hash),
+                 "miner_hash" => to_string(block.producer_address),
+                 "number" => block.number,
+                 "timestamp" => utc_to_unix(block.timestamp),
+                 "tx_count" => 0,
+                 "l1_block" => nil,
+                 "l1_tx_hash" => nil,
+                 "logs_bloom" => nil,
+                 "parent_hash" => to_string(block.parent_hash),
+                 "size" => block.size
                }
     end
   end
