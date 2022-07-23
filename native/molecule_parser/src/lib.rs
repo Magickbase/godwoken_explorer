@@ -1,7 +1,7 @@
 mod generated;
 pub use generated::packed;
 use packed::MetaContractArgs;
-use packed::CreateAccount;
+use packed::MetaContractArgsUnion;
 use packed::GlobalState;
 use packed::GlobalStateV0;
 use packed::DepositLockArgs;
@@ -20,23 +20,42 @@ mod atoms {
 #[rustler::nif]
 fn parse_meta_contract_args(arg: String) -> ((String, String, String), (u32, String))  {
     let decoded_meat_contract = hex::decode(arg).unwrap();
-    let meta_contract_args = MetaContractArgs::from_slice(&decoded_meat_contract).unwrap().to_enum();
+    let meta_contract_args = MetaContractArgs::from_slice(&decoded_meat_contract).unwrap();
 
-    let script = CreateAccount::from_slice(meta_contract_args.as_slice()).unwrap().script();
-    let code_hash = hex::encode(script.as_reader().code_hash().raw_data());
-    let hash_type = hex::encode(script.as_reader().hash_type().as_slice());
-    let args = hex::encode(script.as_reader().args().raw_data());
+    match meta_contract_args.to_enum() {
+        MetaContractArgsUnion::CreateAccount(create_account) => {
+            let script = create_account.script();
+            let code_hash = hex::encode(script.as_reader().code_hash().raw_data());
+            let hash_type = hex::encode(script.as_reader().hash_type().as_slice());
+            let args = hex::encode(script.as_reader().args().raw_data());
+            let fee = create_account.fee();
+            let registry_id = fee.registry_id();
+            let mut registry_id_buf = [0u8; 4];
+            registry_id_buf.copy_from_slice(registry_id.as_slice());
+            let amount = hex::encode(fee.amount().as_slice());
+            (
+                (code_hash, hash_type, args),
+                (u32::from_le_bytes(registry_id_buf), amount)
+            )
+        }
+         MetaContractArgsUnion::BatchCreateEthAccounts(batch_create_eth_accounts) => {
+            let script = batch_create_eth_accounts.scripts().get(0).unwrap();
+            let code_hash = hex::encode(script.as_reader().code_hash().raw_data());
+            let hash_type = hex::encode(script.as_reader().hash_type().as_slice());
+            let args = hex::encode(script.as_reader().args().raw_data());
 
-    let fee = CreateAccount::from_slice(meta_contract_args.as_slice()).unwrap().fee();
-    let registry_id = fee.registry_id();
-    let mut registry_id_buf = [0u8; 4];
-    registry_id_buf.copy_from_slice(registry_id.as_slice());
-    let amount = hex::encode(fee.amount().as_slice());
+            let fee = batch_create_eth_accounts.fee();
+            let registry_id = fee.registry_id();
+            let mut registry_id_buf = [0u8; 4];
+            registry_id_buf.copy_from_slice(registry_id.as_slice());
+            let amount = hex::encode(fee.amount().as_slice());
 
-    (
-        (code_hash, hash_type, args),
-        (u32::from_le_bytes(registry_id_buf), amount)
-    )
+            (
+                (code_hash, hash_type, args),
+                (u32::from_le_bytes(registry_id_buf), amount)
+            )
+         }
+    }
 }
 
 #[rustler::nif]
@@ -137,7 +156,7 @@ fn parse_eth_address_registry_args(arg: String) -> (String, String, u64) {
         ETHAddrRegArgsUnion::GwToEth(gw_to_eth) => {
             (String::from("GwToEth"), hex::encode(gw_to_eth.as_slice()), 0)
         }
-        ETHAddrRegArgsUnion::SetMapping(set_mapping) => { 
+        ETHAddrRegArgsUnion::SetMapping(set_mapping) => {
           let gw_script_hash = set_mapping.gw_script_hash();
           let mut fee_buf = [0u8; 8];
           let fee = set_mapping.fee();
@@ -145,7 +164,7 @@ fn parse_eth_address_registry_args(arg: String) -> (String, String, u64) {
 
           (String::from("SetMapping"), hex::encode(gw_script_hash.as_slice()), u64::from_le_bytes(fee_buf))
         }
-        ETHAddrRegArgsUnion::BatchSetMapping(batch_set_mapping) => { 
+        ETHAddrRegArgsUnion::BatchSetMapping(batch_set_mapping) => {
             let mut fee_buf = [0u8; 8];
             let gw_script_hashes = batch_set_mapping.gw_script_hashes();
             let fee = batch_set_mapping.fee();
