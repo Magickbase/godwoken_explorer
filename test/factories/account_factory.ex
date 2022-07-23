@@ -45,7 +45,8 @@ defmodule GodwokenExplorer.AccountFactory do
           id: sequence(:id, & &1, start_at: 2000),
           script_hash: block_hash(),
           type: :polyjuice_contract,
-          eth_address: address_hash()
+          eth_address: address_hash(),
+          token_transfer_count: 0
         }
       end
 

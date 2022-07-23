@@ -61,8 +61,8 @@ defmodule GodwokenExplorerWeb.API.RPC.StatsControllerTest do
     end
 
     test "with valid contract address", %{conn: conn} do
-      udt = insert(:ckb_udt)
       account = insert(:ckb_contract_account)
+      udt = insert(:ckb_udt, account: account)
 
       params = %{
         "module" => "stats",

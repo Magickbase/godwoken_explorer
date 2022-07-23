@@ -10,9 +10,9 @@ defmodule GodwokenExplorerWeb.API.RPC.AccountControllerTest do
     setup do
       %Account{script_hash: bridge_script_hash} = insert(:ckb_account)
 
-      %Account{eth_address: native_eth_address} = insert(:ckb_contract_account)
+      %Account{id: id, eth_address: native_eth_address} = insert(:ckb_contract_account)
 
-      insert(:ckb_udt)
+      insert(:ckb_udt, bridge_account_id: id)
 
       %Account{eth_address: user_eth_address} = insert(:user)
       %Account{eth_address: user2_eth_address} = insert(:user)
