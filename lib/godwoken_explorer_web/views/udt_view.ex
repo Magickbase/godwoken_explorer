@@ -2,7 +2,6 @@ defmodule GodwokenExplorer.UDTView do
   use JSONAPI.View, type: "udt"
 
   import Ecto.Query, only: [from: 2]
-  import GodwokenRPC.Util, only: [balance_to_view: 2]
 
   alias GodwokenExplorer.{UDT, Repo, Account}
   alias GodwokenExplorer.Account.CurrentUDTBalance
@@ -29,11 +28,12 @@ defmodule GodwokenExplorer.UDTView do
     to_string(udt.contract_address_hash)
   end
 
+  @spec supply(atom | %{:supply => any, optional(any) => any}, any) :: binary
   def supply(udt, _conn) do
     if is_nil(udt.supply) do
       ""
     else
-      balance_to_view(udt.supply, udt.decimal || 0)
+      udt.supply
     end
   end
 

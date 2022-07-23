@@ -22,7 +22,12 @@ defmodule GodwokenExplorer.UtilFactory do
           |> sequence(& &1)
           |> Hash.Full.cast()
 
-        block_hash
+        if to_string(block_hash) ==
+             "0x0000000000000000000000000000000000000000000000000000000000000000" do
+          block_hash()
+        else
+          block_hash
+        end
       end
 
       def transaction_hash do
@@ -32,6 +37,15 @@ defmodule GodwokenExplorer.UtilFactory do
           |> Hash.Full.cast()
 
         transaction_hash
+      end
+
+      def udt_script_hash do
+        {:ok, udt_script_hssh} =
+          "udt_script_hash"
+          |> sequence(& &1)
+          |> Hash.Full.cast()
+
+        udt_script_hssh
       end
 
       def transaction_input do

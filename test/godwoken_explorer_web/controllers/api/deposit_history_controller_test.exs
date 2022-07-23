@@ -1,61 +1,24 @@
 defmodule GodwokenExplorerWeb.API.DepositHistoryControllerTest do
   use GodwokenExplorerWeb.ConnCase
-  use GodwokenExplorer, :schema
+
+  import GodwokenExplorer.Factory
+  import GodwokenRPC.Util, only: [balance_to_view: 2]
 
   setup do
-    UDT.find_or_create_by(%{
-      id: 1,
-      name: "CKB",
-      decimal: 8,
-      script_hash: "0x0000000000000000000000000000000000000000000000000000000000000000",
-      type: :bridge
-    })
+    udt = insert(:ckb_udt)
+    insert(:ckb_account)
+    user = insert(:user)
 
-    Account.create_or_update_account!(%{
-      id: 1,
-      type: :udt,
-      registry_address: "0x9e9c54293c3211259de788e97a31b5b3a66cd535",
-      script_hash: "0x9e9c54293c3211259de788e97a31b5b3a66cd53564f8d39dfabdc8e96cdf5ea4"
-    })
-
-    Repo.insert(%Account{
-      id: 468,
-      nonce: 90,
-      script: %{
-        "args" =>
-          "0x40d73f0d3c561fcaae330eabc030d8d96a9d0af36d0c5114883658a350cb9e3b085a61d7164735fc5378e590b5ed1448561e1a48",
-        "code_hash" => "0x1563080d175bf8ddd44a48e850cecf0c0b4575835756eb5ffd53ad830931b9f9",
-        "hash_type" => "type"
-      },
-      script_hash: "0xfa2ae9de22bbca35fc44f20efe7a3d2789556d4c50a7c2b4e460269f13b77c58",
-      registry_address: "0xfa2ae9de22bbca35fc44f20efe7a3d2789556d4c",
-      eth_address: "0x085a61d7164735fc5378e590b5ed1448561e1a48",
-      type: :eth_user
-    })
-
-    deposit =
-      DepositHistory.create_or_update_history!(%{
-        amount: D.new(40_000_000_000),
-        ckb_lock_hash: "0xe6c7befcbf4697f1a7f8f04ffb8de71f5304826af7bfce3e4d396483e935820a",
-        layer1_block_number: 5_744_914,
-        layer1_output_index: 0,
-        layer1_tx_hash: "0x41876f5c3ea0d96219c42ea5b4e6cedba61c59fa39bf163765a302f6e43c3847",
-        script_hash: "0xfa2ae9de22bbca35fc44f20efe7a3d2789556d4c50a7c2b4e460269f13b77c58",
-        timestamp: ~U[2021-12-02 22:39:39.585000Z],
-        udt_id: 1
-      })
-
-    %{deposit: deposit}
+    deposit = insert(:deposit_history, script_hash: user.script_hash)
+    %{deposit: deposit, user: user, udt: udt}
   end
 
   describe "index" do
-    test "lists eth address deposit", %{conn: conn, deposit: deposit} do
+    test "lists eth address deposit", %{conn: conn, deposit: deposit, user: user, udt: udt} do
       conn =
         get(
           conn,
-          Routes.deposit_history_path(conn, :index,
-            eth_address: "0x085a61d7164735FC5378E590b5ED1448561e1a48"
-          )
+          Routes.deposit_history_path(conn, :index, eth_address: to_string(user.eth_address))
         )
 
       assert json_response(conn, 200) ==
@@ -63,15 +26,14 @@ defmodule GodwokenExplorerWeb.API.DepositHistoryControllerTest do
                  "data" => [
                    %{
                      "attributes" => %{
-                       "ckb_lock_hash" =>
-                         "0xe6c7befcbf4697f1a7f8f04ffb8de71f5304826af7bfce3e4d396483e935820a",
-                       "layer1_block_number" => 5_744_914,
-                       "layer1_output_index" => 0,
-                       "layer1_tx_hash" =>
-                         "0x41876f5c3ea0d96219c42ea5b4e6cedba61c59fa39bf163765a302f6e43c3847",
-                       "timestamp" => "2021-12-02T22:39:39.585000Z",
+                       "ckb_lock_hash" => to_string(deposit.ckb_lock_hash),
+                       "layer1_block_number" => deposit.layer1_block_number,
+                       "layer1_output_index" => deposit.layer1_output_index,
+                       "layer1_tx_hash" => to_string(deposit.layer1_tx_hash),
+                       "timestamp" => deposit.timestamp |> DateTime.to_iso8601(),
                        "udt_id" => 1,
-                       "value" => "400"
+                       "value" => deposit.amount |> balance_to_view(udt.decimal),
+                       "capacity" => deposit.capacity |> to_string()
                      },
                      "id" => "#{deposit.id}",
                      "relationships" => %{"udt" => %{"data" => %{"id" => "1", "type" => "udt"}}},
@@ -81,21 +43,18 @@ defmodule GodwokenExplorerWeb.API.DepositHistoryControllerTest do
                  "included" => [
                    %{
                      "attributes" => %{
-                       "decimal" => 8,
+                       "decimal" => udt.decimal,
                        "description" => nil,
                        "holder_count" => 0,
                        "icon" => nil,
-                       "id" => 1,
-                       "name" => "CKB",
+                       "id" => udt.id,
+                       "name" => udt.name,
                        "official_site" => nil,
-                       "script_hash" =>
-                         "0x0000000000000000000000000000000000000000000000000000000000000000",
-                       "registry_address" => "0x9e9c54293c3211259de788e97a31b5b3a66cd535",
-                       "supply" => "",
+                       "eth_address" => "",
+                       "supply" => udt.supply |> Decimal.to_string(),
                        "symbol" => nil,
                        "transfer_count" => 0,
                        "type" => "bridge",
-                       "type_script" => nil,
                        "value" => nil
                      },
                      "id" => "1",

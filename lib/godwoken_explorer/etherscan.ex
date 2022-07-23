@@ -109,7 +109,7 @@ defmodule GodwokenExplorer.Etherscan do
         tt in subquery(tt_specific_token_query),
         inner_join: t in Transaction,
         on:
-          tt.transaction_hash == t.hash and tt.block_number == t.block_number and
+          tt.transaction_hash == t.eth_hash and tt.block_number == t.block_number and
             tt.block_hash == t.block_hash,
         inner_join: p in Polyjuice,
         on: p.tx_hash == t.hash,
@@ -186,7 +186,7 @@ defmodule GodwokenExplorer.Etherscan do
       [udt_balance, bridged_udt_balance] |> Enum.sort_by(&elem(&1, 1)) |> List.first() |> elem(0)
     else
       _ ->
-        udt_balance |> elem(0)
+        if is_tuple(udt_balance), do: elem(udt_balance, 0)
     end
   end
 

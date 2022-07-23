@@ -14,8 +14,7 @@ defmodule GodwokenExplorer.DepositWithdrawalView do
       |> Enum.map(fn struct ->
         struct
         |> Map.merge(%{
-          value: balance_to_view(struct[:value], struct[:udt_decimal] || 0),
-          sell_value: balance_to_view(struct[:sell_value], struct[:udt_decimal] || 0)
+          value: balance_to_view(struct[:value], struct[:udt_decimal] || 0)
         })
       end)
     else
@@ -29,8 +28,7 @@ defmodule GodwokenExplorer.DepositWithdrawalView do
         |> Enum.map(fn struct ->
           struct
           |> Map.merge(%{
-            value: balance_to_view(struct[:value], struct[:udt_decimal] || 0),
-            sell_value: balance_to_view(struct[:sell_value], struct[:udt_decimal] || 0)
+            value: balance_to_view(struct[:value], struct[:udt_decimal] || 0)
           })
         end)
 
@@ -72,8 +70,7 @@ defmodule GodwokenExplorer.DepositWithdrawalView do
       |> Enum.map(fn struct ->
         struct
         |> Map.merge(%{
-          value: balance_to_view(struct[:value], struct[:udt_decimal] || 0),
-          sell_value: balance_to_view(struct[:sell_value], struct[:udt_decimal] || 0)
+          value: balance_to_view(struct[:value], struct[:udt_decimal] || 0)
         })
       end)
     else
@@ -84,8 +81,7 @@ defmodule GodwokenExplorer.DepositWithdrawalView do
         |> Enum.map(fn struct ->
           struct
           |> Map.merge(%{
-            value: balance_to_view(struct[:value], struct[:udt_decimal] || 0),
-            sell_value: balance_to_view(struct[:sell_value], struct[:udt_decimal] || 0)
+            value: balance_to_view(struct[:value], struct[:udt_decimal] || 0)
           })
         end)
 
@@ -109,9 +105,6 @@ defmodule GodwokenExplorer.DepositWithdrawalView do
         eth_address: fragment("'0x' || encode(?, 'hex')", a2.eth_address),
         value: w.amount,
         owner_lock_hash: fragment("'0x' || encode(?, 'hex')", w.owner_lock_hash),
-        payment_lock_hash: fragment("'0x' || encode(?, 'hex')", w.payment_lock_hash),
-        sell_value: w.sell_amount,
-        sell_capacity: w.sell_capacity,
         sudt_script_hash: fragment("'0x' || encode(?, 'hex')", w.udt_script_hash),
         udt_id: w.udt_id,
         udt_name: u.name,
@@ -144,9 +137,6 @@ defmodule GodwokenExplorer.DepositWithdrawalView do
         eth_address: fragment("'0x' || encode(?, 'hex')", a2.eth_address),
         value: d.amount,
         owner_lock_hash: nil,
-        payment_lock_hash: nil,
-        sell_value: nil,
-        sell_capacity: nil,
         sudt_script_hash: nil,
         udt_id: d.udt_id,
         udt_name: u.name,

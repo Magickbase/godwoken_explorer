@@ -10,41 +10,41 @@ defmodule GodwokenExplorerWeb.API.RPC.AccountControllerTest do
     setup do
       %Account{script_hash: bridge_script_hash} = insert(:ckb_account)
 
-      %Account{eth_address: native_eth_address} = insert(:ckb_contract_account)
+      %Account{id: id, eth_address: native_eth_address} = insert(:ckb_contract_account)
 
-      insert(:ckb_udt)
+      insert(:ckb_udt, bridge_account_id: id)
 
       %Account{eth_address: user_eth_address} = insert(:user)
       %Account{eth_address: user2_eth_address} = insert(:user)
 
       insert(
-        :account_udt,
+        :current_bridged_udt_balance,
         address_hash: user_eth_address,
         udt_id: 1,
-        token_contract_address_hash: bridge_script_hash,
-        balance: D.new(555_500_000_000)
+        udt_script_hash: bridge_script_hash,
+        value: D.new(555_500_000_000)
       )
 
       insert(
-        :account_udt,
+        :current_udt_balance,
         address_hash: user_eth_address,
         token_contract_address_hash: native_eth_address,
-        balance: D.new(666_600_000_000)
+        value: D.new(666_600_000_000)
       )
 
       insert(
-        :account_udt,
+        :current_bridged_udt_balance,
         address_hash: user2_eth_address,
         udt_id: 1,
-        token_contract_address_hash: bridge_script_hash,
-        balance: D.new(555_000_000_000)
+        udt_script_hash: bridge_script_hash,
+        value: D.new(555_000_000_000)
       )
 
       insert(
-        :account_udt,
+        :current_udt_balance,
         address_hash: user2_eth_address,
         token_contract_address_hash: native_eth_address,
-        balance: D.new(666_000_000_000)
+        value: D.new(666_000_000_000)
       )
 
       %{user_eth_address: user_eth_address, user2_eth_address: user2_eth_address}
@@ -119,8 +119,8 @@ defmodule GodwokenExplorerWeb.API.RPC.AccountControllerTest do
                |> json_response(200)
 
       expected_result = [
-        %{"account" => "#{user_eth_address}", "balance" => "666600000000"},
-        %{"account" => "#{user2_eth_address}", "balance" => "666000000000"}
+        %{"balance" => "666000000000", "address" => "#{user2_eth_address}"},
+        %{"balance" => "666600000000", "address" => "#{user_eth_address}"}
       ]
 
       assert response["result"] == expected_result
@@ -184,7 +184,7 @@ defmodule GodwokenExplorerWeb.API.RPC.AccountControllerTest do
 
     test "with a valid address", %{conn: conn} do
       user = insert(:user)
-      contract = insert(:polyjuice_contract)
+      contract = insert(:polyjuice_contract_account)
       block = insert(:block)
 
       transaction =
@@ -212,7 +212,7 @@ defmodule GodwokenExplorerWeb.API.RPC.AccountControllerTest do
         %{
           "blockNumber" => "#{transaction.block_number}",
           "timeStamp" => "#{DateTime.to_unix(block.timestamp)}",
-          "hash" => "#{transaction.hash}",
+          "hash" => "#{transaction.eth_hash}",
           "nonce" => "#{transaction.nonce}",
           "blockHash" => "#{block.hash}",
           "transactionIndex" => "#{polyjuice.transaction_index}",
@@ -295,16 +295,16 @@ defmodule GodwokenExplorerWeb.API.RPC.AccountControllerTest do
     test "returns all the required fields", %{conn: conn} do
       user = insert(:user)
       user2 = insert(:user)
-      contract = insert(:polyjuice_contract)
+      contract = insert(:polyjuice_contract_account)
 
       udt =
-        insert(:udt,
+        insert(:native_udt,
           id: contract.id,
           type: :native,
           name: "CKB",
           symbol: "CKB",
           decimal: 8,
-          bridge_account_id: contract.id
+          contract_address_hash: contract.eth_address
         )
 
       block = insert(:block)
@@ -329,7 +329,8 @@ defmodule GodwokenExplorerWeb.API.RPC.AccountControllerTest do
           block_number: block.number,
           from_address_hash: user.eth_address,
           to_address_hash: user2.eth_address,
-          token_contract_address_hash: contract.eth_address
+          token_contract_address_hash: contract.eth_address,
+          transaction_hash: transaction.eth_hash
         )
 
       params = %{
@@ -559,11 +560,11 @@ defmodule GodwokenExplorerWeb.API.RPC.AccountControllerTest do
 
       account_udt =
         insert(
-          :account_udt,
+          :current_udt_balance,
           address_hash: user_eth_address,
           udt_id: 1,
           token_contract_address_hash: native_eth_address,
-          balance: D.new(555_500_000_000)
+          value: D.new(555_500_000_000)
         )
 
       params = %{
@@ -578,7 +579,7 @@ defmodule GodwokenExplorerWeb.API.RPC.AccountControllerTest do
                |> get("/api/v1", params)
                |> json_response(200)
 
-      assert response["result"] == to_string(account_udt.balance)
+      assert response["result"] == to_string(account_udt.value)
       assert response["status"] == "1"
       assert response["message"] == "OK"
       assert :ok = ExJsonSchema.Validator.validate(tokenbalance_schema(), response)
