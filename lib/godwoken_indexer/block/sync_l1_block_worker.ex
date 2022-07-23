@@ -13,7 +13,8 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
       script_to_hash: 1,
       parse_le_number: 1,
       timestamp_to_utc_datetime: 1,
-      import_timestamps: 0
+      import_timestamps: 0,
+      import_utc_timestamps: 0
     ]
 
   import Ecto.Query, only: [from: 2]
@@ -385,7 +386,7 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
         Import.insert_changes_list(
           import_account_udts,
           for: CurrentBridgedUDTBalance,
-          timestamps: import_timestamps(),
+          timestamps: import_utc_timestamps(),
           on_conflict: {:replace, [:layer1_block_number, :value, :updated_at]},
           conflict_target: [:address_hash, :udt_script_hash]
         )
