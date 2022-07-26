@@ -30,3 +30,5 @@ config :godwoken_explorer,
   ckb_token_script_hash: "0x0000000000000000000000000000000000000000000000000000000000000000",
   eth_addr_reg_id: "0x4",
   polyjuice_creator_id: 6
+
+config :godwoken_explorer, :sourcify, chain_id: "71401"
