@@ -1,5 +1,6 @@
 schema {
   query: RootQueryType
+  mutation: RootMutationType
 }
 
 type Account {
@@ -197,6 +198,7 @@ type AccountUdt {
   token_contract_address_hash: HashAddress
   udt: Udt
   udt_script_hash: HashFull
+  uniq_id: Int
   value: Bigint
 }
 
@@ -510,6 +512,38 @@ type PolyjuiceCreator {
 enum PolyjuiceStatus {
   FAILED
   SUCCEED
+}
+
+type RootMutationType {
+  """
+  example:
+  mutation {
+    verify_and_update_from_sourcify(
+      input: { address: "0x7A4a65Db21864384d2D21a60367d7Fd5c86F8Fba" }
+    ) {
+      id
+      account_id
+      # contract_source_code
+      # abi
+  compiler_version
+      deployment_tx_hash
+  name
+    }
+  }
+  
+  {
+    "data": {
+      "verify_and_update_from_sourcify": {
+        "account_id": "43012",
+        "compiler_version": "v0.8.9+commit.e5eed63a",
+        "deployment_tx_hash": "0x505e25885828c847102af40848ba9cdaf7974d2046e7949ed46e2024494f33cd",
+        "id": 4,
+        "name": "Bridge"
+      }
+    }
+  }
+  """
+  verify_and_update_from_sourcify(input: VerifyAndUpdateFromSourcifyInput!): SmartContract
 }
 
 type RootQueryType {
@@ -1353,6 +1387,34 @@ type RootQueryType {
   }
   """
   smart_contracts(input: SmartContractsInput): PaginateSmartContracts
+
+  """
+  check by addresses example:
+  query {
+    sourcify_check_by_addresses(
+      input: { addresses: ["0x7A4a65Db21864384d2D21a60367d7Fd5c86F8Fba"] }
+    ) {
+      address
+  status
+      chain_ids
+    }
+  }
+  
+  {
+    "data": {
+      "sourcify_check_by_addresses": [
+        {
+          "address": "0x7a4a65db21864384d2d21a60367d7fd5c86f8fba",
+          "chain_ids": [
+            "71401"
+          ],
+          "status": "perfect"
+        }
+      ]
+    }
+  }
+  """
+  sourcify_check_by_addresses(input: SourcifyCheckByAddressesInput!): [SourcifyCheckByAddresses]
 
   """
   function: get list of token transfers by filter
@@ -2251,6 +2313,16 @@ enum SortType {
   DESC
 }
 
+type SourcifyCheckByAddresses {
+  address: HashAddress
+  chain_ids: [String]
+  status: String
+}
+
+input SourcifyCheckByAddressesInput {
+  addresses: [HashAddress]!
+}
+
 type TokenTransfer {
   amount: Decimal
   block: Block
@@ -2393,7 +2465,7 @@ type Udt {
   eth_type: EthType
   holders_count: Int
   icon: String
-  id: String
+  id: Int
   name: String
   official_site: String
   price: Decimal
@@ -2442,5 +2514,9 @@ input UdtsSorterInput {
 enum UdtType {
   BRIDGE
   NATIVE
+}
+
+input VerifyAndUpdateFromSourcifyInput {
+  address: HashAddress!
 }
 
