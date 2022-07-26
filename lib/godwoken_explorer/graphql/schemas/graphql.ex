@@ -17,6 +17,7 @@ defmodule GodwokenExplorer.Graphql.Schemas.Graphql do
   import_types(GodwokenExplorer.Graphql.Types.Polyjuice)
   import_types(GodwokenExplorer.Graphql.Types.Search)
   import_types(GodwokenExplorer.Graphql.Types.SmartContract)
+  import_types(GodwokenExplorer.Graphql.Types.Sourcify)
   import_types(GodwokenExplorer.Graphql.Types.Statistic)
   import_types(GodwokenExplorer.Graphql.Types.TokenTransfer)
   import_types(GodwokenExplorer.Graphql.Types.Tracker)
@@ -35,6 +36,7 @@ defmodule GodwokenExplorer.Graphql.Schemas.Graphql do
     import_fields(:log_querys)
     # import_fields(:search_querys)
     import_fields(:smart_contract_querys)
+    import_fields(:sourcify_querys)
     # import_fields(:statistic_querys)
     import_fields(:token_transfer_querys)
     # import_fields(:tracker_querys)
@@ -42,8 +44,9 @@ defmodule GodwokenExplorer.Graphql.Schemas.Graphql do
     import_fields(:udt_querys)
   end
 
-  # mutation do
-  # end
+  mutation do
+    import_fields(:sourcify_mutations)
+  end
 
   # subscription do
   # end

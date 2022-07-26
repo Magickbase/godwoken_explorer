@@ -21,6 +21,8 @@ alias GodwokenExplorer.{
   WithdrawalRequest
 }
 
+alias GodwokenExplorer.Graphql.{Sourcify}
+
 alias GodwokenExplorer.Account.{CurrentUDTBalance, CurrentBridgedUDTBalance, UDTBalance}
 
 import Ecto.{Query, Queryable, Changeset}

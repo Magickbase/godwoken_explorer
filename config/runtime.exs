@@ -238,3 +238,9 @@ config :godwoken_explorer,
   block_batch_size: gwscan_block_batch_size,
   multiple_l1_block_once: gwscan_multiple_l1_block_once,
   l1_block_batch_size: gwscan_l1_block_batch_size
+
+config :godwoken_explorer, :sourcify,
+  server_url: System.get_env("SOURCIFY_SERVER_URL") || "https://sourcify.dev/server",
+  # default is godwoken testnet
+  chain_id: System.get_env("SOURCIFY_CHAIN_ID") || "71401",
+  repo_url: System.get_env("SOURCIFY_REPO_URL") || "https://repo.sourcify.dev/contracts"
