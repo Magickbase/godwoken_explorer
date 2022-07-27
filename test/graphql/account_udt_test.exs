@@ -10,7 +10,10 @@ defmodule GodwokenExplorer.Graphql.AccountUDTTest do
         "0x0000000000000000000000000000000000000000000000000000000000000000"
       )
 
-    ckb_udt = Factory.insert!(:ckb_udt, script_hash: script_hash)
+    native_udt = Factory.insert!(:native_udt)
+
+    ckb_udt =
+      Factory.insert!(:ckb_udt, script_hash: script_hash, bridge_account_id: native_udt.id)
 
     ckb_account = Factory.insert!(:ckb_account, script_hash: script_hash)
 
@@ -23,7 +26,7 @@ defmodule GodwokenExplorer.Graphql.AccountUDTTest do
         udt_script_hash: ckb_udt.script_hash
       )
 
-    [ckb_udt: ckb_udt, ckb_account: ckb_account, cub: cub, cbub: cbub]
+    [native_udt: native_udt, ckb_udt: ckb_udt, ckb_account: ckb_account, cub: cub, cbub: cbub]
   end
 
   test "graphql: account_current_udts ", %{conn: conn, cub: cub} do
