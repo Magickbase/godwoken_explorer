@@ -29,9 +29,27 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Account do
   end
 
   def udt(%Account{id: id}, _args, _resolution) do
-    udt =
+    u_u2 =
       from(u in UDT)
       |> where([u], u.id == ^id)
+      |> join(:left, [u], u2 in UDT, on: u.bridge_account_id == u2.id)
+      |> select([u, u2], %{u: u, u2: u2})
+      |> Repo.one()
+
+    if u_u2[:u2] do
+      {:ok, u_u2[:u2]}
+    else
+      {:ok, u_u2[:u]}
+    end
+  end
+
+  def bridged_udt(%Account{id: id}, _args, _resolution) do
+    udt =
+      from(u in UDT)
+      |> where(
+        [u],
+        u.id == ^id and u.type == :bridge
+      )
       |> Repo.one()
 
     {:ok, udt}

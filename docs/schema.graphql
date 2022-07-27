@@ -5,6 +5,7 @@ schema {
 type Account {
   account_current_bridged_udts(input: AccountChildUdtsInput = {page: 1, page_size: 20, sort_type: DESC}): [AccountCurrentBridgedUdt]
   account_current_udts(input: AccountChildUdtsInput = {page: 1, page_size: 20, sort_type: DESC}): [AccountCurrentUdt]
+  bridged_udt: Udt
   contract_code: String
   eth_address: HashFull
   id: Int
@@ -739,6 +740,47 @@ type RootQueryType {
         "script_hash": "0x495d9cfb7b6faeaeb0f5a7ed81a830a477f7aeea8d53ef73abdc2ec2f5fed07c",
         "smart_contract": null,
         "type": "ETH_USER"
+      }
+    }
+  }
+  
+  bridge-account-udt-example:
+  query {
+    account(
+      input: {
+        script_hash: "0x3E1301E759261B676CE68D0D97936CD431A4AF2A34072AA94E44655909765EB4"
+      }
+    ) {
+      udt {
+        id
+        name
+        bridge_account_id
+        type
+      }
+      bridged_udt {
+        id
+        name
+        bridge_account_id
+        type
+      }
+    }
+  }
+  
+  {
+    "data": {
+      "account": {
+        "bridged_udt": {
+          "bridge_account_id": 36050,
+          "id": "6571",
+          "name": "GodwokenToken on testnet_v1",
+          "type": "BRIDGE"
+        },
+        "udt": {
+          "bridge_account_id": null,
+          "id": "36050",
+          "name": "GodwokenToken on testnet_v1",
+          "type": "NATIVE"
+        }
       }
     }
   }

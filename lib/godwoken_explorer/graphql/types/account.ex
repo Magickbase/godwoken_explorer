@@ -230,6 +230,47 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
         }
       }
     }
+
+    bridge-account-udt-example:
+    query {
+      account(
+        input: {
+          script_hash: "0x3E1301E759261B676CE68D0D97936CD431A4AF2A34072AA94E44655909765EB4"
+        }
+      ) {
+        udt {
+          id
+          name
+          bridge_account_id
+          type
+        }
+        bridged_udt {
+          id
+          name
+          bridge_account_id
+          type
+        }
+      }
+    }
+
+    {
+      "data": {
+        "account": {
+          "bridged_udt": {
+            "bridge_account_id": 36050,
+            "id": "6571",
+            "name": "GodwokenToken on testnet_v1",
+            "type": "BRIDGE"
+          },
+          "udt": {
+            "bridge_account_id": null,
+            "id": "36050",
+            "name": "GodwokenToken on testnet_v1",
+            "type": "NATIVE"
+          }
+        }
+      }
+    }
     """
     field :account, :account do
       arg(:input, non_null(:account_input))
@@ -254,6 +295,10 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
 
     field :udt, :udt do
       resolve(&Resolvers.Account.udt/3)
+    end
+
+    field :bridged_udt, :udt do
+      resolve(&Resolvers.Account.bridged_udt/3)
     end
 
     field :account_current_udts, list_of(:account_current_udt) do
