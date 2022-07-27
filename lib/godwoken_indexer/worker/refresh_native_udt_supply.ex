@@ -7,7 +7,7 @@ defmodule GodwokenIndexer.Worker.RefreshNativeUDTSupply do
 
   @impl Oban.Worker
   def perform(%Oban.Job{}) do
-    from(u in UDT, where: u.type == :native and u.eth_type == :erc20 and not is_nil(u.name))
+    from(u in UDT, where: u.type == :native and u.eth_type == :erc20)
     |> Repo.all()
     |> Enum.each(fn u ->
       decimal =
@@ -17,11 +17,27 @@ defmodule GodwokenIndexer.Worker.RefreshNativeUDTSupply do
           u.decimal
         end
 
+      name =
+        if is_nil(u.name) do
+          u.contract_address_hash |> to_string() |> UDT.eth_call_name()
+        else
+          u.name
+        end
+
+      symbol =
+        if is_nil(u.symbol) do
+          u.contract_address_hash |> to_string() |> UDT.eth_call_symbol()
+        else
+          u.symbol
+        end
+
       supply = u.contract_address_hash |> to_string() |> UDT.eth_call_total_supply()
 
       UDT.changeset(u, %{
         supply: supply,
-        decimal: decimal
+        decimal: decimal,
+        name: name,
+        symbol: symbol
       })
       |> Repo.update()
     end)
