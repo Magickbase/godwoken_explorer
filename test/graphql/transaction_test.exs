@@ -1,61 +1,127 @@
 defmodule GodwokenExplorer.Graphql.TransactionTest do
   use GodwokenExplorerWeb.ConnCase
+  alias GodwokenExplorer.Factory
 
-  @transaction """
-  query {
-    transaction (input: {transaction_hash: "0x21d6428f5325fc3632fb4762d40a1833a4e739329ca5bcb1de0a91fb519cf8a4"}) {
-      hash
-      block_hash
-      block_number
-      type
-      from_account_id
-      to_account_id
-    }
-  }
-  """
-
-  @transactions """
-  query {
-    transactions (input: {address: "0xc5e133e6b01b2c335055576c51a53647b1b9b624",  page: 1, page_size: 2, start_block_number: 335796, end_block_number: 341275}) {
-      block_hash
-      block_number
-      type
-      from_account_id
-      to_account_id
-    }
-  }G
-  """
-
-  ## TODO: add factory data
   setup do
-    :ok
+    {:ok, args} =
+      GodwokenExplorer.Chain.Data.cast(
+        "0x01000000060000001600000000000000000000000000000001000000000000000000000000000000"
+      )
+
+    transaction = Factory.insert!(:transaction, args: args)
+
+    [transaction: transaction]
   end
 
-  test "query: transaction", %{conn: conn} do
-    # conn =
-    post(conn, "/graphql", %{
-      "query" => @transaction,
-      "variables" => %{}
-    })
+  test "graphql: transaction ", %{conn: conn, transaction: transaction} do
+    eth_hash = transaction.eth_hash |> to_string()
 
-    # assert json_response(conn, 200) == %{
-    #          "data" => _
-    #        }
+    query = """
+    query {
+        transaction(
+          input: {
+            eth_hash: "#{eth_hash}"
+          }
+        ) {
+          hash
+          nonce
+          type
+          index
+          from_account {
+            eth_address
+            type
+          }
+          to_account {
+            eth_address
+            type
+          }
+          polyjuice {
+            is_create
+            value
+            status
+            input
+            created_contract_address_hash
+            gas_used
+            gas_limit
+            gas_price
+          }
+          block {
+            number
+            hash
+            timestamp
+            status
+            layer1_block_number
+          }
+        }
+      }
+    """
 
-    assert true
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    assert match?(
+             %{
+               "data" => %{
+                 "transaction" => %{}
+               }
+             },
+             json_response(conn, 200)
+           )
   end
 
-  test "query: transactions", %{conn: conn} do
-    # conn =
-    post(conn, "/graphql", %{
-      "query" => @transactions,
-      "variables" => %{}
-    })
+  test "graphql: transactions ", %{conn: conn, transaction: _transaction} do
+    query = """
+    query {
+      transactions(
+        input: {
+          limit: 1
+          sorter: [
+            { sort_type: ASC, sort_value: BLOCK_NUMBER }
+            { sort_type: ASC, sort_value: HASH }
+            { sort_type: ASC, sort_value: INDEX }
+          ]
+        }
+      ) {
+        entries {
+          hash
+          eth_hash
+          block_hash
+          block_number
+          type
+          from_account_id
+          from_account {
+            script_hash
+            id
+            eth_address
+          }
+          to_account_id
+        }
 
-    # assert json_response(conn, 200) == %{
-    #          "data" => _
-    #        }
+        metadata {
+          total_count
+          before
+          after
+        }
+      }
+    }
+    """
 
-    assert true
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    assert match?(
+             %{
+               "data" => %{
+                 "transactions" => %{}
+               }
+             },
+             json_response(conn, 200)
+           )
   end
 end

@@ -1,60 +1,80 @@
 defmodule GodwokenExplorer.Graphql.SmartContractTest do
   use GodwokenExplorerWeb.ConnCase
+  alias GodwokenExplorer.Factory
 
-  @smart_contract """
-  query {
-    smart_contract(input: {contract_address: "0x21c814bf216ec7b988d872c56bf948d9cc1638a2"}) {
-      name
-      account_id
-      account {
-        eth_address
-      }
-    }
-  }
-  """
-
-  @smart_contracts """
-  query {
-    smart_contracts {
-      name
-      account_id
-      account {
-        eth_address
-      }
-    }
-  }
-  """
-
-  ## TODO: add factory data
   setup do
-    :ok
+    smart_contract = Factory.insert!(:smart_contract)
+    [smart_contract: smart_contract]
   end
 
-  test "query: smart_contract", %{conn: conn} do
-    # conn =
-    post(conn, "/graphql", %{
-      "query" => @smart_contract,
-      "variables" => %{}
-    })
+  test "graphql: smart_contract ", %{conn: conn, smart_contract: smart_contract} do
+    account = smart_contract.account
 
-    # assert json_response(conn, 200) == %{
-    #          "data" => _
-    #        }
+    query = """
+    query {
+      smart_contract(
+        input: { contract_address: "#{account.eth_address}" }
+      ) {
+        name
+        account_id
+        account {
+          eth_address
+        }
+      }
+    }
+    """
 
-    assert true
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    assert match?(
+             %{
+               "data" => %{
+                 "smart_contract" => %{}
+               }
+             },
+             json_response(conn, 200)
+           )
   end
 
-  test "query: smart_contracts", %{conn: conn} do
-    # conn =
-    post(conn, "/graphql", %{
-      "query" => @smart_contracts,
-      "variables" => %{}
-    })
+  test "graphql: smart_contracts ", %{conn: conn} do
+    query = """
+    query {
+      smart_contracts(input: { sorter: [{ sort_type: ASC, sort_value: ID }] }) {
+        entries {
+          name
+          account_id
+          account {
+            eth_address
+          }
+        }
+        metadata {
+          total_count
+          after
+          before
+        }
+      }
+    }
+    """
 
-    # assert json_response(conn, 200) == %{
-    #          "data" => _
-    #        }
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
 
-    assert true
+    assert match?(
+             %{
+               "data" => %{
+                 "smart_contracts" => %{
+                   "entries" => _
+                 }
+               }
+             },
+             json_response(conn, 200)
+           )
   end
 end
