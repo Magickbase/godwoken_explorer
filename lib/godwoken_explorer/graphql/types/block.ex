@@ -51,7 +51,7 @@ defmodule GodwokenExplorer.Graphql.Types.Block do
 
     request-example:
     query {
-      block(input: {number: 14938}){
+      blocks(input: {}){
         hash
         parent_hash
         number
