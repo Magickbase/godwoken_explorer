@@ -13,6 +13,7 @@ defmodule GodwokenRPC do
   }
 
   alias GodwokenRPC.Transaction.FetchedTransaction, as: FetchedGodwokenTransaction
+  alias GodwokenRPC.Transaction.GetGwTxByEthTx
 
   alias GodwokenRPC.CKBIndexer.{
     FetchedTransactions,
@@ -394,11 +395,11 @@ defmodule GodwokenRPC do
   def fetch_mempool_transaction(tx_hash) do
     options = Application.get_env(:godwoken_explorer, :mempool_rpc_named_arguments)
 
-    case FetchedGodwokenTransaction.request(tx_hash)
-         |> HTTP.json_rpc(options) do
-      {:ok, response} ->
-        {:ok, response}
-
+    with {:ok, gw_tx_hash} <- GetGwTxByEthTx.request(tx_hash) |> HTTP.json_rpc(options),
+         {:ok, response} <-
+           FetchedGodwokenTransaction.request(gw_tx_hash) |> HTTP.json_rpc(options) do
+      {:ok, response}
+    else
       {:error, msg} ->
         Logger.error("Failed to request transaction: #{tx_hash} > #{inspect(msg)}")
         {:error, :node_error}
