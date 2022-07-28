@@ -315,8 +315,9 @@ defmodule GodwokenExplorer.Graphql.Resolvers.AccountUDT do
             cu.address_hash in ^address_hashes
           )
           |> join(:inner, [cu], u in UDT,
-            on: cu.udt_id == u.id and cu.value != 0 and not is_nil(u.name)
+            on: u.contract_address_hash == cu.token_contract_address_hash
           )
+          |> where([cu, u], cu.value != 0 and not is_nil(u.name))
           |> Repo.all()
 
         cbus =
@@ -325,9 +326,8 @@ defmodule GodwokenExplorer.Graphql.Resolvers.AccountUDT do
             [cbu],
             cbu.address_hash in ^address_hashes
           )
-          |> join(:inner, [cbu], u in UDT,
-            on: cbu.udt_id == u.id and cbu.value != 0 and not is_nil(u.bridge_account_id)
-          )
+          |> join(:inner, [cbu], u in UDT, on: cbu.udt_id == u.id)
+          |> where([cbu, u], cbu.value != 0 and not is_nil(u.bridge_account_id))
           |> Repo.all()
 
         result =

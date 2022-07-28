@@ -71,8 +71,8 @@ input AccountChildUdtsInput {
 }
 
 input AccountCkbsInput {
-  address_hashes: [String] = []
-  script_hashes: [String] = []
+  address_hashes: [HashAddress] = []
+  script_hashes: [HashFull] = []
 }
 
 type AccountCurrentBridgedUdt {
@@ -230,8 +230,8 @@ input AccountUdtsByContractAddressInput {
 }
 
 input AccountUdtsInput {
-  address_hashes: [String] = []
-  script_hashes: [String] = []
+  address_hashes: [HashAddress] = []
+  script_hashes: [HashFull] = []
   token_contract_address_hash: HashAddress
   udt_script_hash: HashFull
 }
