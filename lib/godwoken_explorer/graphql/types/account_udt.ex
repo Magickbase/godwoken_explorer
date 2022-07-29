@@ -398,13 +398,13 @@ defmodule GodwokenExplorer.Graphql.Types.AccountUDT do
   end
 
   input_object :account_ckbs_input do
-    field :address_hashes, list_of(:string), default_value: []
-    field :script_hashes, list_of(:string), default_value: []
+    field :address_hashes, list_of(:hash_address), default_value: []
+    field :script_hashes, list_of(:hash_full), default_value: []
   end
 
   input_object :account_udts_input do
-    field :address_hashes, list_of(:string), default_value: []
-    field :script_hashes, list_of(:string), default_value: []
+    field :address_hashes, list_of(:hash_address), default_value: []
+    field :script_hashes, list_of(:hash_full), default_value: []
     field :token_contract_address_hash, :hash_address
     field :udt_script_hash, :hash_full
   end
