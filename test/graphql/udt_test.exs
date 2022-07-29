@@ -1,65 +1,142 @@
 defmodule GodwokenExplorer.Graphql.UDTTest do
   use GodwokenExplorerWeb.ConnCase
+  alias GodwokenExplorer.Factory
 
-  @udt """
-  query {
-    udt(input: {contract_address: "0xbf1f27daea43849b67f839fd101569daaa321e2c"}){
-      id
-      name
-      type
-      supply
-      account{
-        registry_address
-      }
-    }
-  }
-  """
-
-  @udts """
-  query {
-    udts(input: {page: 1, page_size: 2, sort_type: ASC}){
-      id
-      name
-      type
-      supply
-      account{
-        eth_address
-        registry_address
-      }
-    }
-  }
-  """
-
-  ## TODO: add factory data
   setup do
-    :ok
+    {:ok, script_hash} =
+      GodwokenExplorer.Chain.Hash.cast(
+        GodwokenExplorer.Chain.Hash.Full,
+        "0x0000000000000000000000000000000000000000000000000000000000000000"
+      )
+
+    ckb_udt = Factory.insert!(:ckb_udt, script_hash: script_hash)
+    native_udt = Factory.insert!(:native_udt)
+
+    polyjuice_contract_account =
+      Factory.insert!(:polyjuice_contract_account,
+        id: native_udt.id,
+        eth_address: native_udt.contract_address_hash
+      )
+
+    [
+      ckb_udt: ckb_udt,
+      native_udt: native_udt,
+      polyjuice_contract_account: polyjuice_contract_account
+    ]
   end
 
-  test "query: udt", %{conn: conn} do
-    # conn =
-    post(conn, "/graphql", %{
-      "query" => @udt,
-      "variables" => %{}
-    })
+  test "graphql: udt ", %{conn: conn, native_udt: native_udt} do
+    contract_address_hash = native_udt.contract_address_hash
 
-    # assert json_response(conn, 200) == %{
-    #          "data" => _
-    #        }
+    query = """
+    query {
+      udt(
+        input: { contract_address: "#{contract_address_hash}" }
+      ) {
+        id
+        name
+        script_hash
+        contract_address_hash
+      }
+    }
+    """
 
-    assert true
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    assert match?(
+             %{
+               "data" => %{
+                 "udt" => %{}
+               }
+             },
+             json_response(conn, 200)
+           )
   end
 
-  test "query: udts", %{conn: conn} do
-    # conn =
-    post(conn, "/graphql", %{
-      "query" => @udts,
-      "variables" => %{}
-    })
+  test "graphql: udts ", %{conn: conn, native_udt: native_udt} do
+    _contract_address_hash = native_udt.contract_address_hash
 
-    # assert json_response(conn, 200) == %{
-    #          "data" => _
-    #        }
+    query = """
+    query {
+      udts(
+        input: {
+          limit: 3
+          sorter: [{ sort_type: ASC, sort_value: NAME }]
+        }
+      ) {
+        entries {
+          id
+          name
+          type
+          supply
+          account {
+            eth_address
+            script_hash
+          }
+        }
+        metadata {
+          total_count
+          after
+          before
+        }
+      }
+    }
+    """
 
-    assert true
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    assert match?(
+             %{
+               "data" => %{
+                 "udts" => %{}
+               }
+             },
+             json_response(conn, 200)
+           )
+  end
+
+  test "graphql: get_udt_by_account_id ", %{
+    conn: conn,
+    polyjuice_contract_account: polyjuice_contract_account
+  } do
+    id = polyjuice_contract_account.id
+
+    query = """
+    query {
+      get_udt_by_account_id(input: {account_id: #{id}}){
+        id
+        name
+        type
+        supply
+        account{
+          eth_address
+        }
+      }
+    }
+
+    """
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    assert match?(
+             %{
+               "data" => %{
+                 "get_udt_by_account_id" => %{}
+               }
+             },
+             json_response(conn, 200)
+           )
   end
 end
