@@ -5,6 +5,7 @@ defmodule GodwokenIndexer.Worker.RefreshBridgedUDTSupply do
 
   alias GodwokenExplorer.{Account, Repo, KeyValue, DepositHistory, WithdrawalHistory, UDT}
   alias GodwokenExplorer.Token.MetadataRetriever
+  alias Ecto.Multi
 
   @impl Oban.Worker
   def perform(%Oban.Job{}) do
@@ -30,22 +31,28 @@ defmodule GodwokenIndexer.Worker.RefreshBridgedUDTSupply do
       withdrawal_udt_ids = WithdrawalHistory.distinct_udt(start_time, end_time)
       udt_ids = deposit_udt_ids ++ withdrawal_udt_ids
 
-      Repo.transaction(fn ->
-        from(u in UDT,
-          join: a in Account,
-          on: a.id == u.bridge_account_id,
-          where: u.id in ^udt_ids,
-          select: {u, a.eth_address}
-        )
-        |> Repo.all()
-        |> Enum.each(fn {u, eth_address} ->
-          %{total_supply: supply} = MetadataRetriever.get_total_supply_of(eth_address)
+      from(u in UDT,
+        join: a in Account,
+        on: a.id == u.bridge_account_id,
+        where: u.id in ^udt_ids,
+        select: {u, a.eth_address}
+      )
+      |> Repo.all()
+      |> Enum.each(fn {u, eth_address} ->
+        %{total_supply: supply} = MetadataRetriever.get_total_supply_of(eth_address)
 
-          UDT.changeset(u, %{
-            supply: supply
-          })
-          |> Repo.update!()
+        Multi.new()
+        |> Multi.run(
+          :bridged_udt,
+          fn repo, _ ->
+            {:ok, repo.update(u, %{supply: supply})}
+          end
+        )
+        |> Multi.run(:native_udt, fn repo, _ ->
+          udt = Repo.get(UDT, u.bridge_account_id)
+          {:ok, repo.update(udt, %{supply: supply})}
         end)
+        |> Repo.transaction()
 
         KeyValue.changeset(key_value, %{value: end_time |> Timex.format!("{ISO:Extended}")})
         |> Repo.update!()

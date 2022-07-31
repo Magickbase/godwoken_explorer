@@ -73,7 +73,8 @@ config :godwoken_explorer, Oban,
        {"10 00 * * *", GodwokenIndexer.Worker.DailyStat, args: %{datetime: nil}},
        {"*/2 * * * *", GodwokenIndexer.Worker.CheckLostAccount},
        {"*/10 * * * *", GodwokenIndexer.Worker.CheckContractCode},
-       {"*/30 * * * *", GodwokenIndexer.Worker.RefreshBridgedUDTSupply}
+       {"*/30 * * * *", GodwokenIndexer.Worker.RefreshBridgedUDTSupply},
+       {"* */1 * * *", GodwokenIndexer.Worker.UDTUpdater}
      ]}
   ],
   queues: [default: 3]
