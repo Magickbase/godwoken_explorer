@@ -1,4 +1,4 @@
-defmodule GodwokenIndexer.Fetcher.TotalSupplyOnDemand do
+defmodule GodwokenIndexer.Fetcher.UDTInfo do
   use GenServer
 
   alias GodwokenExplorer.{Repo, UDT}
@@ -53,8 +53,7 @@ defmodule GodwokenIndexer.Fetcher.TotalSupplyOnDemand do
         udt_to_update =
           UDT |> Repo.get_by(contract_address_hash: address_hash) |> Repo.preload(:account)
 
-        %{total_supply: total_supply} =
-          address_hash_string |> MetadataRetriever.get_total_supply_of()
+        infos = address_hash_string |> MetadataRetriever.get_functions_of()
 
         {:ok, _} =
           Chain.update_udt(
@@ -62,7 +61,7 @@ defmodule GodwokenIndexer.Fetcher.TotalSupplyOnDemand do
               udt_to_update
               | updated_at: NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
             },
-            %{supply: total_supply}
+            infos
           )
       end,
       restart: :transient

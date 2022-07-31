@@ -6,7 +6,7 @@ defmodule GodwokenExplorer.Token.MetadataRetriever do
   require Logger
 
   alias GodwokenExplorer.{Chain, Repo}
-  alias GodwokenExplorer.Chain.{Hash, Token}
+  alias GodwokenExplorer.Chain.Hash
   alias GodwokenExplorer.SmartContract.Reader
 
   @contract_abi [
@@ -178,9 +178,9 @@ defmodule GodwokenExplorer.Token.MetadataRetriever do
 
     if res == %{} do
       token_to_update =
-        Token
+        UDT
         |> Repo.get_by(contract_address_hash: contract_address_hash)
-        |> Repo.preload([:contract_address])
+        |> Repo.preload([:account])
 
       set_skip_metadata(token_to_update)
     end

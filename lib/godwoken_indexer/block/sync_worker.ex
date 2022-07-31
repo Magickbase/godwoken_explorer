@@ -386,11 +386,20 @@ defmodule GodwokenIndexer.Block.SyncWorker do
             })
           end)
 
-        Import.insert_changes_list(token_params,
-          for: UDT,
-          timestamps: import_timestamps(),
-          on_conflict: :nothing
-        )
+        {_, udts} =
+          Import.insert_changes_list(token_params,
+            for: UDT,
+            timestamps: import_timestamps(),
+            on_conflict: :nothing,
+            returning: [
+              :contract_address_hash
+            ]
+          )
+
+        udts
+        |> Enum.each(fn %{contract_address_hash: contract_address_hash} ->
+          GodwokenIndexer.Fetcher.UDTInfo.fetch(to_string(contract_address_hash))
+        end)
       end
     end
   end
