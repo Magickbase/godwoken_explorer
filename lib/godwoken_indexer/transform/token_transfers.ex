@@ -171,6 +171,10 @@ defmodule GodwokenIndexer.Transform.TokenTransfers do
     udt = Repo.get_by(UDT, contract_address_hash: address_hash)
 
     if udt do
+      udt_to_update =
+        udt
+        |> Repo.preload([:account])
+
       total_supply = address_hash_string |> UDT.eth_call_total_supply()
 
       {:ok, _} =
