@@ -174,7 +174,10 @@ defmodule GodwokenIndexer.Transform.TokenTransfers do
       total_supply = address_hash_string |> UDT.eth_call_total_supply()
 
       {:ok, _} =
-        Chain.update_udt(%{udt | updated_at: DateTime.utc_now()}, %{supply: total_supply})
+        Chain.update_udt(
+          %{udt | updated_at: NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)},
+          %{supply: total_supply}
+        )
     end
 
     :ok

@@ -616,7 +616,7 @@ defmodule GodwokenExplorer.Chain do
     ]
 
     case Repo.insert(udt_changeset, udt_opts) do
-      {:ok, %{udt: udt}} ->
+      {:ok, %UDT{} = udt} ->
         {:ok, udt}
 
       {:error, :udt, changeset, _} ->
