@@ -16,6 +16,8 @@ defmodule GodwokenExplorer.Account.CurrentBridgedUDTBalance do
     belongs_to(:account, GodwokenExplorer.Account, foreign_key: :account_id, references: :id)
     belongs_to(:udt, GodwokenExplorer.UDT, foreign_key: :udt_id, references: :id)
 
+    field :uniq_id, :integer, virtual: true
+
     timestamps(type: :utc_datetime_usec)
   end
 

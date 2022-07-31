@@ -50,8 +50,8 @@ defmodule GodwokenExplorer.Graphql.AccountTest do
     }
     """
 
-    native_udt_id = native_udt.id |> to_string()
-    ckb_udt_id = ckb_udt.id |> to_string()
+    native_udt_id = native_udt.id
+    ckb_udt_id = ckb_udt.id
 
     conn =
       post(conn, "/graphql", %{
@@ -128,7 +128,7 @@ defmodule GodwokenExplorer.Graphql.AccountTest do
                "account" => %{
                  "type" => "UDT",
                  "bridged_udt" => %{
-                   "id" => ckb_udt.id |> to_string(),
+                   "id" => ckb_udt.id,
                    "name" => ckb_udt.name
                  }
                }

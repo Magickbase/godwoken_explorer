@@ -17,16 +17,66 @@ defmodule GodwokenExplorer.Graphql.AccountUDTTest do
 
     ckb_account = Factory.insert!(:ckb_account, script_hash: script_hash)
 
-    cub = Factory.insert!(:current_udt_balance, value: Enum.random(1..100_000))
+    cub =
+      Factory.insert!(:current_udt_balance,
+        token_contract_address_hash: native_udt.contract_address_hash,
+        value: Enum.random(1..100_000)
+      )
 
     cbub =
       Factory.insert!(:current_bridged_udt_balance,
+        address_hash: cub.address_hash,
         value: Enum.random(1..100_000),
         udt_id: ckb_udt.id,
         udt_script_hash: ckb_udt.script_hash
       )
 
     [native_udt: native_udt, ckb_udt: ckb_udt, ckb_account: ckb_account, cub: cub, cbub: cbub]
+  end
+
+  test "graphql: account_udts with native and bridge token", %{conn: conn, cbub: cbub} do
+    address = cbub.address_hash |> to_string()
+
+    query = """
+    query {
+      account_udts(
+        input: {
+          address_hashes: ["#{address}"],
+        }
+      ) {
+        value
+        uniq_id
+        udt {
+          id
+          type
+          name
+          bridge_account_id
+          script_hash
+          decimal
+          value
+        }
+        account {
+          id
+          eth_address
+          script_hash
+        }
+      }
+    }
+    """
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    %{
+      "data" => %{
+        "account_udts" => account_udts
+      }
+    } = json_response(conn, 200)
+
+    assert length(account_udts) == 2
   end
 
   test "graphql: account_current_udts ", %{conn: conn, cub: cub} do

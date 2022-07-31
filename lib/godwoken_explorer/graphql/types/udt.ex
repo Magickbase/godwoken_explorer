@@ -385,7 +385,7 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
   end
 
   object :udt do
-    field :id, :string
+    field :id, :integer
     field :decimal, :integer
     field :name, :string
     field :symbol, :string

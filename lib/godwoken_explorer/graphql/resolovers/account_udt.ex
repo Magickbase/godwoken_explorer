@@ -45,10 +45,14 @@ defmodule GodwokenExplorer.Graphql.Resolvers.AccountUDT do
       from(cu in CurrentUDTBalance)
       |> join(:inner, [cu], a1 in subquery(squery), on: cu.address_hash == a1.eth_address)
       |> join(:inner, [cu], u in UDT,
-        on:
-          u.contract_address_hash == cu.token_contract_address_hash and not is_nil(u.name) and
-            cu.value != 0
+        on: u.contract_address_hash == cu.token_contract_address_hash
       )
+      |> where(
+        [cu, _a1, u],
+        not is_nil(u.name) and
+          cu.value != 0
+      )
+      |> select_merge([_cu, _a1, u], %{udt_id: u.id, uniq_id: u.id})
       |> order_by([cu], desc: cu.updated_at)
 
     if is_nil(token_contract_address_hash) do
@@ -97,9 +101,12 @@ defmodule GodwokenExplorer.Graphql.Resolvers.AccountUDT do
       from(cbu in CurrentBridgedUDTBalance)
       |> join(:inner, [cbu], a1 in subquery(squery), on: cbu.address_hash == a1.eth_address)
       |> join(:inner, [cbu], a2 in Account, on: cbu.udt_script_hash == a2.script_hash)
-      |> join(:inner, [cbu, _a1, a2], u in UDT,
-        on: u.id == a2.id and not is_nil(u.bridge_account_id) and cbu.value != 0
+      |> join(:inner, [cbu, _a1, a2], u in UDT, on: u.id == a2.id)
+      |> where(
+        [cbu, _a1, _a2, u],
+        not is_nil(u.bridge_account_id) and cbu.value != 0
       )
+      |> select_merge([cbu, _a1, _a2, u], %{udt_id: u.id, uniq_id: u.bridge_account_id})
       |> order_by([cbu], desc: cbu.updated_at)
 
     if is_nil(udt_script_hash) do
@@ -160,6 +167,8 @@ defmodule GodwokenExplorer.Graphql.Resolvers.AccountUDT do
       end
     end
   end
+
+  def account(%{token_contract_address_hash: nil}, _, _), do: {:ok, nil}
 
   def account(
         %CurrentUDTBalance{token_contract_address_hash: token_contract_address_hash} = _parent,
@@ -303,8 +312,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.AccountUDT do
 
         result =
           (cbus ++ cus)
-          |> Enum.sort_by(&Map.fetch(&1, :updated_at), :desc)
-          |> Enum.uniq_by(&Map.fetch(&1, :address_hash))
+          |> process_cus_cbus_balance()
 
         {:ok, result}
       else
@@ -318,6 +326,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.AccountUDT do
             on: u.contract_address_hash == cu.token_contract_address_hash
           )
           |> where([cu, u], cu.value != 0 and not is_nil(u.name))
+          |> select_merge([_cu, u], %{udt_id: u.id, uniq_id: u.id})
           |> Repo.all()
 
         cbus =
@@ -328,15 +337,48 @@ defmodule GodwokenExplorer.Graphql.Resolvers.AccountUDT do
           )
           |> join(:inner, [cbu], u in UDT, on: cbu.udt_id == u.id)
           |> where([cbu, u], cbu.value != 0 and not is_nil(u.bridge_account_id))
+          |> select_merge([_cu, u], %{udt_id: u.id, uniq_id: u.bridge_account_id})
           |> Repo.all()
 
         result =
           (cbus ++ cus)
-          |> Enum.sort_by(&Map.fetch(&1, :updated_at), :desc)
-          |> Enum.uniq_by(&{Map.fetch(&1, :address_hash), Map.fetch(&1, :udt_id)})
+          |> process_cus_cbus_balance()
 
         {:ok, result}
       end
     end
+  end
+
+  defp process_cus_cbus_balance(cus_cubs) do
+    cus_cubs
+    |> Enum.sort_by(&{&1.uniq_id, &1.updated_at}, :desc)
+    |> Enum.reduce({[], nil}, fn c_cb, {acc_list, base} ->
+      case base do
+        %{uniq_id: uniq_id} ->
+          if c_cb.uniq_id == uniq_id do
+            c_cb = %{c_cb | value: base.value}
+            {[c_cb | acc_list], c_cb}
+          else
+            {[c_cb | acc_list], c_cb}
+          end
+
+        nil ->
+          {[c_cb | acc_list], c_cb}
+      end
+    end)
+    |> (fn {a, _} -> a end).()
+    |> Enum.reverse()
+    |> Enum.map(fn e ->
+      if Enum.find(cus_cubs, fn x -> x.uniq_id == e.uniq_id and x.udt_id != e.udt_id end) do
+        e
+      else
+        if e.udt_id != e.uniq_id do
+          [e, %CurrentUDTBalance{address_hash: e.address_hash, value: e.value, udt_id: e.uniq_id}]
+        else
+          e
+        end
+      end
+    end)
+    |> List.flatten()
   end
 end
