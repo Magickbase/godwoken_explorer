@@ -177,7 +177,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
 
     import_account_udts =
       import_account_udts
-      |> Enum.uniq_by(&{Map.fetch!(&1, :eth_address), Map.fetch!(&1, :udt_id)})
+      |> Enum.uniq_by(&{Map.fetch!(&1, :address_hash), Map.fetch!(&1, :udt_id)})
       |> Enum.map(&Map.put(&1, :block_number, block_number))
 
     Import.insert_changes_list(
