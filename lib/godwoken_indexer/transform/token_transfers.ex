@@ -171,7 +171,7 @@ defmodule GodwokenIndexer.Transform.TokenTransfers do
 
     udt = Repo.get_by(UDT, contract_address_hash: address_hash)
 
-    if udt do
+    if udt && !udt.skip_metadata do
       udt_to_update = udt |> Repo.preload([:account])
 
       %{total_supply: total_supply} =
