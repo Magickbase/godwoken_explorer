@@ -8,6 +8,7 @@ defmodule GodwokenIndexer.Transform.TokenTransfers do
   alias GodwokenExplorer.{Chain, Repo, UDT}
   alias ABI.TypeDecoder
   alias GodwokenExplorer.TokenTransfer
+  alias GodwokenExplorer.Token.MetadataRetriever
 
   @burn_address "0x0000000000000000000000000000000000000000"
 
@@ -171,15 +172,17 @@ defmodule GodwokenIndexer.Transform.TokenTransfers do
     udt = Repo.get_by(UDT, contract_address_hash: address_hash)
 
     if udt do
-      udt_to_update =
-        udt
-        |> Repo.preload([:account])
+      udt_to_update = udt |> Repo.preload([:account])
 
-      total_supply = address_hash_string |> UDT.eth_call_total_supply()
+      %{total_supply: total_supply} =
+        address_hash_string |> MetadataRetriever.get_total_supply_of()
 
       {:ok, _} =
         Chain.update_udt(
-          %{udt | updated_at: NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)},
+          %{
+            udt_to_update
+            | updated_at: NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
+          },
           %{supply: total_supply}
         )
     end
