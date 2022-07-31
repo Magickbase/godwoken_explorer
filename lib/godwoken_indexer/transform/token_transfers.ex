@@ -5,6 +5,7 @@ defmodule GodwokenIndexer.Transform.TokenTransfers do
 
   require Logger
 
+  alias GodwokenExplorer.{Chain, Repo, UDT}
   alias ABI.TypeDecoder
   alias GodwokenExplorer.TokenTransfer
 
@@ -43,6 +44,7 @@ defmodule GodwokenIndexer.Transform.TokenTransfers do
       token_transfer.token_contract_address_hash
     end)
     |> Enum.uniq()
+    |> Enum.each(&update_token/1)
 
     tokens_uniq = tokens |> Enum.uniq()
 
@@ -161,30 +163,22 @@ defmodule GodwokenIndexer.Transform.TokenTransfers do
     {token, token_transfer}
   end
 
-  # defp update_token(nil), do: :ok
+  defp update_token(nil), do: :ok
 
-  # defp update_token(address_hash_string) do
-  #   {:ok, address_hash} = Chain.string_to_address_hash(address_hash_string)
+  defp update_token(address_hash_string) do
+    {:ok, address_hash} = Chain.string_to_address_hash(address_hash_string)
 
-  #   token = Repo.get_by(Token, contract_address_hash: address_hash)
+    udt = Repo.get_by(UDT, contract_address_hash: address_hash)
 
-  #   if token && !token.skip_metadata do
-  #     token_params =
-  #       address_hash_string
-  #       |> MetadataRetriever.get_total_supply_of()
+    if udt do
+      total_supply = address_hash_string |> UDT.eth_call_total_supply()
 
-  #     token_to_update =
-  #       token
-  #       |> Repo.preload([:contract_address])
+      {:ok, _} =
+        Chain.update_udt(%{udt | updated_at: DateTime.utc_now()}, %{supply: total_supply})
+    end
 
-  #     if token_params !== %{} do
-  #       {:ok, _} =
-  #         Chain.update_token(%{token_to_update | updated_at: DateTime.utc_now()}, token_params)
-  #     end
-  #   end
-
-  #   :ok
-  # end
+    :ok
+  end
 
   def parse_erc1155_params(
         %{

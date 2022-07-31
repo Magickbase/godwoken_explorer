@@ -70,11 +70,11 @@ config :godwoken_explorer, Oban,
     Oban.Plugins.Pruner,
     {Oban.Plugins.Cron,
      crontab: [
-       #  {"01 00 * * *", GodwokenIndexer.Worker.RefreshUDTSupply},
        {"10 00 * * *", GodwokenIndexer.Worker.DailyStat, args: %{datetime: nil}},
        {"*/2 * * * *", GodwokenIndexer.Worker.CheckLostAccount},
        {"*/10 * * * *", GodwokenIndexer.Worker.CheckContractCode},
-       {"* */4 * * *", GodwokenIndexer.Worker.RefreshNativeUDTSupply}
+       {"*/5 * * * *", GodwokenIndexer.Worker.FillInERC20Info},
+       {"*/30 * * * *", GodwokenIndexer.Worker.RefreshBridgedUDTSupply}
      ]}
   ],
   queues: [default: 3]

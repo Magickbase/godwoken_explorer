@@ -607,6 +607,23 @@ defmodule GodwokenExplorer.Chain do
     smart_contract |> SmartContract.changeset(attrs) |> Repo.update()
   end
 
+  def update_udt(%UDT{} = udt, params \\ %{}) do
+    udt_changeset = UDT.changeset(udt, params)
+
+    udt_opts = [
+      on_conflict: {:replace, [:name, :symbol, :eth_type, :decimal, :supply, :updated_at]},
+      conflict_target: :contract_address_hash
+    ]
+
+    case Repo.insert(udt_changeset, udt_opts) do
+      {:ok, %{udt: udt}} ->
+        {:ok, udt}
+
+      {:error, :udt, changeset, _} ->
+        {:error, changeset}
+    end
+  end
+
   defp check_verified(address_hash) do
     query =
       from(

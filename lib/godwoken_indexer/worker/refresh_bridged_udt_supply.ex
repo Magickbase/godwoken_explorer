@@ -1,4 +1,4 @@
-defmodule GodwokenIndexer.Worker.RefreshUDTSupply do
+defmodule GodwokenIndexer.Worker.RefreshBridgedUDTSupply do
   use Oban.Worker, queue: :default
 
   import Ecto.Query, only: [from: 2]
@@ -22,7 +22,7 @@ defmodule GodwokenIndexer.Worker.RefreshUDTSupply do
           {key_value, value |> Timex.parse!("{ISO:Extended}")}
       end
 
-    end_time = Timex.beginning_of_day(Timex.now())
+    end_time = Timex.now()
 
     if start_time != end_time do
       deposit_udt_ids = DepositHistory.distinct_udt(start_time, end_time)
