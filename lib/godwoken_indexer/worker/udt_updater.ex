@@ -22,7 +22,7 @@ defmodule GodwokenIndexer.Worker.UDTUpdater do
 
     GodwokenExplorer.Repo.transaction(
       fn ->
-        hashes = Enum.to_list(stream)
+        hashes = Enum.to_list(stream) |> Enum.map(&to_string(&1))
         {:ok, metadata_list} = MetadataRetriever.get_functions_of(hashes)
 
         Enum.each(metadata_list, fn %{contract_address_hash: contract_address_hash} = metadata ->

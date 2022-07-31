@@ -39,7 +39,8 @@ defmodule GodwokenIndexer.Worker.RefreshBridgedUDTSupply do
       )
       |> Repo.all()
       |> Enum.each(fn {u, eth_address} ->
-        %{total_supply: supply} = MetadataRetriever.get_total_supply_of(eth_address)
+        %{total_supply: supply} =
+          eth_address |> to_string() |> MetadataRetriever.get_total_supply_of()
 
         Multi.new()
         |> Multi.run(
