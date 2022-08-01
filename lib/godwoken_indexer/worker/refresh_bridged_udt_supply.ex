@@ -31,32 +31,34 @@ defmodule GodwokenIndexer.Worker.RefreshBridgedUDTSupply do
       withdrawal_udt_ids = WithdrawalHistory.distinct_udt(start_time, end_time)
       udt_ids = deposit_udt_ids ++ withdrawal_udt_ids
 
-      from(u in UDT,
-        join: a in Account,
-        on: a.id == u.bridge_account_id,
-        where: u.id in ^udt_ids,
-        select: {u, a.eth_address}
-      )
-      |> Repo.all()
-      |> Enum.each(fn {u, eth_address} ->
-        %{total_supply: supply} =
-          eth_address |> to_string() |> MetadataRetriever.get_total_supply_of()
-
-        Multi.new()
-        |> Multi.run(
-          :bridged_udt,
-          fn repo, _ ->
-            {:ok, repo.update(u, %{supply: supply})}
-          end
+      Repo.transaction(fn ->
+        from(u in UDT,
+          join: a in Account,
+          on: a.id == u.bridge_account_id,
+          where: u.id in ^udt_ids,
+          select: {u, a.eth_address}
         )
-        |> Multi.run(:native_udt, fn repo, _ ->
-          udt = Repo.get(UDT, u.bridge_account_id)
-          {:ok, repo.update(udt, %{supply: supply})}
-        end)
-        |> Repo.transaction()
+        |> Repo.all()
+        |> Enum.each(fn {u, eth_address} ->
+          %{total_supply: supply} =
+            eth_address |> to_string() |> MetadataRetriever.get_total_supply_of()
 
-        KeyValue.changeset(key_value, %{value: end_time |> Timex.format!("{ISO:Extended}")})
-        |> Repo.update!()
+          Multi.new()
+          |> Multi.run(
+            :bridged_udt,
+            fn repo, _ ->
+              {:ok, u |> UDT.changeset(%{supply: supply}) |> repo.update()}
+            end
+          )
+          |> Multi.run(:native_udt, fn repo, _ ->
+            udt = repo.get(UDT, u.bridge_account_id)
+            {:ok, udt |> UDT.changeset(%{supply: supply}) |> repo.update()}
+          end)
+          |> Repo.transaction()
+
+          KeyValue.changeset(key_value, %{value: end_time |> Timex.format!("{ISO:Extended}")})
+          |> Repo.update!()
+        end)
       end)
     end
 
