@@ -3,6 +3,8 @@ defmodule GodwokenExplorer.DepositWithdrawalView do
 
   import GodwokenRPC.Util, only: [balance_to_view: 2]
 
+  alias GodwokenExplorer.UDT
+
   @export_limit 5_000
 
   def list_by_block_number(block_number, page) do
@@ -68,9 +70,16 @@ defmodule GodwokenExplorer.DepositWithdrawalView do
       |> limit(@export_limit)
       |> Repo.all()
       |> Enum.map(fn struct ->
+        value =
+          if struct[:udt_id] == UDT.ckb_account_id() do
+            0
+          else
+            balance_to_view(struct[:value], struct[:udt_decimal] || 0)
+          end
+
         struct
         |> Map.merge(%{
-          value: balance_to_view(struct[:value], struct[:udt_decimal] || 0)
+          value: value
         })
       end)
     else
@@ -79,9 +88,16 @@ defmodule GodwokenExplorer.DepositWithdrawalView do
       parsed_entries =
         parsed_struct.entries
         |> Enum.map(fn struct ->
+          value =
+            if struct[:udt_id] == UDT.ckb_account_id() do
+              0
+            else
+              balance_to_view(struct[:value], struct[:udt_decimal] || 0)
+            end
+
           struct
           |> Map.merge(%{
-            value: balance_to_view(struct[:value], struct[:udt_decimal] || 0)
+            value: value
           })
         end)
 
