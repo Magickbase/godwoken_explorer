@@ -10,6 +10,10 @@ defmodule GodwokenIndexer.Worker.UDTUpdater do
   def perform(%Oban.Job{}) do
     datetime = Timex.now() |> Timex.shift(hours: -1)
 
+    bridge_udt_ids =
+      from(u in UDT, where: not is_nil(u.bridge_account_id), select: u.bridge_account_id)
+      |> Repo.all()
+
     query =
       from(u in UDT,
         where:
@@ -31,14 +35,25 @@ defmodule GodwokenIndexer.Worker.UDTUpdater do
             |> Repo.get_by(contract_address_hash: contract_address_hash)
             |> Repo.preload(:account)
 
-          {:ok, _} =
-            Chain.update_udt(
-              %{
-                udt_to_update
-                | updated_at: NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
-              },
-              metadata
-            )
+          if(udt_to_update.id in bridge_udt_ids) do
+            {:ok, _} =
+              Chain.update_udt(
+                %{
+                  udt_to_update
+                  | updated_at: NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
+                },
+                metadata |> Map.take([:supply, :decimal])
+              )
+          else
+            {:ok, _} =
+              Chain.update_udt(
+                %{
+                  udt_to_update
+                  | updated_at: NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
+                },
+                metadata
+              )
+          end
         end)
       end,
       timeout: :infinity
