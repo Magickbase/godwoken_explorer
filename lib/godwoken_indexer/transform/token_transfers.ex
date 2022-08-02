@@ -174,17 +174,18 @@ defmodule GodwokenIndexer.Transform.TokenTransfers do
     if udt && !udt.skip_metadata do
       udt_to_update = udt |> Repo.preload([:account])
 
-      %{total_supply: total_supply} =
-        address_hash_string |> MetadataRetriever.get_total_supply_of()
+      token_params = address_hash_string |> MetadataRetriever.get_total_supply_of()
 
-      {:ok, _} =
-        Chain.update_udt(
-          %{
-            udt_to_update
-            | updated_at: NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
-          },
-          %{supply: total_supply}
-        )
+      if token_params !== %{} do
+        {:ok, _} =
+          Chain.update_udt(
+            %{
+              udt_to_update
+              | updated_at: NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
+            },
+            %{supply: token_params[:total_supply]}
+          )
+      end
     end
 
     :ok
