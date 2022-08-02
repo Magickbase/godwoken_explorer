@@ -18,7 +18,7 @@ defmodule GodwokenIndexer.Block.Supervisor do
         children(child) ++ acc
       end)
 
-    Supervisor.init(childs, strategy: :one_for_one)
+    Supervisor.init(childs, strategy: :one_for_one, max_restarts: 6)
   end
 
   defp children(GodwokenIndexer.Block.SyncWorker) do
