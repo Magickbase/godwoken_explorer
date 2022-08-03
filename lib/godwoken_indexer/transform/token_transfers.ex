@@ -183,7 +183,7 @@ defmodule GodwokenIndexer.Transform.TokenTransfers do
               udt_to_update
               | updated_at: NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
             },
-            %{supply: token_params[:total_supply]}
+            token_params
           )
       end
     end

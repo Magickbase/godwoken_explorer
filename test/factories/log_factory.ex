@@ -16,7 +16,7 @@ defmodule GodwokenExplorer.LogFactory do
           index: sequence("log_index", & &1),
           second_topic: nil,
           third_topic: nil,
-          transaction: build(:transaction)
+          transaction_hash: build(:transaction).eth_hash
         }
       end
     end

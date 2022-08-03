@@ -53,17 +53,18 @@ defmodule GodwokenIndexer.Fetcher.TotalSupplyOnDemand do
         udt_to_update =
           UDT |> Repo.get_by(contract_address_hash: address_hash) |> Repo.preload(:account)
 
-        %{total_supply: total_supply} =
-          address_hash_string |> MetadataRetriever.get_total_supply_of()
+        supply_params = address_hash_string |> MetadataRetriever.get_total_supply_of()
 
-        {:ok, _} =
-          Chain.update_udt(
-            %{
-              udt_to_update
-              | updated_at: NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
-            },
-            %{supply: total_supply}
-          )
+        if supply_params != %{} do
+          {:ok, _} =
+            Chain.update_udt(
+              %{
+                udt_to_update
+                | updated_at: NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
+              },
+              supply_params
+            )
+        end
       end,
       restart: :transient
     )

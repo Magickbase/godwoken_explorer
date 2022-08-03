@@ -289,7 +289,11 @@ defmodule GodwokenExplorerWeb.API.RPC.LogsControllerTest do
 
       polyjuice = Repo.get_by(Polyjuice, tx_hash: transaction.hash)
 
-      log = insert(:log, address_hash: contract.eth_address, transaction: transaction)
+      log =
+        insert(:log,
+          address_hash: contract.eth_address,
+          transaction_hash: transaction.eth_hash |> to_string()
+        )
 
       params = %{
         "module" => "logs",
@@ -309,7 +313,7 @@ defmodule GodwokenExplorerWeb.API.RPC.LogsControllerTest do
           "gasPrice" => decimal_to_hex(polyjuice.gas_price),
           "gasUsed" => decimal_to_hex(polyjuice.gas_used),
           "logIndex" => integer_to_hex(log.index),
-          "transactionHash" => "#{transaction.hash}",
+          "transactionHash" => "#{transaction.eth_hash}",
           "transactionIndex" => integer_to_hex(polyjuice.transaction_index)
         }
       ]
