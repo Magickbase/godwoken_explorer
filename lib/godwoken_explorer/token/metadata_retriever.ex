@@ -157,8 +157,6 @@ defmodule GodwokenExplorer.Token.MetadataRetriever do
         formatted_result
         |> Map.put(:contract_address_hash, hash)
         |> Map.put(:updated_at, updated_at)
-        |> Map.put(:decimal, formatted_result[:decimals])
-        |> Map.put(:supply, formatted_result[:total_supply])
       end)
 
     {:ok, fetched_result}
@@ -280,14 +278,14 @@ defmodule GodwokenExplorer.Token.MetadataRetriever do
     |> handle_large_strings
   end
 
-  defp atomized_key("decimals"), do: :decimals
+  defp atomized_key("decimals"), do: :decimal
   defp atomized_key("name"), do: :name
   defp atomized_key("symbol"), do: :symbol
-  defp atomized_key("totalSupply"), do: :total_supply
-  defp atomized_key("313ce567"), do: :decimals
+  defp atomized_key("totalSupply"), do: :supply
+  defp atomized_key("313ce567"), do: :decimal
   defp atomized_key("06fdde03"), do: :name
   defp atomized_key("95d89b41"), do: :symbol
-  defp atomized_key("18160ddd"), do: :total_supply
+  defp atomized_key("18160ddd"), do: :supply
 
   # It's a temp fix to store tokens that have names and/or symbols with characters that the database
   # doesn't accept. See https://github.com/blockscout/blockscout/issues/669 for more info.
