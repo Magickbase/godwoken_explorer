@@ -93,7 +93,7 @@ defmodule GodwokenExplorer.Etherscan.Logs do
     all_transaction_logs_query =
       from(transaction in Transaction,
         join: log in ^logs_query,
-        on: log.transaction_hash == transaction.hash,
+        on: log.transaction_hash == transaction.eth_hash,
         join: p in Polyjuice,
         on: p.tx_hash == transaction.hash,
         where: transaction.block_number >= ^prepared_filter.from_block,

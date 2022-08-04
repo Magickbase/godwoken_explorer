@@ -9,7 +9,7 @@ defmodule GodwokenExplorer.Graphql.LogTest do
       )
 
     transaction = Factory.build(:transaction, args: args)
-    log = Factory.insert!(:log, transaction: transaction)
+    log = Factory.insert!(:log, transaction_hash: transaction.eth_hash)
     [log: log]
   end
 
