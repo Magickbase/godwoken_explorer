@@ -18,21 +18,19 @@ defmodule GodwokenIndexer.Worker.UDTUpdater do
       from(u in UDT,
         where:
           u.type == :native and u.eth_type == :erc20 and not is_nil(u.name) and
-            u.updated_at < ^datetime,
-        select: u.contract_address_hash
+            u.updated_at < ^datetime
       )
 
     stream = GodwokenExplorer.Repo.stream(query, max_rows: 50)
 
     GodwokenExplorer.Repo.transaction(
       fn ->
-        hashes = Enum.to_list(stream) |> Enum.map(&to_string(&1))
-        {:ok, metadata_list} = MetadataRetriever.get_functions_of(hashes)
+        Enum.to_list(stream)
+        |> Enum.each(fn udt ->
+          metadata = MetadataRetriever.get_functions_of(udt.contract_address_hash)
 
-        Enum.each(metadata_list, fn %{contract_address_hash: contract_address_hash} = metadata ->
           udt_to_update =
-            UDT
-            |> Repo.get_by(contract_address_hash: contract_address_hash)
+            udt
             |> Repo.preload(:account)
 
           if(udt_to_update.id in bridge_udt_ids) do
