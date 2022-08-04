@@ -21,7 +21,7 @@ defmodule GodwokenExplorer.Log do
     belongs_to(:transaction, Transaction,
       foreign_key: :transaction_hash,
       primary_key: true,
-      references: :hash,
+      references: :eth_hash,
       type: Hash.Full
     )
 

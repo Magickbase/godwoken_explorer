@@ -3,7 +3,6 @@ defmodule GodwokenIndexer.Fetcher.UDTBalance do
 
   import GodwokenRPC.Util,
     only: [
-      import_timestamps: 0,
       import_utc_timestamps: 0
     ]
 
