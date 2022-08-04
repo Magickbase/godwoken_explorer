@@ -349,6 +349,8 @@ defmodule GodwokenExplorer.Graphql.Types.AccountUDT do
     field :token_contract_address_hash, :hash_address
     field :udt_script_hash, :hash_full
 
+    field :uniq_id, :integer
+
     field :udt, :udt do
       resolve(&Resolvers.AccountUDT.udt/3)
     end
