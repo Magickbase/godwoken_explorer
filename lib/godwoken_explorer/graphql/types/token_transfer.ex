@@ -1,6 +1,7 @@
 defmodule GodwokenExplorer.Graphql.Types.TokenTransfer do
   use Absinthe.Schema.Notation
   alias GodwokenExplorer.Graphql.Resolvers, as: Resolvers
+  alias GodwokenExplorer.Graphql.Middleware.NullFilter
 
   object :token_transfer_querys do
     @desc """
@@ -152,7 +153,7 @@ defmodule GodwokenExplorer.Graphql.Types.TokenTransfer do
     """
     field :token_transfers, :paginate_token_transfers do
       arg(:input, non_null(:token_transfer_input), default_value: %{})
-
+      middleware(NullFilter)
       resolve(&Resolvers.TokenTransfer.token_transfers/3)
     end
   end

@@ -8,6 +8,7 @@ defmodule GodwokenExplorer.Graphql.TokenTransfersTest do
         "0x01000000060000001600000000000000000000000000000001000000000000000000000000000000"
       )
 
+    block = Factory.insert!(:block)
     transaction = Factory.insert!(:transaction, args: args)
 
     {:ok, from_address_hash} =
@@ -22,12 +23,13 @@ defmodule GodwokenExplorer.Graphql.TokenTransfersTest do
     token_transfer =
       Factory.insert!(:token_transfer,
         transaction: transaction,
+        block: block,
         from_address_hash: from_address_hash,
         to_address_hash: to_address_hash,
         token_contract_address_hash: token_contract_address_hash
       )
 
-    [token_transfer: token_transfer]
+    [token_transfer: token_transfer, block: block]
   end
 
   test "graphql: token_transfers ", %{conn: conn, token_transfer: _token_transfer} do
@@ -35,8 +37,6 @@ defmodule GodwokenExplorer.Graphql.TokenTransfersTest do
     query {
       token_transfers(
         input: {
-          start_block_number: 90
-          end_block_number: 90
           limit: 2
           combine_from_to: true
 
@@ -59,6 +59,63 @@ defmodule GodwokenExplorer.Graphql.TokenTransfersTest do
           }
         }
 
+        metadata {
+          total_count
+          before
+          after
+        }
+      }
+    }
+    """
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    assert match?(
+             %{
+               "data" => %{
+                 "token_transfers" => %{}
+               }
+             },
+             json_response(conn, 200)
+           )
+  end
+
+  test "graphql: token_transfers with null input field ", %{
+    conn: conn,
+    token_transfer: _token_transfer
+  } do
+    query = """
+    query {
+      token_transfers(
+        input: {
+          token_contract_address_hash: null
+          limit: 1
+        }
+      ) {
+        entries {
+          amount
+          transaction_hash
+          log_index
+          polyjuice {
+            status
+          }
+          from_address
+          to_address
+          block {
+            number
+            timestamp
+            status
+          }
+          udt {
+            id
+            decimal
+            symbol
+          }
+        }
         metadata {
           total_count
           before
