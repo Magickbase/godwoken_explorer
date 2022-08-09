@@ -75,9 +75,20 @@ defmodule GodwokenExplorer.UDT do
     end
   end
 
-  def count_holder(udt_id) do
-    from(cbub in CurrentBridgedUDTBalance, where: cbub.udt_id == ^udt_id)
-    |> Repo.aggregate(:count)
+  def count_holder(udt) do
+    case udt.type do
+      :native ->
+        from(cub in CurrentUDTBalance,
+          where: cub.token_contract_address_hash == ^udt.contract_address_hash
+        )
+        |> Repo.aggregate(:count)
+
+      :bridge ->
+        from(cbub in CurrentBridgedUDTBalance,
+          where: cbub.udt_id == ^udt.id
+        )
+        |> Repo.aggregate(:count)
+    end
   end
 
   def get_decimal(id) do

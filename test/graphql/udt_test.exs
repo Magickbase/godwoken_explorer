@@ -179,4 +179,48 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
              json_response(conn, 200)
            )
   end
+
+  test "graphql: udt holders ", %{
+    conn: conn,
+    native_udt: native_udt
+  } do
+    contract_address_hash = native_udt.contract_address_hash
+
+    _cub =
+      Factory.insert!(:current_udt_balance,
+        token_contract_address_hash: contract_address_hash,
+        value: Enum.random(1..100_000)
+      )
+
+    query = """
+    query {
+      udt(
+        input: { contract_address: "#{contract_address_hash}" }
+      ) {
+        id
+        name
+        script_hash
+        contract_address_hash
+        holders_count
+      }
+    }
+    """
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    assert match?(
+             %{
+               "data" => %{
+                 "udt" => %{
+                   "holders_count" => 1
+                 }
+               }
+             },
+             json_response(conn, 200)
+           )
+  end
 end

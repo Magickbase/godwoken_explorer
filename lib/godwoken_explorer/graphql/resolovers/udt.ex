@@ -12,8 +12,8 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
 
   @sorter_fields [:name, :supply, :id]
 
-  def holders_count(%UDT{id: id}, _args, _resolution) do
-    {:ok, UDT.count_holder(id)}
+  def holders_count(%UDT{} = udt, _args, _resolution) do
+    {:ok, UDT.count_holder(udt)}
   end
 
   def udt(
