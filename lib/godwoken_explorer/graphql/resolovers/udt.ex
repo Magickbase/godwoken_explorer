@@ -21,14 +21,26 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
         %{input: input},
         _resolution
       ) do
-    contract_address = Map.get(input, :contract_address)
+    conditions =
+      Enum.reduce(input, true, fn arg, acc ->
+        case arg do
+          {:contract_address, value} ->
+            dynamic([u], ^acc and u.contract_address_hash == ^value)
+
+          {:id, value} ->
+            dynamic([u], ^acc and u.id == ^value)
+
+          {:bridge_account_id, value} ->
+            dynamic([u], ^acc and u.bridge_account_id == ^value)
+
+          _ ->
+            acc
+        end
+      end)
 
     query =
-      from(a in Account, where: a.eth_address == ^contract_address)
-      |> join(:inner, [a], u in UDT,
-        on: u.contract_address_hash == a.eth_address or u.script_hash == a.script_hash
-      )
-      |> select([_, u], u)
+      from(u in UDT)
+      |> where(^conditions)
 
     return = Repo.one(query)
     {:ok, return}

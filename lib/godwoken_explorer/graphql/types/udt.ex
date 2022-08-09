@@ -6,7 +6,7 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
     @desc """
     function: get udt by contract address
 
-    request-example:
+    contract address example:
     query {
       udt(
         input: { contract_address: "0x2275AFE815DE66BEABE7A2C03005537AB843AFB2" }
@@ -18,10 +18,38 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
       }
     }
 
-    result-example:
     {
       "data": {
         "udt": {
+          "contract_address_hash": "0x2275afe815de66beabe7a2c03005537ab843afb2",
+          "id": "36050",
+          "name": "GodwokenToken on testnet_v1",
+          "script_hash": null
+        }
+      }
+    }
+
+    id example:
+    query {
+      udt(
+        input: {
+          id: 36050
+          contract_address: "0x2275AFE815DE66BEABE7A2C03005537AB843AFB2"
+        }
+      ) {
+        id
+        bridge_account_id
+        name
+        script_hash
+        contract_address_hash
+      }
+    }
+
+
+    {
+      "data": {
+        "udt": {
+          "bridge_account_id": null,
           "contract_address_hash": "0x2275afe815de66beabe7a2c03005537ab843afb2",
           "id": "36050",
           "name": "GodwokenToken on testnet_v1",
@@ -33,41 +61,6 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
     field :udt, :udt do
       arg(:input, non_null(:udt_input))
       resolve(&Resolvers.UDT.udt/3)
-    end
-
-    @desc """
-    function: get udt by contract address
-
-    request-example:
-    query {
-      get_udt_by_account_id(input: {account_id: 80}){
-        id
-        name
-        type
-        supply
-        account{
-          eth_address
-        }
-      }
-    }
-
-    {
-      "data": {
-        "get_udt_by_account_id": {
-          "account": {
-            "eth_address": null
-          },
-          "id": "80",
-          "name": "USD Coin",
-          "supply": "9999999999",
-          "type": "BRIDGE"
-        }
-      }
-    }
-    """
-    field :get_udt_by_account_id, :udt do
-      arg(:input, non_null(:account_id_input))
-      resolve(&Resolvers.UDT.get_udt_by_account_id/3)
     end
 
     @desc """
@@ -430,11 +423,9 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
   end
 
   input_object :udt_input do
-    field :contract_address, non_null(:hash_address)
-  end
-
-  input_object :account_id_input do
-    field :account_id, :integer
+    field :id, :integer
+    field :bridge_account_id, :integer
+    field :contract_address, :hash_address
   end
 
   input_object :udts_input do
