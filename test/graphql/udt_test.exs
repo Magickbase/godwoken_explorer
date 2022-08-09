@@ -180,16 +180,25 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
            )
   end
 
-  test "graphql: udt holders ", %{
+  test "graphql: native udt holders ", %{
     conn: conn,
+    ckb_udt: ckb_udt,
     native_udt: native_udt
   } do
     contract_address_hash = native_udt.contract_address_hash
 
-    _cub =
+    cub =
       Factory.insert!(:current_udt_balance,
         token_contract_address_hash: contract_address_hash,
         value: Enum.random(1..100_000)
+      )
+
+    _cbub =
+      Factory.insert!(:current_bridged_udt_balance,
+        address_hash: cub.address_hash,
+        value: Enum.random(1..100_000),
+        udt_id: ckb_udt.id,
+        udt_script_hash: ckb_udt.script_hash
       )
 
     query = """
@@ -201,6 +210,57 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
         name
         script_hash
         contract_address_hash
+        holders_count
+      }
+    }
+    """
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    assert match?(
+             %{
+               "data" => %{
+                 "udt" => %{
+                   "holders_count" => 1
+                 }
+               }
+             },
+             json_response(conn, 200)
+           )
+  end
+
+  test "graphql: bridged udt holders ", %{
+    conn: conn,
+    ckb_udt: ckb_udt,
+    native_udt: native_udt
+  } do
+    bridge_account_id = ckb_udt.bridge_account_id
+
+    cub =
+      Factory.insert!(:current_udt_balance,
+        token_contract_address_hash: native_udt.contract_address_hash,
+        value: Enum.random(1..100_000)
+      )
+
+    _cbub =
+      Factory.insert!(:current_bridged_udt_balance,
+        address_hash: cub.address_hash,
+        value: Enum.random(1..100_000),
+        udt_id: ckb_udt.id,
+        udt_script_hash: ckb_udt.script_hash
+      )
+
+    query = """
+    query {
+      udt(input: {bridge_account_id: #{bridge_account_id}}){
+        id
+        bridge_account_id
+        name
+        type
         holders_count
       }
     }

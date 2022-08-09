@@ -5,6 +5,8 @@ defmodule GodwokenExplorer.UDT do
 
   alias GodwokenExplorer.Chain.{Hash, Import}
 
+  import Ecto.Query
+
   @default_ckb_account_id 1
 
   @derive {Jason.Encoder, except: [:__meta__]}
@@ -78,16 +80,64 @@ defmodule GodwokenExplorer.UDT do
   def count_holder(udt) do
     case udt.type do
       :native ->
-        from(cub in CurrentUDTBalance,
-          where: cub.token_contract_address_hash == ^udt.contract_address_hash
-        )
-        |> Repo.aggregate(:count)
+        bridge_udt_query = from(u in UDT, where: u.bridge_account_id == ^udt.id)
+
+        case Repo.one(bridge_udt_query) do
+          nil ->
+            from(cub in CurrentUDTBalance,
+              where: cub.token_contract_address_hash == ^udt.contract_address_hash
+            )
+            |> Repo.aggregate(:count)
+
+          %UDT{id: id} ->
+            cu_query =
+              from(cub in CurrentUDTBalance,
+                where: cub.token_contract_address_hash == ^udt.contract_address_hash
+              )
+              |> join(:inner, [cub], u in UDT,
+                on: cub.token_contract_address_hash == u.contract_address_hash
+              )
+              |> select_merge([_, u], %{uniq_id: u.id})
+
+            cbu_query =
+              from(cbub in CurrentBridgedUDTBalance, where: cbub.udt_id == ^id)
+              |> join(:inner, [cbub], u in UDT, on: cbub.udt_id == u.id)
+              |> select_merge([_, u], %{uniq_id: u.bridge_account_id})
+
+            from(cu in subquery(cu_query))
+            |> join(:inner, [cu], cbu in subquery(cbu_query), on: cu.uniq_id == cbu.uniq_id)
+            |> Repo.aggregate(:count)
+        end
 
       :bridge ->
-        from(cbub in CurrentBridgedUDTBalance,
-          where: cbub.udt_id == ^udt.id
-        )
-        |> Repo.aggregate(:count)
+        native_udt_query = from(u in UDT, where: u.id == ^udt.bridge_account_id)
+
+        case Repo.one(native_udt_query) do
+          nil ->
+            from(cbub in CurrentBridgedUDTBalance,
+              where: cbub.udt_id == ^udt.id
+            )
+            |> Repo.aggregate(:count)
+
+          %UDT{contract_address_hash: contract_address_hash} ->
+            cu_query =
+              from(cub in CurrentUDTBalance,
+                where: cub.token_contract_address_hash == ^contract_address_hash
+              )
+              |> join(:inner, [cub], u in UDT,
+                on: cub.token_contract_address_hash == u.contract_address_hash
+              )
+              |> select_merge([_, u], %{uniq_id: u.id})
+
+            cbu_query =
+              from(cbub in CurrentBridgedUDTBalance, where: cbub.udt_id == ^udt.id)
+              |> join(:inner, [cbub], u in UDT, on: cbub.udt_id == u.id)
+              |> select_merge([_, u], %{uniq_id: u.bridge_account_id})
+
+            from(cu in subquery(cu_query))
+            |> join(:inner, [cu], cbu in subquery(cbu_query), on: cu.uniq_id == cbu.uniq_id)
+            |> Repo.aggregate(:count)
+        end
     end
   end
 
