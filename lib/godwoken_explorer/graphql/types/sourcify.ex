@@ -10,10 +10,11 @@ defmodule GodwokenExplorer.Graphql.Types.Sourcify do
         input: { addresses: ["0x7A4a65Db21864384d2D21a60367d7Fd5c86F8Fba"] }
       ) {
         address
-    status
+        status
         chain_ids
       }
     }
+
 
     {
       "data": {
@@ -66,7 +67,7 @@ defmodule GodwokenExplorer.Graphql.Types.Sourcify do
     """
     field :verify_and_update_from_sourcify, :smart_contract do
       arg(:input, non_null(:verify_and_update_from_sourcify_input))
-      resolve(&Resolvers.Sourcify.verify_and_publish/3)
+      resolve(&Resolvers.Sourcify.verify_and_update_from_sourcify/3)
     end
   end
 
