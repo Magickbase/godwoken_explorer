@@ -19,6 +19,8 @@ defmodule GodwokenExplorer.Account do
   alias GodwokenExplorer.Counters.{AddressTokenTransfersCounter, AddressTransactionsCounter}
   alias GodwokenExplorer.Chain.{Hash, Import, Data}
 
+  alias GodwokenExplorer.Graphql.Sourcify
+
   @polyjuice_creator_args_length 74
   @yok_mainnet_account_id 12119
   @erc20_mainnet_v1_account_id 33
@@ -614,11 +616,25 @@ defmodule GodwokenExplorer.Account do
         |> Map.merge(import_timestamps())
       end)
 
-    Import.insert_changes_list(account_attrs,
-      for: Account,
-      timestamps: import_timestamps(),
-      on_conflict: :nothing
-    )
+    return =
+      Import.insert_changes_list(account_attrs,
+        for: Account,
+        timestamps: import_timestamps(),
+        on_conflict: :nothing
+      )
+
+    polyjuice_contract_account_list = Enum.filter(account_list, &(&1.type == :polyjuice_contract))
+
+    if length(polyjuice_contract_account_list) > 0 do
+      Task.async_stream(
+        polyjuice_contract_account_list,
+        fn contract_account ->
+          Sourcify.verify_and_update_from_sourcify(contract_account.eth_address)
+        end
+      )
+    end
+
+    return
   end
 
   def manual_create_account!(id) do

@@ -63,6 +63,9 @@ services:
       - GRAFANA_AUTH_TOKEN
       - GRAFANA_FOLDER_NAME
       - GRAFANA_DATASOURCE_ID
+      - SOURCIFY_SERVER_URL
+      - SOURCIFY_CHAIN_ID
+      - SOURCIFY_REPO_URL
     ports:
       - 4001:4001
       - 9568:9568

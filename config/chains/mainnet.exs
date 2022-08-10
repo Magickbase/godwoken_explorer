@@ -25,5 +25,3 @@ config :godwoken_explorer,
   },
   init_godwoken_l1_block_number: 5_744_446,
   ckb_token_script_hash: "0x0000000000000000000000000000000000000000000000000000000000000000"
-
-config :godwoken_explorer, :sourcify, chain_id: "71402"
