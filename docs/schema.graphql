@@ -1431,10 +1431,11 @@ type RootQueryType {
       input: { addresses: ["0x7A4a65Db21864384d2D21a60367d7Fd5c86F8Fba"] }
     ) {
       address
-  status
+      status
       chain_ids
     }
   }
+  
   
   {
     "data": {

@@ -56,6 +56,9 @@ services:
       - GWSCAN_BLOCK_BATCH_SIZE
       - GWSCAN_MULTIPLE_L1_BLOCK_ONCE
       - GWSCAN_L1_BLOCK_BATCH_SIZE
+      - SOURCIFY_SERVER_URL
+      - SOURCIFY_CHAIN_ID
+      - SOURCIFY_REPO_URL
     ports:
       - 4001:4001
     extra_hosts:

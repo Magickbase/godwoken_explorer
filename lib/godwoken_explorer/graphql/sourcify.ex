@@ -7,8 +7,98 @@ defmodule GodwokenExplorer.Graphql.Sourcify do
   alias HTTPoison.{Error, Response}
   alias Tesla.Multipart
 
+  alias GodwokenExplorer.Chain.Hash.Address
+  alias GodwokenExplorer.{Account, Polyjuice, SmartContract, Transaction}
+
+  alias GodwokenExplorer.Admin.SmartContract, as: AdminSmartContract
+
+  alias GodwokenExplorer.Repo
+
+  import Ecto.Query
+
   @no_metadata_message "Sourcify did not return metadata"
   @failed_verification_message "Unsuccessful Sourcify verification"
+
+  def verify_and_update_from_sourcify(address) when not is_bitstring(address) do
+    address_hash_string = address |> to_string()
+    verify_and_update_from_sourcify(address_hash_string)
+  end
+
+  def verify_and_update_from_sourcify(address_hash_string) do
+    case get_metadata(address_hash_string) do
+      {:ok, verification_metadata} ->
+        case parse_params_from_sourcify(address_hash_string, verification_metadata) do
+          %{
+            "params_to_publish" => params_to_publish,
+            "abi" => abi
+          } ->
+            %{
+              "name" => name,
+              "compiler_version" => compiler_version,
+              # "optimization" => optimization,
+              "contract_source_code" => contract_source_code
+            } = params_to_publish
+
+            deployment_tx_hash = find_deployment_tx_hash(address_hash_string)
+
+            smart_contract_params = %{
+              name: name,
+              abi: abi,
+              compiler_version: compiler_version,
+              contract_source_code: contract_source_code,
+              deployment_tx_hash: deployment_tx_hash
+            }
+
+            update_smart_contract_from_sourcify(address_hash_string, smart_contract_params)
+
+          {:error, :metadata} ->
+            {:error, no_metadata_message()}
+
+          _ ->
+            {:error, failed_verification_message()}
+        end
+
+      {:error, %{"error" => error}} ->
+        {:error, inspect(error)}
+    end
+  end
+
+  def find_deployment_tx_hash(address) when is_bitstring(address) do
+    {:ok, address} = Address.cast(address)
+    find_deployment_tx_hash(address)
+  end
+
+  def find_deployment_tx_hash(address) do
+    from(p in Polyjuice,
+      where: p.created_contract_address_hash == ^address,
+      join: t in Transaction,
+      on: t.hash == p.tx_hash,
+      select: t.eth_hash
+    )
+    |> Repo.one()
+  end
+
+  def update_smart_contract_from_sourcify(address) when is_bitstring(address) do
+    {:ok, address} = Address.cast(address)
+    update_smart_contract_from_sourcify(address)
+  end
+
+  defp update_smart_contract_from_sourcify(address, attrs) do
+    account = Repo.get_by(Account, eth_address: address)
+
+    if account do
+      smart_contract = Repo.get_by(SmartContract, account_id: account.id)
+
+      if smart_contract do
+        AdminSmartContract.update_smart_contract(smart_contract, attrs)
+      else
+        params = attrs |> Map.merge(%{account_id: account.id})
+        AdminSmartContract.create_smart_contract(params)
+      end
+    else
+      {:error, "contract account not found"}
+    end
+  end
 
   def check_by_addresses(addresses) when is_list(addresses) do
     addresses = Enum.join(addresses, ",")
