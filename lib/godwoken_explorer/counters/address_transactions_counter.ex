@@ -106,7 +106,7 @@ defmodule GodwokenExplorer.Counters.AddressTransactionsCounter do
   def enable_consolidation?, do: @enable_consolidation
 
   defp address_transactions_counter_cache_period do
-    :timer.hours(1)
+    :timer.minutes(1)
   end
 
   defp put_into_db(address, value) do
