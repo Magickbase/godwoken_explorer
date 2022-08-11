@@ -41,12 +41,30 @@ defmodule GodwokenExplorer.DepositWithdrawalView do
   end
 
   def list_by_udt_id(udt_id, page) do
-    deposits = deposit_base_query(dynamic([d], d.udt_id == ^udt_id))
+    udt_id =
+      case UDT |> Repo.get(udt_id) do
+        %UDT{id: id, type: :bridge} ->
+          id
 
-    withdrawals = withdrawal_base_query(dynamic([w], w.udt_id == ^udt_id))
+        %UDT{id: id, type: :native} ->
+          case Repo.get_by(UDT, bridge_account_id: id) do
+            %UDT{id: id} -> id
+            nil -> nil
+          end
+
+        nil ->
+          nil
+      end
 
     original_struct =
-      from(q in subquery(deposits |> union_all(^withdrawals)), order_by: [desc: q.timestamp])
+      if udt_id != nil do
+        deposits = deposit_base_query(dynamic([d], d.udt_id == ^udt_id))
+        withdrawals = withdrawal_base_query(dynamic([w], w.udt_id == ^udt_id))
+
+        from(q in subquery(deposits |> union_all(^withdrawals)), order_by: [desc: q.timestamp])
+      else
+        from(d in DepositHistory, where: 1 != 1)
+      end
 
     parse_struct(original_struct, page)
   end
