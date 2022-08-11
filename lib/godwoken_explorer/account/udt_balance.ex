@@ -46,4 +46,18 @@ defmodule GodwokenExplorer.Account.UDTBalance do
           (is_nil(ub.value_fetched_at) or is_nil(ub.value))
     )
   end
+
+  def snapshot_for_token(start_block_number, end_block_number, token_contract_address_hash) do
+    base_query =
+      from(cub in UDTBalance,
+        where:
+          cub.block_number >= ^start_block_number and cub.block_number <= ^end_block_number and
+            cub.token_contract_address_hash == ^token_contract_address_hash,
+        select: %{address_hash: cub.address_hash, value: cub.value},
+        distinct: cub.address_hash,
+        order_by: [desc: cub.block_number]
+      )
+
+    from(q in subquery(base_query), where: q.value != 0) |> Repo.all()
+  end
 end
