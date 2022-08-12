@@ -9,8 +9,10 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
         "0x0000000000000000000000000000000000000000000000000000000000000000"
       )
 
-    ckb_udt = Factory.insert!(:ckb_udt, script_hash: script_hash)
     native_udt = Factory.insert!(:native_udt)
+
+    ckb_udt =
+      Factory.insert!(:ckb_udt, script_hash: script_hash, bridge_account_id: native_udt.id)
 
     polyjuice_contract_account =
       Factory.insert!(:polyjuice_contract_account,
@@ -103,7 +105,7 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
            )
   end
 
-  test "graphql: get_udt_by_account_id ", %{
+  test "graphql: get_udt_by_id ", %{
     conn: conn,
     polyjuice_contract_account: polyjuice_contract_account
   } do
@@ -111,8 +113,9 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
 
     query = """
     query {
-      get_udt_by_account_id(input: {account_id: #{id}}){
+      udt(input: {id: #{id}}){
         id
+        bridge_account_id
         name
         type
         supply
@@ -133,7 +136,44 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
     assert match?(
              %{
                "data" => %{
-                 "get_udt_by_account_id" => %{}
+                 "udt" => %{}
+               }
+             },
+             json_response(conn, 200)
+           )
+  end
+
+  test "graphql: get_udt_by_bridge_account_id ", %{
+    conn: conn,
+    ckb_udt: ckb_udt
+  } do
+    bridge_account_id = ckb_udt.bridge_account_id
+
+    query = """
+    query {
+      udt(input: {bridge_account_id: #{bridge_account_id}}){
+        id
+        bridge_account_id
+        name
+        type
+        supply
+        account{
+          eth_address
+        }
+      }
+    }
+    """
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    assert match?(
+             %{
+               "data" => %{
+                 "udt" => %{}
                }
              },
              json_response(conn, 200)

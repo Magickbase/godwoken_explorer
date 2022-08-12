@@ -170,10 +170,6 @@ input AccountCurrentUdtsInput {
   token_contract_address_hash: HashAddress
 }
 
-input AccountIdInput {
-  account_id: Int
-}
-
 input AccountInput {
   """
   address: account address(eth_address)
@@ -1183,38 +1179,6 @@ type RootQueryType {
   blocks(input: BlocksInput = {page: 1, page_size: 10, sort_type: DESC}): [Block]
 
   """
-  function: get udt by contract address
-  
-  request-example:
-  query {
-    get_udt_by_account_id(input: {account_id: 80}){
-      id
-      name
-      type
-      supply
-      account{
-        eth_address
-      }
-    }
-  }
-  
-  {
-    "data": {
-      "get_udt_by_account_id": {
-        "account": {
-          "eth_address": null
-        },
-        "id": "80",
-        "name": "USD Coin",
-        "supply": "9999999999",
-        "type": "BRIDGE"
-      }
-    }
-  }
-  """
-  get_udt_by_account_id(input: AccountIdInput!): Udt
-
-  """
   function: get list of logs by filter or conditions
   
   request-example:
@@ -1877,7 +1841,7 @@ type RootQueryType {
   """
   function: get udt by contract address
   
-  request-example:
+  contract address example:
   query {
     udt(
       input: { contract_address: "0x2275AFE815DE66BEABE7A2C03005537AB843AFB2" }
@@ -1889,10 +1853,38 @@ type RootQueryType {
     }
   }
   
-  result-example:
   {
     "data": {
       "udt": {
+        "contract_address_hash": "0x2275afe815de66beabe7a2c03005537ab843afb2",
+        "id": "36050",
+        "name": "GodwokenToken on testnet_v1",
+        "script_hash": null
+      }
+    }
+  }
+  
+  id example:
+  query {
+    udt(
+      input: {
+        id: 36050
+        contract_address: "0x2275AFE815DE66BEABE7A2C03005537AB843AFB2"
+      }
+    ) {
+      id
+      bridge_account_id
+      name
+      script_hash
+      contract_address_hash
+    }
+  }
+  
+  
+  {
+    "data": {
+      "udt": {
+        "bridge_account_id": null,
         "contract_address_hash": "0x2275afe815de66beabe7a2c03005537ab843afb2",
         "id": "36050",
         "name": "GodwokenToken on testnet_v1",
@@ -2414,7 +2406,9 @@ type Udt {
 }
 
 input UdtInput {
-  contract_address: HashAddress!
+  bridge_account_id: Int
+  contract_address: HashAddress
+  id: Int
 }
 
 input UdtsInput {
