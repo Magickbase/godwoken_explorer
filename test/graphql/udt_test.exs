@@ -12,7 +12,12 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
     native_udt = Factory.insert!(:native_udt)
 
     ckb_udt =
-      Factory.insert!(:ckb_udt, script_hash: script_hash, bridge_account_id: native_udt.id)
+      Factory.insert!(:ckb_udt,
+        script_hash: script_hash,
+        bridge_account_id: native_udt.id,
+        official_site: "official_site",
+        description: "description"
+      )
 
     polyjuice_contract_account =
       Factory.insert!(:polyjuice_contract_account,
@@ -277,6 +282,47 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
                "data" => %{
                  "udt" => %{
                    "holders_count" => 1
+                 }
+               }
+             },
+             json_response(conn, 200)
+           )
+  end
+
+  test "graphql: native udt merge bridge udt info ", %{
+    conn: conn,
+    native_udt: native_udt,
+    ckb_udt: %{official_site: official_site, description: description}
+  } do
+    contract_address_hash = native_udt.contract_address_hash
+
+    query = """
+    query {
+      udt(
+        input: { contract_address: "#{contract_address_hash}" }
+      ) {
+        id
+        name
+        description
+        official_site
+        script_hash
+        contract_address_hash
+      }
+    }
+    """
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    assert match?(
+             %{
+               "data" => %{
+                 "udt" => %{
+                   "official_site" => ^official_site,
+                   "description" => ^description
                  }
                }
              },
