@@ -62,6 +62,7 @@ defmodule GodwokenExplorerWeb.Router do
     get("/txs/:hash/logs", Transaction.LogController, :index)
     get("/accounts/:address/logs", Account.LogController, :index)
     get("/poly_versions", PolyVersionController, :index)
+    get("/snapshots.csv", SnapshotController, :index)
   end
 
   scope "/api/v1", as: :api_v1 do

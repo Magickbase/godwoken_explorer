@@ -15,6 +15,7 @@ defmodule GodwokenExplorer.Factory do
   use GodwokenExplorer.TokenTransferFactory
   use GodwokenExplorer.TransactionFactory
   use GodwokenExplorer.UDTFactory
+  use GodwokenExplorer.UDTBalanceFactory
   use GodwokenExplorer.WithdrawalHistoryFactory
   use GodwokenExplorer.WithdrawalRequestFactory
 
