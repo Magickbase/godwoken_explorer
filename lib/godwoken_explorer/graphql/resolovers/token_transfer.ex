@@ -89,12 +89,6 @@ defmodule GodwokenExplorer.Graphql.Resolvers.TokenTransfer do
           {:transaction_hash, value} ->
             dynamic([tt], ^acc and tt.transaction_hash == ^value)
 
-          # {:from_address, value} ->
-          #   dynamic([tt], ^acc and tt.from_address_hash == ^value)
-
-          # {:to_address, value} ->
-          #   dynamic([tt], ^acc and tt.to_address_hash == ^value)
-
           {:token_contract_address_hash, value} ->
             dynamic([tt], ^acc and tt.token_contract_address_hash == ^value)
 
