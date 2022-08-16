@@ -9,7 +9,7 @@ defmodule GodwokenExplorer.TokenApproval do
     field :block_number, :integer
     field :transaction_hash, Hash.Full
     field(:token_owner_address_hash, Hash.Address)
-    field(:spender_address_hash, Hash.Address)
+    field(:spender_address_hash, :binary)
     field(:token_contract_address_hash, Hash.Address)
     field(:data, :decimal)
     field(:approved, :boolean)
