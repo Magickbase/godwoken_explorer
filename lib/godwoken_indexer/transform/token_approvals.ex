@@ -18,15 +18,19 @@ defmodule GodwokenIndexer.Transform.TokenApprovals do
         {approved, spender_address_hash} =
           cond do
             log.third_topic == @zero_address ->
-              %{spender_address_hash: spender_address_hash} =
-                Repo.get_by(TokenApproval,
-                  token_owner_address_hash: parse_address(log.second_topic),
-                  token_contract_address_hash: log.address_hash |> to_string(),
-                  data: log.data |> to_string() |> hex_to_number(),
-                  type: :approval
-                )
+              case Repo.get_by(TokenApproval,
+                     token_owner_address_hash: parse_address(log.second_topic),
+                     token_contract_address_hash: log.address_hash |> to_string(),
+                     data: log.data |> to_string() |> hex_to_number(),
+                     type: :approval,
+                     approved: true
+                   ) do
+                nil ->
+                  {false, @zero_address}
 
-              {false, spender_address_hash |> to_string()}
+                %{spender_address_hash: spender_address_hash} ->
+                  {false, spender_address_hash |> to_string()}
+              end
 
             log.data |> to_string() == @zero_address &&
                 %UDT{eth_type: :erc20} ==
