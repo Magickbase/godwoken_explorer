@@ -12,8 +12,8 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
 
   @sorter_fields [:name, :supply, :id]
 
-  def holders_count(%UDT{id: id}, _args, _resolution) do
-    {:ok, UDT.count_holder(id)}
+  def holders_count(%UDT{} = udt, _args, _resolution) do
+    {:ok, UDT.count_holder(udt)}
   end
 
   def udt(
@@ -42,8 +42,31 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
       from(u in UDT)
       |> where(^conditions)
 
-    return = Repo.one(query)
-    {:ok, return}
+    udt = Repo.one(query)
+    mapping_udt = UDT.find_mapping_udt(udt)
+    udt = merge_bridge_info_to_udt(udt, mapping_udt)
+    {:ok, udt}
+  end
+
+  defp merge_bridge_info_to_udt(udt, mapping_udt) do
+    if not is_nil(udt) do
+      case udt.type do
+        :native ->
+          if not is_nil(mapping_udt) do
+            Map.merge(udt, %{
+              description: mapping_udt.description,
+              official_site: mapping_udt.official_site
+            })
+          else
+            udt
+          end
+
+        :bridge ->
+          udt
+      end
+    else
+      udt
+    end
   end
 
   def get_udt_by_account_id(
