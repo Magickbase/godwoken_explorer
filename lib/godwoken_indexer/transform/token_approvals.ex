@@ -4,7 +4,7 @@ defmodule GodwokenIndexer.Transform.TokenApprovals do
       hex_to_number: 1
     ]
 
-  alias GodwokenExplorer.{Repo, UDT}
+  alias GodwokenExplorer.{Repo, TokenApproval, UDT}
 
   @approval_event "0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925"
   @approval_for_all_event "0x17307eab39ab6107e8899845ad3d59bd9653f200f220920489ca2b5937696c31"
