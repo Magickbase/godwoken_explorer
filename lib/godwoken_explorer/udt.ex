@@ -5,6 +5,9 @@ defmodule GodwokenExplorer.UDT do
 
   alias GodwokenExplorer.Chain.{Hash, Import}
 
+  alias GodwokenExplorer.TokenTransfer
+  alias GodwokenExplorer.Account.{UDTBalance}
+
   import Ecto.Query
 
   @default_ckb_account_id 1
@@ -164,6 +167,21 @@ defmodule GodwokenExplorer.UDT do
     from(cb in subquery(union_all(cu_query, ^cbu_query)))
     |> distinct([cb], cb.address_hash)
     |> Repo.aggregate(:count)
+  end
+
+  # minted count by token transfer from "0x0000000000000000000000000000000000000000"
+  def minted_count(udt) do
+    if udt do
+      contract_address_hash = udt.contract_address_hash
+      minted_burn_address_hash = UDTBalance.minted_burn_address_hash()
+
+      from(tt in TokenTransfer)
+      |> where([tt], tt.token_contract_address_hash == ^contract_address_hash)
+      |> where([tt], tt.from_address_hash == ^minted_burn_address_hash)
+      |> Repo.aggregate(:count)
+    else
+      0
+    end
   end
 
   def get_decimal(id) do

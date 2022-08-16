@@ -365,7 +365,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
         on_conflict: :nothing
       )
 
-      update_erc20_balance(token_transfers)
+      update_udt_balance(token_transfers)
     end
 
     if length(tokens) > 0 do
@@ -725,21 +725,26 @@ defmodule GodwokenIndexer.Block.SyncWorker do
     end
   end
 
-  defp update_erc20_balance(token_transfers) do
+  defp update_udt_balance(token_transfers) do
     address_token_balances =
       TokenBalances.params_set(%{token_transfers_params: token_transfers})
       |> Enum.uniq_by(fn map ->
-        {map[:address_hash], map[:token_contract_address_hash], map[:block_number]}
+        {map[:address_hash], map[:token_contract_address_hash], map[:block_number],
+         map[:token_id], map[:token_type]}
       end)
       |> Enum.map(fn %{
                        address_hash: address_hash,
                        token_contract_address_hash: token_contract_address_hash,
-                       block_number: block_number
+                       block_number: block_number,
+                       token_id: token_id,
+                       token_type: token_type
                      } ->
         %{
           address_hash: address_hash,
           token_contract_address_hash: token_contract_address_hash,
-          block_number: block_number
+          block_number: block_number,
+          token_id: token_id,
+          token_type: token_type
         }
       end)
 

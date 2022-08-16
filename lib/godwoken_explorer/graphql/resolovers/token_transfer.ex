@@ -13,11 +13,37 @@ defmodule GodwokenExplorer.Graphql.Resolvers.TokenTransfer do
 
   def token_transfers(_parent, %{input: input}, _resolution) do
     return =
-      input
-      |> query_token_transfers()
+      from(tt in TokenTransfer)
+      |> query_token_transfers(input)
       |> paginate_query(input, %{
         cursor_fields: paginate_cursor(input),
-        total_count_primary_key_field: :transaction_hash
+        total_count_primary_key_field: [:transaction_hash, :log_index]
+      })
+
+    {:ok, return}
+  end
+
+  def erc721_token_transfers(_parent, %{input: input}, _resolution) do
+    return =
+      from(tt in TokenTransfer)
+      |> where([tt], not is_nil(tt.token_id))
+      |> query_token_transfers(input)
+      |> paginate_query(input, %{
+        cursor_fields: paginate_cursor(input),
+        total_count_primary_key_field: [:transaction_hash, :log_index]
+      })
+
+    {:ok, return}
+  end
+
+  def erc1155_token_transfers(_parent, %{input: input}, _resolution) do
+    return =
+      from(tt in TokenTransfer)
+      |> where([tt], not is_nil(tt.token_ids))
+      |> query_token_transfers(input)
+      |> paginate_query(input, %{
+        cursor_fields: paginate_cursor(input),
+        total_count_primary_key_field: [:transaction_hash, :log_index]
       })
 
     {:ok, return}
@@ -82,7 +108,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.TokenTransfer do
     {:ok, return}
   end
 
-  defp query_token_transfers(input) do
+  defp query_token_transfers(query, input) do
     conditions =
       Enum.reduce(input, true, fn arg, acc ->
         case arg do
@@ -97,6 +123,9 @@ defmodule GodwokenExplorer.Graphql.Resolvers.TokenTransfer do
 
           {:end_block_number, value} ->
             dynamic([tt], ^acc and tt.block_number <= ^value)
+
+          {:token_id, value} ->
+            dynamic([tt], ^acc and tt.token_id == ^value)
 
           _ ->
             acc
@@ -131,7 +160,8 @@ defmodule GodwokenExplorer.Graphql.Resolvers.TokenTransfer do
           end
       end
 
-    from(tt in TokenTransfer, where: ^conditions)
+    query
+    |> where([tt], ^conditions)
     |> join(:inner, [tt], b in Block, as: :block, on: b.hash == tt.block_hash)
     |> query_with_block_age_range(input)
     |> token_transfers_order_by(input)

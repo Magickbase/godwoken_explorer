@@ -72,7 +72,7 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
       udts(
         input: {
           limit: 3
-          sorter: [{ sort_type: ASC, sort_value: NAME }]
+          sorter: [{ sort_type: ASC, sort_value: NAME }, {sort_type: DESC, sort_value: EX_HOLDERS_COUNT}]
         }
       ) {
         entries {
@@ -84,6 +84,7 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
             eth_address
             script_hash
           }
+          holders_count
         }
         metadata {
           total_count
@@ -134,7 +135,6 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
         }
       }
     }
-
     """
 
     conn =

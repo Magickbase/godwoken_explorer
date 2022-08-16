@@ -95,7 +95,8 @@ defmodule GodwokenIndexer.Transform.TokenTransfers do
       to_address_hash: truncate_address_hash(log.third_topic),
       token_contract_address_hash: log.address_hash,
       transaction_hash: log.transaction_hash,
-      token_id: nil
+      token_id: nil,
+      token_type: :erc20
     }
 
     token = %{
@@ -121,6 +122,7 @@ defmodule GodwokenIndexer.Transform.TokenTransfers do
       to_address_hash: truncate_address_hash(log.third_topic),
       token_contract_address_hash: log.address_hash,
       token_id: token_id || 0,
+      token_type: :erc721,
       transaction_hash: log.transaction_hash
     }
 
@@ -153,6 +155,7 @@ defmodule GodwokenIndexer.Transform.TokenTransfers do
       to_address_hash: encode_address_hash(to_address_hash),
       token_contract_address_hash: log.address_hash,
       token_id: token_id,
+      token_type: :erc721,
       transaction_hash: log.transaction_hash
     }
 
@@ -211,6 +214,7 @@ defmodule GodwokenIndexer.Transform.TokenTransfers do
       transaction_hash: log.transaction_hash,
       token_ids: token_ids,
       token_id: nil,
+      token_type: :erc1155,
       amounts: values
     }
 
@@ -236,7 +240,8 @@ defmodule GodwokenIndexer.Transform.TokenTransfers do
       to_address_hash: truncate_address_hash(fourth_topic),
       token_contract_address_hash: log.address_hash,
       transaction_hash: log.transaction_hash,
-      token_id: token_id
+      token_id: token_id,
+      token_type: :erc1155
     }
 
     token = %{
