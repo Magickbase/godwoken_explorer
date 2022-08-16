@@ -1,6 +1,11 @@
 defmodule GodwokenExplorer.Factory do
   use ExMachina.Ecto, repo: GodwokenExplorer.Repo
 
+  import GodwokenRPC.Util,
+    only: [
+      pad_heading: 3
+    ]
+
   use GodwokenExplorer.UtilFactory
   use GodwokenExplorer.AccountFactory
   use GodwokenExplorer.BlockFactory
@@ -12,6 +17,7 @@ defmodule GodwokenExplorer.Factory do
   use GodwokenExplorer.PolyjuiceFactory
   use GodwokenExplorer.PolyjuiceCreatorFactory
   use GodwokenExplorer.SmartContractFactory
+  use GodwokenExplorer.TokenApprovalFactory
   use GodwokenExplorer.TokenTransferFactory
   use GodwokenExplorer.TransactionFactory
   use GodwokenExplorer.UDTFactory

@@ -39,6 +39,18 @@ defmodule GodwokenRPC.Util do
     binary <> (<<byte>> |> copy(len - byte_size(binary)))
   end
 
+  def pad_heading(binary, len, byte \\ 0)
+
+  def pad_heading(binary, len, byte)
+      when is_binary(binary) and is_integer(len) and is_integer(byte) and len > 0 and
+             byte_size(binary) >= len,
+      do: binary
+
+  def pad_heading(binary, len, byte)
+      when is_binary(binary) and is_integer(len) and is_integer(byte) and len > 0 do
+    (<<byte>> |> copy(len - byte_size(binary))) <> binary
+  end
+
   @spec copy(binary, non_neg_integer) :: binary
   def copy(bin, n) when is_binary(bin) and is_integer(n) do
     :binary.copy(bin, n)
