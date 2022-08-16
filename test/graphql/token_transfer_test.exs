@@ -1,4 +1,4 @@
-defmodule GodwokenExplorer.Graphql.TokenTransfersTest do
+defmodule GodwokenExplorer.Graphql.TokenTransferTest do
   use GodwokenExplorerWeb.ConnCase
   alias GodwokenExplorer.Factory
 

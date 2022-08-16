@@ -42,13 +42,11 @@ defmodule GodwokenIndexer.Fetcher.UDTBalance do
         [token_balance |> entry() | acc]
       end)
 
-    result =
+    {:ok, _result} =
       entries
       |> Enum.map(&format_params/1)
       |> fetch_from_blockchain()
       |> import_token_balances()
-
-    result == :ok
   end
 
   def fetch_from_blockchain(params_list) do
@@ -63,23 +61,45 @@ defmodule GodwokenIndexer.Fetcher.UDTBalance do
   end
 
   def import_token_balances(token_balances_params) do
-    formatted_token_balances_params = token_balances_params
+    {without_token_ids, with_token_ids} =
+      Enum.split_with(token_balances_params, fn tb -> is_nil(Map.get(tb, :token_id)) end)
 
-    formatted_current_token_balances_params =
-      UDTBalances.to_address_current_token_balances(formatted_token_balances_params)
+    {format_without_token_ids, format_with_token_ids} =
+      UDTBalances.to_address_current_token_balances(without_token_ids, with_token_ids)
 
-    Import.insert_changes_list(formatted_token_balances_params,
+    Import.insert_changes_list(without_token_ids,
       for: UDTBalance,
       timestamps: import_utc_timestamps(),
       on_conflict: {:replace, [:value, :value_fetched_at, :updated_at]},
-      conflict_target: [:token_contract_address_hash, :address_hash, :block_number]
+      conflict_target:
+        {:unsafe_fragment,
+         ~s<(address_hash, token_contract_address_hash, block_number) WHERE token_id IS NULL>}
     )
 
-    Import.insert_changes_list(formatted_current_token_balances_params,
+    Import.insert_changes_list(with_token_ids,
+      for: UDTBalance,
+      timestamps: import_utc_timestamps(),
+      on_conflict: {:replace, [:value, :value_fetched_at, :updated_at]},
+      conflict_target:
+        {:unsafe_fragment,
+         ~s<(address_hash, token_contract_address_hash, token_id, block_number) WHERE token_id IS NOT NULL>}
+    )
+
+    Import.insert_changes_list(format_without_token_ids,
       for: CurrentUDTBalance,
       timestamps: import_utc_timestamps(),
       on_conflict: {:replace, [:value, :value_fetched_at, :updated_at]},
-      conflict_target: [:token_contract_address_hash, :address_hash]
+      conflict_target:
+        {:unsafe_fragment, ~s<(address_hash, token_contract_address_hash) WHERE token_id IS NULL>}
+    )
+
+    Import.insert_changes_list(format_with_token_ids,
+      for: CurrentUDTBalance,
+      timestamps: import_utc_timestamps(),
+      on_conflict: {:replace, [:value, :value_fetched_at, :updated_at]},
+      conflict_target:
+        {:unsafe_fragment,
+         ~s<(address_hash, token_contract_address_hash, token_id) WHERE token_id IS NOT NULL>}
     )
   end
 

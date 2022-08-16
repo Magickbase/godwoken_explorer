@@ -365,7 +365,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
         on_conflict: :nothing
       )
 
-      update_erc20_balance(token_transfers)
+      update_udt_balance(token_transfers)
     end
 
     if length(tokens) > 0 do
@@ -729,32 +729,67 @@ defmodule GodwokenIndexer.Block.SyncWorker do
     end
   end
 
-  defp update_erc20_balance(token_transfers) do
-    address_token_balances =
+  defp update_udt_balance(token_transfers) do
+    {without_token_ids, with_token_ids} =
       TokenBalances.params_set(%{token_transfers_params: token_transfers})
-      |> Enum.uniq_by(fn map ->
-        {map[:address_hash], map[:token_contract_address_hash], map[:block_number]}
-      end)
-      |> Enum.map(fn %{
-                       address_hash: address_hash,
-                       token_contract_address_hash: token_contract_address_hash,
-                       block_number: block_number
-                     } ->
-        %{
-          address_hash: address_hash,
-          token_contract_address_hash: token_contract_address_hash,
-          block_number: block_number
-        }
-      end)
+      |> Enum.split_with(fn udt_balance -> is_nil(Map.get(udt_balance, :token_id)) end)
 
-    Import.insert_changes_list(address_token_balances,
+    without_token_ids =
+      without_token_ids
+      |> Enum.uniq_by(fn map ->
+        {map[:address_hash], map[:token_contract_address_hash], map[:block_number],
+         map[:token_type]}
+      end)
+      |> filter_udt_balance_params()
+
+    with_token_ids =
+      with_token_ids
+      |> Enum.uniq_by(fn map ->
+        {map[:address_hash], map[:token_contract_address_hash], map[:block_number],
+         map[:token_id], map[:token_type]}
+      end)
+      |> filter_udt_balance_params()
+
+    Import.insert_changes_list(without_token_ids,
       for: UDTBalance,
       timestamps: import_utc_timestamps(),
       on_conflict: :nothing,
-      conflict_target: [:address_hash, :token_contract_address_hash, :block_number]
+      # conflict_target: [:address_hash, :token_contract_address_hash, :block_number]
+      conflict_target:
+        {:unsafe_fragment,
+         ~s<(address_hash, token_contract_address_hash, block_number) WHERE token_id IS NULL>}
+    )
+
+    Import.insert_changes_list(with_token_ids,
+      for: UDTBalance,
+      timestamps: import_utc_timestamps(),
+      on_conflict: :nothing,
+      # conflict_target: [:address_hash, :token_contract_address_hash, :block_number, :token_id]
+      conflict_target:
+        {:unsafe_fragment,
+         ~s<(address_hash, token_contract_address_hash, token_id, block_number) WHERE token_id NOT IS NULL>}
     )
 
     :ok
+  end
+
+  def filter_udt_balance_params(params_list) do
+    params_list
+    |> Enum.map(fn %{
+                     address_hash: address_hash,
+                     token_contract_address_hash: token_contract_address_hash,
+                     block_number: block_number,
+                     token_id: token_id,
+                     token_type: token_type
+                   } ->
+      %{
+        address_hash: address_hash,
+        token_contract_address_hash: token_contract_address_hash,
+        block_number: block_number,
+        token_id: token_id,
+        token_type: token_type
+      }
+    end)
   end
 
   defp update_ckb_balance(polyjuice_params) do

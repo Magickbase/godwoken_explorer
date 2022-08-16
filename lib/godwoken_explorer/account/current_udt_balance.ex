@@ -22,6 +22,9 @@ defmodule GodwokenExplorer.Account.CurrentUDTBalance do
 
     field(:uniq_id, :integer, virtual: true)
 
+    field :token_id, :decimal
+    field :token_type, Ecto.Enum, values: [:erc20, :erc721, :erc1155]
+
     timestamps(type: :utc_datetime_usec)
   end
 
@@ -35,10 +38,13 @@ defmodule GodwokenExplorer.Account.CurrentUDTBalance do
       :token_contract_address_hash,
       :value,
       :value_fetched_at,
-      :block_number
+      :block_number,
+      :token_id,
+      :token_type
     ])
-    |> validate_required([:address_hash, :token_contract_address_hash])
-    |> unique_constraint([:address_hash, :token_contract_address_hash])
+    |> validate_required(~w(address_hash block_number token_contract_address_hash token_type)a)
+
+    # |> unique_constraint([:address_hash, :token_contract_address_hash])
   end
 
   def list_udt_by_eth_address(eth_address) do

@@ -66,10 +66,6 @@ defmodule GodwokenExplorerWeb.Endpoint do
   plug Plug.MethodOverride
   plug Plug.Head
   plug Plug.Session, @session_options
-
-  if Mix.env() in [:stg, :prod] do
-    plug CORSPlug
-  end
-
+  plug CORSPlug
   plug GodwokenExplorerWeb.Router
 end
