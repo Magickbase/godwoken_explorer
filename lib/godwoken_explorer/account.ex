@@ -18,6 +18,7 @@ defmodule GodwokenExplorer.Account do
   alias GodwokenExplorer.Chain.Events.Publisher
   alias GodwokenExplorer.Counters.{AddressTokenTransfersCounter, AddressTransactionsCounter}
   alias GodwokenExplorer.Chain.{Hash, Import, Data}
+  alias GodwokenExplorer.Graphql.Workers.Sourcify, as: ObanSourcify
 
   @polyjuice_creator_args_length 74
   @yok_mainnet_account_id 12119
@@ -614,11 +615,38 @@ defmodule GodwokenExplorer.Account do
         |> Map.merge(import_timestamps())
       end)
 
-    Import.insert_changes_list(account_attrs,
-      for: Account,
-      timestamps: import_timestamps(),
-      on_conflict: :nothing
-    )
+    return =
+      Import.insert_changes_list(account_attrs,
+        for: Account,
+        timestamps: import_timestamps(),
+        on_conflict: :nothing
+      )
+
+    case return do
+      {:ok, return_accounts} ->
+        polyjuice_contract_account_list =
+          return_accounts
+          |> Enum.filter(&(&1.type == :polyjuice_contract))
+
+        if length(polyjuice_contract_account_list) > 0 do
+          polyjuice_contract_account_list
+          |> Enum.each(fn pc_account ->
+            pc_account |> ObanSourcify.new() |> Oban.insert()
+          end)
+
+          # Task.async_stream(
+          #   polyjuice_contract_account_list,
+          #   fn contract_account ->
+          #     GodwokenExplorer.Graphql.Sourcify.verify_and_update_from_sourcify(contract_account.eth_address)
+          #   end
+          # )
+        end
+
+        return
+
+      _ ->
+        return
+    end
   end
 
   def manual_create_account!(id) do
