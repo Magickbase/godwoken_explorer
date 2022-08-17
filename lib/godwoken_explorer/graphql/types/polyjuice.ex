@@ -9,7 +9,7 @@ defmodule GodwokenExplorer.Graphql.Types.Polyjuice do
     field :gas_price, :bigint
     field :value, :bigint
     field :input_size, :integer
-    field :input, :string
+    field :input, :chain_data
     field :tx_hash, :hash_full
     field :gas_used, :bigint
     field :transaction_index, :integer
@@ -28,7 +28,7 @@ defmodule GodwokenExplorer.Graphql.Types.Polyjuice do
   end
 
   enum :polyjuice_status do
-    value :succeed
-    value :failed
+    value(:succeed)
+    value(:failed)
   end
 end
