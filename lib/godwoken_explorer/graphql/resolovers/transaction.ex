@@ -2,6 +2,8 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
   alias GodwokenExplorer.Repo
   alias GodwokenExplorer.{Account, Transaction, Block, Polyjuice, PolyjuiceCreator}
 
+  alias GodwokenExplorer.Chain.Data
+
   import GodwokenExplorer.Graphql.Resolvers.Common,
     only: [paginate_query: 3, query_with_block_age_range: 2]
 
@@ -33,6 +35,35 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
       end)
 
     from(t in Transaction, where: ^conditions)
+  end
+
+  def method_id(%Transaction{hash: hash}, _args, _resolution) do
+    p =
+      from(p in Polyjuice)
+      |> where([p], p.tx_hash == ^hash)
+      |> Repo.one()
+
+    if p do
+      input = to_string(p.input)
+      mid = String.slice(input, 0, 10)
+      Data.cast(mid)
+    else
+      {:ok, nil}
+    end
+  end
+
+  def method_name(%Transaction{hash: hash, to_account_id: to_account_id}, _args, _resolution) do
+    p =
+      from(p in Polyjuice)
+      |> where([p], p.tx_hash == ^hash)
+      |> Repo.one()
+
+    if p do
+      input = to_string(p.input)
+      {:ok, Polyjuice.get_method_name(to_account_id, input)}
+    else
+      {:ok, nil}
+    end
   end
 
   def transactions(_parent, %{input: input} = _args, _resolution) do

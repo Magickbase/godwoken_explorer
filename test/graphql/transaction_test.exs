@@ -124,4 +124,74 @@ defmodule GodwokenExplorer.Graphql.TransactionTest do
              json_response(conn, 200)
            )
   end
+
+  test "graphql: transactions with method id and method name", %{
+    conn: conn
+  } do
+    user = Factory.insert(:user)
+    contract = Factory.insert(:polyjuice_contract_account)
+
+    _udt =
+      Factory.insert(:native_udt,
+        id: contract.id,
+        type: :native,
+        name: "CKB",
+        symbol: "CKB",
+        decimal: 8,
+        contract_address_hash: contract.eth_address
+      )
+
+    block = Factory.insert(:block)
+
+    transaction =
+      :transaction
+      |> Factory.insert(
+        from_account: user,
+        to_account: contract,
+        block_number: block.number,
+        block: block
+      )
+
+    polyjuice = Factory.insert(:polyjuice, transaction: transaction)
+
+    eth_hash = transaction.eth_hash |> to_string()
+    input = polyjuice.input |> to_string()
+    method_id = String.slice(input, 0, 10)
+
+    query = """
+    query {
+      transaction(
+        input: {
+          eth_hash: "#{eth_hash}"
+        }
+      ) {
+        hash
+        from_account_id
+        to_account_id
+        method_id
+        method_name
+        polyjuice {
+          input
+        }
+      }
+    }
+    """
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    assert match?(
+             %{
+               "data" => %{
+                 "transaction" => %{
+                   "method_id" => ^method_id
+                 }
+               }
+             },
+             json_response(conn, 200)
+           )
+  end
 end

@@ -350,7 +350,7 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
 
   object :transaction do
     field :hash, :hash_full
-    field :args, :string
+    field :args, :chain_data
     field :from_account_id, :integer
     field :nonce, :integer
     field :to_account_id, :integer
@@ -359,6 +359,14 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
     field :block_hash, :hash_full
     field :eth_hash, :hash_full
     field(:index, :integer)
+
+    field :method_id, :chain_data do
+      resolve(&Resolvers.Transaction.method_id/3)
+    end
+
+    field :method_name, :string do
+      resolve(&Resolvers.Transaction.method_name/3)
+    end
 
     field :polyjuice, :polyjuice do
       resolve(&Resolvers.Transaction.polyjuice/3)
