@@ -7,7 +7,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
   require Logger
 
   alias GodwokenIndexer.Worker.ImportContractCode
-  alias GodwokenIndexer.Transform.{TokenTransfers, TokenBalances}
+  alias GodwokenIndexer.Transform.{TokenTransfers, TokenBalances, TokenApprovals}
   alias GodwokenRPC.{Blocks, Receipts}
   alias GodwokenExplorer.Chain.Import
   alias GodwokenExplorer.GW.Log, as: GWLog
@@ -21,6 +21,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
     Account,
     WithdrawalRequest,
     Log,
+    TokenApproval,
     TokenTransfer,
     Polyjuice,
     PolyjuiceCreator,
@@ -214,6 +215,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
         logs = logs |> Enum.reject(fn x -> x[:topic] == [] end)
         import_logs(logs)
         import_token_transfers(logs)
+        import_token_approvals(logs)
         polyjuice_with_receipts = Receipts.put([poly_txs], receipts)
 
         import_polyjuice(polyjuice_with_receipts ++ polyjuice_deploy_contract)
@@ -331,6 +333,26 @@ defmodule GodwokenIndexer.Block.SyncWorker do
       timestamps: import_timestamps(),
       on_conflict: :nothing
     )
+  end
+
+  defp import_token_approvals(logs) do
+    token_approvals = TokenApprovals.parse(logs)
+
+    if length(token_approvals) > 0 do
+      Import.insert_changes_list(token_approvals,
+        for: TokenApproval,
+        timestamps: import_timestamps(),
+        on_conflict:
+          {:replace, [:block_hash, :block_number, :transaction_hash, :approved, :updated_at]},
+        conflict_target: [
+          :token_owner_address_hash,
+          :spender_address_hash,
+          :token_contract_address_hash,
+          :data,
+          :type
+        ]
+      )
+    end
   end
 
   defp import_token_transfers(logs) do
