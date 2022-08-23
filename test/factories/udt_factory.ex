@@ -21,6 +21,7 @@ defmodule GodwokenExplorer.UDTFactory do
           id: id,
           script_hash: block_hash(),
           type: :native,
+          eth_type: :erc20,
           name: sequence("UDT", &"UDT#{&1}"),
           contract_address_hash: address_hash(),
           decimal: 18,

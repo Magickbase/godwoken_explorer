@@ -1,5 +1,5 @@
 defmodule GodwokenIndexer.Fetcher.TotalSupplyOnDemandTest do
-  use GodwokenExplorerWeb.ConnCase
+  use GodwokenExplorer.DataCase
 
   import Mock
   import GodwokenExplorer.Factory
