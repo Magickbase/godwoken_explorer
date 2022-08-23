@@ -41,7 +41,7 @@ defmodule GodwokenExplorer.Graphql.TokenApprovalsTest do
      token_approvals(
         input: {
           address: "#{address}"
-          token_type: "erc20"
+          token_type: ERC20
           sorter: [
             { sort_type: DESC, sort_value: BLOCK_NUMBER },
             { sort_type: DESC, sort_value: ID }

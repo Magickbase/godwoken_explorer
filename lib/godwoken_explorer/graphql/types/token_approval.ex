@@ -12,7 +12,7 @@ defmodule GodwokenExplorer.Graphql.Types.TokenApproval do
       token_approvals(
         input: {
           address: "0x966b30e576a4d6731996748b48dd67c94ef29067"
-          token_type: [:erc20, :erc721, :erc1155]
+          token_type: ERC20
           limit: 2
 
           sorter: [
@@ -105,7 +105,7 @@ defmodule GodwokenExplorer.Graphql.Types.TokenApproval do
 
   input_object :token_approval_input do
     field :address, :hash_address
-    field :token_type, :string
+    field :token_type, :token_type
 
     field :sorter, list_of(:token_approvals_sorter_input),
       default_value: [
