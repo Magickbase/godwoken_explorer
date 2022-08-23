@@ -16,7 +16,8 @@ defmodule GodwokenExplorer.Graphql.Types.TokenApproval do
           limit: 2
 
           sorter: [
-            { sort_type: ASC, sort_value: BLOCK_NUMBER }
+            { sort_type: DESC, sort_value: BLOCK_NUMBER },
+            { sort_type: DESC, sort_value: ID }
           ]
         }
       ) {
@@ -102,17 +103,14 @@ defmodule GodwokenExplorer.Graphql.Types.TokenApproval do
     value(:approval_all)
   end
 
-  enum :token_approval_sorter do
-    value(:block_number)
-  end
-
   input_object :token_approval_input do
     field :address, :hash_address
     field :token_type, :string
 
     field :sorter, list_of(:token_approvals_sorter_input),
       default_value: [
-        %{sort_type: :desc, sort_value: :block_number}
+        %{sort_type: :desc, sort_value: :block_number},
+        %{sort_type: :desc, sort_value: :id}
       ]
 
     import_fields(:paginate_input)
@@ -126,6 +124,7 @@ defmodule GodwokenExplorer.Graphql.Types.TokenApproval do
 
   enum :token_approvals_sorter do
     value(:block_number)
+    value(:id)
   end
 
   input_object :token_approvals_sorter_input do

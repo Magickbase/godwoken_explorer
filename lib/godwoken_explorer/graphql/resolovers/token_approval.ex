@@ -1,15 +1,14 @@
 defmodule GodwokenExplorer.Graphql.Resolvers.TokenApproval do
-  alias GodwokenExplorer.{Block, TokenApproval, UDT}
-
-  alias GodwokenExplorer.Repo
-
   import Ecto.Query
   import GodwokenExplorer.Graphql.Common, only: [cursor_order_sorter: 3]
 
   import GodwokenExplorer.Graphql.Resolvers.Common,
     only: [paginate_query: 3]
 
-  @sorter_fields [:block_number]
+  alias GodwokenExplorer.{Block, TokenApproval, UDT}
+  alias GodwokenExplorer.Repo
+
+  @sorter_fields [:block_number, :id]
 
   def token_approvals(_parent, %{input: input}, _resolution) do
     query =
