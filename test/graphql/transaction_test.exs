@@ -118,7 +118,12 @@ defmodule GodwokenExplorer.Graphql.TransactionTest do
     assert match?(
              %{
                "data" => %{
-                 "transactions" => %{}
+                 "transactions" => %{
+                   "entries" => _,
+                   "metadata" => %{
+                     "total_count" => 1
+                   }
+                 }
                }
              },
              json_response(conn, 200)

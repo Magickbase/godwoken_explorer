@@ -8,6 +8,20 @@ defmodule GodwokenExplorer.Repo do
 
   require Logger
 
+  @graphql_paginate_defaults [
+    limit: 20,
+    # sets the maximum limit to 100
+    maximum_limit: 100,
+    # include total count by default
+    include_total_count: true
+  ]
+
+  def graphql_paginate(queryable, opts \\ [], repo_opts \\ []) do
+    opts = Keyword.merge(@graphql_paginate_defaults, opts)
+
+    Paginator.paginate(queryable, opts, __MODULE__, repo_opts)
+  end
+
   @doc """
   Chunks elements into multiple `insert_all`'s to avoid DB driver param limits.
 

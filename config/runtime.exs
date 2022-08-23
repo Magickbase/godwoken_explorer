@@ -82,19 +82,6 @@ config :godwoken_explorer, GodwokenExplorer.Repo,
   connect_timeout: pg_connect_timeout,
   socket_options: maybe_ipv6
 
-config :godwoken_explorer, GodwokenExplorer.PaginateRepo,
-  username: pg_username,
-  password: pg_password,
-  database: pg_database,
-  hostname: pg_hostname,
-  port: pg_port,
-  # url: database_url,
-  pool_size: pg_pool_size,
-  queue_target: pg_queue_target,
-  timeout: pg_timeout,
-  connect_timeout: pg_connect_timeout,
-  socket_options: maybe_ipv6
-
 gwscan_block_sync_woker_on_off =
   System.get_env("GWSCAN_BLOCK_SYNC_WORKER_ON_OFF", "false") |> String.to_atom()
 
