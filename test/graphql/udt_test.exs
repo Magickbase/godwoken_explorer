@@ -98,7 +98,12 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
     assert match?(
              %{
                "data" => %{
-                 "udts" => %{}
+                 "udts" => %{
+                   "entries" => _,
+                   "metadata" => %{
+                     "total_count" => 2
+                   }
+                 }
                }
              },
              json_response(conn, 200)

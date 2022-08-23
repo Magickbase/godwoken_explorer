@@ -77,7 +77,12 @@ defmodule GodwokenExplorer.Graphql.TokenTransfersTest do
     assert match?(
              %{
                "data" => %{
-                 "token_transfers" => %{}
+                 "token_transfers" => %{
+                   "entries" => _,
+                   "metadata" => %{
+                     "total_count" => 1
+                   }
+                 }
                }
              },
              json_response(conn, 200)
@@ -134,7 +139,12 @@ defmodule GodwokenExplorer.Graphql.TokenTransfersTest do
     assert match?(
              %{
                "data" => %{
-                 "token_transfers" => %{}
+                 "token_transfers" => %{
+                   "entries" => _,
+                   "metadata" => %{
+                     "total_count" => 1
+                   }
+                 }
                }
              },
              json_response(conn, 200)

@@ -11,7 +11,6 @@ defmodule GodwokenExplorer.Application do
     children = [
       # Start the Ecto repository
       GodwokenExplorer.Repo,
-      GodwokenExplorer.PaginateRepo,
       # Start the Telemetry supervisor
       GodwokenExplorerWeb.Telemetry,
       # Start the PubSub system
