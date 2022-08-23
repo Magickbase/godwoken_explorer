@@ -70,7 +70,10 @@ defmodule GodwokenExplorer.Graphql.SmartContractTest do
              %{
                "data" => %{
                  "smart_contracts" => %{
-                   "entries" => _
+                   "entries" => _,
+                   "metadata" => %{
+                    "total_count" => 1,
+                   }
                  }
                }
              },

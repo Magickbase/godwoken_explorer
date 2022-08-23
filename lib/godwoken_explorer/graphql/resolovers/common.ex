@@ -1,5 +1,5 @@
 defmodule GodwokenExplorer.Graphql.Resolvers.Common do
-  alias GodwokenExplorer.PaginateRepo
+  alias GodwokenExplorer.Repo
   import Ecto.Query
 
   def query_with_block_age_range({:error, _} = error, _input), do: error
@@ -50,7 +50,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Common do
 
     case {input[:before], input[:after]} do
       {nil, nil} ->
-        PaginateRepo.paginate(
+        Repo.graphql_paginate(
           query,
           cursor_fields: cursor_fields,
           total_count_primary_key_field: total_count_primary_key_field,
@@ -58,7 +58,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Common do
         )
 
       {nil, query_after} ->
-        PaginateRepo.paginate(
+        Repo.graphql_paginate(
           query,
           after: query_after,
           cursor_fields: cursor_fields,
@@ -67,7 +67,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Common do
         )
 
       {query_before, nil} ->
-        PaginateRepo.paginate(
+        Repo.graphql_paginate(
           query,
           before: query_before,
           cursor_fields: cursor_fields,
