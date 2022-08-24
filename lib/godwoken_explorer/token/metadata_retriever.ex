@@ -5,7 +5,7 @@ defmodule GodwokenExplorer.Token.MetadataRetriever do
 
   require Logger
 
-  alias GodwokenExplorer.{Chain, Repo}
+  alias GodwokenExplorer.{Chain, Repo, UDT}
   alias GodwokenExplorer.Chain.Hash
   alias GodwokenExplorer.SmartContract.Reader
 
