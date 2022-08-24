@@ -7,7 +7,8 @@ defmodule GodwokenExplorer.CurrentUDTBalanceFactory do
         %CurrentUDTBalance{
           address_hash: address_hash(),
           token_contract_address_hash: address_hash(),
-          block_number: 1
+          block_number: 1,
+          value: Enum.random(1..100_000)
         }
       end
     end
