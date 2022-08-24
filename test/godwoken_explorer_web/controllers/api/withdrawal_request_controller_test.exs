@@ -6,6 +6,8 @@ defmodule GodwokenExplorerWeb.API.WithdrawalRequestControllerTest do
   setup do
     udt = insert(:ckb_udt)
     insert(:ckb_account)
+    ckb_native = insert(:ckb_native_udt)
+    insert(:ckb_contract_account, eth_address: ckb_native.contract_address_hash)
     %{hash: hash, number: number} = insert(:block)
     %{script_hash: script_hash, eth_address: eth_address} = insert(:user)
 
@@ -66,7 +68,7 @@ defmodule GodwokenExplorerWeb.API.WithdrawalRequestControllerTest do
                        "eth_address" => "",
                        "supply" => udt.supply |> Decimal.to_string(),
                        "symbol" => nil,
-                       "transfer_count" => 0,
+                       "transfer_count" => nil,
                        "type" => "bridge",
                        "value" => nil
                      },

@@ -7,6 +7,8 @@ defmodule GodwokenExplorerWeb.API.DepositHistoryControllerTest do
   setup do
     udt = insert(:ckb_udt)
     insert(:ckb_account)
+    ckb_native = insert(:ckb_native_udt)
+    insert(:ckb_contract_account, eth_address: ckb_native.contract_address_hash)
     user = insert(:user)
 
     deposit = insert(:deposit_history, script_hash: user.script_hash)
@@ -53,7 +55,7 @@ defmodule GodwokenExplorerWeb.API.DepositHistoryControllerTest do
                        "eth_address" => "",
                        "supply" => udt.supply |> Decimal.to_string(),
                        "symbol" => nil,
-                       "transfer_count" => 0,
+                       "transfer_count" => nil,
                        "type" => "bridge",
                        "value" => nil
                      },

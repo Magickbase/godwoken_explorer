@@ -142,38 +142,56 @@ defmodule GodwokenExplorer.Account.CurrentUDTBalance do
         %UDT{supply: supply, decimal: decimal} ->
           [udt_script_hash, token_contract_address_hashes] = UDT.list_address_by_udt_id(udt_id)
 
-          bridged_udt_balance_query =
-            from(cbub in CurrentBridgedUDTBalance,
-              where: cbub.udt_script_hash == ^udt_script_hash and cbub.value > 0,
-              select: %{
-                eth_address: cbub.address_hash,
-                balance: cbub.value,
-                updated_at: cbub.updated_at
-              }
-            )
-
-          udt_balance_query =
-            from(cub in CurrentUDTBalance,
-              join: a1 in Account,
-              on: a1.eth_address == cub.address_hash,
-              where:
-                cub.token_contract_address_hash == ^token_contract_address_hashes and
-                  cub.value > 0,
-              select: %{
-                eth_address: cub.address_hash,
-                balance: cub.value,
-                updated_at: cub.updated_at
-              }
-            )
-
           {cond do
              is_nil(udt_script_hash) ->
-               udt_balance_query
+               from(cub in CurrentUDTBalance,
+                 join: a1 in Account,
+                 on: a1.eth_address == cub.address_hash,
+                 where:
+                   cub.token_contract_address_hash == ^token_contract_address_hashes and
+                     cub.value > 0,
+                 select: %{
+                   eth_address: cub.address_hash,
+                   balance: cub.value,
+                   updated_at: cub.updated_at
+                 }
+               )
 
              is_nil(token_contract_address_hashes) ->
-               bridged_udt_balance_query
+               from(cbub in CurrentBridgedUDTBalance,
+                 where: cbub.udt_script_hash == ^udt_script_hash and cbub.value > 0,
+                 select: %{
+                   eth_address: cbub.address_hash,
+                   balance: cbub.value,
+                   updated_at: cbub.updated_at
+                 }
+               )
 
              true ->
+               bridged_udt_balance_query =
+                 from(cbub in CurrentBridgedUDTBalance,
+                   where: cbub.udt_script_hash == ^udt_script_hash and cbub.value > 0,
+                   select: %{
+                     eth_address: cbub.address_hash,
+                     balance: cbub.value,
+                     updated_at: cbub.updated_at
+                   }
+                 )
+
+               udt_balance_query =
+                 from(cub in CurrentUDTBalance,
+                   join: a1 in Account,
+                   on: a1.eth_address == cub.address_hash,
+                   where:
+                     cub.token_contract_address_hash == ^token_contract_address_hashes and
+                       cub.value > 0,
+                   select: %{
+                     eth_address: cub.address_hash,
+                     balance: cub.value,
+                     updated_at: cub.updated_at
+                   }
+                 )
+
                from(q in subquery(union_all(udt_balance_query, ^bridged_udt_balance_query)),
                  join: a in Account,
                  on: a.eth_address == q.eth_address,
