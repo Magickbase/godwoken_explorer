@@ -7,6 +7,7 @@ defmodule GodwokenExplorer.Graphql.Schemas.Graphql do
   import_types(GodwokenExplorer.Graphql.Types.Custom.BigInt)
   import_types(GodwokenExplorer.Graphql.Types.Custom.HashFull)
   import_types(GodwokenExplorer.Graphql.Types.Custom.HashAddress)
+  import_types(GodwokenExplorer.Graphql.Types.Custom.ChainData)
 
   import_types(GodwokenExplorer.Graphql.Types.Common)
   import_types(GodwokenExplorer.Graphql.Types.AccountUDT)

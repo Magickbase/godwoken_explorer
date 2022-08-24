@@ -100,7 +100,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.SmartContract do
       end)
       |> Enum.filter(&(&1 != :skip))
     else
-      cursor_order_sorter(sorter, :cursor, @sorter_fields)
+      @default_sorter
     end
   end
 

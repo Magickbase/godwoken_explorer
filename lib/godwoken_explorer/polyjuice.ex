@@ -96,7 +96,7 @@ defmodule GodwokenExplorer.Polyjuice do
     end
   end
 
-  defp decode_input(to_account_id, input, hash) do
+  def decode_input(to_account_id, input, hash) do
     if to_account_id in SmartContract.account_ids() do
       full_abi = SmartContract.cache_abi(to_account_id)
 
