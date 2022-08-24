@@ -248,7 +248,14 @@ defmodule GodwokenExplorer.UDT do
 
       %UDT{type: :native} = udt ->
         %Account{eth_address: eth_address} = Repo.get(Account, udt.id)
-        [eth_address]
+
+        with bridge_account when bridge_account != nil <-
+               Repo.get_by(UDT, bridge_account_id: udt_id),
+             %Account{script_hash: script_hash} <- Repo.get(Account, bridge_account.id) do
+          [script_hash, eth_address]
+        else
+          _ -> [nil, eth_address]
+        end
 
       nil ->
         []
