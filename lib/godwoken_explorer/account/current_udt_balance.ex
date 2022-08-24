@@ -12,15 +12,15 @@ defmodule GodwokenExplorer.Account.CurrentUDTBalance do
 
   @derive {Jason.Encoder, except: [:__meta__]}
   schema "account_current_udt_balances" do
-    field :value, :decimal
+    field(:value, :decimal)
     field(:value_fetched_at, :utc_datetime_usec)
     field(:block_number, :integer)
-    field :address_hash, Hash.Address
-    field :token_contract_address_hash, Hash.Address
+    field(:address_hash, Hash.Address)
+    field(:token_contract_address_hash, Hash.Address)
     belongs_to(:account, GodwokenExplorer.Account, foreign_key: :account_id, references: :id)
     belongs_to(:udt, GodwokenExplorer.UDT, foreign_key: :udt_id, references: :id)
 
-    field :uniq_id, :integer, virtual: true
+    field(:uniq_id, :integer, virtual: true)
 
     timestamps(type: :utc_datetime_usec)
   end
@@ -139,72 +139,79 @@ defmodule GodwokenExplorer.Account.CurrentUDTBalance do
   def sort_holder_list(udt_id, paging_options) do
     {query, supply, decimal} =
       case Repo.get(UDT, udt_id) do
-        %UDT{type: :native, supply: supply, decimal: decimal} ->
-          [token_contract_address_hashes] = UDT.list_address_by_udt_id(udt_id)
-
-          {from(cub in CurrentUDTBalance,
-             join: a1 in Account,
-             on: a1.eth_address == cub.address_hash,
-             where:
-               cub.token_contract_address_hash == ^token_contract_address_hashes and
-                 cub.value > 0,
-             select: %{
-               eth_address: cub.address_hash,
-               balance: cub.value,
-               tx_count:
-                 fragment(
-                   "CASE WHEN ? is null THEN 0 ELSE ? END",
-                   a1.transaction_count,
-                   a1.transaction_count
-                 )
-             }
-           ), supply, decimal}
-
-        %UDT{type: :bridge, supply: supply, decimal: decimal} ->
+        %UDT{supply: supply, decimal: decimal} ->
           [udt_script_hash, token_contract_address_hashes] = UDT.list_address_by_udt_id(udt_id)
 
-          bridged_udt_balance_query =
-            from(cbub in CurrentBridgedUDTBalance,
-              where: cbub.udt_script_hash == ^udt_script_hash and cbub.value > 0,
-              select: %{
-                eth_address: cbub.address_hash,
-                balance: cbub.value,
-                updated_at: cbub.updated_at
-              }
-            )
+          {cond do
+             is_nil(udt_script_hash) ->
+               from(cub in CurrentUDTBalance,
+                 join: a1 in Account,
+                 on: a1.eth_address == cub.address_hash,
+                 where:
+                   cub.token_contract_address_hash == ^token_contract_address_hashes and
+                     cub.value > 0,
+                 select: %{
+                   eth_address: cub.address_hash,
+                   balance: cub.value,
+                   updated_at: cub.updated_at
+                 }
+               )
 
-          if is_nil(token_contract_address_hashes) do
-            {bridged_udt_balance_query, supply, decimal}
-          else
-            udt_balance_query =
-              from(cub in CurrentUDTBalance,
-                where:
-                  cub.token_contract_address_hash == ^token_contract_address_hashes and
-                    cub.value > 0,
-                select: %{
-                  eth_address: cub.address_hash,
-                  balance: cub.value,
-                  updated_at: cub.updated_at
-                }
-              )
+             is_nil(token_contract_address_hashes) ->
+               from(cbub in CurrentBridgedUDTBalance,
+                 where: cbub.udt_script_hash == ^udt_script_hash and cbub.value > 0,
+                 select: %{
+                   eth_address: cbub.address_hash,
+                   balance: cbub.value,
+                   updated_at: cbub.updated_at
+                 }
+               )
 
-            {from(q in subquery(union_all(udt_balance_query, ^bridged_udt_balance_query)),
-               join: a in Account,
-               on: a.eth_address == q.eth_address,
-               select: %{
-                 eth_address: q.eth_address,
-                 balance: q.balance,
-                 tx_count:
-                   fragment(
-                     "CASE WHEN ? is null THEN 0 ELSE ? END",
-                     a.transaction_count,
-                     a.transaction_count
-                   )
-               },
-               order_by: [desc: :updated_at],
-               distinct: q.eth_address
-             ), supply, decimal}
-          end
+             true ->
+               bridged_udt_balance_query =
+                 from(cbub in CurrentBridgedUDTBalance,
+                   where: cbub.udt_script_hash == ^udt_script_hash and cbub.value > 0,
+                   select: %{
+                     eth_address: cbub.address_hash,
+                     balance: cbub.value,
+                     updated_at: cbub.updated_at
+                   }
+                 )
+
+               udt_balance_query =
+                 from(cub in CurrentUDTBalance,
+                   join: a1 in Account,
+                   on: a1.eth_address == cub.address_hash,
+                   where:
+                     cub.token_contract_address_hash == ^token_contract_address_hashes and
+                       cub.value > 0,
+                   select: %{
+                     eth_address: cub.address_hash,
+                     balance: cub.value,
+                     updated_at: cub.updated_at
+                   }
+                 )
+
+               from(q in subquery(union_all(udt_balance_query, ^bridged_udt_balance_query)),
+                 join: a in Account,
+                 on: a.eth_address == q.eth_address,
+                 select: %{
+                   eth_address: q.eth_address,
+                   balance: q.balance,
+                   tx_count:
+                     fragment(
+                       "CASE WHEN ? is null THEN 0 ELSE ? END",
+                       a.transaction_count,
+                       a.transaction_count
+                     )
+                 },
+                 order_by: [desc: :updated_at],
+                 distinct: q.eth_address
+               )
+           end, supply, decimal}
+
+        nil ->
+          {from(cub in CurrentUDTBalance, where: 1 != 1), nil, nil}
       end
 
     if is_nil(paging_options) do
