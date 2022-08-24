@@ -220,7 +220,7 @@ defmodule GodwokenExplorer.Account do
             }
           }
         else
-          holders = UDT.count_holder(id)
+          holders = UDT.count_holder(udt)
 
           type_script =
             if id == UDT.ckb_account_id() do

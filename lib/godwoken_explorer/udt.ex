@@ -5,6 +5,8 @@ defmodule GodwokenExplorer.UDT do
 
   alias GodwokenExplorer.Chain.{Hash, Import}
 
+  import Ecto.Query
+
   @default_ckb_account_id 1
 
   @derive {Jason.Encoder, except: [:__meta__]}
@@ -75,8 +77,92 @@ defmodule GodwokenExplorer.UDT do
     end
   end
 
-  def count_holder(udt_id) do
-    from(cbub in CurrentBridgedUDTBalance, where: cbub.udt_id == ^udt_id)
+  defmacrop dyn_cub_condition(udt) do
+    quote bind_quoted: [udt: udt] do
+      if not is_nil(udt) do
+        if udt.type == :native do
+          dynamic(
+            [c],
+            c.token_contract_address_hash == ^udt.contract_address_hash and c.value > 0
+          )
+        else
+          false
+        end
+      else
+        false
+      end
+    end
+  end
+
+  defmacrop dyn_cbub_condition(udt) do
+    quote bind_quoted: [udt: udt] do
+      if not is_nil(udt) do
+        if udt.type == :bridge do
+          dynamic(
+            [c],
+            c.udt_id == ^udt.id and c.value > 0
+          )
+        else
+          false
+        end
+      else
+        false
+      end
+    end
+  end
+
+  defmacrop dyn_mapping_udt_condtion(udt) do
+    quote bind_quoted: [udt: udt] do
+      if not is_nil(udt) do
+        conditions =
+          if udt.type == :native do
+            dynamic([u], u.bridge_account_id == ^udt.id)
+          else
+            false
+          end
+
+        if udt.type == :bridge do
+          dynamic([u], u.id == ^udt.bridge_account_id or ^conditions)
+        else
+          conditions
+        end
+      else
+        false
+      end
+    end
+  end
+
+  def find_mapping_udt(udt) do
+    mapping_udt_conditions = dyn_mapping_udt_condtion(udt)
+    mapping_udt_query = from(u in UDT, where: ^mapping_udt_conditions)
+    Repo.one(mapping_udt_query)
+  end
+
+  def count_holder(udt) do
+    mapping_udt = find_mapping_udt(udt)
+
+    cub1_conditions = dyn_cub_condition(udt)
+    cub2_conditions = dyn_cub_condition(mapping_udt)
+
+    cu_query =
+      from(cub in CurrentUDTBalance,
+        where: ^cub1_conditions,
+        or_where: ^cub2_conditions
+      )
+      |> select([cub], %{address_hash: cub.address_hash})
+
+    cbub1_conditions = dyn_cbub_condition(udt)
+    cbub2_conditions = dyn_cbub_condition(mapping_udt)
+
+    cbu_query =
+      from(cbub in CurrentBridgedUDTBalance,
+        where: ^cbub1_conditions,
+        or_where: ^cbub2_conditions
+      )
+      |> select([cbub], %{address_hash: cbub.address_hash})
+
+    from(cb in subquery(union_all(cu_query, ^cbu_query)))
+    |> distinct([cb], cb.address_hash)
     |> Repo.aggregate(:count)
   end
 
