@@ -33,7 +33,8 @@ defmodule GodwokenExplorer.Application do
       GodwokenExplorer.ETS.SmartContracts,
       GodwokenExplorer.SmartContract.SolcDownloader,
       GodwokenExplorer.SmartContract.VyperDownloader,
-      {Oban, oban_config()}
+      {Oban, oban_config()},
+      GodwokenExplorer.PromEx
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
