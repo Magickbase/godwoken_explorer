@@ -8,6 +8,9 @@ services:
       args:
         GODWOKEN_CHAIN: ${GODWOKEN_CHAIN}
         GWSCAN_GRAPHIQL: ${GWSCAN_GRAPHIQL}
+        GRAFANA_HOST: ${GRAFANA_HOST}
+        GRAFANA_AUTH_TOKEN: ${GRAFANA_AUTH_TOKEN}
+        GRAFANA_FOLDER_NAME: ${GRAFANA_FOLDER_NAME}
       target: deploy
     restart: always
     working_dir: /app
@@ -59,8 +62,13 @@ services:
       - SOURCIFY_SERVER_URL
       - SOURCIFY_CHAIN_ID
       - SOURCIFY_REPO_URL
+      - GRAFANA_HOST
+      - GRAFANA_AUTH_TOKEN
+      - GRAFANA_FOLDER_NAME
+      - GRAFANA_DATASOURCE_ID
     ports:
       - 4001:4001
+      - 9568:9568
     extra_hosts:
       - "host.docker.internal:host-gateway"
     volumes:

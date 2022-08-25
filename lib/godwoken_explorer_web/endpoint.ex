@@ -47,6 +47,8 @@ defmodule GodwokenExplorerWeb.Endpoint do
 
   plug PlugHeartbeat, path: "/health"
 
+  plug PromEx.Plug, prom_ex_module: GodwokenExplorer.PromEx
+
   plug Phoenix.LiveDashboard.RequestLogger,
     param_key: "request_logger",
     cookie_key: "request_logger"
