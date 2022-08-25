@@ -25,42 +25,45 @@ defmodule GodwokenExplorer.Graphql.Sourcify do
   end
 
   def verify_and_update_from_sourcify(address_hash_string) do
-    case get_metadata(address_hash_string) do
-      {:ok, verification_metadata} ->
-        case parse_params_from_sourcify(address_hash_string, verification_metadata) do
-          %{
-            "params_to_publish" => params_to_publish,
-            "abi" => abi
-          } ->
+    deployment_tx_hash = find_deployment_tx_hash(address_hash_string)
+    smart_contract_params = %{deployment_tx_hash: deployment_tx_hash}
+
+    extend_sourcify_params =
+      case get_metadata(address_hash_string) do
+        {:ok, verification_metadata} ->
+          case parse_params_from_sourcify(address_hash_string, verification_metadata) do
             %{
-              "name" => name,
-              "compiler_version" => compiler_version,
-              # "optimization" => optimization,
-              "contract_source_code" => contract_source_code
-            } = params_to_publish
+              "params_to_publish" => params_to_publish,
+              "abi" => abi
+            } ->
+              %{
+                "name" => name,
+                "compiler_version" => compiler_version,
+                # "optimization" => optimization,
+                "contract_source_code" => contract_source_code
+              } = params_to_publish
 
-            deployment_tx_hash = find_deployment_tx_hash(address_hash_string)
+              %{
+                name: name,
+                abi: abi,
+                compiler_version: compiler_version,
+                contract_source_code: contract_source_code
+              }
 
-            smart_contract_params = %{
-              name: name,
-              abi: abi,
-              compiler_version: compiler_version,
-              contract_source_code: contract_source_code,
-              deployment_tx_hash: deployment_tx_hash
-            }
+            {:error, :metadata} ->
+              %{}
 
-            update_smart_contract_from_sourcify(address_hash_string, smart_contract_params)
+            _ ->
+              %{}
+          end
 
-          {:error, :metadata} ->
-            {:error, no_metadata_message()}
+        {:error, %{"error" => _error}} ->
+          %{}
+      end
 
-          _ ->
-            {:error, failed_verification_message()}
-        end
+    smart_contract_params = smart_contract_params |> Map.merge(extend_sourcify_params)
 
-      {:error, %{"error" => error}} ->
-        {:error, inspect(error)}
-    end
+    update_smart_contract_by_address(address_hash_string, smart_contract_params)
   end
 
   def find_deployment_tx_hash(address) when is_bitstring(address) do
@@ -78,12 +81,12 @@ defmodule GodwokenExplorer.Graphql.Sourcify do
     |> Repo.one()
   end
 
-  def update_smart_contract_from_sourcify(address) when is_bitstring(address) do
+  def update_smart_contract_by_address(address, attrs) when is_bitstring(address) do
     {:ok, address} = Address.cast(address)
-    update_smart_contract_from_sourcify(address)
+    update_smart_contract_by_address(address, attrs)
   end
 
-  defp update_smart_contract_from_sourcify(address, attrs) do
+  def update_smart_contract_by_address(address, attrs) do
     account = Repo.get_by(Account, eth_address: address)
 
     if account do
