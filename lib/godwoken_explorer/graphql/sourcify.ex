@@ -10,9 +10,9 @@ defmodule GodwokenExplorer.Graphql.Sourcify do
   alias GodwokenExplorer.Chain.Hash.Address
   alias GodwokenExplorer.{Account, Polyjuice, SmartContract, Transaction}
 
-  alias GodwokenExplorer.Admin.SmartContract, as: AdminSmartContract
-
   alias GodwokenExplorer.Repo
+
+  require Logger
 
   import Ecto.Query
 
@@ -50,14 +50,11 @@ defmodule GodwokenExplorer.Graphql.Sourcify do
                 contract_source_code: contract_source_code
               }
 
-            {:error, :metadata} ->
-              %{}
-
             _ ->
               %{}
           end
 
-        {:error, %{"error" => _error}} ->
+        _ ->
           %{}
       end
 
@@ -92,11 +89,26 @@ defmodule GodwokenExplorer.Graphql.Sourcify do
     if account do
       smart_contract = Repo.get_by(SmartContract, account_id: account.id)
 
-      if smart_contract do
-        AdminSmartContract.update_smart_contract(smart_contract, attrs)
-      else
-        params = attrs |> Map.merge(%{account_id: account.id})
-        AdminSmartContract.create_smart_contract(params)
+      result =
+        if smart_contract do
+          smart_contract
+          |> SmartContract.changeset(attrs)
+          |> Repo.update()
+        else
+          params = attrs |> Map.merge(%{account_id: account.id})
+
+          %SmartContract{}
+          |> SmartContract.changeset(params)
+          |> Repo.insert()
+        end
+
+      case result do
+        {:ok, _} = r ->
+          r
+
+        error ->
+          Logger.error(fn -> "update_smart_contract_by_address : #{inspect(error)}" end)
+          {:error, :insert_or_update_smart_contract_failed}
       end
     else
       {:error, "contract account not found"}
