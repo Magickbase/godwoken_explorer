@@ -56,3 +56,5 @@ staging_testnet_v1.env
 priv/solc_compilers
 priv/vyper_compilers
 
+.DS_Store
+
