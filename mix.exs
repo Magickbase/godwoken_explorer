@@ -109,6 +109,7 @@ defmodule GodwokenExplorer.MixProject do
       {:retry, "~> 0.15"},
       {:briefly, "~> 0.3"},
       {:nimble_csv, "~> 1.1"},
+      {:prom_ex, "~> 1.7.1"},
 
       # cron job
       {:oban, "~> 2.12"},

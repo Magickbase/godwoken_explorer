@@ -30,3 +30,8 @@ config :phoenix, :stacktrace_depth, 20
 
 # Initialize plugs at runtime for faster development compilation
 config :phoenix, :plug_init_mode, :runtime
+
+config :godwoken_explorer, GodwokenExplorer.PromEx,
+  disabled: true,
+  grafana: :disabled,
+  metrics_server: :disabled
