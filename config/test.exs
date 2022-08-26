@@ -22,3 +22,8 @@ config :godwoken_explorer, Oban, testing: :inline
 
 # Print only warnings and errors during test
 config :logger, level: :warn
+
+config :godwoken_explorer, GodwokenExplorer.PromEx,
+  disabled: true,
+  grafana: :disabled,
+  metrics_server: :disabled
