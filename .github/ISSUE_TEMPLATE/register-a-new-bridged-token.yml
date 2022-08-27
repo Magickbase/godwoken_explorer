@@ -34,15 +34,6 @@ body:
       placeholder: e.g. WBTC.ckb|fb.eth
 
   - type: input
-    id: decimals
-    validations:
-      required: true
-    attributes:
-      label: Decimals
-      description: The number of decimal places that the token amount should display
-      placeholder: e.g. 18 means to divide the token amount by 10^18 to get its representation.
-
-  - type: input
     id: max-supply
     validations:
       required: false
