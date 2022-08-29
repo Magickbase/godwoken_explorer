@@ -1,6 +1,6 @@
 defmodule GodwokenExplorer.Chain.Cache.PolyVersion do
   @moduledoc """
-  Cache for block count.
+  Cache for godwoken version.
   """
 
   require Logger
