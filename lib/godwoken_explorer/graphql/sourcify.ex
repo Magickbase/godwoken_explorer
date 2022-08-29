@@ -91,11 +91,16 @@ defmodule GodwokenExplorer.Graphql.Sourcify do
 
       result =
         if smart_contract do
+          params = filter_params_nil(attrs)
+
           smart_contract
-          |> SmartContract.changeset(attrs)
+          |> SmartContract.changeset(params)
           |> Repo.update()
         else
-          params = attrs |> Map.merge(%{account_id: account.id})
+          params =
+            attrs
+            |> Map.merge(%{account_id: account.id})
+            |> filter_params_nil()
 
           %SmartContract{}
           |> SmartContract.changeset(params)
@@ -113,6 +118,12 @@ defmodule GodwokenExplorer.Graphql.Sourcify do
     else
       {:error, "contract account not found"}
     end
+  end
+
+  def filter_params_nil(params) do
+    params
+    |> Enum.filter(fn {_, v} -> not is_nil(v) end)
+    |> Enum.into(%{})
   end
 
   def check_by_addresses(addresses) when is_list(addresses) do
