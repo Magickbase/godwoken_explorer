@@ -185,8 +185,6 @@ defmodule GodwokenExplorer.Account do
           smart_contract = %SmartContract{} ->
             %{
               smart_contract: %{
-                # create account's tx_hash needs godwoken api support
-                tx_hash: "",
                 abi: smart_contract.abi,
                 contract_source_code: smart_contract.contract_source_code,
                 name: smart_contract.name,
@@ -204,7 +202,7 @@ defmodule GodwokenExplorer.Account do
             %{
               smart_contract: %{
                 # create account's tx_hash needs godwoken api support
-                tx_hash: "",
+                deployment_tx_hash: "",
                 udt_list: udt_list
               }
             }
