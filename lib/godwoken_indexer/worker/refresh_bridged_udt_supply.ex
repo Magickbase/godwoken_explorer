@@ -52,7 +52,12 @@ defmodule GodwokenIndexer.Worker.RefreshBridgedUDTSupply do
           )
           |> Multi.run(:native_udt, fn repo, _ ->
             udt = repo.get(UDT, u.bridge_account_id)
-            {:ok, udt |> UDT.changeset(%{supply: supply}) |> repo.update()}
+
+            if udt != nil do
+              {:ok, udt |> UDT.changeset(%{supply: supply}) |> repo.update()}
+            else
+              {:ok, nil}
+            end
           end)
           |> Repo.transaction()
 
