@@ -85,10 +85,11 @@ defmodule GodwokenExplorerWeb.Router do
   scope "/admin", GodwokenExplorerWeb.Admin, as: :admin do
     pipe_through(:browser)
 
-    get("/", UDTController, :index)
+    get("/", DashboardController, :index)
     resources("/udts", UDTController, except: [:delete])
     resources("/smart_contracts", SmartContractController, except: [:delete])
     resources("/jobs", JobController, only: [:index, :show, :delete])
+    delete("/flush_poly_version_cache", DashboardController, :flush_poly_version_cache)
   end
 
   # Other scopes may use custom stacks.
