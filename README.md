@@ -2,7 +2,7 @@
 
 > This project is still under development
 
-[![Coverage Status](https://coveralls.io/repos/github/Magickbase/godwoken_explorer/badge.svg?branch=main)](https://coveralls.io/github/Magickbase/godwoken_explorer?branch=main)
+[![Coverage Status](https://coveralls.io/repos/github/Magickbase/godwoken_explorer/badge.svg?branch=main)](https://coveralls.io/github/Magickbase/godwoken_explorer?branch=godwoken-v1-mainnet-prod)
 
 Godwoken Explorer is designed for [godwoken](https://github.com/nervosnetwork/godwoken)(A CKB layer2 roll up solution).Current only support [polyjuice](https://github.com/nervosnetwork/godwoken-polyjuice).
 
