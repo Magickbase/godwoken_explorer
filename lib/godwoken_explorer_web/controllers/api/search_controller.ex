@@ -25,7 +25,7 @@ defmodule GodwokenExplorerWeb.API.SearchController do
     id =
       case item.type do
         :eth_user -> item.eth_address
-        :polyjuice -> item.eth_address
+        :polyjuice_contract -> item.eth_address
         _ -> item.script_hash
       end
 
