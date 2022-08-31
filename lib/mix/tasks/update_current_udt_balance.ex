@@ -118,8 +118,8 @@ defmodule Mix.Tasks.UpdateCurrentUdtBalance do
       from(ub in UDTBalance,
         where:
           ub.block_number >= ^start and ub.block_number < ^unbound_max_range and
-            is_nil(ub.token_id) and not is_nil(ub.value_fetched_at),
-        order_by: [desc: ub.block_number],
+            is_nil(ub.token_id) and not is_nil(ub.token_type) and not is_nil(ub.value_fetched_at),
+        order_by: [desc: ub.block_number, desc: ub.updated_at],
         distinct: [ub.block_number, ub.address_hash, ub.token_contract_address_hash],
         select: %{
           account_id: ub.account_id,
@@ -140,7 +140,8 @@ defmodule Mix.Tasks.UpdateCurrentUdtBalance do
       from(ub in UDTBalance,
         where:
           ub.block_number >= ^start and ub.block_number < ^unbound_max_range and
-            not is_nil(ub.token_id) and not is_nil(ub.value_fetched_at),
+            not is_nil(ub.token_id) and not is_nil(ub.token_type) and
+            not is_nil(ub.value_fetched_at),
         order_by: [desc: ub.block_number, desc: ub.updated_at],
         distinct: [ub.block_number, ub.token_id, ub.address_hash, ub.token_contract_address_hash],
         select: %{
