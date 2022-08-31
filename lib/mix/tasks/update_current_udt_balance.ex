@@ -83,7 +83,7 @@ defmodule Mix.Tasks.UpdateCurrentUdtBalance do
     Import.insert_changes_list(format_without_token_ids,
       for: CurrentUDTBalance,
       timestamps: import_utc_timestamps(),
-      on_conflict: {:replace, [:token_type]},
+      on_conflict: {:replace, [:token_type, :value, :value_fetched_at, :updated_at]},
       conflict_target:
         {:unsafe_fragment, ~s<(address_hash, token_contract_address_hash) WHERE token_id IS NULL>}
     )
@@ -91,7 +91,7 @@ defmodule Mix.Tasks.UpdateCurrentUdtBalance do
     Import.insert_changes_list(format_with_token_ids,
       for: CurrentUDTBalance,
       timestamps: import_utc_timestamps(),
-      on_conflict: {:replace, [:token_id, :token_type]},
+      on_conflict: {:replace, [:token_id, :token_type, :value, :value_fetched_at, :updated_at]},
       conflict_target:
         {:unsafe_fragment,
          ~s<(address_hash, token_contract_address_hash, token_id) WHERE token_id IS NOT NULL>}
@@ -141,8 +141,8 @@ defmodule Mix.Tasks.UpdateCurrentUdtBalance do
         where:
           ub.block_number >= ^start and ub.block_number < ^unbound_max_range and
             not is_nil(ub.token_id) and not is_nil(ub.value_fetched_at),
-        order_by: [desc: ub.block_number],
-        distinct: [ub.block_number, ub.address_hash, ub.token_contract_address_hash],
+        order_by: [desc: ub.block_number, desc: ub.updated_at],
+        distinct: [ub.block_number, ub.token_id, ub.address_hash, ub.token_contract_address_hash],
         select: %{
           account_id: ub.account_id,
           udt_id: ub.udt_id,

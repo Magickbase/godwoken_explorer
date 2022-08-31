@@ -53,7 +53,7 @@ defmodule GodwokenExplorer.Account.UDTBalance do
       ub in UDTBalance,
       where:
         ub.address_hash != ^@burn_address_hash and
-          (is_nil(ub.value_fetched_at) or is_nil(ub.value))
+          (is_nil(ub.value_fetched_at) or is_nil(ub.value)) and not is_nil(ub.token_type)
     )
   end
 

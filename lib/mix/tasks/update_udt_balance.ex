@@ -1,7 +1,7 @@
 defmodule Mix.Tasks.UpdateUdtBalance do
   @moduledoc "Printed when the user requests `mix help update_udt_balance`"
 
-  @shortdoc "running with limit/start/walk args `mix update_udt_balance 500 0 100` to updating udt balance and current udt balance with token_id/token_type"
+  @shortdoc "running with limit/start/walk args `mix update_udt_balance 350000 0 500` to updating udt balance and current udt balance with token_id/token_type"
 
   alias GodwokenExplorer.TokenTransfer
   alias GodwokenExplorer.Repo
@@ -192,7 +192,7 @@ defmodule Mix.Tasks.UpdateUdtBalance do
     query =
       from(tt in TokenTransfer,
         where: tt.block_number >= ^start and tt.block_number < ^unbound_max_range,
-        join: u in UDT,
+        left_join: u in UDT,
         on: u.contract_address_hash == tt.token_contract_address_hash,
         select: %{
           block_number: tt.block_number,
@@ -200,16 +200,33 @@ defmodule Mix.Tasks.UpdateUdtBalance do
           token_type: u.eth_type,
           token_contract_address_hash: tt.token_contract_address_hash,
           from_address_hash: tt.from_address_hash,
-          to_address_hash: tt.to_address_hash
+          to_address_hash: tt.to_address_hash,
+          token_ids: tt.token_ids
         }
       )
 
     Repo.all(query)
     |> Enum.map(fn map ->
+      token_type =
+        if map[:token_type] do
+          map[:token_type]
+        else
+          if map[:token_ids] do
+            :erc1155
+          else
+            if map[:token_id] do
+              :erc721
+            else
+              :erc20
+            end
+          end
+        end
+
       %{
         block_number: map[:block_number],
         token_id: map[:token_id],
-        token_type: map[:token_type],
+        token_ids: map[:token_ids],
+        token_type: token_type,
         token_contract_address_hash: map[:token_contract_address_hash] |> to_string,
         from_address_hash: map[:from_address_hash] |> to_string,
         to_address_hash: map[:to_address_hash] |> to_string

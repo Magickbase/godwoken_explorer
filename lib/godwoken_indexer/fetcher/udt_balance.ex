@@ -42,7 +42,7 @@ defmodule GodwokenIndexer.Fetcher.UDTBalance do
         [token_balance |> entry() | acc]
       end)
 
-    {:ok, _result} =
+    {{:ok, _}, {:ok, _}, {:ok, _}, {:ok, _}} =
       entries
       |> Enum.map(&format_params/1)
       |> fetch_from_blockchain()
@@ -52,7 +52,15 @@ defmodule GodwokenIndexer.Fetcher.UDTBalance do
   def fetch_from_blockchain(params_list) do
     retryable_params_list =
       params_list
-      |> Enum.uniq_by(&Map.take(&1, [:token_contract_address_hash, :address_hash, :block_number]))
+      |> Enum.uniq_by(
+        &Map.take(&1, [
+          :token_contract_address_hash,
+          :address_hash,
+          :block_number,
+          :token_id,
+          :token_type
+        ])
+      )
 
     {:ok, token_balances} =
       UDTBalances.fetch_token_balances_from_blockchain(retryable_params_list)
@@ -67,58 +75,83 @@ defmodule GodwokenIndexer.Fetcher.UDTBalance do
     {format_without_token_ids, format_with_token_ids} =
       UDTBalances.to_address_current_token_balances(without_token_ids, with_token_ids)
 
-    Import.insert_changes_list(without_token_ids,
-      for: UDTBalance,
-      timestamps: import_utc_timestamps(),
-      on_conflict: {:replace, [:value, :value_fetched_at, :updated_at]},
-      conflict_target:
-        {:unsafe_fragment,
-         ~s<(address_hash, token_contract_address_hash, block_number) WHERE token_id IS NULL>}
-    )
+    return1 =
+      Import.insert_changes_list(without_token_ids,
+        for: UDTBalance,
+        timestamps: import_utc_timestamps(),
+        on_conflict: {:replace, [:value, :value_fetched_at, :updated_at]},
+        conflict_target:
+          {:unsafe_fragment,
+           ~s<(address_hash, token_contract_address_hash, block_number) WHERE token_id IS NULL>}
+      )
 
-    Import.insert_changes_list(with_token_ids,
-      for: UDTBalance,
-      timestamps: import_utc_timestamps(),
-      on_conflict: {:replace, [:value, :value_fetched_at, :updated_at]},
-      conflict_target:
-        {:unsafe_fragment,
-         ~s<(address_hash, token_contract_address_hash, token_id, block_number) WHERE token_id IS NOT NULL>}
-    )
+    return2 =
+      Import.insert_changes_list(with_token_ids,
+        for: UDTBalance,
+        timestamps: import_utc_timestamps(),
+        on_conflict: {:replace, [:value, :value_fetched_at, :updated_at]},
+        conflict_target:
+          {:unsafe_fragment,
+           ~s<(address_hash, token_contract_address_hash, token_id, block_number) WHERE token_id IS NOT NULL>}
+      )
 
-    Import.insert_changes_list(format_without_token_ids,
-      for: CurrentUDTBalance,
-      timestamps: import_utc_timestamps(),
-      on_conflict: {:replace, [:value, :value_fetched_at, :updated_at]},
-      conflict_target:
-        {:unsafe_fragment, ~s<(address_hash, token_contract_address_hash) WHERE token_id IS NULL>}
-    )
+    return3 =
+      Import.insert_changes_list(format_without_token_ids,
+        for: CurrentUDTBalance,
+        timestamps: import_utc_timestamps(),
+        on_conflict: {:replace, [:value, :value_fetched_at, :updated_at]},
+        conflict_target:
+          {:unsafe_fragment,
+           ~s<(address_hash, token_contract_address_hash) WHERE token_id IS NULL>}
+      )
 
-    Import.insert_changes_list(format_with_token_ids,
-      for: CurrentUDTBalance,
-      timestamps: import_utc_timestamps(),
-      on_conflict: {:replace, [:value, :value_fetched_at, :updated_at]},
-      conflict_target:
-        {:unsafe_fragment,
-         ~s<(address_hash, token_contract_address_hash, token_id) WHERE token_id IS NOT NULL>}
-    )
+    return4 =
+      Import.insert_changes_list(format_with_token_ids,
+        for: CurrentUDTBalance,
+        timestamps: import_utc_timestamps(),
+        on_conflict: {:replace, [:value, :value_fetched_at, :updated_at]},
+        conflict_target:
+          {:unsafe_fragment,
+           ~s<(address_hash, token_contract_address_hash, token_id) WHERE token_id IS NOT NULL>}
+      )
+
+    {return1, return2, return3, return4}
   end
 
   defp entry(%{
          token_contract_address_hash: token_contract_address_hash,
          address_hash: address_hash,
-         block_number: block_number
+         block_number: block_number,
+         token_id: token_id,
+         token_type: token_type
        }) do
-    {address_hash.bytes, token_contract_address_hash.bytes, block_number}
+    %{
+      token_contract_address_hash_bytes: token_contract_address_hash.bytes,
+      address_hash_bytes: address_hash.bytes,
+      block_number: block_number,
+      token_id: token_id,
+      token_type: token_type
+    }
+
+    # {address_hash.bytes, token_contract_address_hash.bytes, block_number}
   end
 
-  defp format_params({address_hash_bytes, token_contract_address_hash_bytes, block_number}) do
+  defp format_params(%{
+         token_contract_address_hash_bytes: token_contract_address_hash_bytes,
+         address_hash_bytes: address_hash_bytes,
+         block_number: block_number,
+         token_id: token_id,
+         token_type: token_type
+       }) do
     {:ok, token_contract_address_hash} = Hash.Address.cast(token_contract_address_hash_bytes)
     {:ok, address_hash} = Hash.Address.cast(address_hash_bytes)
 
     %{
       token_contract_address_hash: to_string(token_contract_address_hash),
       address_hash: to_string(address_hash),
-      block_number: block_number
+      block_number: block_number,
+      token_id: token_id,
+      token_type: token_type
     }
   end
 
