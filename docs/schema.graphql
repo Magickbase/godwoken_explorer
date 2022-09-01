@@ -380,14 +380,48 @@ input Erc1155UserTokenInput {
   user_address: HashAddress!
 }
 
+type Erc721Erc1155HolderItem {
+  address_hash: HashAddress
+  quantity: Int
+  token_contract_address_hash: HashAddress
+  token_id: Decimal
+  token_type: EthType
+}
+
 input Erc721Erc1155HoldersInput {
+  """Fetch the records after this cursor."""
+  after: String
+
+  """Fetch the records before this cursor."""
+  before: String
   contract_address: HashAddress!
+
+  """
+  Limits the number of records returned per page. Note that this number will be capped by maximum_limit=100. Defaults to 20.
+  """
+  limit: Int = 20
+}
+
+input Erc721Erc1155InventoryInput {
+  """Fetch the records after this cursor."""
+  after: String
+
+  """Fetch the records before this cursor."""
+  before: String
+  contract_address: HashAddress!
+
+  """
+  Limits the number of records returned per page. Note that this number will be capped by maximum_limit=100. Defaults to 20.
+  """
+  limit: Int = 20
+  token_id: Decimal
 }
 
 type Erc721Erc1155Udt {
   account: Account
   contract_address_hash: HashAddress
   description: String
+  eth_type: EthType
   holders_count: Int
   icon: String
   id: Int
@@ -415,9 +449,10 @@ input Erc721Erc1155UdtsInput {
 
 type Erc721Erc1155UserToken {
   address_hash: HashAddress
-  erc721_erc1155_udt: Erc721Erc1155Udt
   token_contract_address_hash: HashAddress
   token_id: Decimal
+  token_type: EthType
+  udt: Erc721Erc1155Udt
   value: Decimal
 }
 
@@ -452,11 +487,6 @@ input Erc721TokenTransfersInput {
   token_contract_address_hash: HashAddress
   token_id: Decimal
   transaction_hash: HashFull
-}
-
-input Erc721UserTokensInput {
-  token_contract_address_hash: HashAddress!
-  token_id: Decimal
 }
 
 enum EthType {
@@ -553,17 +583,17 @@ input PageAndSizeInput {
 }
 
 type PaginateErc721Erc1155Holders {
+  entries: [Erc721Erc1155HolderItem]
+  metadata: PaginateMetadata
+}
+
+type PaginateErc721Erc1155Inventory {
   entries: [Erc721Erc1155UserToken]
   metadata: PaginateMetadata
 }
 
 type PaginateErc721Erc1155Udts {
   entries: [Erc721Erc1155Udt]
-  metadata: PaginateMetadata
-}
-
-type PaginateErc721Erc1155UserTokens {
-  entries: [Erc721Erc1155UserToken]
   metadata: PaginateMetadata
 }
 
@@ -1332,13 +1362,318 @@ type RootQueryType {
   }
   """
   blocks(input: BlocksInput = {page: 1, page_size: 10, sort_type: DESC}): [Block]
+
+  """
+  query {
+    erc1155_holders(
+      input: {
+        contract_address: "0xe6903e124e5bdae8784674eb625f1c212efc789e"
+        limit: 1
+      }
+    ) {
+      entries {
+        token_id
+        address_hash
+        token_contract_address_hash
+        quantity
+      }
+      metadata {
+        total_count
+        after
+        before
+      }
+    }
+  }
+  {
+    "data": {
+      "erc1155_holders": {
+        "entries": [],
+        "metadata": {
+          "after": null,
+          "before": null,
+          "total_count": 0
+        }
+      }
+    }
+  }
+  """
   erc1155_holders(input: Erc721Erc1155HoldersInput!): PaginateErc721Erc1155Holders
-  erc1155_udts(input: Erc721Erc1155UdtsInput): PaginateErc721Erc1155Udts
+
+  """
+  query {
+    erc1155_udts(input: {limit: 1, sorter: [{sort_type: DESC, sort_value: EX_HOLDERS_COUNT}]}){
+      entries {
+        id
+        name
+        contract_address_hash
+        eth_type
+        holders_count
+        minted_count
+      }
+      metadata {
+        total_count
+        after
+        before
+      }
+    }
+  }
+  
+  {
+    "data": {
+      "erc1155_udts": {
+        "entries": [
+          {
+            "contract_address_hash": "0xdb9e72a05c53a104c48fe343e9c58c66583df889",
+            "eth_type": "ERC1155",
+            "holders_count": 0,
+            "id": 32343,
+            "minted_count": 1,
+            "name": null
+          }
+        ],
+        "metadata": {
+          "after": "g3QAAAAA",
+          "before": null,
+          "total_count": 524
+        }
+      }
+    }
+  }
+  """
+  erc1155_udts(input: Erc721Erc1155UdtsInput! = {limit: 20, sorter: [{sort_type: ASC, sort_value: NAME}]}): PaginateErc721Erc1155Udts
+
+  """
+  query {
+    erc1155_user_token(
+      input: {
+        user_address: "0xc6e58fb4affb6ab8a392b7cc23cd3fef74517f6c"
+        contract_address: "0xe6903e124e5bdae8784674eb625f1c212efc789e"
+        token_id: 0
+      }
+    ) {
+      value
+      token_type
+      token_id
+      token_contract_address_hash
+    }
+  }
+  
+  {
+    "data": {
+      "erc1155_user_token": null
+    }
+  }
+  """
   erc1155_user_token(input: Erc1155UserTokenInput!): Erc721Erc1155UserToken
-  erc721_erc1155_inventory(input: Erc721UserTokensInput!): PaginateErc721Erc1155UserTokens
+
+  """
+  query {
+    erc721_erc1155_inventory(
+      input: {
+        contract_address: "0x784cd3c52813098763c371df8fbe8ed27d2c1ebd"
+        limit: 1
+      }
+    ) {
+      entries {
+        token_id
+        address_hash
+        token_contract_address_hash
+        value
+      }
+      metadata {
+        total_count
+        after
+        before
+      }
+    }
+  }
+  
+  {
+    "data": {
+      "erc721_erc1155_inventory": {
+        "entries": [
+          {
+            "address_hash": "0x7ec331e53da2ad677a7636b2da07d8dbea427ab7",
+            "token_contract_address_hash": "0x784cd3c52813098763c371df8fbe8ed27d2c1ebd",
+            "token_id": "2000",
+            "value": "1"
+          }
+        ],
+        "metadata": {
+          "after": "g3QAAAACZAACaWRiABXtp2QACHRva2VuX2lkdAAAAARkAApfX3N0cnVjdF9fZAAORWxpeGlyLkRlY2ltYWxkAARjb2VmYgAAB9BkAANleHBhAGQABHNpZ25hAQ==",
+          "before": null,
+          "total_count": 2000
+        }
+      }
+    }
+  }
+  
+  query {
+    erc721_erc1155_inventory(
+      input: {
+        contract_address: "0xe6903e124e5bdae8784674eb625f1c212efc789e"
+        token_id: 0
+        limit: 1
+      }
+    ) {
+      entries {
+        token_id
+        address_hash
+        token_contract_address_hash
+        value
+      }
+      metadata {
+        total_count
+        after
+        before
+      }
+    }
+  }
+  
+  {
+    "data": {
+      "erc721_erc1155_inventory": {
+        "entries": [],
+        "metadata": {
+          "after": null,
+          "before": null,
+          "total_count": 0
+        }
+      }
+    }
+  }
+  """
+  erc721_erc1155_inventory(input: Erc721Erc1155InventoryInput!): PaginateErc721Erc1155Inventory
+
+  """
+  query {
+    erc721_holders(
+      input: {
+        contract_address: "0x784cd3c52813098763c371df8fbe8ed27d2c1ebd"
+        limit: 1
+      }
+    ) {
+      entries {
+        token_id
+        address_hash
+        token_contract_address_hash
+        quantity
+      }
+      metadata {
+        total_count
+        after
+        before
+      }
+    }
+  }
+  
+  {
+    "data": {
+      "erc721_holders": {
+        "entries": [
+          {
+            "address_hash": "0x0000000000ce6d8c1fba76f26d6cc5db71432710",
+            "quantity": 1,
+            "token_contract_address_hash": "0x784cd3c52813098763c371df8fbe8ed27d2c1ebd",
+            "token_id": "593"
+          }
+        ],
+        "metadata": {
+          "after": "g3QAAAABZAAIcXVhbnRpdHlhAQ==",
+          "before": null,
+          "total_count": 2000
+        }
+      }
+    }
+  }
+  """
   erc721_holders(input: Erc721Erc1155HoldersInput!): PaginateErc721Erc1155Holders
   erc721_token_transfers(input: Erc721TokenTransfersInput! = {combine_from_to: true, limit: 20, sorter: [{sort_type: DESC, sort_value: BLOCK_NUMBER}, {sort_type: DESC, sort_value: LOG_INDEX}, {sort_type: ASC, sort_value: TRANSACTION_HASH}]}): PaginateTokenTransfers
-  erc721_udts(input: Erc721Erc1155UdtsInput): PaginateErc721Erc1155Udts
+
+  """
+  query {
+    erc721_udts(
+      input: { contract_address: "0x784cd3c52813098763c371df8fbe8ed27d2c1ebd" }
+    ) {
+      entries {
+        id
+        name
+        contract_address_hash
+        eth_type
+        holders_count
+        minted_count
+      }
+      metadata {
+        total_count
+        after
+        before
+      }
+    }
+  }
+  
+  {
+    "data": {
+      "erc721_udts": {
+        "entries": [
+          {
+            "contract_address_hash": "0x784cd3c52813098763c371df8fbe8ed27d2c1ebd",
+            "eth_type": "ERC721",
+            "holders_count": 308,
+            "id": 58460,
+            "minted_count": 2000,
+            "name": null
+          }
+        ],
+        "metadata": {
+          "after": null,
+          "before": null,
+          "total_count": 1
+        }
+      }
+    }
+  }
+  
+  query {
+    erc721_udts(input: {limit: 1, sorter: [{sort_type: DESC, sort_value: EX_HOLDERS_COUNT}]}){
+      entries {
+        id
+        name
+        contract_address_hash
+        eth_type
+        holders_count
+        minted_count
+      }
+      metadata {
+        total_count
+        after
+        before
+      }
+    }
+  }
+  
+  {
+    "data": {
+      "erc721_udts": {
+        "entries": [
+          {
+            "contract_address_hash": "0x784cd3c52813098763c371df8fbe8ed27d2c1ebd",
+            "eth_type": "ERC721",
+            "holders_count": 308,
+            "id": 58460,
+            "minted_count": 2000,
+            "name": null
+          }
+        ],
+        "metadata": {
+          "after": "g3QAAAAA",
+          "before": null,
+          "total_count": 3191
+        }
+      }
+    }
+  }
+  """
+  erc721_udts(input: Erc721Erc1155UdtsInput! = {limit: 20, sorter: [{sort_type: ASC, sort_value: NAME}]}): PaginateErc721Erc1155Udts
 
   """
   function: get list of logs by filter or conditions
@@ -2494,7 +2829,87 @@ type RootQueryType {
   }
   """
   udts(input: UdtsInput = {limit: 20, sorter: [{sort_type: ASC, sort_value: NAME}]}): PaginateUdts
-  user_erc721_erc1155_assets(input: UserErc721Erc1155AssetsInput!): PaginateUserErc721Erc1155Assets
+
+  """
+  query {
+    user_erc1155_assets(
+      input: {
+        user_address: "0xc6e58fb4affb6ab8a392b7cc23cd3fef74517f6c"
+        limit: 1
+      }
+    ) {
+      entries {
+        token_id
+        address_hash
+        token_contract_address_hash
+        value
+      }
+      metadata {
+        total_count
+        after
+        before
+      }
+    }
+  }
+  
+  {
+    "data": {
+      "user_erc1155_assets": {
+        "entries": [],
+        "metadata": {
+          "after": null,
+          "before": null,
+          "total_count": 0
+        }
+      }
+    }
+  }
+  """
+  user_erc1155_assets(input: UserErc721Erc1155AssetsInput!): PaginateUserErc721Erc1155Assets
+
+  """
+  query {
+    user_erc721_assets(
+      input: {
+        user_address: "0x0000000000ce6d8c1fba76f26d6cc5db71432710"
+        limit: 1
+      }
+    ) {
+      entries {
+        token_id
+        address_hash
+        token_contract_address_hash
+        value
+      }
+      metadata {
+        total_count
+        after
+        before
+      }
+    }
+  }
+  
+  {
+    "data": {
+      "user_erc721_assets": {
+        "entries": [
+          {
+            "address_hash": "0x0000000000ce6d8c1fba76f26d6cc5db71432710",
+            "token_contract_address_hash": "0x784cd3c52813098763c371df8fbe8ed27d2c1ebd",
+            "token_id": "641",
+            "value": "4"
+          }
+        ],
+        "metadata": {
+          "after": "g3QAAAACZAAMYmxvY2tfbnVtYmVyYgAE5cVkABB2YWx1ZV9mZXRjaGVkX2F0dAAAAA1kAApfX3N0cnVjdF9fZAAPRWxpeGlyLkRhdGVUaW1lZAAIY2FsZW5kYXJkABNFbGl4aXIuQ2FsZW5kYXIuSVNPZAADZGF5YR9kAARob3VyYRBkAAttaWNyb3NlY29uZGgCYgAEVUxhBmQABm1pbnV0ZWEUZAAFbW9udGhhCGQABnNlY29uZGEcZAAKc3RkX29mZnNldGEAZAAJdGltZV96b25lbQAAAAdFdGMvVVRDZAAKdXRjX29mZnNldGEAZAAEeWVhcmIAAAfmZAAJem9uZV9hYmJybQAAAANVVEM=",
+          "before": null,
+          "total_count": 4
+        }
+      }
+    }
+  }
+  """
+  user_erc721_assets(input: UserErc721Erc1155AssetsInput!): PaginateUserErc721Erc1155Assets
 }
 
 type SmartContract {
@@ -2806,6 +3221,16 @@ enum UdtType {
 }
 
 input UserErc721Erc1155AssetsInput {
+  """Fetch the records after this cursor."""
+  after: String
+
+  """Fetch the records before this cursor."""
+  before: String
+
+  """
+  Limits the number of records returned per page. Note that this number will be capped by maximum_limit=100. Defaults to 20.
+  """
+  limit: Int = 20
   user_address: HashAddress!
 }
 

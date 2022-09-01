@@ -410,43 +410,419 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
       resolve(&Resolvers.UDT.udts/3)
     end
 
+    @desc """
+    query {
+      erc1155_user_token(
+        input: {
+          user_address: "0xc6e58fb4affb6ab8a392b7cc23cd3fef74517f6c"
+          contract_address: "0xe6903e124e5bdae8784674eb625f1c212efc789e"
+          token_id: 0
+        }
+      ) {
+        value
+        token_type
+        token_id
+        token_contract_address_hash
+      }
+    }
+
+    {
+      "data": {
+        "erc1155_user_token": null
+      }
+    }
+    """
     field :erc1155_user_token, :erc721_erc1155_user_token do
       arg(:input, non_null(:erc1155_user_token_input))
       resolve(&Resolvers.UDT.erc1155_user_token/3)
     end
 
+    @desc """
+    query {
+      erc721_udts(
+        input: { contract_address: "0x784cd3c52813098763c371df8fbe8ed27d2c1ebd" }
+      ) {
+        entries {
+          id
+          name
+          contract_address_hash
+          eth_type
+          holders_count
+          minted_count
+        }
+        metadata {
+          total_count
+          after
+          before
+        }
+      }
+    }
+
+    {
+      "data": {
+        "erc721_udts": {
+          "entries": [
+            {
+              "contract_address_hash": "0x784cd3c52813098763c371df8fbe8ed27d2c1ebd",
+              "eth_type": "ERC721",
+              "holders_count": 308,
+              "id": 58460,
+              "minted_count": 2000,
+              "name": null
+            }
+          ],
+          "metadata": {
+            "after": null,
+            "before": null,
+            "total_count": 1
+          }
+        }
+      }
+    }
+
+    query {
+      erc721_udts(input: {limit: 1, sorter: [{sort_type: DESC, sort_value: EX_HOLDERS_COUNT}]}){
+        entries {
+          id
+          name
+          contract_address_hash
+          eth_type
+          holders_count
+          minted_count
+        }
+        metadata {
+          total_count
+          after
+          before
+        }
+      }
+    }
+
+    {
+      "data": {
+        "erc721_udts": {
+          "entries": [
+            {
+              "contract_address_hash": "0x784cd3c52813098763c371df8fbe8ed27d2c1ebd",
+              "eth_type": "ERC721",
+              "holders_count": 308,
+              "id": 58460,
+              "minted_count": 2000,
+              "name": null
+            }
+          ],
+          "metadata": {
+            "after": "g3QAAAAA",
+            "before": null,
+            "total_count": 3191
+          }
+        }
+      }
+    }
+    """
     field :erc721_udts, :paginate_erc721_erc1155_udts do
-      arg(:input, :erc721_erc1155_udts_input)
+      arg(:input, non_null(:erc721_erc1155_udts_input), default_value: %{})
       resolve(&Resolvers.UDT.erc721_udts/3)
     end
 
+    @desc """
+    query {
+      erc1155_udts(input: {limit: 1, sorter: [{sort_type: DESC, sort_value: EX_HOLDERS_COUNT}]}){
+        entries {
+          id
+          name
+          contract_address_hash
+          eth_type
+          holders_count
+          minted_count
+        }
+        metadata {
+          total_count
+          after
+          before
+        }
+      }
+    }
+
+    {
+      "data": {
+        "erc1155_udts": {
+          "entries": [
+            {
+              "contract_address_hash": "0xdb9e72a05c53a104c48fe343e9c58c66583df889",
+              "eth_type": "ERC1155",
+              "holders_count": 0,
+              "id": 32343,
+              "minted_count": 1,
+              "name": null
+            }
+          ],
+          "metadata": {
+            "after": "g3QAAAAA",
+            "before": null,
+            "total_count": 524
+          }
+        }
+      }
+    }
+    """
     field :erc1155_udts, :paginate_erc721_erc1155_udts do
-      arg(:input, :erc721_erc1155_udts_input)
+      arg(:input, non_null(:erc721_erc1155_udts_input), default_value: %{})
       resolve(&Resolvers.UDT.erc1155_udts/3)
     end
 
+    @desc """
+    query {
+      erc721_holders(
+        input: {
+          contract_address: "0x784cd3c52813098763c371df8fbe8ed27d2c1ebd"
+          limit: 1
+        }
+      ) {
+        entries {
+          token_id
+          address_hash
+          token_contract_address_hash
+          quantity
+        }
+        metadata {
+          total_count
+          after
+          before
+        }
+      }
+    }
+
+    {
+      "data": {
+        "erc721_holders": {
+          "entries": [
+            {
+              "address_hash": "0x0000000000ce6d8c1fba76f26d6cc5db71432710",
+              "quantity": 1,
+              "token_contract_address_hash": "0x784cd3c52813098763c371df8fbe8ed27d2c1ebd",
+              "token_id": "593"
+            }
+          ],
+          "metadata": {
+            "after": "g3QAAAABZAAIcXVhbnRpdHlhAQ==",
+            "before": null,
+            "total_count": 2000
+          }
+        }
+      }
+    }
+    """
     field :erc721_holders, :paginate_erc721_erc1155_holders do
       arg(:input, non_null(:erc721_erc1155_holders_input))
       resolve(&Resolvers.UDT.erc721_holders/3)
     end
 
+    @desc """
+    query {
+      erc1155_holders(
+        input: {
+          contract_address: "0xe6903e124e5bdae8784674eb625f1c212efc789e"
+          limit: 1
+        }
+      ) {
+        entries {
+          token_id
+          address_hash
+          token_contract_address_hash
+          quantity
+        }
+        metadata {
+          total_count
+          after
+          before
+        }
+      }
+    }
+    {
+      "data": {
+        "erc1155_holders": {
+          "entries": [],
+          "metadata": {
+            "after": null,
+            "before": null,
+            "total_count": 0
+          }
+        }
+      }
+    }
+    """
     field :erc1155_holders, :paginate_erc721_erc1155_holders do
       arg(:input, non_null(:erc721_erc1155_holders_input))
       resolve(&Resolvers.UDT.erc1155_holders/3)
     end
 
+    @desc """
+    query {
+      user_erc721_assets(
+        input: {
+          user_address: "0x0000000000ce6d8c1fba76f26d6cc5db71432710"
+          limit: 1
+        }
+      ) {
+        entries {
+          token_id
+          address_hash
+          token_contract_address_hash
+          value
+        }
+        metadata {
+          total_count
+          after
+          before
+        }
+      }
+    }
+
+    {
+      "data": {
+        "user_erc721_assets": {
+          "entries": [
+            {
+              "address_hash": "0x0000000000ce6d8c1fba76f26d6cc5db71432710",
+              "token_contract_address_hash": "0x784cd3c52813098763c371df8fbe8ed27d2c1ebd",
+              "token_id": "641",
+              "value": "4"
+            }
+          ],
+          "metadata": {
+            "after": "g3QAAAACZAAMYmxvY2tfbnVtYmVyYgAE5cVkABB2YWx1ZV9mZXRjaGVkX2F0dAAAAA1kAApfX3N0cnVjdF9fZAAPRWxpeGlyLkRhdGVUaW1lZAAIY2FsZW5kYXJkABNFbGl4aXIuQ2FsZW5kYXIuSVNPZAADZGF5YR9kAARob3VyYRBkAAttaWNyb3NlY29uZGgCYgAEVUxhBmQABm1pbnV0ZWEUZAAFbW9udGhhCGQABnNlY29uZGEcZAAKc3RkX29mZnNldGEAZAAJdGltZV96b25lbQAAAAdFdGMvVVRDZAAKdXRjX29mZnNldGEAZAAEeWVhcmIAAAfmZAAJem9uZV9hYmJybQAAAANVVEM=",
+            "before": null,
+            "total_count": 4
+          }
+        }
+      }
+    }
+    """
     field :user_erc721_assets, :paginate_user_erc721_erc1155_assets do
       arg(:input, non_null(:user_erc721_erc1155_assets_input))
       resolve(&Resolvers.UDT.user_erc721_assets/3)
     end
 
+    @desc """
+    query {
+      user_erc1155_assets(
+        input: {
+          user_address: "0xc6e58fb4affb6ab8a392b7cc23cd3fef74517f6c"
+          limit: 1
+        }
+      ) {
+        entries {
+          token_id
+          address_hash
+          token_contract_address_hash
+          value
+        }
+        metadata {
+          total_count
+          after
+          before
+        }
+      }
+    }
+
+    {
+      "data": {
+        "user_erc1155_assets": {
+          "entries": [],
+          "metadata": {
+            "after": null,
+            "before": null,
+            "total_count": 0
+          }
+        }
+      }
+    }
+    """
     field :user_erc1155_assets, :paginate_user_erc721_erc1155_assets do
       arg(:input, non_null(:user_erc721_erc1155_assets_input))
       resolve(&Resolvers.UDT.user_erc1155_assets/3)
     end
 
-    field :erc721_erc1155_inventory, :paginate_erc721_erc1155_user_tokens do
-      arg(:input, non_null(:erc721_user_tokens_input))
+    @desc """
+    query {
+      erc721_erc1155_inventory(
+        input: {
+          contract_address: "0x784cd3c52813098763c371df8fbe8ed27d2c1ebd"
+          limit: 1
+        }
+      ) {
+        entries {
+          token_id
+          address_hash
+          token_contract_address_hash
+          value
+        }
+        metadata {
+          total_count
+          after
+          before
+        }
+      }
+    }
+
+    {
+      "data": {
+        "erc721_erc1155_inventory": {
+          "entries": [
+            {
+              "address_hash": "0x7ec331e53da2ad677a7636b2da07d8dbea427ab7",
+              "token_contract_address_hash": "0x784cd3c52813098763c371df8fbe8ed27d2c1ebd",
+              "token_id": "2000",
+              "value": "1"
+            }
+          ],
+          "metadata": {
+            "after": "g3QAAAACZAACaWRiABXtp2QACHRva2VuX2lkdAAAAARkAApfX3N0cnVjdF9fZAAORWxpeGlyLkRlY2ltYWxkAARjb2VmYgAAB9BkAANleHBhAGQABHNpZ25hAQ==",
+            "before": null,
+            "total_count": 2000
+          }
+        }
+      }
+    }
+
+    query {
+      erc721_erc1155_inventory(
+        input: {
+          contract_address: "0xe6903e124e5bdae8784674eb625f1c212efc789e"
+          token_id: 0
+          limit: 1
+        }
+      ) {
+        entries {
+          token_id
+          address_hash
+          token_contract_address_hash
+          value
+        }
+        metadata {
+          total_count
+          after
+          before
+        }
+      }
+    }
+
+    {
+      "data": {
+        "erc721_erc1155_inventory": {
+          "entries": [],
+          "metadata": {
+            "after": null,
+            "before": null,
+            "total_count": 0
+          }
+        }
+      }
+    }
+    """
+    field :erc721_erc1155_inventory, :paginate_erc721_erc1155_inventory do
+      arg(:input, non_null(:erc721_erc1155_inventory_input))
       resolve(&Resolvers.UDT.erc721_erc1155_inventory/3)
     end
   end
@@ -461,13 +837,13 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
     field(:metadata, :paginate_metadata)
   end
 
-  object :paginate_erc721_erc1155_user_tokens do
+  object :paginate_erc721_erc1155_inventory do
     field(:entries, list_of(:erc721_erc1155_user_token))
     field(:metadata, :paginate_metadata)
   end
 
   object :paginate_erc721_erc1155_holders do
-    field(:entries, list_of(:erc721_erc1155_user_token))
+    field(:entries, list_of(:erc721_erc1155_holder_item))
     field(:metadata, :paginate_metadata)
   end
 
@@ -476,12 +852,20 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
     field(:metadata, :paginate_metadata)
   end
 
+  object :erc721_erc1155_holder_item do
+    field(:address_hash, :hash_address)
+    field(:token_contract_address_hash, :hash_address)
+    field(:token_id, :decimal)
+    field(:token_type, :eth_type)
+    field(:quantity, :integer)
+  end
+
   object :erc721_erc1155_user_token do
     field(:address_hash, :hash_address)
     field(:token_contract_address_hash, :hash_address)
     field(:token_id, :decimal)
     field(:token_type, :eth_type)
-    field :value, :decimal
+    field(:value, :decimal)
 
     field :udt, :erc721_erc1155_udt do
       resolve(&Resolvers.UDT.erc721_erc1155_udt/3)
@@ -489,8 +873,8 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
   end
 
   object :erc721_holder do
-    field :address_hash, :hash_address
-    field :quantity, :decimal
+    field(:address_hash, :hash_address)
+    field(:quantity, :decimal)
   end
 
   object :erc721_erc1155_udt do
@@ -573,7 +957,8 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
   end
 
   input_object :user_erc721_erc1155_assets_input do
-    field :user_address, non_null(:hash_address)
+    field(:user_address, non_null(:hash_address))
+    import_fields(:paginate_input)
   end
 
   input_object :erc721_erc1155_udts_input do
@@ -589,6 +974,7 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
 
   input_object :erc721_erc1155_holders_input do
     field(:contract_address, non_null(:hash_address))
+    import_fields(:paginate_input)
   end
 
   input_object :erc1155_user_token_input do
@@ -597,9 +983,10 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
     field(:token_id, non_null(:decimal))
   end
 
-  input_object :erc721_user_tokens_input do
+  input_object :erc721_erc1155_inventory_input do
     field(:contract_address, non_null(:hash_address))
     field(:token_id, :decimal)
+    import_fields(:paginate_input)
   end
 
   input_object :udts_input do

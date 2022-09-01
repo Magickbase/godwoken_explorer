@@ -271,9 +271,17 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
         [cu],
         cu.token_contract_address_hash == ^contract_address and cu.token_type == :erc721
       )
-      |> group_by([cu], cu.address_hash)
+      |> group_by([cu], [
+        cu.address_hash,
+        cu.token_contract_address_hash,
+        cu.token_id,
+        cu.token_type
+      ])
       |> select([cu], %{
         address_hash: cu.address_hash,
+        token_contract_address_hash: cu.token_contract_address_hash,
+        token_id: cu.token_id,
+        token_type: cu.token_type,
         quantity: fragment("count(?) as quantity", cu.token_id)
       })
       |> order_by([c], desc: fragment("quantity"))
@@ -295,9 +303,17 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
         cu.token_contract_address_hash == ^contract_address and cu.token_type == :erc1155 and
           cu.value > 0
       )
-      |> group_by([cu], cu.address_hash)
+      |> group_by([cu], [
+        cu.address_hash,
+        cu.token_contract_address_hash,
+        cu.token_id,
+        cu.token_type
+      ])
       |> select([cu], %{
         address_hash: cu.address_hash,
+        token_contract_address_hash: cu.token_contract_address_hash,
+        token_id: cu.token_id,
+        token_type: cu.token_type,
         quantity: fragment("count(?) as quantity", cu.value)
       })
       |> order_by([c], desc: fragment("quantity"))
