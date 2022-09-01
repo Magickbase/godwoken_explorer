@@ -417,6 +417,39 @@ input Erc721Erc1155InventoryInput {
   token_id: Decimal
 }
 
+input Erc721Erc1155TokenTransfersInput {
+  """Fetch the records after this cursor."""
+  after: String
+  age_range_end: DateTime
+  age_range_start: DateTime
+
+  """Fetch the records before this cursor."""
+  before: String
+
+  """
+  if combine_from_to is true, then from_address and to_address are combined into
+  query condition like `address = from_address OR address = to_address`
+  """
+  combine_from_to: Boolean = true
+
+  """argument: the end of block number(inclusive) for search query"""
+  end_block_number: Int
+  from_address: HashAddress
+
+  """
+  Limits the number of records returned per page. Note that this number will be capped by maximum_limit=100. Defaults to 20.
+  """
+  limit: Int = 20
+  sorter: [TokenTransfersSorterInput] = [{sort_type: DESC, sort_value: BLOCK_NUMBER}, {sort_type: DESC, sort_value: LOG_INDEX}, {sort_type: ASC, sort_value: TRANSACTION_HASH}]
+
+  """argument: the start of block number(inclusive) for search query"""
+  start_block_number: Int
+  to_address: HashAddress
+  token_contract_address_hash: HashAddress
+  token_id: Decimal
+  transaction_hash: HashFull
+}
+
 type Erc721Erc1155Udt {
   account: Account
   contract_address_hash: HashAddress
@@ -454,39 +487,6 @@ type Erc721Erc1155UserToken {
   token_type: EthType
   udt: Erc721Erc1155Udt
   value: Decimal
-}
-
-input Erc721TokenTransfersInput {
-  """Fetch the records after this cursor."""
-  after: String
-  age_range_end: DateTime
-  age_range_start: DateTime
-
-  """Fetch the records before this cursor."""
-  before: String
-
-  """
-  if combine_from_to is true, then from_address and to_address are combined into
-  query condition like `address = from_address OR address = to_address`
-  """
-  combine_from_to: Boolean = true
-
-  """argument: the end of block number(inclusive) for search query"""
-  end_block_number: Int
-  from_address: HashAddress
-
-  """
-  Limits the number of records returned per page. Note that this number will be capped by maximum_limit=100. Defaults to 20.
-  """
-  limit: Int = 20
-  sorter: [TokenTransfersSorterInput] = [{sort_type: DESC, sort_value: BLOCK_NUMBER}, {sort_type: DESC, sort_value: LOG_INDEX}, {sort_type: ASC, sort_value: TRANSACTION_HASH}]
-
-  """argument: the start of block number(inclusive) for search query"""
-  start_block_number: Int
-  to_address: HashAddress
-  token_contract_address_hash: HashAddress
-  token_id: Decimal
-  transaction_hash: HashFull
 }
 
 enum EthType {
@@ -1401,6 +1401,59 @@ type RootQueryType {
 
   """
   query {
+    erc1155_token_transfers(
+      input: {
+        to_address: "0xc6e58fb4affb6ab8a392b7cc23cd3fef74517f6c"
+        start_block_number: 90
+        end_block_number: 909999
+        limit: 1
+        sorter: [
+          { sort_type: ASC, sort_value: BLOCK_NUMBER }
+          { sort_type: ASC, sort_value: TRANSACTION_HASH }
+          { sort_type: ASC, sort_value: LOG_INDEX }
+        ]
+      }
+    ) {
+      entries {
+        block {
+          timestamp
+        }
+        transaction_hash
+        block_number
+        to_account {
+          eth_address
+        }
+        to_address
+        from_account {
+          eth_address
+        }
+      }
+  
+      metadata {
+        total_count
+        before
+        after
+      }
+    }
+  }
+  
+  {
+    "data": {
+      "erc1155_token_transfers": {
+        "entries": [],
+        "metadata": {
+          "after": null,
+          "before": null,
+          "total_count": 0
+        }
+      }
+    }
+  }
+  """
+  erc1155_token_transfers(input: Erc721Erc1155TokenTransfersInput! = {combine_from_to: true, limit: 20, sorter: [{sort_type: DESC, sort_value: BLOCK_NUMBER}, {sort_type: DESC, sort_value: LOG_INDEX}, {sort_type: ASC, sort_value: TRANSACTION_HASH}]}): PaginateTokenTransfers
+
+  """
+  query {
     erc1155_udts(input: {limit: 1, sorter: [{sort_type: DESC, sort_value: EX_HOLDERS_COUNT}]}){
       entries {
         id
@@ -1588,7 +1641,72 @@ type RootQueryType {
   }
   """
   erc721_holders(input: Erc721Erc1155HoldersInput!): PaginateErc721Erc1155Holders
-  erc721_token_transfers(input: Erc721TokenTransfersInput! = {combine_from_to: true, limit: 20, sorter: [{sort_type: DESC, sort_value: BLOCK_NUMBER}, {sort_type: DESC, sort_value: LOG_INDEX}, {sort_type: ASC, sort_value: TRANSACTION_HASH}]}): PaginateTokenTransfers
+
+  """
+  query {
+    erc721_token_transfers(
+      input: {
+        to_address: "0x0000000000ce6d8c1fba76f26d6cc5db71432710"
+        start_block_number: 90
+        end_block_number: 909999
+        limit: 1
+        sorter: [
+          { sort_type: ASC, sort_value: BLOCK_NUMBER }
+          { sort_type: ASC, sort_value: TRANSACTION_HASH }
+          { sort_type: ASC, sort_value: LOG_INDEX }
+        ]
+      }
+    ) {
+      entries {
+        block {
+          timestamp
+        }
+        transaction_hash
+        block_number
+        to_account {
+          eth_address
+        }
+        to_address
+        from_account {
+          eth_address
+        }
+      }
+  
+      metadata {
+        total_count
+        before
+        after
+      }
+    }
+  }
+  
+  {
+    "data": {
+      "erc721_token_transfers": {
+        "entries": [
+          {
+            "block": {
+              "timestamp": "2022-08-28T05:15:00.300000Z"
+            },
+            "block_number": 320956,
+            "from_account": null,
+            "to_account": {
+              "eth_address": "0x0000000000ce6d8c1fba76f26d6cc5db71432710"
+            },
+            "to_address": "0x0000000000ce6d8c1fba76f26d6cc5db71432710",
+            "transaction_hash": "0xe10b9659f948de345ab4aa95d8a2ed20e2ac014c44ad7aa7862485973ef3d08f"
+          }
+        ],
+        "metadata": {
+          "after": "g3QAAAADZAAMYmxvY2tfbnVtYmVyYgAE5bxkAAlsb2dfaW5kZXhhAGQAEHRyYW5zYWN0aW9uX2hhc2h0AAAAA2QACl9fc3RydWN0X19kACJFbGl4aXIuR29kd29rZW5FeHBsb3Jlci5DaGFpbi5IYXNoZAAKYnl0ZV9jb3VudGEgZAAFYnl0ZXNtAAAAIOELlln5SN40WrSqldii7SDirAFMRK16p4YkhZc-89CP",
+          "before": null,
+          "total_count": 4
+        }
+      }
+    }
+  }
+  """
+  erc721_token_transfers(input: Erc721Erc1155TokenTransfersInput! = {combine_from_to: true, limit: 20, sorter: [{sort_type: DESC, sort_value: BLOCK_NUMBER}, {sort_type: DESC, sort_value: LOG_INDEX}, {sort_type: ASC, sort_value: TRANSACTION_HASH}]}): PaginateTokenTransfers
 
   """
   query {

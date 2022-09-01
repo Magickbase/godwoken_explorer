@@ -157,11 +157,138 @@ defmodule GodwokenExplorer.Graphql.Types.TokenTransfer do
       resolve(&Resolvers.TokenTransfer.token_transfers/3)
     end
 
-    # TODO: add token id filter
+
+    @desc """
+    query {
+      erc721_token_transfers(
+        input: {
+          to_address: "0x0000000000ce6d8c1fba76f26d6cc5db71432710"
+          start_block_number: 90
+          end_block_number: 909999
+          limit: 1
+          sorter: [
+            { sort_type: ASC, sort_value: BLOCK_NUMBER }
+            { sort_type: ASC, sort_value: TRANSACTION_HASH }
+            { sort_type: ASC, sort_value: LOG_INDEX }
+          ]
+        }
+      ) {
+        entries {
+          block {
+            timestamp
+          }
+          transaction_hash
+          block_number
+          to_account {
+            eth_address
+          }
+          to_address
+          from_account {
+            eth_address
+          }
+          token_id
+          token_ids
+        }
+        metadata {
+          total_count
+          before
+          after
+        }
+      }
+    }
+
+
+    {
+      "data": {
+        "erc721_token_transfers": {
+          "entries": [
+            {
+              "block": {
+                "timestamp": "2022-08-28T05:15:00.300000Z"
+              },
+              "block_number": 320956,
+              "from_account": null,
+              "to_account": {
+                "eth_address": "0x0000000000ce6d8c1fba76f26d6cc5db71432710"
+              },
+              "to_address": "0x0000000000ce6d8c1fba76f26d6cc5db71432710",
+              "token_id": "558",
+              "token_ids": null,
+              "transaction_hash": "0xe10b9659f948de345ab4aa95d8a2ed20e2ac014c44ad7aa7862485973ef3d08f"
+            }
+          ],
+          "metadata": {
+            "after": "g3QAAAADZAAMYmxvY2tfbnVtYmVyYgAE5bxkAAlsb2dfaW5kZXhhAGQAEHRyYW5zYWN0aW9uX2hhc2h0AAAAA2QACl9fc3RydWN0X19kACJFbGl4aXIuR29kd29rZW5FeHBsb3Jlci5DaGFpbi5IYXNoZAAKYnl0ZV9jb3VudGEgZAAFYnl0ZXNtAAAAIOELlln5SN40WrSqldii7SDirAFMRK16p4YkhZc-89CP",
+            "before": null,
+            "total_count": 4
+          }
+        }
+      }
+    }
+    """
     field :erc721_token_transfers, :paginate_token_transfers do
-      arg(:input, non_null(:erc721_token_transfers_input), default_value: %{})
+      arg(:input, non_null(:erc721_erc1155_token_transfers_input), default_value: %{})
       middleware(NullFilter)
       resolve(&Resolvers.TokenTransfer.erc721_token_transfers/3)
+    end
+
+
+    @desc """
+    query {
+      erc1155_token_transfers(
+        input: {
+          to_address: "0xc6e58fb4affb6ab8a392b7cc23cd3fef74517f6c"
+          start_block_number: 90
+          end_block_number: 909999
+          limit: 1
+          sorter: [
+            { sort_type: ASC, sort_value: BLOCK_NUMBER }
+            { sort_type: ASC, sort_value: TRANSACTION_HASH }
+            { sort_type: ASC, sort_value: LOG_INDEX }
+          ]
+        }
+      ) {
+        entries {
+          block {
+            timestamp
+          }
+          transaction_hash
+          block_number
+          to_account {
+            eth_address
+          }
+          to_address
+          from_account {
+            eth_address
+          }
+          token_id
+          token_ids
+        }
+        metadata {
+          total_count
+          before
+          after
+        }
+      }
+    }
+
+    {
+      "data": {
+        "erc1155_token_transfers": {
+          "entries": [],
+          "metadata": {
+            "after": null,
+            "before": null,
+            "total_count": 0
+          }
+        }
+      }
+    }
+    """
+    field :erc1155_token_transfers, :paginate_token_transfers do
+      arg(:input, non_null(:erc721_erc1155_token_transfers_input), default_value: %{})
+      middleware(NullFilter)
+      resolve(&Resolvers.TokenTransfer.erc1155_token_transfers/3)
     end
   end
 
@@ -222,7 +349,7 @@ defmodule GodwokenExplorer.Graphql.Types.TokenTransfer do
     value(:log_index)
   end
 
-  input_object :erc721_token_transfers_input do
+  input_object :erc721_erc1155_token_transfers_input do
     field :transaction_hash, :hash_full
 
     field :sorter, list_of(:token_transfers_sorter_input),
@@ -248,7 +375,7 @@ defmodule GodwokenExplorer.Graphql.Types.TokenTransfer do
   end
 
   input_object :token_transfers_input do
-    import_fields(:erc721_token_transfers_input)
+    import_fields(:erc721_erc1155_token_transfers_input)
 
     field :eth_type, :eth_type
   end
