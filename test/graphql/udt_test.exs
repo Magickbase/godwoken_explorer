@@ -528,7 +528,6 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
           token_contract_address_hash
           token_id
           token_type
-          value
         }
         metadata {
           total_count
@@ -548,7 +547,7 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
     assert match?(
              %{
                "data" => %{
-                 "erc721_holders" => %{"metadata" => %{"total_count" => 1}}
+                 "erc721_holders" => %{"metadata" => %{"total_count" => 2}}
                }
              },
              json_response(conn, 200)
@@ -573,7 +572,6 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
           token_contract_address_hash
           token_id
           token_type
-          value
         }
         metadata {
           total_count
@@ -593,7 +591,7 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
     assert match?(
              %{
                "data" => %{
-                 "erc1155_holders" => %{"metadata" => %{"total_count" => 1}}
+                 "erc1155_holders" => %{"metadata" => %{"total_count" => 2}}
                }
              },
              json_response(conn, 200)
