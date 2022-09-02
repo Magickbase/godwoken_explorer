@@ -1384,14 +1384,22 @@ type RootQueryType {
       }
     }
   }
+  
   {
     "data": {
       "erc1155_holders": {
-        "entries": [],
+        "entries": [
+          {
+            "address_hash": "0x46b6f87debd8f7607d00df47c31d2dc6d9999999",
+            "quantity": 1,
+            "token_contract_address_hash": "0xe6903e124e5bdae8784674eb625f1c212efc789e",
+            "token_id": "0"
+          }
+        ],
         "metadata": {
-          "after": null,
+          "after": "g3QAAAABZAAIcXVhbnRpdHlhAQ==",
           "before": null,
-          "total_count": 0
+          "total_count": 14
         }
       }
     }
@@ -1404,7 +1412,7 @@ type RootQueryType {
     erc1155_token_transfers(
       input: {
         to_address: "0xc6e58fb4affb6ab8a392b7cc23cd3fef74517f6c"
-        start_block_number: 90
+        start_block_number: 0
         end_block_number: 909999
         limit: 1
         sorter: [
@@ -1427,8 +1435,14 @@ type RootQueryType {
         from_account {
           eth_address
         }
+        token_id
+        token_ids
+        udt{
+          id
+          name
+          eth_type
+        }
       }
-  
       metadata {
         total_count
         before
@@ -1440,11 +1454,31 @@ type RootQueryType {
   {
     "data": {
       "erc1155_token_transfers": {
-        "entries": [],
+        "entries": [
+          {
+            "block": {
+              "timestamp": "2022-07-16T13:47:10.511000Z"
+            },
+            "block_number": 195916,
+            "from_account": null,
+            "to_account": {
+              "eth_address": "0xc6e58fb4affb6ab8a392b7cc23cd3fef74517f6c"
+            },
+            "to_address": "0xc6e58fb4affb6ab8a392b7cc23cd3fef74517f6c",
+            "token_id": "0",
+            "token_ids": null,
+            "transaction_hash": "0x9fa88935cd93531dedec0c1b6dd79a0de3e754b5600714d410a85abc3035e7e4",
+            "udt": {
+              "eth_type": "ERC1155",
+              "id": 48435,
+              "name": null
+            }
+          }
+        ],
         "metadata": {
-          "after": null,
+          "after": "g3QAAAADZAAMYmxvY2tfbnVtYmVyYgAC_UxkAAlsb2dfaW5kZXhhAGQAEHRyYW5zYWN0aW9uX2hhc2h0AAAAA2QACl9fc3RydWN0X19kACJFbGl4aXIuR29kd29rZW5FeHBsb3Jlci5DaGFpbi5IYXNoZAAKYnl0ZV9jb3VudGEgZAAFYnl0ZXNtAAAAIJ-oiTXNk1Md7ewMG23Xmg3j51S1YAcU1BCoWrwwNefk",
           "before": null,
-          "total_count": 0
+          "total_count": 10
         }
       }
     }
@@ -1476,11 +1510,11 @@ type RootQueryType {
       "erc1155_udts": {
         "entries": [
           {
-            "contract_address_hash": "0xdb9e72a05c53a104c48fe343e9c58c66583df889",
+            "contract_address_hash": "0xa87071a188e3e8d3e30f53a335ecc329d88026b7",
             "eth_type": "ERC1155",
-            "holders_count": 0,
-            "id": 32343,
-            "minted_count": 1,
+            "holders_count": 3,
+            "id": 53717,
+            "minted_count": 30,
             "name": null
           }
         ],
@@ -1489,6 +1523,67 @@ type RootQueryType {
           "before": null,
           "total_count": 524
         }
+      }
+    }
+  }
+  
+  query {
+    erc1155_udts(
+      input: {
+        contract_address: "0xa87071a188e3e8d3e30f53a335ecc329d88026b7"
+        limit: 1
+        sorter: [{ sort_type: DESC, sort_value: EX_HOLDERS_COUNT }]
+      }
+    ) {
+      entries {
+        id
+        name
+        contract_address_hash
+        eth_type
+        holders_count
+        minted_count
+      }
+      metadata {
+        total_count
+        after
+        before
+      }
+    }
+  
+    udt(
+      input: { contract_address: "0xa87071a188e3e8d3e30f53a335ecc329d88026b7" }
+    ) {
+      id
+      name
+      script_hash
+      eth_type
+    }
+  }
+  
+  {
+    "data": {
+      "erc1155_udts": {
+        "entries": [
+          {
+            "contract_address_hash": "0xa87071a188e3e8d3e30f53a335ecc329d88026b7",
+            "eth_type": "ERC1155",
+            "holders_count": 3,
+            "id": 53717,
+            "minted_count": 30,
+            "name": null
+          }
+        ],
+        "metadata": {
+          "after": null,
+          "before": null,
+          "total_count": 1
+        }
+      },
+      "udt": {
+        "eth_type": "ERC1155",
+        "id": 53717,
+        "name": null,
+        "script_hash": null
       }
     }
   }
@@ -1513,7 +1608,12 @@ type RootQueryType {
   
   {
     "data": {
-      "erc1155_user_token": null
+      "erc1155_user_token": {
+        "token_contract_address_hash": "0xe6903e124e5bdae8784674eb625f1c212efc789e",
+        "token_id": "0",
+        "token_type": "ERC1155",
+        "value": "73"
+      }
     }
   }
   """
@@ -1574,6 +1674,12 @@ type RootQueryType {
         address_hash
         token_contract_address_hash
         value
+  
+        udt {
+          id
+          name
+          eth_type
+        }
       }
       metadata {
         total_count
@@ -1583,14 +1689,27 @@ type RootQueryType {
     }
   }
   
+  
   {
     "data": {
       "erc721_erc1155_inventory": {
-        "entries": [],
+        "entries": [
+          {
+            "address_hash": "0xc6e58fb4affb6ab8a392b7cc23cd3fef74517f6c",
+            "token_contract_address_hash": "0xe6903e124e5bdae8784674eb625f1c212efc789e",
+            "token_id": "0",
+            "udt": {
+              "eth_type": "ERC1155",
+              "id": 48472,
+              "name": null
+            },
+            "value": "73"
+          }
+        ],
         "metadata": {
-          "after": null,
+          "after": "g3QAAAACZAACaWRiAB4JsWQACHRva2VuX2lkdAAAAARkAApfX3N0cnVjdF9fZAAORWxpeGlyLkRlY2ltYWxkAARjb2VmYQBkAANleHBhAGQABHNpZ25hAQ==",
           "before": null,
-          "total_count": 0
+          "total_count": 4
         }
       }
     }
@@ -1670,8 +1789,9 @@ type RootQueryType {
         from_account {
           eth_address
         }
+        token_id
+        token_ids
       }
-  
       metadata {
         total_count
         before
@@ -1679,6 +1799,7 @@ type RootQueryType {
       }
     }
   }
+  
   
   {
     "data": {
@@ -1694,6 +1815,8 @@ type RootQueryType {
               "eth_address": "0x0000000000ce6d8c1fba76f26d6cc5db71432710"
             },
             "to_address": "0x0000000000ce6d8c1fba76f26d6cc5db71432710",
+            "token_id": "558",
+            "token_ids": null,
             "transaction_hash": "0xe10b9659f948de345ab4aa95d8a2ed20e2ac014c44ad7aa7862485973ef3d08f"
           }
         ],
@@ -2973,11 +3096,18 @@ type RootQueryType {
   {
     "data": {
       "user_erc1155_assets": {
-        "entries": [],
+        "entries": [
+          {
+            "address_hash": "0xc6e58fb4affb6ab8a392b7cc23cd3fef74517f6c",
+            "token_contract_address_hash": "0xe6903e124e5bdae8784674eb625f1c212efc789e",
+            "token_id": "0",
+            "value": "73"
+          }
+        ],
         "metadata": {
-          "after": null,
+          "after": "g3QAAAACZAAMYmxvY2tfbnVtYmVyYgAEU89kABB2YWx1ZV9mZXRjaGVkX2F0dAAAAA1kAApfX3N0cnVjdF9fZAAPRWxpeGlyLkRhdGVUaW1lZAAIY2FsZW5kYXJkABNFbGl4aXIuQ2FsZW5kYXIuSVNPZAADZGF5YQJkAARob3VyYQNkAAttaWNyb3NlY29uZGgCYgAK0UlhBmQABm1pbnV0ZWEwZAAFbW9udGhhCWQABnNlY29uZGEvZAAKc3RkX29mZnNldGEAZAAJdGltZV96b25lbQAAAAdFdGMvVVRDZAAKdXRjX29mZnNldGEAZAAEeWVhcmIAAAfmZAAJem9uZV9hYmJybQAAAANVVEM=",
           "before": null,
-          "total_count": 0
+          "total_count": 6
         }
       }
     }

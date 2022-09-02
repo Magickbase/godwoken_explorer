@@ -238,7 +238,7 @@ defmodule GodwokenExplorer.Graphql.Types.TokenTransfer do
       erc1155_token_transfers(
         input: {
           to_address: "0xc6e58fb4affb6ab8a392b7cc23cd3fef74517f6c"
-          start_block_number: 90
+          start_block_number: 0
           end_block_number: 909999
           limit: 1
           sorter: [
@@ -263,6 +263,11 @@ defmodule GodwokenExplorer.Graphql.Types.TokenTransfer do
           }
           token_id
           token_ids
+          udt{
+            id
+            name
+            eth_type
+          }
         }
         metadata {
           total_count
@@ -275,11 +280,31 @@ defmodule GodwokenExplorer.Graphql.Types.TokenTransfer do
     {
       "data": {
         "erc1155_token_transfers": {
-          "entries": [],
+          "entries": [
+            {
+              "block": {
+                "timestamp": "2022-07-16T13:47:10.511000Z"
+              },
+              "block_number": 195916,
+              "from_account": null,
+              "to_account": {
+                "eth_address": "0xc6e58fb4affb6ab8a392b7cc23cd3fef74517f6c"
+              },
+              "to_address": "0xc6e58fb4affb6ab8a392b7cc23cd3fef74517f6c",
+              "token_id": "0",
+              "token_ids": null,
+              "transaction_hash": "0x9fa88935cd93531dedec0c1b6dd79a0de3e754b5600714d410a85abc3035e7e4",
+              "udt": {
+                "eth_type": "ERC1155",
+                "id": 48435,
+                "name": null
+              }
+            }
+          ],
           "metadata": {
-            "after": null,
+            "after": "g3QAAAADZAAMYmxvY2tfbnVtYmVyYgAC_UxkAAlsb2dfaW5kZXhhAGQAEHRyYW5zYWN0aW9uX2hhc2h0AAAAA2QACl9fc3RydWN0X19kACJFbGl4aXIuR29kd29rZW5FeHBsb3Jlci5DaGFpbi5IYXNoZAAKYnl0ZV9jb3VudGEgZAAFYnl0ZXNtAAAAIJ-oiTXNk1Md7ewMG23Xmg3j51S1YAcU1BCoWrwwNefk",
             "before": null,
-            "total_count": 0
+            "total_count": 10
           }
         }
       }

@@ -428,7 +428,12 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
 
     {
       "data": {
-        "erc1155_user_token": null
+        "erc1155_user_token": {
+          "token_contract_address_hash": "0xe6903e124e5bdae8784674eb625f1c212efc789e",
+          "token_id": "0",
+          "token_type": "ERC1155",
+          "value": "73"
+        }
       }
     }
     """
@@ -549,11 +554,11 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         "erc1155_udts": {
           "entries": [
             {
-              "contract_address_hash": "0xdb9e72a05c53a104c48fe343e9c58c66583df889",
+              "contract_address_hash": "0xa87071a188e3e8d3e30f53a335ecc329d88026b7",
               "eth_type": "ERC1155",
-              "holders_count": 0,
-              "id": 32343,
-              "minted_count": 1,
+              "holders_count": 3,
+              "id": 53717,
+              "minted_count": 30,
               "name": null
             }
           ],
@@ -562,6 +567,67 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
             "before": null,
             "total_count": 524
           }
+        }
+      }
+    }
+
+    query {
+      erc1155_udts(
+        input: {
+          contract_address: "0xa87071a188e3e8d3e30f53a335ecc329d88026b7"
+          limit: 1
+          sorter: [{ sort_type: DESC, sort_value: EX_HOLDERS_COUNT }]
+        }
+      ) {
+        entries {
+          id
+          name
+          contract_address_hash
+          eth_type
+          holders_count
+          minted_count
+        }
+        metadata {
+          total_count
+          after
+          before
+        }
+      }
+
+      udt(
+        input: { contract_address: "0xa87071a188e3e8d3e30f53a335ecc329d88026b7" }
+      ) {
+        id
+        name
+        script_hash
+        eth_type
+      }
+    }
+
+    {
+      "data": {
+        "erc1155_udts": {
+          "entries": [
+            {
+              "contract_address_hash": "0xa87071a188e3e8d3e30f53a335ecc329d88026b7",
+              "eth_type": "ERC1155",
+              "holders_count": 3,
+              "id": 53717,
+              "minted_count": 30,
+              "name": null
+            }
+          ],
+          "metadata": {
+            "after": null,
+            "before": null,
+            "total_count": 1
+          }
+        },
+        "udt": {
+          "eth_type": "ERC1155",
+          "id": 53717,
+          "name": null,
+          "script_hash": null
         }
       }
     }
@@ -639,14 +705,22 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         }
       }
     }
+
     {
       "data": {
         "erc1155_holders": {
-          "entries": [],
+          "entries": [
+            {
+              "address_hash": "0x46b6f87debd8f7607d00df47c31d2dc6d9999999",
+              "quantity": 1,
+              "token_contract_address_hash": "0xe6903e124e5bdae8784674eb625f1c212efc789e",
+              "token_id": "0"
+            }
+          ],
           "metadata": {
-            "after": null,
+            "after": "g3QAAAABZAAIcXVhbnRpdHlhAQ==",
             "before": null,
-            "total_count": 0
+            "total_count": 14
           }
         }
       }
@@ -729,11 +803,18 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
     {
       "data": {
         "user_erc1155_assets": {
-          "entries": [],
+          "entries": [
+            {
+              "address_hash": "0xc6e58fb4affb6ab8a392b7cc23cd3fef74517f6c",
+              "token_contract_address_hash": "0xe6903e124e5bdae8784674eb625f1c212efc789e",
+              "token_id": "0",
+              "value": "73"
+            }
+          ],
           "metadata": {
-            "after": null,
+            "after": "g3QAAAACZAAMYmxvY2tfbnVtYmVyYgAEU89kABB2YWx1ZV9mZXRjaGVkX2F0dAAAAA1kAApfX3N0cnVjdF9fZAAPRWxpeGlyLkRhdGVUaW1lZAAIY2FsZW5kYXJkABNFbGl4aXIuQ2FsZW5kYXIuSVNPZAADZGF5YQJkAARob3VyYQNkAAttaWNyb3NlY29uZGgCYgAK0UlhBmQABm1pbnV0ZWEwZAAFbW9udGhhCWQABnNlY29uZGEvZAAKc3RkX29mZnNldGEAZAAJdGltZV96b25lbQAAAAdFdGMvVVRDZAAKdXRjX29mZnNldGEAZAAEeWVhcmIAAAfmZAAJem9uZV9hYmJybQAAAANVVEM=",
             "before": null,
-            "total_count": 0
+            "total_count": 6
           }
         }
       }
@@ -799,6 +880,12 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
           address_hash
           token_contract_address_hash
           value
+
+          udt {
+            id
+            name
+            eth_type
+          }
         }
         metadata {
           total_count
@@ -808,14 +895,27 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
       }
     }
 
+
     {
       "data": {
         "erc721_erc1155_inventory": {
-          "entries": [],
+          "entries": [
+            {
+              "address_hash": "0xc6e58fb4affb6ab8a392b7cc23cd3fef74517f6c",
+              "token_contract_address_hash": "0xe6903e124e5bdae8784674eb625f1c212efc789e",
+              "token_id": "0",
+              "udt": {
+                "eth_type": "ERC1155",
+                "id": 48472,
+                "name": null
+              },
+              "value": "73"
+            }
+          ],
           "metadata": {
-            "after": null,
+            "after": "g3QAAAACZAACaWRiAB4JsWQACHRva2VuX2lkdAAAAARkAApfX3N0cnVjdF9fZAAORWxpeGlyLkRlY2ltYWxkAARjb2VmYQBkAANleHBhAGQABHNpZ25hAQ==",
             "before": null,
-            "total_count": 0
+            "total_count": 4
           }
         }
       }

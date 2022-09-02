@@ -53,7 +53,12 @@ defmodule GodwokenExplorer.Account.UDTBalance do
       ub in UDTBalance,
       where:
         ub.address_hash != ^@burn_address_hash and
-          (is_nil(ub.value_fetched_at) or is_nil(ub.value)) and not is_nil(ub.token_type)
+          (is_nil(ub.value_fetched_at) or is_nil(ub.value)) and
+          (not is_nil(ub.token_type) and (ub.token_type == :erc20 or ub.token_type == :erc721)),
+      or_where:
+        ub.address_hash != ^@burn_address_hash and
+          (is_nil(ub.value_fetched_at) or is_nil(ub.value)) and
+          (not is_nil(ub.token_id) and ub.token_type == :erc1155)
     )
   end
 

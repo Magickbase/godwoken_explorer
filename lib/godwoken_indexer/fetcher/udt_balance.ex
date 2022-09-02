@@ -125,11 +125,18 @@ defmodule GodwokenIndexer.Fetcher.UDTBalance do
          token_id: token_id,
          token_type: token_type
        }) do
+    token_id_int =
+      case token_id do
+        %Decimal{} -> Decimal.to_integer(token_id)
+        id_int when is_integer(id_int) -> id_int
+        _ -> token_id
+      end
+
     %{
       token_contract_address_hash_bytes: token_contract_address_hash.bytes,
       address_hash_bytes: address_hash.bytes,
       block_number: block_number,
-      token_id: token_id,
+      token_id: token_id_int,
       token_type: token_type
     }
 

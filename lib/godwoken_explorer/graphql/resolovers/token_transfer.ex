@@ -39,7 +39,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.TokenTransfer do
   def erc1155_token_transfers(_parent, %{input: input}, _resolution) do
     return =
       from(tt in TokenTransfer)
-      |> where([tt], not is_nil(tt.token_ids))
+      |> where([tt], not is_nil(tt.token_ids) or not is_nil(tt.token_id))
       |> query_token_transfers(input, :erc1155)
       |> paginate_query(input, %{
         cursor_fields: paginate_cursor(input),
