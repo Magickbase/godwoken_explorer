@@ -12,8 +12,9 @@ defmodule GodwokenRPC do
     FetchedPolyVersion
   }
 
-  alias GodwokenRPC.Transaction.FetchedTransaction, as: FetchedGodwokenTransaction
-  alias GodwokenRPC.Transaction.GetGwTxByEthTx
+  alias GodwokenRPC.Transaction.FetchedTransaction, as: FetchedGWTransaction
+  alias GodwokenRPC.Transaction.FetchedTransactions, as: FetchedGWTransactions
+  alias GodwokenRPC.Transaction.{GetGwTxByEthTx, FetchedPendingTxHashes}
 
   alias GodwokenRPC.CKBIndexer.{
     FetchedTransactions,
@@ -397,12 +398,37 @@ defmodule GodwokenRPC do
 
     with {:ok, gw_tx_hash} <- GetGwTxByEthTx.request(tx_hash) |> HTTP.json_rpc(options),
          {:ok, response} <-
-           FetchedGodwokenTransaction.request(gw_tx_hash) |> HTTP.json_rpc(options) do
+           FetchedGWTransaction.request(%{id: 1, gw_tx_hash: gw_tx_hash})
+           |> HTTP.json_rpc(options) do
       {:ok, response}
     else
       {:error, msg} ->
         Logger.error("Failed to request transaction: #{tx_hash} > #{inspect(msg)}")
         {:error, :node_error}
+    end
+  end
+
+  def fetch_pending_tx_hashes() do
+    options = Application.get_env(:godwoken_explorer, :mempool_rpc_named_arguments)
+
+    with {:ok, response} <- FetchedPendingTxHashes.request() |> HTTP.json_rpc(options) do
+      {:ok, response}
+    else
+      {:error, msg} ->
+        Logger.error("Failed to fetched pending tx hashes: #{inspect(msg)}")
+        {:error, :node_error}
+    end
+  end
+
+  def fetch_pending_transactions(params) do
+    id_to_params = id_to_params(params)
+    options = Application.get_env(:godwoken_explorer, :mempool_rpc_named_arguments)
+
+    with {:ok, responses} <-
+           id_to_params
+           |> FetchedGWTransactions.requests()
+           |> HTTP.json_rpc(options) do
+      {:ok, FetchedGWTransactions.from_responses(responses, id_to_params)}
     end
   end
 

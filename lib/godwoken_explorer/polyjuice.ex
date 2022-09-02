@@ -53,8 +53,7 @@ defmodule GodwokenExplorer.Polyjuice do
       :gas_price,
       :value,
       :input_size,
-      :input,
-      :transaction_index
+      :input
     ])
     |> unique_constraint(:tx_hash)
   end
