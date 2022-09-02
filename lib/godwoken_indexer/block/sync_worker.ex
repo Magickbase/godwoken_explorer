@@ -433,7 +433,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
       Import.insert_changes_list(inserted_transaction_params,
         for: Transaction,
         timestamps: import_timestamps(),
-        confilict_target: :hash,
+        conflict_target: :hash,
         on_conflict: {:replace, [:block_hash, :block_number, :eth_hash, :index, :updated_at]},
         returning: [
           :from_account_id,
