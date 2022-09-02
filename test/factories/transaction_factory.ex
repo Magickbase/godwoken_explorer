@@ -21,6 +21,18 @@ defmodule GodwokenExplorer.TransactionFactory do
         }
       end
 
+      def pending_transaction_factory do
+        %Transaction{
+          from_account: build(:user),
+          to_account: build(:polyjuice_contract_account),
+          args:
+            "0x01000000060000001600000000000000000000000000000001000000000000000000000000000000",
+          hash: transaction_hash(),
+          nonce: Enum.random(1..1_000),
+          type: :polyjuice
+        }
+      end
+
       def with_polyjuice(%Transaction{} = transaction) do
         insert(:polyjuice, transaction: transaction)
         transaction

@@ -74,7 +74,8 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
     to_script_hash = Map.get(input, :to_script_hash)
 
     from(t in Transaction)
-    |> join(:inner, [t], b in Block, as: :block, on: b.hash == t.block_hash)
+    |> join(:left, [t], b in Block, as: :block, on: b.hash == t.block_hash)
+    |> query_with_status(input)
     |> query_with_account_address(input, from_eth_address, to_eth_address)
     |> query_with_account_address(input, from_script_hash, to_script_hash)
     |> query_with_block_range(input)
@@ -198,6 +199,23 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
       |> where([t], t.block_number <= ^end_block_number)
     else
       query
+    end
+  end
+
+  defp query_with_status(query, input) do
+    status = Map.get(input, :status)
+
+    cond do
+      :pending == status ->
+        query
+        |> where([t], is_nil(t.block_hash))
+
+      :on_chained == status ->
+        query
+        |> where([t], not is_nil(t.block_hash))
+
+      true ->
+        query
     end
   end
 
