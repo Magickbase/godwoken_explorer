@@ -1,8 +1,7 @@
-defmodule PendingTransactionWorkerTest do
+defmodule GodwokenIndexer.Block.PendingTransactionWorkerTest do
   use GodwokenExplorer.DataCase
 
   import Mock
-  import GodwokenExplorer.Factory
 
   alias GodwokenExplorer.{Transaction, Repo}
 
