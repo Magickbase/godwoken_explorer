@@ -767,7 +767,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
       # conflict_target: [:address_hash, :token_contract_address_hash, :block_number, :token_id]
       conflict_target:
         {:unsafe_fragment,
-         ~s<(address_hash, token_contract_address_hash, token_id, block_number) WHERE token_id NOT IS NULL>}
+         ~s<(address_hash, token_contract_address_hash, token_id, block_number) WHERE token_id IS NOT NULL>}
     )
 
     :ok
