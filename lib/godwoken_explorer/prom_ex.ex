@@ -64,8 +64,8 @@ defmodule GodwokenExplorer.PromEx do
       Plugins.Beam,
       {Plugins.Phoenix,
        router: GodwokenExplorerWeb.Router, endpoint: GodwokenExplorerWeb.Endpoint},
-      Plugins.Ecto,
-      Plugins.Oban,
+      {Plugins.Ecto, repos: [GodwokenExplorer.Repo]},
+      {Plugins.Oban, oban_supervisors: [Oban]},
       # Plugins.PhoenixLiveView,
       Plugins.Absinthe
       # Plugins.Broadway,
