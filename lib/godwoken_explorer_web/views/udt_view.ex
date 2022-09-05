@@ -75,6 +75,7 @@ defmodule GodwokenExplorer.UDTView do
   def get_udt(id) do
     from(
       u in UDT,
+      preload: [:account],
       where: u.id == ^id
     )
     |> Repo.one()
