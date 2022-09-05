@@ -24,7 +24,6 @@ defmodule GodwokenExplorer do
         DepositHistory,
         DailyStat,
         Log,
-        PendingTransaction,
         PolyjuiceCreator,
         Polyjuice,
         Repo,

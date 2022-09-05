@@ -1,5 +1,8 @@
 defmodule GodwokenExplorer.Graphql.TransactionTest do
   use GodwokenExplorerWeb.ConnCase
+
+  import GodwokenExplorer.Factory
+
   alias GodwokenExplorer.Factory
 
   setup do
@@ -198,5 +201,38 @@ defmodule GodwokenExplorer.Graphql.TransactionTest do
              },
              json_response(conn, 200)
            )
+  end
+
+  test "pending transaction", %{conn: conn} do
+    pending_tx = insert(:pending_transaction)
+
+    query = """
+    query {
+      transactions(
+        input: {
+          status: PENDING
+        }
+      ) {
+        entries {
+          hash
+        }
+      }
+    }
+    """
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    assert json_response(conn, 200) ==
+             %{
+               "data" => %{
+                 "transactions" => %{
+                   "entries" => [%{"hash" => pending_tx.hash |> to_string()}]
+                 }
+               }
+             }
   end
 end

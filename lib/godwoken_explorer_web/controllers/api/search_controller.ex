@@ -2,7 +2,7 @@ defmodule GodwokenExplorerWeb.API.SearchController do
   use GodwokenExplorerWeb, :controller
   action_fallback GodwokenExplorerWeb.API.FallbackController
 
-  alias GodwokenExplorer.{Account, Block, Chain, PendingTransaction, Transaction, UDT}
+  alias GodwokenExplorer.{Account, Block, Chain, Transaction, UDT}
 
   def index(conn, %{"keyword" => query}) do
     query
@@ -38,10 +38,6 @@ defmodule GodwokenExplorerWeb.API.SearchController do
 
   defp render_search_results(conn, %Transaction{} = item) do
     json(conn, %{type: "transaction", id: item.eth_hash || item.hash})
-  end
-
-  defp render_search_results(conn, %PendingTransaction{} = item) do
-    json(conn, %{type: "transaction", id: item.hash})
   end
 
   defp render_search_results(conn, %UDT{} = item) do

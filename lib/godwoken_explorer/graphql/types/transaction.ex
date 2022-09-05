@@ -338,6 +338,44 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
         }
       }
     }
+    pending-transaction-example:
+    query {
+      transactions(
+        input: {
+          status: PENDING
+          sorter: [{ sort_type: DESC, sort_value: BLOCK_NUMBER }]
+        }
+      ) {
+        entries {
+          block_hash
+          hash
+        }
+
+        metadata {
+          total_count
+          before
+          after
+        }
+      }
+    }
+
+    {
+      "data": {
+        "transactions": {
+          "entries": [
+            {
+              "block_hash": null,
+              "hash": "0xc8e2bea0d8f779ea10e97f9139540e3c6dee8b2267285c71559477a1e5c33507"
+            },
+          ],
+          "metadata": {
+            "after": null,
+            "before": null,
+            "total_count": 0
+          }
+        }
+      }
+    }
     """
     field :transactions, :paginate_trasactions do
       arg(:input, :transactions_input, default_value: %{})
@@ -421,6 +459,7 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
     field :to_eth_address, :hash_address
     field :from_script_hash, :hash_full
     field :to_script_hash, :hash_full
+    field :status, :status
 
     @desc """
     if combine_from_to is true, then from_address and to_address are combined into query condition like `address = from_address OR address = to_address`
@@ -437,5 +476,10 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
     import_fields(:age_range_input)
     import_fields(:paginate_input)
     import_fields(:block_range_input)
+  end
+
+  enum :status do
+    value(:pending)
+    value(:on_chained)
   end
 end

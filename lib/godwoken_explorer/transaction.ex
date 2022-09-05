@@ -63,8 +63,7 @@ defmodule GodwokenExplorer.Transaction do
       :from_account_id,
       :to_account_id,
       :nonce,
-      :args,
-      :block_number
+      :args
     ])
   end
 

@@ -94,11 +94,15 @@ gwscan_block_bind_l1_l2_woker_on_off =
 gwscan_block_sync_l1_block_woker_on_off =
   System.get_env("GWSCAN_BLOCK_SYNC_L1_BLOCK_WORKER_ON_OFF", "false") |> String.to_atom()
 
+gwscan_block_pending_transaction_woker_on_off =
+  System.get_env("GWSCAN_BLOCK_PENDING_TRANSACTION_WORKER_ON_OFF", "false") |> String.to_atom()
+
 config :godwoken_explorer, :on_off,
   sync_worker: gwscan_block_sync_woker_on_off,
   global_state_worker: gwscan_block_global_state_worker_on_off,
   bind_l1_l2_worker: gwscan_block_bind_l1_l2_woker_on_off,
-  sync_l1_block_worker: gwscan_block_sync_l1_block_woker_on_off
+  sync_l1_block_worker: gwscan_block_sync_l1_block_woker_on_off,
+  pending_transaction_worker: gwscan_block_pending_transaction_woker_on_off
 
 gwscan_dashboard_username = System.get_env("GWSCAN_DASHBOARD_USERNAME", "admin")
 gwscan_dashboard_password = System.get_env("GWSCAN_DASHBOARD_PASSWORD", "password")
@@ -181,11 +185,15 @@ gwscan_interval_bind_l1_woker =
 gwscan_interval_sync_deposition_worker =
   System.get_env("GWSCAN_INTERVAL_SYNC_DEPOSITION_WORKER", "2") |> String.to_integer()
 
+gwscan_interval_pending_transaction_worker =
+  System.get_env("GWSCAN_INTERVAL_PENDING_TRANSACTION_WORKER", "30") |> String.to_integer()
+
 config :godwoken_explorer,
   sync_worker_interval: gwscan_interval_sync_worker,
   global_state_worker_interval: gwscan_interval_global_state_worker,
   bind_l1_worker_interval: gwscan_interval_bind_l1_woker,
-  sync_deposition_worker_interval: gwscan_interval_sync_deposition_worker
+  sync_deposition_worker_interval: gwscan_interval_sync_deposition_worker,
+  pending_transaction_worker_interval: gwscan_interval_pending_transaction_worker
 
 gwscan_sentry_dsn = System.get_env("GWSCAN_SENTRY_DSN", "")
 gwscan_sentry_environment_name = System.get_env("GWSCAN_SENTRY_ENVIRONMENT_NAME", "")
