@@ -9,6 +9,7 @@ defmodule GodwokenExplorer.Application do
 
   def start(_type, _args) do
     children = [
+      GodwokenExplorer.PromEx,
       # Start the Ecto repository
       GodwokenExplorer.Repo,
       # Start the Telemetry supervisor
@@ -33,8 +34,7 @@ defmodule GodwokenExplorer.Application do
       GodwokenExplorer.ETS.SmartContracts,
       GodwokenExplorer.SmartContract.SolcDownloader,
       GodwokenExplorer.SmartContract.VyperDownloader,
-      {Oban, oban_config()},
-      GodwokenExplorer.PromEx
+      {Oban, oban_config()}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
