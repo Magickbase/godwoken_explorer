@@ -258,6 +258,10 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
     {:ok, return}
   end
 
+  def block(%Transaction{block_hash: nil}, _args, _resolution) do
+    {:ok, nil}
+  end
+
   def block(%Transaction{block_hash: block_hash}, _args, _resolution) do
     {:ok, Repo.get(Block, block_hash)}
   end
