@@ -215,11 +215,7 @@ defmodule GodwokenRPC.Util do
   end
 
   def utc_to_unix(iso_datetime) do
-    if iso_datetime == nil do
-      nil
-    else
-      iso_datetime |> DateTime.from_naive!("Etc/UTC") |> DateTime.to_unix()
-    end
+    iso_datetime |> DateTime.from_naive!("Etc/UTC") |> DateTime.to_unix()
   end
 
   def import_timestamps do
