@@ -153,7 +153,7 @@ defmodule GodwokenExplorerWeb.API.TransactionController do
     downcased_hash = String.downcase(params["hash"])
 
     case Repo.get_by(Transaction, hash: downcased_hash) do
-      %Transaction{type: :polyjuice, eth_hash: eth_hash} ->
+      %Transaction{type: :polyjuice, eth_hash: eth_hash} when not is_nil(eth_hash) ->
         {:error, :eth_hash, eth_hash}
 
       _ ->
