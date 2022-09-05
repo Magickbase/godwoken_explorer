@@ -953,11 +953,10 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
   end
 
   object :erc721_erc1155_holder_item do
+    field(:rank, :integer)
     field(:address_hash, :hash_address)
     field(:token_contract_address_hash, :hash_address)
-    field(:token_id, :decimal)
-    field(:token_type, :eth_type)
-    field(:quantity, :integer)
+    field(:quantity, :decimal)
   end
 
   object :erc721_erc1155_user_token do
@@ -970,11 +969,6 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
     field :udt, :erc721_erc1155_udt do
       resolve(&Resolvers.UDT.erc721_erc1155_udt/3)
     end
-  end
-
-  object :erc721_holder do
-    field(:address_hash, :hash_address)
-    field(:quantity, :decimal)
   end
 
   object :erc721_erc1155_udt do

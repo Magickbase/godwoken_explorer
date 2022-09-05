@@ -205,6 +205,7 @@ defmodule Mix.Tasks.UpdateUdtBalance do
         }
       )
 
+    # TODO: add logger for u.eth_type is nil
     Repo.all(query)
     |> Enum.map(fn map ->
       token_type =
