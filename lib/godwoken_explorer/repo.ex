@@ -13,13 +13,20 @@ defmodule GodwokenExplorer.Repo do
     # sets the maximum limit to 100
     maximum_limit: 100,
     # include total count by default
-    include_total_count: true
+    include_total_count: true,
+    total_count_primary_key_field: :id
   ]
 
   def graphql_paginate(queryable, opts \\ [], repo_opts \\ []) do
     opts = Keyword.merge(@graphql_paginate_defaults, opts)
 
     Paginator.paginate(queryable, opts, __MODULE__, repo_opts)
+  end
+
+  def graphql_quarto_paginate(queryable, opts \\ [], repo_opts \\ []) do
+    opts = Keyword.merge(@graphql_paginate_defaults, opts)
+
+    Quarto.paginate(queryable, opts, __MODULE__, repo_opts)
   end
 
   @doc """

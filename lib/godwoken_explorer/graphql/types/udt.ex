@@ -646,7 +646,7 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         }
       ) {
         entries {
-          token_id
+          rank
           address_hash
           token_contract_address_hash
           quantity
@@ -664,16 +664,58 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         "erc721_holders": {
           "entries": [
             {
-              "address_hash": "0x0000000000ce6d8c1fba76f26d6cc5db71432710",
-              "quantity": 1,
-              "token_contract_address_hash": "0x784cd3c52813098763c371df8fbe8ed27d2c1ebd",
-              "token_id": "593"
+              "address_hash": "0xd8939812d27b0cfaa78e6925fba92bd2d61430ef",
+              "quantity": "16",
+              "rank": 1,
+              "token_contract_address_hash": "0x784cd3c52813098763c371df8fbe8ed27d2c1ebd"
             }
           ],
           "metadata": {
-            "after": "g3QAAAABZAAIcXVhbnRpdHlhAQ==",
+            "after": "g3QAAAACaAJkAAdob2xkZXJzZAAMYWRkcmVzc19oYXNodAAAAANkAApfX3N0cnVjdF9fZAAiRWxpeGlyLkdvZHdva2VuRXhwbG9yZXIuQ2hhaW4uSGFzaGQACmJ5dGVfY291bnRhFGQABWJ5dGVzbQAAABTYk5gS0nsM-qeOaSX7qSvS1hQw72gCZAAHaG9sZGVyc2QACHF1YW50aXR5YRA=",
             "before": null,
-            "total_count": 2000
+            "total_count": 308
+          }
+        }
+      }
+    }
+
+    query {
+      erc721_holders(
+        input: {
+          contract_address: "0x784cd3c52813098763c371df8fbe8ed27d2c1ebd"
+          limit: 1
+          after: "g3QAAAACaAJkAAdob2xkZXJzZAAMYWRkcmVzc19oYXNodAAAAANkAApfX3N0cnVjdF9fZAAiRWxpeGlyLkdvZHdva2VuRXhwbG9yZXIuQ2hhaW4uSGFzaGQACmJ5dGVfY291bnRhFGQABWJ5dGVzbQAAABTYk5gS0nsM-qeOaSX7qSvS1hQw72gCZAAHaG9sZGVyc2QACHF1YW50aXR5YRA="
+        }
+      ) {
+        entries {
+          rank
+          address_hash
+          token_contract_address_hash
+          quantity
+        }
+        metadata {
+          total_count
+          after
+          before
+        }
+      }
+    }
+
+    {
+      "data": {
+        "erc721_holders": {
+          "entries": [
+            {
+              "address_hash": "0x129ee9091f6017ee8cfd249402e3275fa3bc75e6",
+              "quantity": "10",
+              "rank": 2,
+              "token_contract_address_hash": "0x784cd3c52813098763c371df8fbe8ed27d2c1ebd"
+            }
+          ],
+          "metadata": {
+            "after": "g3QAAAACaAJkAAdob2xkZXJzZAAMYWRkcmVzc19oYXNodAAAAANkAApfX3N0cnVjdF9fZAAiRWxpeGlyLkdvZHdva2VuRXhwbG9yZXIuQ2hhaW4uSGFzaGQACmJ5dGVfY291bnRhFGQABWJ5dGVzbQAAABQSnukJH2AX7oz9JJQC4ydfo7x15mgCZAAHaG9sZGVyc2QACHF1YW50aXR5YQo=",
+            "before": "g3QAAAACaAJkAAdob2xkZXJzZAAMYWRkcmVzc19oYXNodAAAAANkAApfX3N0cnVjdF9fZAAiRWxpeGlyLkdvZHdva2VuRXhwbG9yZXIuQ2hhaW4uSGFzaGQACmJ5dGVfY291bnRhFGQABWJ5dGVzbQAAABQSnukJH2AX7oz9JJQC4ydfo7x15mgCZAAHaG9sZGVyc2QACHF1YW50aXR5YQo=",
+            "total_count": 308
           }
         }
       }
@@ -693,7 +735,7 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         }
       ) {
         entries {
-          token_id
+          rank
           address_hash
           token_contract_address_hash
           quantity
@@ -712,19 +754,62 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
           "entries": [
             {
               "address_hash": "0x46b6f87debd8f7607d00df47c31d2dc6d9999999",
-              "quantity": 1,
-              "token_contract_address_hash": "0xe6903e124e5bdae8784674eb625f1c212efc789e",
-              "token_id": "0"
+              "quantity": "21002",
+              "rank": 1,
+              "token_contract_address_hash": "0xe6903e124e5bdae8784674eb625f1c212efc789e"
             }
           ],
           "metadata": {
-            "after": "g3QAAAABZAAIcXVhbnRpdHlhAQ==",
+            "after": "g3QAAAACaAJkAAdob2xkZXJzZAAMYWRkcmVzc19oYXNodAAAAANkAApfX3N0cnVjdF9fZAAiRWxpeGlyLkdvZHdva2VuRXhwbG9yZXIuQ2hhaW4uSGFzaGQACmJ5dGVfY291bnRhFGQABWJ5dGVzbQAAABRGtvh969j3YH0A30fDHS3G2ZmZmWgCZAAHaG9sZGVyc2QACHF1YW50aXR5dAAAAARkAApfX3N0cnVjdF9fZAAORWxpeGlyLkRlY2ltYWxkAARjb2VmYgAAUgpkAANleHBhAGQABHNpZ25hAQ==",
             "before": null,
-            "total_count": 14
+            "total_count": 5
           }
         }
       }
     }
+
+    query {
+      erc1155_holders(
+        input: {
+          contract_address: "0xe6903e124e5bdae8784674eb625f1c212efc789e"
+          limit: 1
+          after: "g3QAAAACaAJkAAdob2xkZXJzZAAMYWRkcmVzc19oYXNodAAAAANkAApfX3N0cnVjdF9fZAAiRWxpeGlyLkdvZHdva2VuRXhwbG9yZXIuQ2hhaW4uSGFzaGQACmJ5dGVfY291bnRhFGQABWJ5dGVzbQAAABRGtvh969j3YH0A30fDHS3G2ZmZmWgCZAAHaG9sZGVyc2QACHF1YW50aXR5dAAAAARkAApfX3N0cnVjdF9fZAAORWxpeGlyLkRlY2ltYWxkAARjb2VmYgAAUgpkAANleHBhAGQABHNpZ25hAQ=="
+        }
+      ) {
+        entries {
+          rank
+          address_hash
+          token_contract_address_hash
+          quantity
+        }
+        metadata {
+          total_count
+          after
+          before
+        }
+      }
+    }
+
+    {
+      "data": {
+        "erc1155_holders": {
+          "entries": [
+            {
+              "address_hash": "0xc6e58fb4affb6ab8a392b7cc23cd3fef74517f6c",
+              "quantity": "1204",
+              "rank": 2,
+              "token_contract_address_hash": "0xe6903e124e5bdae8784674eb625f1c212efc789e"
+            }
+          ],
+          "metadata": {
+            "after": "g3QAAAACaAJkAAdob2xkZXJzZAAMYWRkcmVzc19oYXNodAAAAANkAApfX3N0cnVjdF9fZAAiRWxpeGlyLkdvZHdva2VuRXhwbG9yZXIuQ2hhaW4uSGFzaGQACmJ5dGVfY291bnRhFGQABWJ5dGVzbQAAABTG5Y-0r_tquKOSt8wjzT_vdFF_bGgCZAAHaG9sZGVyc2QACHF1YW50aXR5dAAAAARkAApfX3N0cnVjdF9fZAAORWxpeGlyLkRlY2ltYWxkAARjb2VmYgAABLRkAANleHBhAGQABHNpZ25hAQ==",
+            "before": "g3QAAAACaAJkAAdob2xkZXJzZAAMYWRkcmVzc19oYXNodAAAAANkAApfX3N0cnVjdF9fZAAiRWxpeGlyLkdvZHdva2VuRXhwbG9yZXIuQ2hhaW4uSGFzaGQACmJ5dGVfY291bnRhFGQABWJ5dGVzbQAAABTG5Y-0r_tquKOSt8wjzT_vdFF_bGgCZAAHaG9sZGVyc2QACHF1YW50aXR5dAAAAARkAApfX3N0cnVjdF9fZAAORWxpeGlyLkRlY2ltYWxkAARjb2VmYgAABLRkAANleHBhAGQABHNpZ25hAQ==",
+            "total_count": 5
+          }
+        }
+      }
+    }
+
     """
     field :erc1155_holders, :paginate_erc721_erc1155_holders do
       arg(:input, non_null(:erc721_erc1155_holders_input))

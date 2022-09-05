@@ -265,8 +265,8 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
   def erc721_holders(_parent, %{input: input} = _args, _resolution) do
     contract_address = Map.get(input, :contract_address)
 
-    return =
-      from(cu in CurrentUDTBalance, as: :cub)
+    query =
+      from(cu in CurrentUDTBalance)
       |> where(
         [cu],
         cu.token_contract_address_hash == ^contract_address and cu.token_type == :erc721
@@ -278,16 +278,25 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
       |> select([cu], %{
         address_hash: cu.address_hash,
         token_contract_address_hash: cu.token_contract_address_hash,
-        quantity: fragment("count(?) as quantity", cu.token_id),
+        quantity: count(cu.token_id),
+        # quantity: fragment("count(?) as quantity", cu.token_id),
         rank:
           row_number()
           |> over(
             partition_by: :token_contract_address_hash,
-            order_by: [desc: fragment("count(?)", cu.token_id)]
+            order_by: [desc: count(cu.token_id), asc: cu.address_hash]
           )
       })
+
+    return =
+      from(u in UDT,
+        right_join: cu in subquery(query),
+        on: u.contract_address_hash == cu.token_contract_address_hash,
+        as: :holders,
+        select: cu
+      )
       |> paginate_query(input, %{
-        cursor_fields: [{{:scub, :quantity}, :desc}],
+        cursor_fields: [{{:holders, :quantity}, :desc}, {{:holders, :address_hash}, :asc}],
         total_count_primary_key_field: [:address_hash, :token_contract_address_hash]
       })
 
@@ -303,7 +312,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
   def erc1155_holders(_parent, %{input: input} = _args, _resolution) do
     contract_address = Map.get(input, :contract_address)
 
-    return =
+    query =
       from(cu in CurrentUDTBalance, as: :cub)
       |> where(
         [cu],
@@ -317,16 +326,24 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
       |> select([cu], %{
         address_hash: cu.address_hash,
         token_contract_address_hash: cu.token_contract_address_hash,
-        quantity: fragment("sum(?) as quantity", cu.value),
+        quantity: sum(cu.value),
         rank:
           row_number()
           |> over(
             partition_by: :token_contract_address_hash,
-            order_by: [desc: fragment("sum(?)", cu.value)]
+            order_by: [desc: sum(cu.value), asc: cu.address_hash]
           )
       })
+
+    return =
+      from(u in UDT,
+        right_join: cu in subquery(query),
+        on: u.contract_address_hash == cu.token_contract_address_hash,
+        as: :holders,
+        select: cu
+      )
       |> paginate_query(input, %{
-        cursor_fields: [{{:cub, :quantity}, :desc}],
+        cursor_fields: [{{:holders, :quantity}, :desc}, {{:holders, :address_hash}, :asc}],
         total_count_primary_key_field: [:address_hash, :token_contract_address_hash]
       })
 

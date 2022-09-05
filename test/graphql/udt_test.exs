@@ -589,108 +589,107 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
            )
   end
 
-  # test "graphql: erc721_holders with pagination", %{
-  #   conn: conn,
-  #   user: user,
-  #   erc721_native_udt: erc721_native_udt
-  #   # erc1155_native_udt: erc1155_native_udt
-  # } do
-  #   eth_address = user.eth_address |> to_string()
-  #   contract_address = erc721_native_udt.contract_address_hash |> to_string()
+  test "graphql: erc721_holders with pagination", %{
+    conn: conn,
+    user: user,
+    erc721_native_udt: erc721_native_udt
+    # erc1155_native_udt: erc1155_native_udt
+  } do
+    eth_address = user.eth_address |> to_string()
+    contract_address = erc721_native_udt.contract_address_hash |> to_string()
 
-  #   query = """
-  #   query {
-  #     erc721_holders(
-  #       input: { limit: 1, contract_address: "#{contract_address}"}
-  #     ) {
-  #       entries {
-  #         rank
-  #         address_hash
-  #         token_contract_address_hash
-  #         quantity
-  #       }
-  #       metadata {
-  #         total_count
-  #         after
-  #         before
-  #       }
-  #     }
-  #   }
-  #   """
+    query = """
+    query {
+      erc721_holders(
+        input: { limit: 1, contract_address: "#{contract_address}"}
+      ) {
+        entries {
+          rank
+          address_hash
+          token_contract_address_hash
+          quantity
+        }
+        metadata {
+          total_count
+          after
+          before
+        }
+      }
+    }
+    """
 
-  #   conn =
-  #     post(conn, "/graphql", %{
-  #       "query" => query,
-  #       "variables" => %{}
-  #     })
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
 
-  #   assert match?(
-  #            %{
-  #              "data" => %{
-  #                "erc721_holders" => %{
-  #                  "entries" => [
-  #                    %{
-  #                      "rank" => 1,
-  #                      "address_hash" => ^eth_address,
-  #                      "quantity" => "2"
-  #                    }
-  #                  ],
-  #                  "metadata" => %{"total_count" => 4}
-  #                }
-  #              }
-  #            },
-  #            json_response(conn, 200)
-  #          )
+    assert match?(
+             %{
+               "data" => %{
+                 "erc721_holders" => %{
+                   "entries" => [
+                     %{
+                       "rank" => 1,
+                       "address_hash" => ^eth_address,
+                       "quantity" => "2"
+                     }
+                   ],
+                   "metadata" => %{"total_count" => 4}
+                 }
+               }
+             },
+             json_response(conn, 200)
+           )
 
-  #   %{
-  #     "data" => %{
-  #       "erc721_holders" => %{"metadata" => %{"after" => after_value}}
-  #     }
-  #   } = json_response(conn, 200)
+    %{
+      "data" => %{
+        "erc721_holders" => %{"metadata" => %{"after" => after_value}}
+      }
+    } = json_response(conn, 200)
 
-  #   query = """
-  #   query {
-  #     erc721_holders(
-  #       input: { after: "#{after_value}" limit: 1, contract_address: "#{contract_address}"}
-  #     ) {
-  #       entries {
-  #         rank
-  #         address_hash
-  #         token_contract_address_hash
-  #         quantity
-  #       }
-  #       metadata {
-  #         total_count
-  #         after
-  #         before
-  #       }
-  #     }
-  #   }
-  #   """
+    query = """
+    query {
+      erc721_holders(
+        input: { after: "#{after_value}" limit: 1, contract_address: "#{contract_address}"}
+      ) {
+        entries {
+          rank
+          address_hash
+          token_contract_address_hash
+          quantity
+        }
+        metadata {
+          total_count
+          after
+          before
+        }
+      }
+    }
+    """
 
-  #   conn =
-  #     post(conn, "/graphql", %{
-  #       "query" => query,
-  #       "variables" => %{}
-  #     })
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
 
-  #   assert match?(
-  #            %{
-  #              "data" => %{
-  #                "erc721_holders" => %{
-  #                  "entries" => [
-  #                    %{
-  #                      "rank" => 2,
-  #                      "address_hash" => ^eth_address
-  #                    }
-  #                  ],
-  #                  "metadata" => %{"total_count" => 4}
-  #                }
-  #              }
-  #            },
-  #            json_response(conn, 200)
-  #          )
-  # end
+    assert match?(
+             %{
+               "data" => %{
+                 "erc721_holders" => %{
+                   "entries" => [
+                     %{
+                       "rank" => 2
+                     }
+                   ],
+                   "metadata" => %{"total_count" => 4}
+                 }
+               }
+             },
+             json_response(conn, 200)
+           )
+  end
 
   test "graphql: erc1155_holders", %{
     conn: conn,
