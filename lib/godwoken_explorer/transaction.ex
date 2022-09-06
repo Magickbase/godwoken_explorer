@@ -63,8 +63,7 @@ defmodule GodwokenExplorer.Transaction do
       :from_account_id,
       :to_account_id,
       :nonce,
-      :args,
-      :block_number
+      :args
     ])
   end
 
@@ -365,7 +364,7 @@ defmodule GodwokenExplorer.Transaction do
 
   def list_transaction_by_tx_hash(hashes) do
     from(t in Transaction,
-      join: b in Block,
+      left_join: b in Block,
       on: [hash: t.block_hash],
       join: a2 in Account,
       on: a2.id == t.from_account_id,

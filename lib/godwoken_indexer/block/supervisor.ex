@@ -10,7 +10,8 @@ defmodule GodwokenIndexer.Block.Supervisor do
       GodwokenIndexer.Block.SyncWorker,
       GodwokenIndexer.Block.GlobalStateWorker,
       GodwokenIndexer.Block.BindL1L2Worker,
-      GodwokenIndexer.Block.SyncL1BlockWorker
+      GodwokenIndexer.Block.SyncL1BlockWorker,
+      GodwokenIndexer.Block.PendingTransactionWorker
     ]
 
     childs =
@@ -48,6 +49,14 @@ defmodule GodwokenIndexer.Block.Supervisor do
   defp children(GodwokenIndexer.Block.SyncL1BlockWorker) do
     if Application.get_env(:godwoken_explorer, :on_off)[:sync_l1_block_worker] do
       [GodwokenIndexer.Block.SyncL1BlockWorker]
+    else
+      []
+    end
+  end
+
+  defp children(GodwokenIndexer.Block.PendingTransactionWorker) do
+    if Application.get_env(:godwoken_explorer, :on_off)[:pending_transaction_worker] do
+      [GodwokenIndexer.Block.PendingTransactionWorker]
     else
       []
     end

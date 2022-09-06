@@ -1,7 +1,10 @@
 defmodule GodwokenExplorer.Chain do
   use GodwokenExplorer, :schema
 
-  import GodwokenRPC.Util, only: [stringify_and_unix_maps: 1]
+  import GodwokenRPC.Util,
+    only: [
+      stringify_and_unix_maps: 1
+    ]
 
   alias GodwokenExplorer.Counters.{AccountsCounter, AverageBlockTime}
   alias GodwokenExplorer.Chain.Cache.{BlockCount, TransactionCount}
@@ -419,8 +422,7 @@ defmodule GodwokenExplorer.Chain do
 
   defp block_or_transaction_from_param(param) do
     with {:error, :not_found} <- transaction_from_param(param),
-         {:error, :not_found} <- hash_string_to_block(param),
-         {:error, :not_found} <- pending_transaction_from_param(param) do
+         {:error, :not_found} <- hash_string_to_block(param) do
       hash_string_to_account(param)
     end
   end
@@ -429,16 +431,6 @@ defmodule GodwokenExplorer.Chain do
     case string_to_transaction_hash(param) do
       {:ok, hash} ->
         hash_to_transaction(hash)
-
-      :error ->
-        {:error, :not_found}
-    end
-  end
-
-  defp pending_transaction_from_param(param) do
-    case string_to_transaction_hash(param) do
-      {:ok, hash} ->
-        hash_to_pending_transaction(hash)
 
       :error ->
         {:error, :not_found}
@@ -481,19 +473,6 @@ defmodule GodwokenExplorer.Chain do
 
       transaction ->
         {:ok, transaction}
-    end
-  end
-
-  @spec hash_to_pending_transaction(Hash.Full.t(), []) ::
-          {:ok, PendingTransaction.t()} | {:error, :not_found}
-  def hash_to_pending_transaction(
-        %Hash{byte_count: unquote(Hash.Full.byte_count())} = hash,
-        options \\ []
-      )
-      when is_list(options) do
-    case hash |> to_string() |> PendingTransaction.find_by_hash() do
-      %PendingTransaction{} = transaction -> {:ok, transaction}
-      _ -> {:error, :not_found}
     end
   end
 

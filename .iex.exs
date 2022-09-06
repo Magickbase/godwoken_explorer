@@ -8,7 +8,6 @@ alias GodwokenExplorer.{
   DepositHistory,
   DailyStat,
   Log,
-  PendingTransaction,
   PolyjuiceCreator,
   Polyjuice,
   Repo,
