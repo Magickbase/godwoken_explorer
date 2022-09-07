@@ -11,6 +11,11 @@ defmodule GodwokenIndexer.Worker.ERC721Updater do
   @impl Oban.Worker
 
   def perform(%Oban.Job{}) do
+    do_perform()
+    :ok
+  end
+
+  def do_perform() do
     datetime = Timex.now() |> Timex.shift(minutes: -5)
 
     unfetched_udts =
@@ -18,7 +23,8 @@ defmodule GodwokenIndexer.Worker.ERC721Updater do
         where:
           u.type == :native and u.eth_type == :erc721 and
             (is_nil(u.name) or is_nil(u.symbol)) and u.updated_at < ^datetime,
-        limit: 50
+        limit: 50,
+        order_by: [desc: u.id]
       )
       |> Repo.all()
 
@@ -46,7 +52,5 @@ defmodule GodwokenIndexer.Worker.ERC721Updater do
       on_conflict: {:replace, [:name, :symbol, :updated_at]},
       conflict_target: :id
     )
-
-    :ok
   end
 end
