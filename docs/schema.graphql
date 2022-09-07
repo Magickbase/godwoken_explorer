@@ -3122,45 +3122,6 @@ type RootQueryType {
       }
     }
   }
-  
-  eth_type example:
-  query {
-    udts(input: {eth_type: ERC721, limit: 2}) {
-      entries {
-        id
-        eth_type
-        name
-        icon
-        symbol
-        contract_address_hash
-      }
-    }
-  }
-  
-  {
-    "data": {
-      "udts": {
-        "entries": [
-          {
-            "contract_address_hash": "0x9fe6db42f85889a5f69f7e61fbaefe87943d9372",
-            "eth_type": "ERC721",
-            "icon": null,
-            "id": 47928,
-            "name": null,
-            "symbol": null
-          },
-          {
-            "contract_address_hash": "0x28eeb81d9c8f01b596258d7eea34bc5fa08a68f4",
-            "eth_type": "ERC721",
-            "icon": null,
-            "id": 48085,
-            "name": null,
-            "symbol": null
-          }
-        ]
-      }
-    }
-  }
   """
   udts(input: UdtsInput = {limit: 20, sorter: [{sort_type: ASC, sort_value: NAME}]}): PaginateUdts
 
@@ -3533,7 +3494,6 @@ input UdtsInput {
   """Fetch the records before this cursor."""
   before: String
   contract_address: HashAddress
-  eth_type: EthType
   fuzzy_name: String
 
   """

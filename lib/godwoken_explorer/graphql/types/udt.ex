@@ -363,45 +363,6 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         }
       }
     }
-
-    eth_type example:
-    query {
-      udts(input: {eth_type: ERC721, limit: 2}) {
-        entries {
-          id
-          eth_type
-          name
-          icon
-          symbol
-          contract_address_hash
-        }
-      }
-    }
-
-    {
-      "data": {
-        "udts": {
-          "entries": [
-            {
-              "contract_address_hash": "0x9fe6db42f85889a5f69f7e61fbaefe87943d9372",
-              "eth_type": "ERC721",
-              "icon": null,
-              "id": 47928,
-              "name": null,
-              "symbol": null
-            },
-            {
-              "contract_address_hash": "0x28eeb81d9c8f01b596258d7eea34bc5fa08a68f4",
-              "eth_type": "ERC721",
-              "icon": null,
-              "id": 48085,
-              "name": null,
-              "symbol": null
-            }
-          ]
-        }
-      }
-    }
     """
     field :udts, :paginate_udts do
       arg(:input, :udts_input, default_value: %{})
@@ -1179,7 +1140,6 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
 
   input_object :udts_input do
     field(:type, :udt_type)
-    field(:eth_type, :eth_type)
     import_fields(:erc721_erc1155_udts_input)
   end
 
