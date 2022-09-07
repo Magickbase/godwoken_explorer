@@ -26,7 +26,9 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
       )
 
     erc721_native_udt = Factory.insert!(:native_udt, eth_type: :erc721)
+    _erc721_native_udt2 = Factory.insert!(:native_udt, eth_type: :erc721)
     erc1155_native_udt = Factory.insert!(:native_udt, eth_type: :erc1155)
+    _erc1155_native_udt2 = Factory.insert!(:native_udt, eth_type: :erc1155)
 
     user = Factory.insert!(:user)
 
@@ -474,6 +476,141 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
              %{
                "data" => %{
                  "erc721_udts" => %{"metadata" => %{"total_count" => 1}}
+               }
+             },
+             json_response(conn, 200)
+           )
+  end
+
+  test "graphql: erc721_udts with paginator", %{
+    conn: conn
+    # user: user,
+    # erc721_native_udt: erc721_native_udt
+    # erc1155_native_udt: erc1155_native_udt
+  } do
+    query = """
+    query {
+      erc721_udts(
+        input: {limit: 1}
+      ) {
+        entries {
+          id
+          name
+          contract_address_hash
+          eth_type
+          holders_count
+          minted_count
+        }
+        metadata {
+          total_count
+          after
+          before
+        }
+      }
+    }
+    """
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    %{
+      "data" => %{
+        "erc721_udts" => %{"metadata" => %{"after" => after_value}}
+      }
+    } = json_response(conn, 200)
+
+    assert match?(
+             %{
+               "data" => %{
+                 "erc721_udts" => %{"metadata" => %{"total_count" => 2}}
+               }
+             },
+             json_response(conn, 200)
+           )
+
+    query = """
+    query {
+      erc721_udts(
+        input: {limit: 1, after: "#{after_value}"}
+      ) {
+        entries {
+          id
+          name
+          contract_address_hash
+          eth_type
+          holders_count
+          minted_count
+        }
+        metadata {
+          total_count
+          after
+          before
+        }
+      }
+    }
+    """
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    assert match?(
+             %{
+               "data" => %{
+                 "erc721_udts" => %{"metadata" => %{"total_count" => 2}}
+               }
+             },
+             json_response(conn, 200)
+           )
+  end
+
+  test "graphql: erc721_udts with holders_count sorter", %{
+    conn: conn
+    # user: user,
+    # erc721_native_udt: erc721_native_udt
+    # erc1155_native_udt: erc1155_native_udt
+  } do
+    # contract_address = erc721_native_udt.contract_address_hash |> to_string()
+
+    query = """
+    query {
+      erc721_udts(
+        input: {limit: 1, sorter: [{sort_type: ASC, sort_value: EX_HOLDERS_COUNT}],
+        after: "g3QAAAABaAJkAAl1X2hvbGRlcnNkAA1ob2xkZXJzX2NvdW50YQU="
+      }
+      ) {
+        entries {
+          id
+          name
+          contract_address_hash
+          eth_type
+          holders_count
+          minted_count
+        }
+        metadata {
+          total_count
+          after
+          before
+        }
+      }
+    }
+    """
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    assert match?(
+             %{
+               "data" => %{
+                 "erc721_udts" => %{"metadata" => %{"total_count" => 2}}
                }
              },
              json_response(conn, 200)

@@ -476,7 +476,7 @@ input Erc721Erc1155UdtsInput {
   Limits the number of records returned per page. Note that this number will be capped by maximum_limit=100. Defaults to 20.
   """
   limit: Int = 20
-  sorter: [UdtsSorterInput] = [{sort_type: ASC, sort_value: NAME}]
+  sorter: [UdtsSorterInput] = [{sort_type: ASC, sort_value: ID}]
 }
 
 type Erc721Erc1155UserToken {
@@ -1635,7 +1635,7 @@ type RootQueryType {
     }
   }
   """
-  erc1155_udts(input: Erc721Erc1155UdtsInput! = {limit: 20, sorter: [{sort_type: ASC, sort_value: NAME}]}): PaginateErc721Erc1155Udts
+  erc1155_udts(input: Erc721Erc1155UdtsInput! = {limit: 20, sorter: [{sort_type: ASC, sort_value: ID}]}): PaginateErc721Erc1155Udts
 
   """
   query {
@@ -2009,7 +2009,7 @@ type RootQueryType {
     }
   }
   """
-  erc721_udts(input: Erc721Erc1155UdtsInput! = {limit: 20, sorter: [{sort_type: ASC, sort_value: NAME}]}): PaginateErc721Erc1155Udts
+  erc721_udts(input: Erc721Erc1155UdtsInput! = {limit: 20, sorter: [{sort_type: ASC, sort_value: ID}]}): PaginateErc721Erc1155Udts
 
   """
   function: get list of logs by filter or conditions
@@ -3123,7 +3123,7 @@ type RootQueryType {
     }
   }
   """
-  udts(input: UdtsInput = {limit: 20, sorter: [{sort_type: ASC, sort_value: NAME}]}): PaginateUdts
+  udts(input: UdtsInput = {limit: 20, sorter: [{sort_type: ASC, sort_value: ID}]}): PaginateUdts
 
   """
   query {
@@ -3500,7 +3500,7 @@ input UdtsInput {
   Limits the number of records returned per page. Note that this number will be capped by maximum_limit=100. Defaults to 20.
   """
   limit: Int = 20
-  sorter: [UdtsSorterInput] = [{sort_type: ASC, sort_value: NAME}]
+  sorter: [UdtsSorterInput] = [{sort_type: ASC, sort_value: ID}]
   type: UdtType
 }
 

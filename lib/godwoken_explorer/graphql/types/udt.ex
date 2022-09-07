@@ -1,6 +1,7 @@
 defmodule GodwokenExplorer.Graphql.Types.UDT do
   use Absinthe.Schema.Notation
   alias GodwokenExplorer.Graphql.Resolvers, as: Resolvers
+  alias GodwokenExplorer.Graphql.Middleware.NullFilter
 
   object :udt_querys do
     @desc """
@@ -492,6 +493,7 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
     """
     field :erc721_udts, :paginate_erc721_erc1155_udts do
       arg(:input, non_null(:erc721_erc1155_udts_input), default_value: %{})
+      middleware(NullFilter)
       resolve(&Resolvers.UDT.erc721_udts/3)
     end
 
@@ -606,6 +608,7 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
     """
     field :erc1155_udts, :paginate_erc721_erc1155_udts do
       arg(:input, non_null(:erc721_erc1155_udts_input), default_value: %{})
+      middleware(NullFilter)
       resolve(&Resolvers.UDT.erc1155_udts/3)
     end
 
@@ -1115,7 +1118,7 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
     field(:contract_address, :hash_address)
 
     field(:sorter, list_of(:udts_sorter_input),
-      default_value: [%{sort_type: :asc, sort_value: :name}]
+      default_value: [%{sort_type: :asc, sort_value: :id}]
     )
 
     import_fields(:paginate_input)
