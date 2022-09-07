@@ -166,16 +166,6 @@ defmodule GodwokenExplorer.UDT do
     |> Repo.aggregate(:count)
   end
 
-  def get_decimal(id) do
-    case from(u in UDT, where: u.id == ^id) |> Repo.one() do
-      nil ->
-        0
-
-      %UDT{decimal: decimal} ->
-        decimal
-    end
-  end
-
   def ckb_account_id do
     ckb_script_hash = Application.get_env(:godwoken_explorer, :ckb_token_script_hash)
 

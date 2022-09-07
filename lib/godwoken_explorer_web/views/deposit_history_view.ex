@@ -9,11 +9,12 @@ defmodule GodwokenExplorer.DepositHistoryView do
       :layer1_block_number,
       :layer1_tx_hash,
       :layer1_output_index,
-      :udt_id,
       :value,
       :ckb_lock_hash,
       :timestamp,
-      :capacity
+      :capacity,
+      :udt_id,
+      :udt
     ]
   end
 
@@ -25,12 +26,21 @@ defmodule GodwokenExplorer.DepositHistoryView do
     to_string(deposit_history.ckb_lock_hash)
   end
 
-  def relationships do
-    [udt: {GodwokenExplorer.UDTView, :include}]
+  def value(deposit_history, _conn) do
+    balance_to_view(deposit_history.amount, deposit_history.udt.decimal || 0)
   end
 
-  def value(deposit_history, _conn) do
-    balance_to_view(deposit_history.amount, UDT.get_decimal(deposit_history.udt_id) || 0)
+  def udt(deposit_history, _conn) do
+    address_hash =
+      if deposit_history.udt.account != nil,
+        do: to_string(deposit_history.udt.account.eth_address),
+        else: nil
+
+    %{
+      eth_address: address_hash,
+      name: deposit_history.udt.name,
+      symbol: deposit_history.udt.symbol
+    }
   end
 
   def list_by_script_hash(script_hash, page) do

@@ -33,8 +33,8 @@ defmodule GodwokenIndexer.Transform.TokenApprovals do
               end
 
             log.data |> to_string() == @zero_address &&
-                %UDT{eth_type: :erc20} ==
-                  Repo.get_by(UDT, contract_address_hash: log.address_hash) ->
+                (Repo.get_by(UDT, contract_address_hash: log.address_hash) || %{eth_type: nil}).eth_type ==
+                  :erc20 ->
               {false, parse_address(log.third_topic)}
 
             true ->
