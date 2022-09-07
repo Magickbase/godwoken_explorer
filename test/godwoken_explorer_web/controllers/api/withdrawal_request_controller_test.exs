@@ -7,7 +7,7 @@ defmodule GodwokenExplorerWeb.API.WithdrawalRequestControllerTest do
     udt = insert(:ckb_udt)
     insert(:ckb_account)
     ckb_native = insert(:ckb_native_udt)
-    insert(:ckb_contract_account, eth_address: ckb_native.contract_address_hash)
+    ckb_contract = insert(:ckb_contract_account, eth_address: ckb_native.contract_address_hash)
     %{hash: hash, number: number} = insert(:block)
     %{script_hash: script_hash, eth_address: eth_address} = insert(:user)
 
@@ -18,7 +18,7 @@ defmodule GodwokenExplorerWeb.API.WithdrawalRequestControllerTest do
         block_number: number
       )
 
-    %{withdrawal: withdrawal, eth_address: eth_address, udt: udt}
+    %{withdrawal: withdrawal, eth_address: eth_address, udt: udt, ckb_contract: ckb_contract}
   end
 
   describe "index" do
@@ -26,7 +26,8 @@ defmodule GodwokenExplorerWeb.API.WithdrawalRequestControllerTest do
       conn: conn,
       withdrawal: withdrawal,
       eth_address: eth_address,
-      udt: udt
+      udt: udt,
+      ckb_contract: ckb_contract
     } do
       conn =
         get(
@@ -47,36 +48,20 @@ defmodule GodwokenExplorerWeb.API.WithdrawalRequestControllerTest do
                        "owner_lock_hash" => to_string(withdrawal.owner_lock_hash),
                        "sudt_script_hash" =>
                          "0x0000000000000000000000000000000000000000000000000000000000000000",
-                       "udt_id" => 1,
-                       "value" => "0"
+                       "value" => "0",
+                       "udt_id" => udt.id,
+                       "udt" => %{
+                         "eth_address" => ckb_contract.eth_address |> to_string(),
+                         "name" => udt.name,
+                         "symbol" => udt.symbol
+                       }
                      },
                      "id" => "#{withdrawal.id}",
-                     "relationships" => %{"udt" => %{"data" => %{"id" => "1", "type" => "udt"}}},
+                     "relationships" => %{},
                      "type" => "withdrawal_request"
                    }
                  ],
-                 "included" => [
-                   %{
-                     "attributes" => %{
-                       "decimal" => udt.decimal,
-                       "description" => nil,
-                       "holder_count" => 0,
-                       "icon" => nil,
-                       "id" => udt.id,
-                       "name" => udt.name,
-                       "official_site" => nil,
-                       "eth_address" => "",
-                       "supply" => udt.supply |> Decimal.to_string(),
-                       "symbol" => nil,
-                       "transfer_count" => nil,
-                       "type" => "bridge",
-                       "value" => nil
-                     },
-                     "id" => "1",
-                     "relationships" => %{},
-                     "type" => "udt"
-                   }
-                 ],
+                 "included" => [],
                  "meta" => %{"current_page" => 1, "total_page" => 1}
                }
     end

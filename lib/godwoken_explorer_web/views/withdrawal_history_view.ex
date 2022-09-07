@@ -15,10 +15,11 @@ defmodule GodwokenExplorer.WithdrawalHistoryView do
       :udt_script_hash,
       :owner_lock_hash,
       :amount,
-      :udt_id,
       :timestamp,
       :state,
-      :capacity
+      :capacity,
+      :udt_id,
+      :udt
     ]
   end
 
@@ -44,10 +45,6 @@ defmodule GodwokenExplorer.WithdrawalHistoryView do
 
   def payment_lock_hash(withdrawal_history, _connn) do
     to_string(withdrawal_history.payment_lock_hash)
-  end
-
-  def relationships do
-    [udt: {GodwokenExplorer.UDTView, :include}]
   end
 
   def find_by_l2_script_hash(l2_script_hash, page) do
@@ -98,6 +95,19 @@ defmodule GodwokenExplorer.WithdrawalHistoryView do
     else
       false
     end
+  end
+
+  def udt(withdrawal_history, _conn) do
+    address_hash =
+      if withdrawal_history.udt.account != nil,
+        do: to_string(withdrawal_history.udt.account.eth_address),
+        else: nil
+
+    %{
+      eth_address: address_hash,
+      name: withdrawal_history.udt.name,
+      symbol: withdrawal_history.udt.symbol
+    }
   end
 
   defp base_query(condition, page) do

@@ -14,7 +14,8 @@ defmodule GodwokenExplorer.WithdrawalRequestView do
       :udt_id,
       :block_hash,
       :nonce,
-      :block_number
+      :block_number,
+      :udt
     ]
   end
 
@@ -35,11 +36,20 @@ defmodule GodwokenExplorer.WithdrawalRequestView do
   end
 
   def value(withdrawal_request, _connn) do
-    balance_to_view(withdrawal_request.amount, UDT.get_decimal(withdrawal_request.udt_id) || 0)
+    balance_to_view(withdrawal_request.amount, withdrawal_request.udt.decimal || 0)
   end
 
-  def relationships do
-    [udt: {GodwokenExplorer.UDTView, :include}]
+  def udt(withdrawal_request, _conn) do
+    address_hash =
+      if withdrawal_request.udt.account != nil,
+        do: to_string(withdrawal_request.udt.account.eth_address),
+        else: nil
+
+    %{
+      eth_address: address_hash,
+      name: withdrawal_request.udt.name,
+      symbol: withdrawal_request.udt.symbol
+    }
   end
 
   def list_by_script_hash(l2_script_hash, page) do

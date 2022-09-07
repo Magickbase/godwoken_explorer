@@ -8,15 +8,21 @@ defmodule GodwokenExplorerWeb.API.DepositHistoryControllerTest do
     udt = insert(:ckb_udt)
     insert(:ckb_account)
     ckb_native = insert(:ckb_native_udt)
-    insert(:ckb_contract_account, eth_address: ckb_native.contract_address_hash)
+    ckb_contract = insert(:ckb_contract_account, eth_address: ckb_native.contract_address_hash)
     user = insert(:user)
 
     deposit = insert(:deposit_history, script_hash: user.script_hash)
-    %{deposit: deposit, user: user, udt: udt}
+    %{deposit: deposit, user: user, udt: udt, ckb_contract: ckb_contract}
   end
 
   describe "index" do
-    test "lists eth address deposit", %{conn: conn, deposit: deposit, user: user, udt: udt} do
+    test "lists eth address deposit", %{
+      conn: conn,
+      deposit: deposit,
+      user: user,
+      udt: udt,
+      ckb_contract: ckb_contract
+    } do
       conn =
         get(
           conn,
@@ -33,37 +39,21 @@ defmodule GodwokenExplorerWeb.API.DepositHistoryControllerTest do
                        "layer1_output_index" => deposit.layer1_output_index,
                        "layer1_tx_hash" => to_string(deposit.layer1_tx_hash),
                        "timestamp" => deposit.timestamp |> DateTime.to_iso8601(),
-                       "udt_id" => 1,
                        "value" => deposit.amount |> balance_to_view(udt.decimal),
-                       "capacity" => deposit.capacity |> to_string()
+                       "capacity" => deposit.capacity |> to_string(),
+                       "udt_id" => udt.id,
+                       "udt" => %{
+                         "eth_address" => ckb_contract.eth_address |> to_string(),
+                         "name" => udt.name,
+                         "symbol" => udt.symbol
+                       }
                      },
                      "id" => "#{deposit.id}",
-                     "relationships" => %{"udt" => %{"data" => %{"id" => "1", "type" => "udt"}}},
+                     "relationships" => %{},
                      "type" => "deposit_history"
                    }
                  ],
-                 "included" => [
-                   %{
-                     "attributes" => %{
-                       "decimal" => udt.decimal,
-                       "description" => nil,
-                       "holder_count" => 0,
-                       "icon" => nil,
-                       "id" => udt.id,
-                       "name" => udt.name,
-                       "official_site" => nil,
-                       "eth_address" => "",
-                       "supply" => udt.supply |> Decimal.to_string(),
-                       "symbol" => nil,
-                       "transfer_count" => nil,
-                       "type" => "bridge",
-                       "value" => nil
-                     },
-                     "id" => "1",
-                     "relationships" => %{},
-                     "type" => "udt"
-                   }
-                 ],
+                 "included" => [],
                  "meta" => %{"current_page" => 1, "total_page" => 1}
                }
     end
