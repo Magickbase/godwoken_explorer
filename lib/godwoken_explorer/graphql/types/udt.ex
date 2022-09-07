@@ -316,18 +316,16 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
       udts(
         input: {
           limit: 1
-          sorter: [
-            { sort_type: DESC, sort_value: EX_HOLDERS_COUNT }
-            { sort_type: ASC, sort_value: NAME }
-          ]
+          sorter: [{ sort_type: DESC, sort_value: EX_HOLDERS_COUNT }]
+          after: "g3QAAAABaAJkAAl1X2hvbGRlcnNkAA1ob2xkZXJzX2NvdW50YgAAB9A="
         }
       ) {
         entries {
           id
           name
-          holders_count
           type
           supply
+          holders_count
           account {
             eth_address
             script_hash
@@ -347,20 +345,20 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
           "entries": [
             {
               "account": {
-                "eth_address": null,
-                "script_hash": "0x595cc14e574a708dc70a320d2026f79374246ed4659261131cdda7dd5814b5ca"
+                "eth_address": "0x975ab64f4901af5f0c96636dea0b9de3419d0c2f",
+                "script_hash": "0xb01d03bbed4d9b55cfc484a3329875df13832c64e53c554233e18231026da891"
               },
-              "holders_count": 13563,
-              "id": "1",
-              "name": "pCKB",
-              "supply": "13930369823571892421855103",
-              "type": "BRIDGE"
+              "holders_count": 1981,
+              "id": 63191,
+              "name": "CKB",
+              "supply": "31236920264242650421855103",
+              "type": "NATIVE"
             }
           ],
           "metadata": {
-            "after": "g3QAAAABZAACaWRhAQ==",
-            "before": null,
-            "total_count": 14
+            "after": "g3QAAAABaAJkAAl1X2hvbGRlcnNkAA1ob2xkZXJzX2NvdW50YgAAB70=",
+            "before": "g3QAAAABaAJkAAl1X2hvbGRlcnNkAA1ob2xkZXJzX2NvdW50YgAAB70=",
+            "total_count": 3758
           }
         }
       }
@@ -486,7 +484,13 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
     }
 
     query {
-      erc721_udts(input: {limit: 1, sorter: [{sort_type: DESC, sort_value: EX_HOLDERS_COUNT}]}){
+      erc721_udts(
+        input: {
+          limit: 1
+          sorter: [{ sort_type: DESC, sort_value: EX_HOLDERS_COUNT }]
+          after: "g3QAAAABaAJkAAl1X2hvbGRlcnNkAA1ob2xkZXJzX2NvdW50YgAAB9A="
+        }
+      ) {
         entries {
           id
           name
@@ -508,18 +512,18 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         "erc721_udts": {
           "entries": [
             {
-              "contract_address_hash": "0x784cd3c52813098763c371df8fbe8ed27d2c1ebd",
+              "contract_address_hash": "0x310a1f73379a658ef0eb9c4e5bd1006a24a5ad79",
               "eth_type": "ERC721",
-              "holders_count": 308,
-              "id": 58460,
-              "minted_count": 2000,
+              "holders_count": 1003,
+              "id": 5845,
+              "minted_count": 1000,
               "name": null
             }
           ],
           "metadata": {
-            "after": "g3QAAAAA",
-            "before": null,
-            "total_count": 3191
+            "after": "g3QAAAABaAJkAAl1X2hvbGRlcnNkAA1ob2xkZXJzX2NvdW50YgAAA-s=",
+            "before": "g3QAAAABaAJkAAl1X2hvbGRlcnNkAA1ob2xkZXJzX2NvdW50YgAAA-s=",
+            "total_count": 3193
           }
         }
       }
@@ -531,45 +535,6 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
     end
 
     @desc """
-    query {
-      erc1155_udts(input: {limit: 1, sorter: [{sort_type: DESC, sort_value: EX_HOLDERS_COUNT}]}){
-        entries {
-          id
-          name
-          contract_address_hash
-          eth_type
-          holders_count
-          minted_count
-        }
-        metadata {
-          total_count
-          after
-          before
-        }
-      }
-    }
-
-    {
-      "data": {
-        "erc1155_udts": {
-          "entries": [
-            {
-              "contract_address_hash": "0xa87071a188e3e8d3e30f53a335ecc329d88026b7",
-              "eth_type": "ERC1155",
-              "holders_count": 3,
-              "id": 53717,
-              "minted_count": 30,
-              "name": null
-            }
-          ],
-          "metadata": {
-            "after": "g3QAAAAA",
-            "before": null,
-            "total_count": 524
-          }
-        }
-      }
-    }
 
     query {
       erc1155_udts(
@@ -628,6 +593,52 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
           "id": 53717,
           "name": null,
           "script_hash": null
+        }
+      }
+    }
+
+    query {
+      erc1155_udts(
+        input: {
+          limit: 1
+          sorter: [{ sort_type: DESC, sort_value: EX_HOLDERS_COUNT }]
+          after: "g3QAAAABaAJkAAl1X2hvbGRlcnNkAA1ob2xkZXJzX2NvdW50YR8="
+        }
+      ) {
+        entries {
+          id
+          name
+          contract_address_hash
+          eth_type
+          holders_count
+          minted_count
+        }
+        metadata {
+          total_count
+          after
+          before
+        }
+      }
+    }
+
+    {
+      "data": {
+        "erc1155_udts": {
+          "entries": [
+            {
+              "contract_address_hash": "0xb53f9c79eca97291c51a918779fc7a500fbb9e42",
+              "eth_type": "ERC1155",
+              "holders_count": 30,
+              "id": 24008,
+              "minted_count": 30,
+              "name": null
+            }
+          ],
+          "metadata": {
+            "after": "g3QAAAABaAJkAAl1X2hvbGRlcnNkAA1ob2xkZXJzX2NvdW50YR4=",
+            "before": "g3QAAAABaAJkAAl1X2hvbGRlcnNkAA1ob2xkZXJzX2NvdW50YR4=",
+            "total_count": 524
+          }
         }
       }
     }
@@ -1071,9 +1082,7 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
     field(:description, :string)
     field(:official_site, :string)
 
-    field :holders_count, :integer do
-      resolve(&Resolvers.UDT.holders_count/3)
-    end
+    field :holders_count, :integer
 
     field :minted_count, :integer do
       resolve(&Resolvers.UDT.minted_count/3)

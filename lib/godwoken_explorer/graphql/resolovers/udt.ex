@@ -13,11 +13,12 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
 
   @sorter_fields [:name, :supply, :id]
 
-  def holders_count(%UDT{} = udt, _args, _resolution) do
+  def holders_count(%{id: id}, _args, _resolution) do
+    udt = Repo.get(UDT, id)
     {:ok, UDT.count_holder(udt)}
   end
 
-  def minted_count(%UDT{} = udt, _args, _resolution) do
+  def minted_count(%{contract_address_hash: _contract_address_hash} = udt, _args, _resolution) do
     {:ok, UDT.minted_count(udt)}
   end
 
@@ -170,6 +171,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
 
     return =
       from(u in UDT)
+      |> where([u], u.type == :bridge or (u.type == :native and u.eth_type == :erc20))
       |> where(^conditions)
       |> udts_where_fuzzy_name(input)
       |> udts_order_by(input)
@@ -199,23 +201,19 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
       sorter
       |> Enum.map(fn e ->
         case e do
-          %{sort_type: st, sort_value: :holders_count} ->
-            {:holders_count, st}
+          %{sort_type: st, sort_value: :ex_holders_count} ->
+            {{:u_holders, :holders_count}, st}
 
           _ ->
-            case cursor_order_sorter([e], :cursor, @sorter_fields) do
-              [h | _] -> h
-              _ -> :skip
-            end
+            cursor_order_sorter(e, :cursor, @sorter_fields)
         end
       end)
-      |> Enum.filter(&(&1 != :skip))
     else
       [:id]
     end
   end
 
-  def account(%UDT{id: id} = _parent, _args, _resolution) do
+  def account(%{id: id} = _parent, _args, _resolution) do
     return =
       from(a in Account)
       |> where([a], a.id == ^id)
@@ -279,7 +277,6 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
         address_hash: cu.address_hash,
         token_contract_address_hash: cu.token_contract_address_hash,
         quantity: count(cu.token_id),
-        # quantity: fragment("count(?) as quantity", cu.token_id),
         rank:
           row_number()
           |> over(
@@ -381,43 +378,71 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
   end
 
   defp udts_order_by(query, input) do
-    sub_holders_count_query =
-      from(cbub in CurrentBridgedUDTBalance)
-      |> group_by([cbub], cbub.udt_id)
-      |> select([c], %{id: c.udt_id, holders_count: count(c.id)})
+    squery1 =
+      query
+      |> join(:left, [u], cu in CurrentUDTBalance,
+        on: u.contract_address_hash == cu.token_contract_address_hash and cu.value > 0
+      )
+      |> group_by([u], u.id)
+      |> select([u, cu], %{
+        id: u.id,
+        holders_count: count(cu.address_hash)
+      })
+
+    squery2 =
+      query
+      |> join(:left, [u], cu in CurrentBridgedUDTBalance,
+        on: u.script_hash == cu.udt_script_hash and cu.value > 0
+      )
+      |> group_by([u], u.bridge_account_id)
+      |> select([u, cu], %{
+        id: u.bridge_account_id,
+        holders_count: count(cu.address_hash)
+      })
+
+    usquery =
+      union_all(squery1, ^squery2)
+      |> distinct([u], u.id)
 
     holders_count_query =
-      query
-      |> join(:left, [u], h in subquery(sub_holders_count_query),
+      from(u in UDT)
+      |> join(:right, [u], h in subquery(usquery),
         on: u.id == h.id,
-        as: :holders_count
+        as: :u_holders
       )
-      |> select_merge([_u, holders_count: h], %{holders_count: h.holders_count})
+      |> select_merge([u, u_holders], %{
+        holders_count: u_holders.holders_count
+      })
 
-    base_udts_order_by(query, holders_count_query, input)
+    base_udts_order_by(holders_count_query, input)
   end
 
   defp erc721_erc1155_udts_order_by(query, input) do
-    sub_holders_count_query =
-      from(cu in CurrentUDTBalance)
-      |> group_by([cu], cu.token_contract_address_hash)
-      |> select([c], %{
-        contract_address_hash: c.token_contract_address_hash,
-        holders_count: count(c.token_contract_address_hash)
+    squery =
+      query
+      |> join(:left, [u], cu in CurrentUDTBalance,
+        on: u.contract_address_hash == cu.token_contract_address_hash and cu.value > 0
+      )
+      |> group_by([u], u.contract_address_hash)
+      |> select([u, cu], %{
+        contract_address_hash: u.contract_address_hash,
+        holders_count: count(cu.address_hash)
       })
 
     holders_count_query =
-      query
-      |> join(:left, [u], h in subquery(sub_holders_count_query),
+      from(u in UDT)
+      |> join(:right, [u], h in subquery(squery),
         on: u.contract_address_hash == h.contract_address_hash,
-        as: :holders_count
+        as: :u_holders
       )
-      |> select_merge([_u, holders_count: h], %{holders_count: h.holders_count})
+      |> select_merge([u, u_holders], %{
+        holders_count: u_holders.holders_count
+      })
 
-    base_udts_order_by(query, holders_count_query, input)
+    base_udts_order_by(holders_count_query, input)
   end
 
-  defp base_udts_order_by(query, holders_count_query, input) do
+  defp base_udts_order_by(holders_count_query, input) do
     sorter = Map.get(input, :sorter)
 
     holders_count_sorter_cond =
@@ -431,31 +456,29 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
         end
       end)
 
-    if sorter do
-      if holders_count_sorter_cond do
-        order_params =
-          sorter
-          |> Enum.map(fn e ->
-            case e do
-              %{sort_type: st, sort_value: :ex_holders_count} ->
-                {st, dynamic([_u, holders_count: h], h.holders_count)}
+    order_params =
+      if sorter do
+        return =
+          if holders_count_sorter_cond do
+            sorter
+            |> Enum.map(fn e ->
+              case e do
+                %{sort_type: st, sort_value: :ex_holders_count} ->
+                  {st, dynamic([_u, u_holders: uh], uh.holders_count)}
 
-              _ ->
-                case cursor_order_sorter([e], :order, @sorter_fields) do
-                  [h | _] -> h
-                  _ -> :skip
-                end
-            end
-          end)
-          |> Enum.filter(&(&1 != :skip))
+                _ ->
+                  cursor_order_sorter(e, :order, @sorter_fields)
+              end
+            end)
+          else
+            cursor_order_sorter(sorter, :order, @sorter_fields)
+          end
 
-        order_by(holders_count_query, [], ^order_params)
+        return ++ [asc: :id]
       else
-        order_params = cursor_order_sorter(sorter, :order, @sorter_fields)
-        order_by(query, [], ^order_params)
+        [:id]
       end
-    else
-      order_by(query, [u], [:id])
-    end
+
+    order_by(holders_count_query, [], ^order_params)
   end
 end
