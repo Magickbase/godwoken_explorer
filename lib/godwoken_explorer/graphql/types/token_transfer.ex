@@ -152,11 +152,10 @@ defmodule GodwokenExplorer.Graphql.Types.TokenTransfer do
     }
     """
     field :token_transfers, :paginate_token_transfers do
-      arg(:input, non_null(:token_transfers_input), default_value: %{})
+      arg(:input, non_null(:erc20_token_transfers_input), default_value: %{})
       middleware(NullFilter)
-      resolve(&Resolvers.TokenTransfer.token_transfers/3)
+      resolve(&Resolvers.TokenTransfer.erc20_token_transfers/3)
     end
-
 
     @desc """
     query {
@@ -231,7 +230,6 @@ defmodule GodwokenExplorer.Graphql.Types.TokenTransfer do
       middleware(NullFilter)
       resolve(&Resolvers.TokenTransfer.erc721_token_transfers/3)
     end
-
 
     @desc """
     query {
@@ -375,6 +373,11 @@ defmodule GodwokenExplorer.Graphql.Types.TokenTransfer do
   end
 
   input_object :erc721_erc1155_token_transfers_input do
+    import_fields(:erc20_token_transfers_input)
+    field :token_id, :decimal
+  end
+
+  input_object :erc20_token_transfers_input do
     field :transaction_hash, :hash_full
 
     field :sorter, list_of(:token_transfers_sorter_input),
@@ -392,17 +395,9 @@ defmodule GodwokenExplorer.Graphql.Types.TokenTransfer do
     """
     field :combine_from_to, :boolean, default_value: true
     field :token_contract_address_hash, :hash_address
-
-    field :token_id, :decimal
     import_fields(:age_range_input)
     import_fields(:paginate_input)
     import_fields(:block_range_input)
-  end
-
-  input_object :token_transfers_input do
-    import_fields(:erc721_erc1155_token_transfers_input)
-
-    field :eth_type, :eth_type
   end
 
   input_object :token_transfers_sorter_input do

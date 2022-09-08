@@ -11,10 +11,11 @@ defmodule GodwokenExplorer.Graphql.Resolvers.TokenTransfer do
 
   @sorter_fields [:transaction_hash, :log_index, :block_number, :updated_at]
 
-  def token_transfers(_parent, %{input: input}, _resolution) do
+  def erc20_token_transfers(_parent, %{input: input}, _resolution) do
     return =
       from(tt in TokenTransfer)
-      |> query_token_transfers(input)
+      |> where([tt], is_nil(tt.token_id) and is_nil(tt.token_ids))
+      |> query_token_transfers(input, :erc20)
       |> paginate_query(input, %{
         cursor_fields: paginate_cursor(input),
         total_count_primary_key_field: [:transaction_hash, :log_index]
@@ -108,7 +109,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.TokenTransfer do
     {:ok, return}
   end
 
-  defp query_token_transfers(query, input, token_type \\ :erc20) do
+  defp query_token_transfers(query, input, token_type) do
     conditions =
       Enum.reduce(input, true, fn arg, acc ->
         case arg do
@@ -132,7 +133,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.TokenTransfer do
               :erc1155 ->
                 dynamic([tt], ^acc and ^value in tt.token_ids)
 
-              _ ->
+              :erc20 ->
                 acc
             end
 
