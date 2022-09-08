@@ -104,6 +104,7 @@ defmodule GodwokenExplorerWeb.API.TransactionControllerTest do
                      "status" => "finalized",
                      "polyjuice_status" => "succeed",
                      "created_contract_address_hash" => "",
+                     "native_transfer_address_hash" => nil,
                      "index" => polyjuice.transaction_index,
                      "method" => nil,
                      "transaction_index" => polyjuice.transaction_index
@@ -154,6 +155,7 @@ defmodule GodwokenExplorerWeb.API.TransactionControllerTest do
                      "status" => "finalized",
                      "polyjuice_status" => "succeed",
                      "created_contract_address_hash" => "",
+                     "native_transfer_address_hash" => nil,
                      "index" => polyjuice.transaction_index,
                      "method" => nil,
                      "transaction_index" => polyjuice.transaction_index
@@ -178,6 +180,7 @@ defmodule GodwokenExplorerWeb.API.TransactionControllerTest do
                      "status" => "finalized",
                      "polyjuice_status" => nil,
                      "created_contract_address_hash" => "",
+                     "native_transfer_address_hash" => nil,
                      "index" => nil,
                      "method" => nil,
                      "transaction_index" => nil
@@ -228,6 +231,7 @@ defmodule GodwokenExplorerWeb.API.TransactionControllerTest do
                      "status" => "finalized",
                      "polyjuice_status" => "succeed",
                      "created_contract_address_hash" => "",
+                     "native_transfer_address_hash" => nil,
                      "index" => polyjuice.transaction_index,
                      "method" => nil,
                      "transaction_index" => polyjuice.transaction_index
@@ -252,6 +256,7 @@ defmodule GodwokenExplorerWeb.API.TransactionControllerTest do
                      "status" => "finalized",
                      "polyjuice_status" => nil,
                      "created_contract_address_hash" => "",
+                     "native_transfer_address_hash" => nil,
                      "index" => nil,
                      "method" => nil,
                      "transaction_index" => nil
@@ -302,6 +307,7 @@ defmodule GodwokenExplorerWeb.API.TransactionControllerTest do
                  "status" => "finalized",
                  "polyjuice_status" => "succeed",
                  "created_contract_address_hash" => "",
+                 "native_transfer_address_hash" => nil,
                  "index" => polyjuice.transaction_index,
                  "transaction_index" => polyjuice.transaction_index,
                  "contract_abi" => smart_contract.abi,
@@ -347,6 +353,7 @@ defmodule GodwokenExplorerWeb.API.TransactionControllerTest do
                  "status" => "finalized",
                  "polyjuice_status" => nil,
                  "created_contract_address_hash" => "",
+                 "native_transfer_address_hash" => nil,
                  "index" => nil,
                  "transaction_index" => nil,
                  "code_hash" => polyjuice_creator.code_hash,

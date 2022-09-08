@@ -11,11 +11,10 @@ defmodule GodwokenIndexer.Transform.TokenApprovalsTest do
     erc721_udt = insert(:native_udt, eth_type: :erc721)
     approval_log = insert(:approval_log, %{address_hash: erc20_udt.contract_address_hash})
 
-    approval_false_log =
-      insert(:approval_log, %{
-        address_hash: erc20_udt.contract_address_hash,
-        data: "0x0000000000000000000000000000000000000000000000000000000000000000"
-      })
+    insert(:approval_log, %{
+      address_hash: erc20_udt.contract_address_hash,
+      data: "0x0000000000000000000000000000000000000000000000000000000000000000"
+    })
 
     approval_all_log =
       insert(:approval_all_log, %{
@@ -25,15 +24,13 @@ defmodule GodwokenIndexer.Transform.TokenApprovalsTest do
 
     %{
       approval_log: approval_log,
-      approval_all_log: approval_all_log,
-      approval_false_log: approval_false_log
+      approval_all_log: approval_all_log
     }
   end
 
   test "parse logs", %{
     approval_log: approval_log,
-    approval_all_log: approval_all_log,
-    approval_false_log: approval_false_log
+    approval_all_log: approval_all_log
   } do
     logs = Log |> Repo.all()
     token_approvals = TokenApprovals.parse(logs)

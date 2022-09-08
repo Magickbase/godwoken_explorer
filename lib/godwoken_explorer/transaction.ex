@@ -430,7 +430,8 @@ defmodule GodwokenExplorer.Transaction do
         transaction_index: p.transaction_index,
         input: p.input,
         to_account_id: t.to_account_id,
-        created_contract_address_hash: p.created_contract_address_hash
+        created_contract_address_hash: p.created_contract_address_hash,
+        native_transfer_address_hash: p.native_transfer_address_hash
       }
     )
   end
