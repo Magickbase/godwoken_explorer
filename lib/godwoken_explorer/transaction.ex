@@ -151,23 +151,6 @@ defmodule GodwokenExplorer.Transaction do
     end
   end
 
-  def count_of_account(%{
-        type: type,
-        account_id: account_id
-      })
-      when type in [:eth_user] do
-    from(t in Transaction,
-      where: t.from_account_id == ^account_id,
-      select: t.hash
-    )
-    |> Repo.aggregate(:count)
-  end
-
-  def count_of_account(%{type: type, account_id: account_id})
-      when type in [:meta_contract, :polyjuice_creator, :polyjuice_contract, :udt] do
-    from(t in Transaction, where: t.to_account_id == ^account_id) |> Repo.aggregate(:count)
-  end
-
   def account_transactions_data(
         %{block_hash: block_hash},
         paging_options
@@ -216,8 +199,6 @@ defmodule GodwokenExplorer.Transaction do
         paging_options
       )
       when type in [:eth_user] do
-    condition = dynamic([t], t.from_account_id == ^account.id)
-
     paging_options =
       if (account.transaction_count || 0) > @account_tx_limit do
         paging_options |> Map.merge(%{options: [total_entries: @account_tx_limit]})
@@ -225,9 +206,7 @@ defmodule GodwokenExplorer.Transaction do
         paging_options
       end
 
-    tx_hashes =
-      list_tx_hash_by_transaction_query(condition)
-      |> limit(@account_tx_limit)
+    tx_hashes = list_tx_hash_with_polyjuice_query(account)
 
     parse_result(tx_hashes, paging_options)
   end
@@ -301,6 +280,38 @@ defmodule GodwokenExplorer.Transaction do
       where: ^condition,
       order_by: [desc: t.inserted_at, desc: t.block_number, desc: t.index]
     )
+  end
+
+  def list_tx_hash_with_polyjuice_query(account) do
+    transaction_query =
+      from(t in Transaction,
+        select: %{
+          tx_hash:
+            fragment("CASE WHEN ? IS NOT NULL THEN ? ELSE ? END", t.eth_hash, t.eth_hash, t.hash),
+          block_number: t.block_number,
+          index: t.index
+        },
+        where: t.from_account_id == ^account.id
+      )
+
+    polyjuice_query =
+      from(p in Polyjuice,
+        join: t in Transaction,
+        on: t.hash == p.tx_hash,
+        select: %{
+          tx_hash:
+            fragment("CASE WHEN ? IS NOT NULL THEN ? ELSE ? END", t.eth_hash, t.eth_hash, t.hash),
+          block_number: t.block_number,
+          index: t.index
+        },
+        where: p.native_transfer_address_hash == ^account.eth_address
+      )
+
+    from(q in subquery(union_all(transaction_query, ^polyjuice_query)),
+      select: q.tx_hash
+    )
+    |> order_by([t], desc: t.block_number, desc: t.index)
+    |> limit(@account_tx_limit)
   end
 
   def list_home_transaction_by_tx_hash(hashes) do
