@@ -374,20 +374,7 @@ Some numeric strings are:
 """
 scalar Decimal
 
-input Erc1155UserTokenInput {
-  contract_address: HashAddress!
-  token_id: Decimal!
-  user_address: HashAddress!
-}
-
-type Erc721Erc1155HolderItem {
-  address_hash: HashAddress
-  quantity: Decimal
-  rank: Int
-  token_contract_address_hash: HashAddress
-}
-
-input Erc721Erc1155HoldersInput {
+input Erc1155HoldersInput {
   """Fetch the records after this cursor."""
   after: String
 
@@ -399,6 +386,52 @@ input Erc721Erc1155HoldersInput {
   Limits the number of records returned per page. Note that this number will be capped by maximum_limit=100. Defaults to 20.
   """
   limit: Int = 20
+  token_id: Decimal
+}
+
+input Erc1155UserTokenInput {
+  contract_address: HashAddress!
+  token_id: Decimal!
+  user_address: HashAddress!
+}
+
+input Erc20TokenTransfersInput {
+  """Fetch the records after this cursor."""
+  after: String
+  age_range_end: DateTime
+  age_range_start: DateTime
+
+  """Fetch the records before this cursor."""
+  before: String
+
+  """
+  if combine_from_to is true, then from_address and to_address are combined into
+  query condition like `address = from_address OR address = to_address`
+  """
+  combine_from_to: Boolean = true
+
+  """argument: the end of block number(inclusive) for search query"""
+  end_block_number: Int
+  from_address: HashAddress
+
+  """
+  Limits the number of records returned per page. Note that this number will be capped by maximum_limit=100. Defaults to 20.
+  """
+  limit: Int = 20
+  sorter: [TokenTransfersSorterInput] = [{sort_type: DESC, sort_value: BLOCK_NUMBER}, {sort_type: DESC, sort_value: LOG_INDEX}, {sort_type: ASC, sort_value: TRANSACTION_HASH}]
+
+  """argument: the start of block number(inclusive) for search query"""
+  start_block_number: Int
+  to_address: HashAddress
+  token_contract_address_hash: HashAddress
+  transaction_hash: HashFull
+}
+
+type Erc721Erc1155HolderItem {
+  address_hash: HashAddress
+  quantity: Decimal
+  rank: Int
+  token_contract_address_hash: HashAddress
 }
 
 input Erc721Erc1155InventoryInput {
@@ -486,6 +519,20 @@ type Erc721Erc1155UserToken {
   token_type: EthType
   udt: Erc721Erc1155Udt
   value: Decimal
+}
+
+input Erc721HoldersInput {
+  """Fetch the records after this cursor."""
+  after: String
+
+  """Fetch the records before this cursor."""
+  before: String
+  contract_address: HashAddress!
+
+  """
+  Limits the number of records returned per page. Note that this number will be capped by maximum_limit=100. Defaults to 20.
+  """
+  limit: Int = 20
 }
 
 enum EthType {
@@ -1445,8 +1492,50 @@ type RootQueryType {
       }
     }
   }
+  
+  query {
+    erc1155_holders(
+      input: {
+        contract_address: "0xe6903e124e5bdae8784674eb625f1c212efc789e"
+        token_id: 1
+        limit: 1
+      }
+    ) {
+      entries {
+        rank
+        address_hash
+        token_contract_address_hash
+        quantity
+      }
+      metadata {
+        total_count
+        after
+        before
+      }
+    }
+  }
+  
+  {
+    "data": {
+      "erc1155_holders": {
+        "entries": [
+          {
+            "address_hash": "0x46b6f87debd8f7607d00df47c31d2dc6d9999999",
+            "quantity": "10001",
+            "rank": 1,
+            "token_contract_address_hash": "0xe6903e124e5bdae8784674eb625f1c212efc789e"
+          }
+        ],
+        "metadata": {
+          "after": "g3QAAAACaAJkAAdob2xkZXJzZAAMYWRkcmVzc19oYXNodAAAAANkAApfX3N0cnVjdF9fZAAiRWxpeGlyLkdvZHdva2VuRXhwbG9yZXIuQ2hhaW4uSGFzaGQACmJ5dGVfY291bnRhFGQABWJ5dGVzbQAAABRGtvh969j3YH0A30fDHS3G2ZmZmWgCZAAHaG9sZGVyc2QACHF1YW50aXR5dAAAAARkAApfX3N0cnVjdF9fZAAORWxpeGlyLkRlY2ltYWxkAARjb2VmYgAAJxFkAANleHBhAGQABHNpZ25hAQ==",
+          "before": null,
+          "total_count": 3
+        }
+      }
+    }
+  }
   """
-  erc1155_holders(input: Erc721Erc1155HoldersInput!): PaginateErc721Erc1155Holders
+  erc1155_holders(input: Erc1155HoldersInput!): PaginateErc721Erc1155Holders
 
   """
   query {
@@ -1848,7 +1937,7 @@ type RootQueryType {
     }
   }
   """
-  erc721_holders(input: Erc721Erc1155HoldersInput!): PaginateErc721Erc1155Holders
+  erc721_holders(input: Erc721HoldersInput!): PaginateErc721Erc1155Holders
 
   """
   query {
@@ -2427,7 +2516,7 @@ type RootQueryType {
     }
   }
   """
-  token_transfers(input: TokenTransfersInput! = {combine_from_to: true, limit: 20, sorter: [{sort_type: DESC, sort_value: BLOCK_NUMBER}, {sort_type: DESC, sort_value: LOG_INDEX}, {sort_type: ASC, sort_value: TRANSACTION_HASH}]}): PaginateTokenTransfers
+  token_transfers(input: Erc20TokenTransfersInput! = {combine_from_to: true, limit: 20, sorter: [{sort_type: DESC, sort_value: BLOCK_NUMBER}, {sort_type: DESC, sort_value: LOG_INDEX}, {sort_type: ASC, sort_value: TRANSACTION_HASH}]}): PaginateTokenTransfers
 
   """
   function: get transaction by transaction_hash
@@ -2753,6 +2842,44 @@ type RootQueryType {
     "data": {
       "transactions": {
         "entries": [],
+        "metadata": {
+          "after": null,
+          "before": null,
+          "total_count": 0
+        }
+      }
+    }
+  }
+  pending-transaction-example:
+  query {
+    transactions(
+      input: {
+        status: PENDING
+        sorter: [{ sort_type: DESC, sort_value: BLOCK_NUMBER }]
+      }
+    ) {
+      entries {
+        block_hash
+        hash
+      }
+  
+      metadata {
+        total_count
+        before
+        after
+      }
+    }
+  }
+  
+  {
+    "data": {
+      "transactions": {
+        "entries": [
+          {
+            "block_hash": null,
+            "hash": "0xc8e2bea0d8f779ea10e97f9139540e3c6dee8b2267285c71559477a1e5c33507"
+          },
+        ],
         "metadata": {
           "after": null,
           "before": null,
@@ -3273,6 +3400,11 @@ input SourcifyCheckByAddressesInput {
   addresses: [HashAddress]!
 }
 
+enum Status {
+  ON_CHAINED
+  PENDING
+}
+
 type TokenApproval {
   approved: Boolean
   block: Block
@@ -3332,40 +3464,6 @@ type TokenTransfer {
   transaction: Transaction
   transaction_hash: HashFull
   udt: Udt
-}
-
-input TokenTransfersInput {
-  """Fetch the records after this cursor."""
-  after: String
-  age_range_end: DateTime
-  age_range_start: DateTime
-
-  """Fetch the records before this cursor."""
-  before: String
-
-  """
-  if combine_from_to is true, then from_address and to_address are combined into
-  query condition like `address = from_address OR address = to_address`
-  """
-  combine_from_to: Boolean = true
-
-  """argument: the end of block number(inclusive) for search query"""
-  end_block_number: Int
-  eth_type: EthType
-  from_address: HashAddress
-
-  """
-  Limits the number of records returned per page. Note that this number will be capped by maximum_limit=100. Defaults to 20.
-  """
-  limit: Int = 20
-  sorter: [TokenTransfersSorterInput] = [{sort_type: DESC, sort_value: BLOCK_NUMBER}, {sort_type: DESC, sort_value: LOG_INDEX}, {sort_type: ASC, sort_value: TRANSACTION_HASH}]
-
-  """argument: the start of block number(inclusive) for search query"""
-  start_block_number: Int
-  to_address: HashAddress
-  token_contract_address_hash: HashAddress
-  token_id: Decimal
-  transaction_hash: HashFull
 }
 
 enum TokenTransfersSorter {
@@ -3438,6 +3536,7 @@ input TransactionsInput {
 
   """argument: the start of block number(inclusive) for search query"""
   start_block_number: Int
+  status: Status
   to_eth_address: HashAddress
   to_script_hash: HashFull
 }

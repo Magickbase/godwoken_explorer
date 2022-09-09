@@ -697,7 +697,7 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
     }
     """
     field :erc721_holders, :paginate_erc721_erc1155_holders do
-      arg(:input, non_null(:erc721_erc1155_holders_input))
+      arg(:input, non_null(:erc721_holders_input))
       resolve(&Resolvers.UDT.erc721_holders/3)
     end
 
@@ -785,9 +785,50 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
       }
     }
 
+    query {
+      erc1155_holders(
+        input: {
+          contract_address: "0xe6903e124e5bdae8784674eb625f1c212efc789e"
+          token_id: 1
+          limit: 1
+        }
+      ) {
+        entries {
+          rank
+          address_hash
+          token_contract_address_hash
+          quantity
+        }
+        metadata {
+          total_count
+          after
+          before
+        }
+      }
+    }
+
+    {
+      "data": {
+        "erc1155_holders": {
+          "entries": [
+            {
+              "address_hash": "0x46b6f87debd8f7607d00df47c31d2dc6d9999999",
+              "quantity": "10001",
+              "rank": 1,
+              "token_contract_address_hash": "0xe6903e124e5bdae8784674eb625f1c212efc789e"
+            }
+          ],
+          "metadata": {
+            "after": "g3QAAAACaAJkAAdob2xkZXJzZAAMYWRkcmVzc19oYXNodAAAAANkAApfX3N0cnVjdF9fZAAiRWxpeGlyLkdvZHdva2VuRXhwbG9yZXIuQ2hhaW4uSGFzaGQACmJ5dGVfY291bnRhFGQABWJ5dGVzbQAAABRGtvh969j3YH0A30fDHS3G2ZmZmWgCZAAHaG9sZGVyc2QACHF1YW50aXR5dAAAAARkAApfX3N0cnVjdF9fZAAORWxpeGlyLkRlY2ltYWxkAARjb2VmYgAAJxFkAANleHBhAGQABHNpZ25hAQ==",
+            "before": null,
+            "total_count": 3
+          }
+        }
+      }
+    }
     """
     field :erc1155_holders, :paginate_erc721_erc1155_holders do
-      arg(:input, non_null(:erc721_erc1155_holders_input))
+      arg(:input, non_null(:erc1155_holders_input))
       resolve(&Resolvers.UDT.erc1155_holders/3)
     end
 
@@ -1124,9 +1165,14 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
     import_fields(:paginate_input)
   end
 
-  input_object :erc721_erc1155_holders_input do
+  input_object :erc721_holders_input do
     field(:contract_address, non_null(:hash_address))
     import_fields(:paginate_input)
+  end
+
+  input_object :erc1155_holders_input do
+    import_fields(:erc721_holders_input)
+    field(:token_id, :decimal)
   end
 
   input_object :erc1155_user_token_input do

@@ -378,6 +378,14 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
 
   def erc1155_holders(_parent, %{input: input} = _args, _resolution) do
     contract_address = Map.get(input, :contract_address)
+    token_id = Map.get(input, :token_id)
+
+    token_id_cond =
+      if token_id do
+        dynamic([c], c.token_id == ^token_id)
+      else
+        true
+      end
 
     query =
       from(cu in CurrentUDTBalance, as: :cub)
@@ -386,6 +394,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
         cu.token_contract_address_hash == ^contract_address and cu.token_type == :erc1155 and
           cu.value > 0
       )
+      |> where([_cu], ^token_id_cond)
       |> group_by([cu], [
         cu.address_hash,
         cu.token_contract_address_hash

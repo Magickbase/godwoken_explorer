@@ -884,6 +884,58 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
            )
   end
 
+  test "graphql: erc1155_holders with token_id", %{
+    conn: conn,
+    # user: user,
+    # erc721_native_udt: erc721_native_udt
+    erc1155_native_udt: erc1155_native_udt
+  } do
+    contract_address = erc1155_native_udt.contract_address_hash |> to_string()
+
+    query = """
+    query {
+      erc1155_holders(
+        input: { contract_address: "#{contract_address}", token_id: 6}
+      ) {
+        entries {
+          rank
+          address_hash
+          token_contract_address_hash
+          quantity
+        }
+        metadata {
+          total_count
+          after
+          before
+        }
+      }
+    }
+    """
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    assert match?(
+             %{
+               "data" => %{
+                 "erc1155_holders" => %{
+                   "entries" => [
+                     %{
+                       "token_contract_address_hash" => ^contract_address,
+                       "rank" => 1
+                     }
+                   ],
+                   "metadata" => %{"total_count" => 1}
+                 }
+               }
+             },
+             json_response(conn, 200)
+           )
+  end
+
   test "graphql: user_erc721_assets", %{
     conn: conn,
     user: user
