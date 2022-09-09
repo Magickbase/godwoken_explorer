@@ -262,6 +262,15 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
     {:ok, return}
   end
 
+  def account(%{address_hash: address_hash} = _parent, _args, _resolution) do
+    return =
+      from(a in Account)
+      |> where([a], a.eth_address == ^address_hash)
+      |> Repo.one()
+
+    {:ok, return}
+  end
+
   def erc721_udts(_parent, %{input: input} = _args, _resolution) do
     return = do_erc721_erc1155_udts(input, :erc721)
     {:ok, return}

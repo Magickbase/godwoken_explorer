@@ -28,6 +28,9 @@ defmodule GodwokenExplorer.Graphql.Resolvers.TokenTransfer do
     return =
       from(tt in TokenTransfer)
       |> where([tt], not is_nil(tt.token_id))
+      |> join(:inner, [tt], u in UDT,
+        on: tt.token_contract_address_hash == u.contract_address_hash and u.eth_type == :erc721
+      )
       |> query_token_transfers(input, :erc721)
       |> paginate_query(input, %{
         cursor_fields: paginate_cursor(input),
@@ -41,6 +44,9 @@ defmodule GodwokenExplorer.Graphql.Resolvers.TokenTransfer do
     return =
       from(tt in TokenTransfer)
       |> where([tt], not is_nil(tt.token_ids) or not is_nil(tt.token_id))
+      |> join(:inner, [tt], u in UDT,
+        on: tt.token_contract_address_hash == u.contract_address_hash and u.eth_type == :erc1155
+      )
       |> query_token_transfers(input, :erc1155)
       |> paginate_query(input, %{
         cursor_fields: paginate_cursor(input),
@@ -131,7 +137,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.TokenTransfer do
                 dynamic([tt], ^acc and tt.token_id == ^value)
 
               :erc1155 ->
-                dynamic([tt], ^acc and ^value in tt.token_ids)
+                dynamic([tt], (^acc and ^value in tt.token_ids) or tt.token_id == ^value)
 
               :erc20 ->
                 acc

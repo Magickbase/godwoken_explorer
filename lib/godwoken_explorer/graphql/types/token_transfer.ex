@@ -307,6 +307,55 @@ defmodule GodwokenExplorer.Graphql.Types.TokenTransfer do
         }
       }
     }
+
+    query {
+      erc1155_token_transfers(
+        input: {
+          to_address: "0xc6e58fb4affb6ab8a392b7cc23cd3fef74517f6c"
+          start_block_number: 0
+          end_block_number: 909999
+          limit: 1
+          token_id: "0"
+          sorter: [
+            { sort_type: ASC, sort_value: BLOCK_NUMBER }
+            { sort_type: ASC, sort_value: TRANSACTION_HASH }
+            { sort_type: ASC, sort_value: LOG_INDEX }
+          ]
+        }
+      ) {
+        entries {
+          token_contract_address_hash
+          block_number
+          token_id
+          token_ids
+        }
+        metadata {
+          total_count
+          before
+          after
+        }
+      }
+    }
+
+    {
+      "data": {
+        "erc1155_token_transfers": {
+          "entries": [
+            {
+              "block_number": 195916,
+              "token_contract_address_hash": "0x6e45a282f2176d95a2bccc1a369fc9cb3f0584a0",
+              "token_id": "0",
+              "token_ids": null
+            }
+          ],
+          "metadata": {
+            "after": "g3QAAAADZAAMYmxvY2tfbnVtYmVyYgAC_UxkAAlsb2dfaW5kZXhhAGQAEHRyYW5zYWN0aW9uX2hhc2h0AAAAA2QACl9fc3RydWN0X19kACJFbGl4aXIuR29kd29rZW5FeHBsb3Jlci5DaGFpbi5IYXNoZAAKYnl0ZV9jb3VudGEgZAAFYnl0ZXNtAAAAIJ-oiTXNk1Md7ewMG23Xmg3j51S1YAcU1BCoWrwwNefk",
+            "before": null,
+            "total_count": 5
+          }
+        }
+      }
+    }
     """
     field :erc1155_token_transfers, :paginate_token_transfers do
       arg(:input, non_null(:erc721_erc1155_token_transfers_input), default_value: %{})

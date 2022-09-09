@@ -1058,6 +1058,10 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
     field(:address_hash, :hash_address)
     field(:token_contract_address_hash, :hash_address)
     field(:quantity, :decimal)
+
+    field(:account, :account) do
+      resolve(&Resolvers.UDT.account/3)
+    end
   end
 
   object :erc721_erc1155_user_token do
