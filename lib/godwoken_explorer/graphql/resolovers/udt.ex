@@ -318,7 +318,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
       |> group_by([cu], cu.token_contract_address_hash)
       |> select([cu], %{
         contract_address_hash: cu.token_contract_address_hash,
-        holders_count: count(cu.address_hash)
+        holders_count: count(cu.address_hash, :distinct)
       })
 
     holders_count_query =
@@ -346,7 +346,8 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
       from(cu in CurrentUDTBalance)
       |> where(
         [cu],
-        cu.token_contract_address_hash == ^contract_address and cu.token_type == :erc721
+        cu.token_contract_address_hash == ^contract_address and cu.token_type == :erc721 and
+          cu.value > 0
       )
       |> group_by([cu], [
         cu.address_hash,

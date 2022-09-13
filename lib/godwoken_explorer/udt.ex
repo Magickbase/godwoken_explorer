@@ -176,10 +176,19 @@ defmodule GodwokenExplorer.UDT do
       contract_address_hash = udt.contract_address_hash
       minted_burn_address_hash = UDTBalance.minted_burn_address_hash()
 
-      from(tt in TokenTransfer)
-      |> where([tt], tt.token_contract_address_hash == ^contract_address_hash)
-      |> where([tt], tt.from_address_hash == ^minted_burn_address_hash)
-      |> Repo.aggregate(:count)
+      created_count =
+        from(tt in TokenTransfer)
+        |> where([tt], tt.token_contract_address_hash == ^contract_address_hash)
+        |> where([tt], tt.from_address_hash == ^minted_burn_address_hash)
+        |> Repo.aggregate(:count)
+
+      burned_count =
+        from(tt in TokenTransfer)
+        |> where([tt], tt.token_contract_address_hash == ^contract_address_hash)
+        |> where([tt], tt.to_address_hash == ^minted_burn_address_hash)
+        |> Repo.aggregate(:count)
+
+      max(created_count - burned_count, 0)
     else
       0
     end
