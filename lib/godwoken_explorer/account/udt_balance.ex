@@ -35,8 +35,6 @@ defmodule GodwokenExplorer.Account.UDTBalance do
       :token_type
     ])
     |> validate_required(~w(address_hash block_number token_contract_address_hash token_type)a)
-
-    # |> unique_constraint([:address_hash, :token_contract_address_hash, :block_number])
   end
 
   {:ok, burn_address_hash} =

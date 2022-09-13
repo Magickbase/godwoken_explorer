@@ -1,7 +1,7 @@
 defmodule Mix.Tasks.UpdateCurrentUdtBalance do
   @moduledoc "Printed when the user requests `mix help update_current_udt_balance`"
 
-  @shortdoc "running with limit/start/walk args `mix update_current_udt_balance 500 0 100` to updating udt balance and current udt balance with token_id/token_type"
+  @shortdoc "running with limit/start/walk args `mix update_current_udt_balance 350000 0 500` to updating udt balance and current udt balance with token_id/token_type"
 
   alias GodwokenExplorer.Repo
   alias GodwokenExplorer.Account.UDTBalance

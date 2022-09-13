@@ -43,8 +43,6 @@ defmodule GodwokenExplorer.Account.CurrentUDTBalance do
       :token_type
     ])
     |> validate_required(~w(address_hash block_number token_contract_address_hash token_type)a)
-
-    # |> unique_constraint([:address_hash, :token_contract_address_hash])
   end
 
   def list_udt_by_eth_address(eth_address) do

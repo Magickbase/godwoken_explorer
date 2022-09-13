@@ -20,6 +20,8 @@ defmodule Mix.Tasks.UpdateUdtBalance do
 
   use Mix.Task
 
+  require Logger
+
   # @chunk_size 100
 
   @impl Mix.Task
@@ -205,18 +207,20 @@ defmodule Mix.Tasks.UpdateUdtBalance do
         }
       )
 
-    # TODO: add logger for u.eth_type is nil
     Repo.all(query)
     |> Enum.map(fn map ->
       token_type =
         if map[:token_type] do
           map[:token_type]
         else
+          # raise "query udt type error with: #{inspect(map.token_contract_address_hash |> to_string)}"
           if map[:token_ids] do
             :erc1155
           else
             if map[:token_id] do
-              :erc721
+              Logger.error(fn -> "cannot confirm token transfer's eth type" end)
+              # :erc721 or erc1155
+              raise "query udt type error with: #{inspect(map.token_contract_address_hash |> to_string)}"
             else
               :erc20
             end

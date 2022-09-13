@@ -139,8 +139,6 @@ defmodule GodwokenIndexer.Fetcher.UDTBalance do
       token_id: token_id_int,
       token_type: token_type
     }
-
-    # {address_hash.bytes, token_contract_address_hash.bytes, block_number}
   end
 
   defp format_params(%{
