@@ -43,6 +43,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.AccountUDT do
 
     query =
       from(cu in CurrentUDTBalance)
+      |> where([cu], cu.token_type == :erc20)
       |> join(:inner, [cu], a1 in subquery(squery), on: cu.address_hash == a1.eth_address)
       |> join(:inner, [cu], u in UDT,
         on: u.contract_address_hash == cu.token_contract_address_hash
@@ -207,7 +208,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.AccountUDT do
 
     return =
       from(cu in CurrentUDTBalance)
-      |> where([cu], cu.token_contract_address_hash == ^token_contract_address_hash)
+      |> where([cu], cu.token_contract_address_hash == ^token_contract_address_hash and cu.token_type == :erc20)
       |> sort_type(input, :value)
       |> page_and_size(input)
       |> Repo.all()
@@ -320,7 +321,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.AccountUDT do
           from(cu in CurrentUDTBalance)
           |> where(
             [cu],
-            cu.address_hash in ^address_hashes
+            cu.address_hash in ^address_hashes and cu.token_type == :erc20
           )
           |> join(:inner, [cu], u in UDT,
             on: u.contract_address_hash == cu.token_contract_address_hash

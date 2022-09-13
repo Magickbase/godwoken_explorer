@@ -20,7 +20,8 @@ defmodule GodwokenExplorer.Graphql.AccountUDTTest do
     cub =
       Factory.insert!(:current_udt_balance,
         token_contract_address_hash: native_udt.contract_address_hash,
-        value: Enum.random(1..100_000)
+        value: Enum.random(1..100_000),
+        token_type: :erc20
       )
 
     cbub =

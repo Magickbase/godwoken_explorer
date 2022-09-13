@@ -4,7 +4,10 @@ schema {
 }
 
 type Account {
+  """erc20 udts"""
   account_current_bridged_udts(input: AccountChildUdtsInput = {page: 1, page_size: 20, sort_type: DESC}): [AccountCurrentBridgedUdt]
+
+  """erc20 udts"""
   account_current_udts(input: AccountChildUdtsInput = {page: 1, page_size: 20, sort_type: DESC}): [AccountCurrentUdt]
   bridged_udt: Udt
   contract_code: String
@@ -1185,6 +1188,7 @@ type RootQueryType {
   account_current_bridged_udts(input: AccountCurrentBridgedUdtsInput!): [AccountCurrentBridgedUdt]
 
   """
+  erc20 udts
   request-result-example:
   query {
     account_current_udts(
@@ -1224,6 +1228,7 @@ type RootQueryType {
   account_current_udts(input: AccountCurrentUdtsInput!): [AccountCurrentUdt]
 
   """
+  erc20 udts
   request-result-example:
   query {
     account_udts(
@@ -1278,6 +1283,7 @@ type RootQueryType {
   account_udts(input: AccountUdtsInput!): [AccountUdt]
 
   """
+  erc20 udts
   request-result-example:
   query {
     account_udts_by_contract_address(
@@ -1537,6 +1543,63 @@ type RootQueryType {
   }
   """
   erc1155_holders(input: Erc1155HoldersInput!): PaginateErc721Erc1155Holders
+
+  """
+  query {
+    erc1155_inventory(
+      input: {
+        contract_address: "0xe6903e124e5bdae8784674eb625f1c212efc789e"
+        token_id: 0
+        limit: 1
+      }
+    ) {
+      entries {
+        token_id
+        address_hash
+        token_contract_address_hash
+        value
+  
+        udt {
+          id
+          name
+          eth_type
+        }
+      }
+      metadata {
+        total_count
+        after
+        before
+      }
+    }
+  }
+  
+  
+  {
+    "data": {
+      "erc1155_inventory": {
+        "entries": [
+          {
+            "address_hash": "0xc6e58fb4affb6ab8a392b7cc23cd3fef74517f6c",
+            "token_contract_address_hash": "0xe6903e124e5bdae8784674eb625f1c212efc789e",
+            "token_id": "0",
+            "udt": {
+              "eth_type": "ERC1155",
+              "id": 48472,
+              "name": null
+            },
+            "value": "73"
+          }
+        ],
+        "metadata": {
+          "after": "g3QAAAACZAACaWRiAB4JsWQACHRva2VuX2lkdAAAAARkAApfX3N0cnVjdF9fZAAORWxpeGlyLkRlY2ltYWxkAARjb2VmYQBkAANleHBhAGQABHNpZ25hAQ==",
+          "before": null,
+          "total_count": 4
+        }
+      }
+    }
+  }
+  """
+  erc1155_inventory(input: Erc721Erc1155InventoryInput!): PaginateErc721Erc1155Inventory
 
   """
   query {
@@ -1804,103 +1867,6 @@ type RootQueryType {
   }
   """
   erc1155_user_token(input: Erc1155UserTokenInput!): Erc721Erc1155UserToken
-
-  """
-  query {
-    erc721_erc1155_inventory(
-      input: {
-        contract_address: "0x784cd3c52813098763c371df8fbe8ed27d2c1ebd"
-        limit: 1
-      }
-    ) {
-      entries {
-        token_id
-        address_hash
-        token_contract_address_hash
-        value
-      }
-      metadata {
-        total_count
-        after
-        before
-      }
-    }
-  }
-  
-  {
-    "data": {
-      "erc721_erc1155_inventory": {
-        "entries": [
-          {
-            "address_hash": "0x7ec331e53da2ad677a7636b2da07d8dbea427ab7",
-            "token_contract_address_hash": "0x784cd3c52813098763c371df8fbe8ed27d2c1ebd",
-            "token_id": "2000",
-            "value": "1"
-          }
-        ],
-        "metadata": {
-          "after": "g3QAAAACZAACaWRiABXtp2QACHRva2VuX2lkdAAAAARkAApfX3N0cnVjdF9fZAAORWxpeGlyLkRlY2ltYWxkAARjb2VmYgAAB9BkAANleHBhAGQABHNpZ25hAQ==",
-          "before": null,
-          "total_count": 2000
-        }
-      }
-    }
-  }
-  
-  query {
-    erc721_erc1155_inventory(
-      input: {
-        contract_address: "0xe6903e124e5bdae8784674eb625f1c212efc789e"
-        token_id: 0
-        limit: 1
-      }
-    ) {
-      entries {
-        token_id
-        address_hash
-        token_contract_address_hash
-        value
-  
-        udt {
-          id
-          name
-          eth_type
-        }
-      }
-      metadata {
-        total_count
-        after
-        before
-      }
-    }
-  }
-  
-  
-  {
-    "data": {
-      "erc721_erc1155_inventory": {
-        "entries": [
-          {
-            "address_hash": "0xc6e58fb4affb6ab8a392b7cc23cd3fef74517f6c",
-            "token_contract_address_hash": "0xe6903e124e5bdae8784674eb625f1c212efc789e",
-            "token_id": "0",
-            "udt": {
-              "eth_type": "ERC1155",
-              "id": 48472,
-              "name": null
-            },
-            "value": "73"
-          }
-        ],
-        "metadata": {
-          "after": "g3QAAAACZAACaWRiAB4JsWQACHRva2VuX2lkdAAAAARkAApfX3N0cnVjdF9fZAAORWxpeGlyLkRlY2ltYWxkAARjb2VmYQBkAANleHBhAGQABHNpZ25hAQ==",
-          "before": null,
-          "total_count": 4
-        }
-      }
-    }
-  }
-  """
   erc721_erc1155_inventory(input: Erc721Erc1155InventoryInput!): PaginateErc721Erc1155Inventory
 
   """
@@ -1988,6 +1954,50 @@ type RootQueryType {
   }
   """
   erc721_holders(input: Erc721HoldersInput!): PaginateErc721Erc1155Holders
+
+  """
+  query {
+    erc721_inventory(
+      input: {
+        contract_address: "0x784cd3c52813098763c371df8fbe8ed27d2c1ebd"
+        limit: 1
+      }
+    ) {
+      entries {
+        token_id
+        address_hash
+        token_contract_address_hash
+        value
+      }
+      metadata {
+        total_count
+        after
+        before
+      }
+    }
+  }
+  
+  {
+    "data": {
+      "erc721_inventory": {
+        "entries": [
+          {
+            "address_hash": "0x7ec331e53da2ad677a7636b2da07d8dbea427ab7",
+            "token_contract_address_hash": "0x784cd3c52813098763c371df8fbe8ed27d2c1ebd",
+            "token_id": "2000",
+            "value": "1"
+          }
+        ],
+        "metadata": {
+          "after": "g3QAAAACZAACaWRiABXtp2QACHRva2VuX2lkdAAAAARkAApfX3N0cnVjdF9fZAAORWxpeGlyLkRlY2ltYWxkAARjb2VmYgAAB9BkAANleHBhAGQABHNpZ25hAQ==",
+          "before": null,
+          "total_count": 2000
+        }
+      }
+    }
+  }
+  """
+  erc721_inventory(input: Erc721Erc1155InventoryInput!): PaginateErc721Erc1155Inventory
 
   """
   query {

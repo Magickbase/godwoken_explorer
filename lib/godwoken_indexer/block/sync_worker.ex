@@ -754,7 +754,6 @@ defmodule GodwokenIndexer.Block.SyncWorker do
       for: UDTBalance,
       timestamps: import_utc_timestamps(),
       on_conflict: :nothing,
-      # conflict_target: [:address_hash, :token_contract_address_hash, :block_number]
       conflict_target:
         {:unsafe_fragment,
          ~s<(address_hash, token_contract_address_hash, block_number) WHERE token_id IS NULL>}
@@ -764,7 +763,6 @@ defmodule GodwokenIndexer.Block.SyncWorker do
       for: UDTBalance,
       timestamps: import_utc_timestamps(),
       on_conflict: :nothing,
-      # conflict_target: [:address_hash, :token_contract_address_hash, :block_number, :token_id]
       conflict_target:
         {:unsafe_fragment,
          ~s<(address_hash, token_contract_address_hash, token_id, block_number) WHERE token_id IS NOT NULL>}

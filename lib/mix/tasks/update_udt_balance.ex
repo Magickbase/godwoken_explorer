@@ -99,10 +99,13 @@ defmodule Mix.Tasks.UpdateUdtBalance do
       end)
       |> filter_udt_balance_params()
 
+    default_conflict = GodwokenIndexer.Fetcher.UDTBalance.default_token_balance_on_conflict()
+
     Import.insert_changes_list(without_token_ids,
       for: UDTBalance,
       timestamps: import_utc_timestamps(),
-      on_conflict: {:replace, [:token_type]},
+      # on_conflict: {:replace, [:token_type]},
+      on_conflict: default_conflict,
       conflict_target:
         {:unsafe_fragment,
          ~s<(address_hash, token_contract_address_hash, block_number) WHERE token_id IS NULL>}
@@ -111,68 +114,12 @@ defmodule Mix.Tasks.UpdateUdtBalance do
     Import.insert_changes_list(with_token_ids,
       for: UDTBalance,
       timestamps: import_utc_timestamps(),
-      on_conflict: {:replace, [:token_id, :token_type]},
+      # on_conflict: {:replace, [:token_id, :token_type]},
+      on_conflict: default_conflict,
       conflict_target:
         {:unsafe_fragment,
          ~s<(address_hash, token_contract_address_hash, token_id, block_number) WHERE token_id IS NOT NULL>}
     )
-
-    # finished_count =
-    #   with_token_ids
-    #   |> Enum.chunk_every(@chunk_size)
-    #   |> Enum.reduce(0, fn records, acc ->
-    #     Task.async_stream(
-    #       records,
-    #       fn ub ->
-    #         r =
-    #           Repo.get_by(UDTBalance, %{
-    #             address_hash: ub.address_hash,
-    #             token_contract_address_hash: ub.token_contract_address_hash,
-    #             block_number: ub.block_number
-    #           })
-
-    #         if r do
-    #           change = Ecto.Changeset.change(r, token_id: ub.token_id, token_type: ub.token_type)
-    #           Repo.update!(change)
-    #         else
-    #           :skip
-    #         end
-    #       end,
-    #       timeout: :infinity
-    #     )
-    #     |> Enum.to_list()
-
-    #     IO.inspect("finished #{acc + length(records)}")
-    #     acc + length(records)
-    #   end)
-
-    # without_token_ids
-    # |> Enum.chunk_every(@chunk_size)
-    # |> Enum.reduce(finished_count, fn records, acc ->
-    #   Task.async_stream(
-    #     records,
-    #     fn ub ->
-    #       r =
-    #         Repo.get_by(UDTBalance, %{
-    #           address_hash: ub.address_hash,
-    #           token_contract_address_hash: ub.token_contract_address_hash,
-    #           block_number: ub.block_number
-    #         })
-
-    #       if r do
-    #         change = Ecto.Changeset.change(r, token_type: ub.token_type)
-    #         Repo.update!(change)
-    #       else
-    #         :skip
-    #       end
-    #     end,
-    #     timeout: :infinity
-    #   )
-    #   |> Enum.to_list()
-
-    #   IO.inspect("finished #{acc + length(records)}")
-    #   acc + length(records)
-    # end)
   end
 
   def get_token_transfer_with_base(limit, start, walk) do
@@ -194,7 +141,7 @@ defmodule Mix.Tasks.UpdateUdtBalance do
     query =
       from(tt in TokenTransfer,
         where: tt.block_number >= ^start and tt.block_number < ^unbound_max_range,
-        left_join: u in UDT,
+        inner_join: u in UDT,
         on: u.contract_address_hash == tt.token_contract_address_hash,
         select: %{
           block_number: tt.block_number,

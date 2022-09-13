@@ -928,7 +928,7 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
 
     @desc """
     query {
-      erc721_erc1155_inventory(
+      erc721_inventory(
         input: {
           contract_address: "0x784cd3c52813098763c371df8fbe8ed27d2c1ebd"
           limit: 1
@@ -950,7 +950,7 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
 
     {
       "data": {
-        "erc721_erc1155_inventory": {
+        "erc721_inventory": {
           "entries": [
             {
               "address_hash": "0x7ec331e53da2ad677a7636b2da07d8dbea427ab7",
@@ -968,8 +968,16 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
       }
     }
 
+
+    """
+    field :erc721_inventory, :paginate_erc721_erc1155_inventory do
+      arg(:input, non_null(:erc721_erc1155_inventory_input))
+      resolve(&Resolvers.UDT.erc721_inventory/3)
+    end
+
+    @desc """
     query {
-      erc721_erc1155_inventory(
+      erc1155_inventory(
         input: {
           contract_address: "0xe6903e124e5bdae8784674eb625f1c212efc789e"
           token_id: 0
@@ -999,7 +1007,7 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
 
     {
       "data": {
-        "erc721_erc1155_inventory": {
+        "erc1155_inventory": {
           "entries": [
             {
               "address_hash": "0xc6e58fb4affb6ab8a392b7cc23cd3fef74517f6c",
@@ -1022,9 +1030,15 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
       }
     }
     """
+    field :erc1155_inventory, :paginate_erc721_erc1155_inventory do
+      arg(:input, non_null(:erc721_erc1155_inventory_input))
+      resolve(&Resolvers.UDT.erc1155_inventory/3)
+    end
+
+    @deprecated "Use erc721_inventory/erc1155_inventory instead"
     field :erc721_erc1155_inventory, :paginate_erc721_erc1155_inventory do
       arg(:input, non_null(:erc721_erc1155_inventory_input))
-      resolve(&Resolvers.UDT.erc721_erc1155_inventory/3)
+      resolve(&Resolvers.UDT.erc721_inventory/3)
     end
   end
 

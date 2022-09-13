@@ -11,6 +11,8 @@ defmodule GodwokenIndexer.Fetcher.UDTBalance do
   alias GodwokenIndexer.Fetcher.UDTBalances
   alias GodwokenExplorer.Account.{CurrentUDTBalance, UDTBalance}
 
+  import Ecto.Query
+
   @default_worker_interval 5
 
   def start_link(state \\ []) do
@@ -95,11 +97,14 @@ defmodule GodwokenIndexer.Fetcher.UDTBalance do
            ~s<(address_hash, token_contract_address_hash, token_id, block_number) WHERE token_id IS NOT NULL>}
       )
 
+    cub_default_conflict = default_current_token_balance_on_conflict()
+
     return3 =
       Import.insert_changes_list(format_without_token_ids,
         for: CurrentUDTBalance,
         timestamps: import_utc_timestamps(),
-        on_conflict: {:replace, [:value, :value_fetched_at, :updated_at]},
+        # on_conflict: {:replace, [:value, :value_fetched_at, :updated_at]},
+        on_conflict: cub_default_conflict,
         conflict_target:
           {:unsafe_fragment,
            ~s<(address_hash, token_contract_address_hash) WHERE token_id IS NULL>}
@@ -109,13 +114,56 @@ defmodule GodwokenIndexer.Fetcher.UDTBalance do
       Import.insert_changes_list(format_with_token_ids,
         for: CurrentUDTBalance,
         timestamps: import_utc_timestamps(),
-        on_conflict: {:replace, [:value, :value_fetched_at, :updated_at]},
+        # on_conflict: {:replace, [:value, :value_fetched_at, :updated_at]},
+        on_conflict: cub_default_conflict,
         conflict_target:
           {:unsafe_fragment,
            ~s<(address_hash, token_contract_address_hash, token_id) WHERE token_id IS NOT NULL>}
       )
 
     {return1, return2, return3, return4}
+  end
+
+  def default_token_balance_on_conflict do
+    from(
+      ub in UDTBalance,
+      update: [
+        set: [
+          value: fragment("EXCLUDED.value"),
+          value_fetched_at: fragment("EXCLUDED.value_fetched_at"),
+          token_type: fragment("EXCLUDED.token_type"),
+          token_id: fragment("EXCLUDED.token_id"),
+          inserted_at: fragment("LEAST(EXCLUDED.inserted_at, ?)", ub.inserted_at),
+          updated_at: fragment("GREATEST(EXCLUDED.updated_at, ?)", ub.updated_at)
+        ]
+      ],
+      where:
+        fragment("EXCLUDED.value IS NOT NULL") and
+          (is_nil(ub.value_fetched_at) or
+             fragment("? < EXCLUDED.value_fetched_at", ub.value_fetched_at))
+    )
+  end
+
+  def default_current_token_balance_on_conflict do
+    from(
+      cub in CurrentUDTBalance,
+      update: [
+        set: [
+          block_number: fragment("EXCLUDED.block_number"),
+          value: fragment("EXCLUDED.value"),
+          value_fetched_at: fragment("EXCLUDED.value_fetched_at"),
+          token_id: fragment("EXCLUDED.token_id"),
+          token_type: fragment("EXCLUDED.token_type"),
+          inserted_at: fragment("LEAST(EXCLUDED.inserted_at, ?)", cub.inserted_at),
+          updated_at: fragment("GREATEST(EXCLUDED.updated_at, ?)", cub.updated_at)
+        ]
+      ],
+      where:
+        fragment("? < EXCLUDED.block_number", cub.block_number) or
+          (fragment("EXCLUDED.value IS NOT NULL") and
+             is_nil(cub.value_fetched_at) and
+             fragment("? = EXCLUDED.block_number", cub.block_number))
+    )
   end
 
   defp entry(%{

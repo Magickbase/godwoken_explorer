@@ -342,13 +342,23 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
   def erc721_holders(_parent, %{input: input} = _args, _resolution) do
     contract_address = Map.get(input, :contract_address)
 
-    query =
+    squery =
       from(cu in CurrentUDTBalance)
       |> where(
         [cu],
         cu.token_contract_address_hash == ^contract_address and cu.token_type == :erc721 and
           cu.value > 0
       )
+      |> order_by([c],
+        desc: :token_id,
+        desc: :block_number,
+        desc: :id
+      )
+      |> distinct([c], [c.token_id])
+
+    query =
+      from(cu in CurrentUDTBalance)
+      |> join(:inner, [cu], scu in subquery(squery), on: cu.id == scu.id)
       |> group_by([cu], [
         cu.address_hash,
         cu.token_contract_address_hash
@@ -436,7 +446,44 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
     {:ok, return}
   end
 
-  def erc721_erc1155_inventory(_, %{input: input} = _args, _) do
+  def erc721_inventory(_, %{input: input} = _args, _) do
+    contract_address = Map.get(input, :contract_address)
+
+    conditions =
+      Enum.reduce(input, true, fn arg, acc ->
+        case arg do
+          {:token_id, value} ->
+            dynamic([cu], ^acc and cu.token_id == ^value)
+
+          _ ->
+            acc
+        end
+      end)
+
+    squery =
+      from(cu in CurrentUDTBalance)
+      |> where([c], c.token_type == :erc721)
+      |> where([_], ^conditions)
+      |> where(
+        [cu],
+        cu.token_contract_address_hash == ^contract_address and cu.value > 0
+      )
+      |> order_by([c], desc: :token_id, desc: :block_number, desc: :id)
+      |> distinct([c], [c.token_contract_address_hash, c.token_id])
+
+    return =
+      from(cu in CurrentUDTBalance)
+      |> join(:inner, [cu], scu in subquery(squery), on: cu.id == scu.id)
+      |> order_by([_], desc: :token_id)
+      |> paginate_query(input, %{
+        cursor_fields: [token_id: :desc],
+        total_count_primary_key_field: [:address_hash, :token_contract_address_hash, :token_id]
+      })
+
+    {:ok, return}
+  end
+
+  def erc1155_inventory(_, %{input: input} = _args, _) do
     contract_address = Map.get(input, :contract_address)
 
     conditions =
@@ -457,9 +504,9 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
         [cu],
         cu.token_contract_address_hash == ^contract_address and cu.value > 0
       )
-      |> order_by([c], desc: :token_id, asc: :id)
+      |> order_by([c], desc: :id, desc: :token_id, desc: :block_number)
       |> paginate_query(input, %{
-        cursor_fields: [token_id: :desc, id: :asc],
+        cursor_fields: [id: :desc, token_id: :desc, id: :desc],
         total_count_primary_key_field: [:address_hash, :token_contract_address_hash, :token_id]
       })
 

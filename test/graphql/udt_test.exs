@@ -1036,7 +1036,7 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
 
     query = """
     query {
-      erc721_erc1155_inventory(
+      erc721_inventory(
         input: { contract_address: "#{contract_address}"}
       ) {
         entries {
@@ -1064,7 +1064,7 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
     assert match?(
              %{
                "data" => %{
-                 "erc721_erc1155_inventory" => %{"metadata" => %{"total_count" => 5}}
+                 "erc721_inventory" => %{"metadata" => %{"total_count" => 5}}
                }
              },
              json_response(conn, 200)
@@ -1081,7 +1081,7 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
 
     query = """
     query {
-      erc721_erc1155_inventory(
+      erc1155_inventory(
         input: { contract_address: "#{contract_address}"}
       ) {
         entries {
@@ -1109,7 +1109,7 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
     assert match?(
              %{
                "data" => %{
-                 "erc721_erc1155_inventory" => %{"metadata" => %{"total_count" => 5}}
+                 "erc1155_inventory" => %{"metadata" => %{"total_count" => 5}}
                }
              },
              json_response(conn, 200)
