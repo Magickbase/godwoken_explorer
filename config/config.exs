@@ -105,7 +105,7 @@ import_config "#{config_env()}.exs"
 
 chain =
   if is_nil(System.get_env("GODWOKEN_CHAIN")) do
-    "testnet"
+    "testnet_v1_1"
   else
     System.get_env("GODWOKEN_CHAIN")
     |> String.trim()

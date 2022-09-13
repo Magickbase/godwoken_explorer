@@ -253,11 +253,10 @@ defmodule GodwokenExplorer.Graphql.TransactionTest do
           "0xffffff504f4c590068bf00000000000000a007c2da51000000000000000000000000e867ce97461d310000000000000000000000715ab282b873b79a7be8b0e8c13c4e8966a52040"
       )
 
-    native_transfer_polyjuice =
-      insert(:polyjuice,
-        transaction: native_transfer_tx,
-        native_transfer_address_hash: receiver_user.eth_address
-      )
+    insert(:polyjuice,
+      transaction: native_transfer_tx,
+      native_transfer_address_hash: receiver_user.eth_address
+    )
 
     query = """
     query {
