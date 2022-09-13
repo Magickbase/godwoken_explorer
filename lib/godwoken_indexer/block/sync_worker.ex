@@ -482,7 +482,14 @@ defmodule GodwokenIndexer.Block.SyncWorker do
       conflict_target: :tx_hash,
       on_conflict:
         {:replace,
-         [:gas_used, :transaction_index, :status, :created_contract_address_hash, :updated_at]}
+         [
+           :gas_used,
+           :transaction_index,
+           :status,
+           :created_contract_address_hash,
+           :native_transfer_address_hash,
+           :updated_at
+         ]}
     )
   end
 

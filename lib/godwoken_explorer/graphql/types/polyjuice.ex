@@ -14,6 +14,7 @@ defmodule GodwokenExplorer.Graphql.Types.Polyjuice do
     field :gas_used, :bigint
     field :transaction_index, :integer
     field :created_contract_address_hash, :hash_address
+    field :native_transfer_address_hash, :hash_address
     field :status, :polyjuice_status
   end
 

@@ -165,11 +165,24 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
 
       {from_account, to_account} ->
         if input[:combine_from_to] do
-          query
-          |> where(
-            [t],
-            t.to_account_id == ^to_account.id or t.from_account_id == ^from_account.id
-          )
+          base_query =
+            query
+            |> where(
+              [t],
+              t.to_account_id == ^to_account.id or t.from_account_id == ^from_account.id
+            )
+
+          if to_account.type == :eth_user do
+            tx_hashes =
+              Polyjuice
+              |> where([p], p.native_transfer_address_hash == ^to_account.eth_address)
+              |> select([p], p.tx_hash)
+              |> Repo.all()
+
+            base_query |> or_where([t], t.hash in ^tx_hashes)
+          else
+            base_query
+          end
         else
           query
           |> where(
