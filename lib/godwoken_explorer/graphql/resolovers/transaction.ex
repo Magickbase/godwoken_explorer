@@ -12,6 +12,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
 
   @sorter_fields [:block_number, :index, :hash]
   @default_sorter [:block_number, :index, :hash]
+  @account_tx_limit 100_000
 
   def transaction(_parent, %{input: input} = _args, _resolution) do
     query = query_with_eth_hash_or_tx_hash(input)
@@ -177,6 +178,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
               Polyjuice
               |> where([p], p.native_transfer_address_hash == ^to_account.eth_address)
               |> select([p], p.tx_hash)
+              |> limit(@account_tx_limit)
               |> Repo.all()
 
             base_query |> or_where([t], t.hash in ^tx_hashes)
