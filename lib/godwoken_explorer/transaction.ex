@@ -132,7 +132,7 @@ defmodule GodwokenExplorer.Transaction do
 
             tx
             |> Map.merge(%{
-              account_eth_address: eth_address,
+              created_account: eth_address,
               fee_amount: creator.fee_amount
             })
 

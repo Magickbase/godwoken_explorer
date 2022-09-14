@@ -32,8 +32,7 @@ defmodule GodwokenIndexer.Transform.TokenApprovalsTest do
 
   test "parse logs", %{
     approval_log: approval_log,
-    approval_all_log: approval_all_log,
-    approval_false_log: approval_false_log
+    approval_all_log: approval_all_log
   } do
     logs = Log |> Repo.all()
     token_approvals = TokenApprovals.parse(logs)

@@ -235,4 +235,66 @@ defmodule GodwokenExplorer.Graphql.TransactionTest do
                }
              }
   end
+
+  test "show polyjuice creator tx by hash", %{
+    conn: conn
+  } do
+    block = insert(:block)
+    eth_user = insert(:user)
+
+    created_account =
+      insert(:user,
+        script_hash: "0x76e09f2071a91828df82ceb8e97486ed680130ddd8cefbe4298a43d0037feac3",
+        eth_address: "0x48a466ed98a517bab6158209bd54c6b29281b733"
+      )
+
+    polyjuice_creator_tx =
+      insert(:polyjuice_creator_tx,
+        from_account: eth_user,
+        block: block,
+        block_number: block.number,
+        index: 0
+      )
+
+    insert(:polyjuice_creator, transaction: polyjuice_creator_tx)
+
+    query = """
+    query {
+      transaction(
+        input: {
+          transaction_hash: "#{polyjuice_creator_tx.hash |> to_string()}"
+        }
+      ) {
+          polyjuice_creator {
+            created_account {
+              eth_address
+              type
+              script_hash
+            }
+          }
+      }
+    }
+    """
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    assert json_response(conn, 200) ==
+             %{
+               "data" => %{
+                 "transaction" => %{
+                   "polyjuice_creator" => %{
+                     "created_account" => %{
+                       "eth_address" => created_account.eth_address |> to_string(),
+                       "type" => "ETH_USER",
+                       "script_hash" => created_account.script_hash |> to_string()
+                     }
+                   }
+                 }
+               }
+             }
+  end
 end

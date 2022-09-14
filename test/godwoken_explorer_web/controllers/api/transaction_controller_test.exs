@@ -351,7 +351,7 @@ defmodule GodwokenExplorerWeb.API.TransactionControllerTest do
                  "transaction_index" => nil,
                  "fee_amount" => polyjuice_creator.fee_amount,
                  "input" => nil,
-                 "account_eth_address" => "0x48a466ed98a517bab6158209bd54c6b29281b733"
+                 "created_account" => "0x48a466ed98a517bab6158209bd54c6b29281b733"
                }
     end
   end
