@@ -160,7 +160,7 @@ defmodule GodwokenExplorer.Graphql.TransactionTest do
         block: block
       )
 
-    polyjuice = Factory.insert(:polyjuice, transaction: transaction)
+    polyjuice = Factory.insert(:polyjuice, transaction: transaction, input: "0x12345678")
 
     eth_hash = transaction.eth_hash |> to_string()
     input = polyjuice.input |> to_string()
