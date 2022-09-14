@@ -6,6 +6,11 @@ labels:
 assignees:
   - Keith-CY
 body:
+
+  - type: markdown
+    attributes:
+      value: "> Verify contract source code on [sourcify](https://sourcify.dev/)"
+
   - type: input
     id: contract-name
     validations:

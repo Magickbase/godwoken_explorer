@@ -7,6 +7,10 @@ assignees:
   - Keith-CY
 
 body:
+  - type: markdown
+    attributes:
+      value: "> Verify contract source code on [sourcify](https://sourcify.dev/)"
+
   - type: input
     id: token-name
     validations:
@@ -60,7 +64,7 @@ body:
   - type: dropdown
     id: code-file-format
     validations:
-      required: true
+      required: false
     attributes:
       label: Code Format
       description: Select code file format
@@ -77,29 +81,6 @@ body:
     attributes:
       label: Constructor Arguments
       description: ABI-encoded constructor arguments.
-
-  - type: input
-    id: tx-hash
-    validations:
-      required: true
-    attributes:
-      label: Deployment Transaction Hash
-      description: The hash of transaction which deployed the contract.
-
-  - type: input
-    id: compiler-version
-    validations:
-      required: true
-    attributes:
-      label: Compiler Version
-      description: Compiler version used, e.g v0.8.11+commit.d7f03943
-
-  - type: textarea
-    id: contract-source-code
-    validations:
-      required: true
-    attributes:
-      label: Contract Source Code
 
   - type: textarea
     id: other-info
