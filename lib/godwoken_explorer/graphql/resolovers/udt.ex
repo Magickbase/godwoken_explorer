@@ -114,6 +114,9 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
     udt = Repo.one(query)
     mapping_udt = UDT.find_mapping_udt(udt)
     udt = merge_bridge_info_to_udt(udt, mapping_udt)
+    hc = UDT.count_holder(udt)
+    udt = udt |> Map.put(:holders_count, hc)
+
     {:ok, udt}
   end
 
@@ -184,40 +187,46 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
   end
 
   defp udts_order_by(query, input) do
-    squery1 =
-      query
-      |> join(:left, [u], cu in CurrentUDTBalance,
-        on: u.contract_address_hash == cu.token_contract_address_hash and cu.value > 0
+    s2 =
+      from(c in CurrentUDTBalance,
+        where: c.value > 0 and c.token_type == :erc20,
+        join: u in UDT,
+        on: u.contract_address_hash == c.token_contract_address_hash,
+        # select: %{native_udt_id: u.id, address_hash: c.address_hash}
+        select: %{udt_id: u.id, address_hash: c.address_hash}
       )
-      |> group_by([u], u.id)
-      |> select([u, cu], %{
-        id: u.id,
-        holders_count: count(cu.address_hash)
-      })
 
-    squery2 =
-      query
-      |> join(:left, [u], cu in CurrentBridgedUDTBalance,
-        on: u.script_hash == cu.udt_script_hash and cu.value > 0
+    s1 =
+      from(cb in CurrentBridgedUDTBalance,
+        where: cb.value > 0,
+        join: u in UDT,
+        on: u.id == cb.udt_id,
+        select: %{udt_id: u.bridge_account_id, address_hash: cb.address_hash}
       )
-      |> group_by([u], u.bridge_account_id)
-      |> select([u, cu], %{
-        id: u.bridge_account_id,
-        holders_count: count(cu.address_hash)
-      })
 
-    usquery =
-      union_all(squery1, ^squery2)
-      |> distinct([u], u.id)
+    s =
+      from(s in subquery(union(s2, ^s1)))
+      |> group_by([c], c.udt_id)
+      |> select([c], %{
+        udt_id: c.udt_id,
+        holders_count: count(c.address_hash, :distinct)
+      })
 
     holders_count_query =
-      from(u in UDT)
-      |> join(:right, [u], h in subquery(usquery),
-        on: u.id == h.id,
+      query
+      |> join(:left, [u], h in subquery(s),
+        on:
+          (u.id == h.udt_id and is_nil(u.bridge_account_id)) or
+            u.bridge_account_id == h.udt_id,
         as: :u_holders
       )
-      |> select_merge([u, u_holders], %{
-        holders_count: u_holders.holders_count
+      |> select_merge([_u, u_holders], %{
+        holders_count:
+          fragment(
+            "CASE WHEN ? IS NULL THEN 0 ELSE ? END",
+            u_holders.holders_count,
+            u_holders.holders_count
+          )
       })
 
     base_udts_order_by(holders_count_query, input)
@@ -533,7 +542,13 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
         |> Enum.map(fn e ->
           case e do
             %{sort_type: st, sort_value: :ex_holders_count} ->
-              {st, dynamic([_u, u_holders: uh], uh.holders_count)}
+              st =
+                case st do
+                  :desc -> :desc_nulls_last
+                  :asc -> :asc_nulls_last
+                end
+
+              {st, dynamic([u, u_holders: uh], field(uh, :holders_count))}
 
             _ ->
               cursor_order_sorter(e, :order, @sorter_fields)
@@ -543,6 +558,6 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
         cursor_order_sorter(sorter, :order, @sorter_fields)
       end
 
-    order_by(holders_count_query, [], ^order_params)
+    order_by(holders_count_query, [u, uh], ^order_params)
   end
 end

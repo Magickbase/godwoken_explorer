@@ -122,7 +122,7 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
            )
   end
 
-  test "graphql: udts ", %{conn: conn, native_udt: native_udt} do
+  test "graphql: erc20 udts ", %{conn: conn, native_udt: native_udt} do
     _contract_address_hash = native_udt.contract_address_hash
 
     query = """
@@ -165,7 +165,7 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
                  "udts" => %{
                    "entries" => _,
                    "metadata" => %{
-                     "total_count" => 4
+                     "total_count" => 2
                    }
                  }
                }

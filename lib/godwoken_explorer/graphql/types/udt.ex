@@ -1134,9 +1134,10 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
       resolve(&Resolvers.UDT.account/3)
     end
 
-    field :holders_count, :integer do
-      resolve(&Resolvers.UDT.holders_count/3)
-    end
+    field :holders_count, :integer
+    # field :holders_count, :integer do
+    #   resolve(&Resolvers.UDT.holders_count/3)
+    # end
 
     field :minted_count, :integer do
       resolve(&Resolvers.UDT.minted_count/3)
