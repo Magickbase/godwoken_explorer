@@ -1,8 +1,8 @@
 defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
   alias GodwokenExplorer.{UDT, Account}
   alias GodwokenExplorer.Repo
-  alias GodwokenExplorer.Account.{CurrentBridgedUDTBalance, CurrentUDTBalance}
-
+  alias GodwokenExplorer.Account.{CurrentBridgedUDTBalance, CurrentUDTBalance, UDTBalance}
+  alias GodwokenExplorer.TokenTransfer
   import Ecto.Query
   # import Ecto.Query.API, only: [fragment: 1]
 
@@ -358,49 +358,42 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
         cu.token_contract_address_hash == ^contract_address and cu.token_type == :erc721 and
           cu.value > 0
       )
-      |> order_by([c],
-        desc: :token_id,
-        desc: :block_number,
-        desc: :id
+      |> order_by([cu],
+        desc: cu.block_number,
+        desc: cu.id
       )
-      |> distinct([c], [c.token_id])
-
-    query =
-      from(cu in CurrentUDTBalance)
-      |> join(:inner, [cu], scu in subquery(squery), on: cu.id == scu.id)
-      |> group_by([cu], [
-        cu.address_hash,
-        cu.token_contract_address_hash
-      ])
+      |> distinct([cu], [cu.address_hash])
       |> select([cu], %{
+        id: cu.id,
         address_hash: cu.address_hash,
         token_contract_address_hash: cu.token_contract_address_hash,
-        quantity: count(cu.token_id),
-        rank:
-          row_number()
-          |> over(
-            partition_by: :token_contract_address_hash,
-            order_by: [desc: count(cu.token_id), asc: cu.address_hash]
-          )
+        quantity: cu.value
       })
+
+    sq2 =
+      from(c in CurrentUDTBalance)
+      |> join(:inner, [c], cu in subquery(squery), on: c.id == cu.id)
+      |> order_by([c, cu], desc: cu.quantity, desc: cu.id)
+      |> select(
+        [c, cu],
+        merge(cu, %{
+          rank:
+            row_number()
+            |> over(
+              partition_by: :token_contract_address_hash,
+              order_by: [desc: cu.quantity, desc: cu.id]
+            )
+        })
+      )
 
     return =
-      from(u in UDT,
-        right_join: cu in subquery(query),
-        on: u.contract_address_hash == cu.token_contract_address_hash,
-        as: :holders,
-        select: cu
-      )
+      from(c in CurrentUDTBalance)
+      |> join(:right, [c], cu in subquery(sq2), on: c.id == cu.id, as: :holders)
+      |> select([c, holders], holders)
       |> paginate_query(input, %{
-        cursor_fields: [{{:holders, :quantity}, :desc}, {{:holders, :address_hash}, :asc}],
-        total_count_primary_key_field: [:address_hash, :token_contract_address_hash]
+        cursor_fields: [{{:holders, :quantity}, :desc}, {{:holders, :id}, :desc}],
+        total_count_primary_key_field: [:address_hash]
       })
-
-    return = %{
-      return
-      | entries:
-          return.entries |> Enum.map(fn e -> %{e | quantity: e.quantity |> Decimal.new()} end)
-    }
 
     {:ok, return}
   end
@@ -457,6 +450,17 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
 
   def erc721_inventory(_, %{input: input} = _args, _) do
     contract_address = Map.get(input, :contract_address)
+    minted_burn_address_hash = UDTBalance.minted_burn_address_hash()
+
+    burned_token_ids =
+      from(tt in TokenTransfer,
+        where:
+          tt.token_contract_address_hash == ^contract_address and
+            tt.to_address_hash == ^minted_burn_address_hash,
+        distinct: [tt.token_id],
+        select: tt.token_id
+      )
+      |> Repo.all()
 
     conditions =
       Enum.reduce(input, true, fn arg, acc ->
@@ -471,7 +475,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
 
     squery =
       from(cu in CurrentUDTBalance)
-      |> where([c], c.token_type == :erc721)
+      |> where([c], c.token_type == :erc721 and c.token_id not in ^burned_token_ids)
       |> where([_], ^conditions)
       |> where(
         [cu],
@@ -486,7 +490,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
       |> order_by([_], desc: :token_id)
       |> paginate_query(input, %{
         cursor_fields: [token_id: :desc],
-        total_count_primary_key_field: [:address_hash, :token_contract_address_hash, :token_id]
+        total_count_primary_key_field: [:id]
       })
 
     {:ok, return}

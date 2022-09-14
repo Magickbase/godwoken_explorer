@@ -12,7 +12,7 @@ defmodule GodwokenIndexer.Transform.TokenBalances do
   defp reducer({:token_transfers_params, token_transfers_params}, initial)
        when is_list(token_transfers_params) do
     token_transfers_params
-    |> ignore_burn_address_transfers_for_token_erc_721
+    # |> ignore_burn_address_transfers_for_token_erc_721
     |> Enum.reduce(initial, fn %{
                                  block_number: block_number,
                                  from_address_hash: from_address_hash,
@@ -64,9 +64,9 @@ defmodule GodwokenIndexer.Transform.TokenBalances do
     end)
   end
 
-  defp ignore_burn_address_transfers_for_token_erc_721(token_transfers_params) do
-    Enum.filter(token_transfers_params, &do_filter_burn_address/1)
-  end
+  # defp ignore_burn_address_transfers_for_token_erc_721(token_transfers_params) do
+  #   Enum.filter(token_transfers_params, &do_filter_burn_address/1)
+  # end
 
   defp add_token_balance_address(map_set, unquote(@burn_address), _, _, _, _), do: map_set
 

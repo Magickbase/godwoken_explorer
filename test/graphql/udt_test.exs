@@ -37,6 +37,8 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
         address_hash: user.eth_address,
         token_contract_address_hash: erc721_native_udt.contract_address_hash,
         token_id: 1,
+        block_number: 1,
+        value: 1,
         token_type: :erc721
       )
 
@@ -45,6 +47,8 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
         address_hash: user.eth_address,
         token_contract_address_hash: erc721_native_udt.contract_address_hash,
         token_id: 2,
+        value: 2,
+        block_number: 2,
         token_type: :erc721
       )
 
@@ -52,6 +56,8 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
       Factory.insert!(:current_udt_balance,
         token_contract_address_hash: erc721_native_udt.contract_address_hash,
         token_id: index,
+        value: 1,
+        block_number: 3,
         token_type: :erc721
       )
     end
@@ -768,8 +774,8 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
                    "entries" => [
                      %{
                        "rank" => 1,
-                       "address_hash" => ^eth_address,
-                       "quantity" => "2"
+                       "quantity" => "2",
+                       "address_hash" => ^eth_address
                      }
                    ],
                    "metadata" => %{"total_count" => 4}
