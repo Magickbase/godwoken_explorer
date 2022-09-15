@@ -25,10 +25,74 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
         eth_address: native_udt.contract_address_hash
       )
 
+    erc721_native_udt = Factory.insert!(:native_udt, eth_type: :erc721)
+    _erc721_native_udt2 = Factory.insert!(:native_udt, eth_type: :erc721)
+    erc1155_native_udt = Factory.insert!(:native_udt, eth_type: :erc1155)
+    _erc1155_native_udt2 = Factory.insert!(:native_udt, eth_type: :erc1155)
+
+    user = Factory.insert!(:user)
+
+    _erc721_cub1 =
+      Factory.insert!(:current_udt_balance,
+        address_hash: user.eth_address,
+        token_contract_address_hash: erc721_native_udt.contract_address_hash,
+        token_id: 1,
+        block_number: 1,
+        value: 1,
+        token_type: :erc721
+      )
+
+    _erc721_cub2 =
+      Factory.insert!(:current_udt_balance,
+        address_hash: user.eth_address,
+        token_contract_address_hash: erc721_native_udt.contract_address_hash,
+        token_id: 2,
+        value: 2,
+        block_number: 2,
+        token_type: :erc721
+      )
+
+    for index <- 3..5 do
+      Factory.insert!(:current_udt_balance,
+        token_contract_address_hash: erc721_native_udt.contract_address_hash,
+        token_id: index,
+        value: 1,
+        block_number: 3,
+        token_type: :erc721
+      )
+    end
+
+    _erc1155_cub1 =
+      Factory.insert!(:current_udt_balance,
+        address_hash: user.eth_address,
+        token_contract_address_hash: erc1155_native_udt.contract_address_hash,
+        token_id: 6,
+        token_type: :erc1155
+      )
+
+    _erc1155_cub2 =
+      Factory.insert!(:current_udt_balance,
+        address_hash: user.eth_address,
+        token_contract_address_hash: erc1155_native_udt.contract_address_hash,
+        token_id: 7,
+        token_type: :erc1155
+      )
+
+    for index <- 8..10 do
+      Factory.insert!(:current_udt_balance,
+        token_contract_address_hash: erc1155_native_udt.contract_address_hash,
+        token_id: index,
+        token_type: :erc1155
+      )
+    end
+
     [
       ckb_udt: ckb_udt,
       native_udt: native_udt,
-      polyjuice_contract_account: polyjuice_contract_account
+      polyjuice_contract_account: polyjuice_contract_account,
+      user: user,
+      erc721_native_udt: erc721_native_udt,
+      erc1155_native_udt: erc1155_native_udt
     ]
   end
 
@@ -64,7 +128,7 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
            )
   end
 
-  test "graphql: udts ", %{conn: conn, native_udt: native_udt} do
+  test "graphql: erc20 udts ", %{conn: conn, native_udt: native_udt} do
     _contract_address_hash = native_udt.contract_address_hash
 
     query = """
@@ -72,7 +136,7 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
       udts(
         input: {
           limit: 3
-          sorter: [{ sort_type: ASC, sort_value: NAME }]
+          sorter: [{ sort_type: ASC, sort_value: NAME }, {sort_type: DESC, sort_value: EX_HOLDERS_COUNT}]
         }
       ) {
         entries {
@@ -84,6 +148,7 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
             eth_address
             script_hash
           }
+          holders_count
         }
         metadata {
           total_count
@@ -134,7 +199,6 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
         }
       }
     }
-
     """
 
     conn =
@@ -329,6 +393,772 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
                    "official_site" => ^official_site,
                    "description" => ^description
                  }
+               }
+             },
+             json_response(conn, 200)
+           )
+  end
+
+  test "graphql: erc1155_user_token", %{
+    conn: conn,
+    user: user,
+    # erc721_native_udt: erc721_native_udt,
+    erc1155_native_udt: erc1155_native_udt
+  } do
+    contract_address = erc1155_native_udt.contract_address_hash |> to_string()
+
+    query = """
+    query {
+      erc1155_user_token(
+        input: { contract_address: "#{contract_address}", user_address: "#{user.eth_address}", token_id: 6}
+      ) {
+        address_hash
+        token_contract_address_hash
+        token_id
+        token_type
+        value
+        udt {
+          id
+          name
+          eth_type
+        }
+      }
+    }
+    """
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    assert match?(
+             %{
+               "data" => %{
+                 "erc1155_user_token" => %{"token_contract_address_hash" => ^contract_address}
+               }
+             },
+             json_response(conn, 200)
+           )
+  end
+
+  test "graphql: erc721_udts", %{
+    conn: conn,
+    # user: user,
+    erc721_native_udt: erc721_native_udt
+    # erc1155_native_udt: erc1155_native_udt
+  } do
+    contract_address = erc721_native_udt.contract_address_hash |> to_string()
+
+    query = """
+    query {
+      erc721_udts(
+        input: { contract_address: "#{contract_address}"}
+      ) {
+        entries {
+          id
+          name
+          contract_address_hash
+          eth_type
+          holders_count
+          minted_count
+        }
+        metadata {
+          total_count
+          after
+          before
+        }
+      }
+    }
+    """
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    assert match?(
+             %{
+               "data" => %{
+                 "erc721_udts" => %{"metadata" => %{"total_count" => 1}}
+               }
+             },
+             json_response(conn, 200)
+           )
+  end
+
+  test "graphql: erc721_udts with paginator", %{
+    conn: conn
+    # user: user,
+    # erc721_native_udt: erc721_native_udt
+    # erc1155_native_udt: erc1155_native_udt
+  } do
+    query = """
+    query {
+      erc721_udts(
+        input: {limit: 1}
+      ) {
+        entries {
+          id
+          name
+          contract_address_hash
+          eth_type
+          holders_count
+          minted_count
+        }
+        metadata {
+          total_count
+          after
+          before
+        }
+      }
+    }
+    """
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    %{
+      "data" => %{
+        "erc721_udts" => %{"metadata" => %{"after" => after_value}}
+      }
+    } = json_response(conn, 200)
+
+    assert match?(
+             %{
+               "data" => %{
+                 "erc721_udts" => %{"metadata" => %{"total_count" => 2}}
+               }
+             },
+             json_response(conn, 200)
+           )
+
+    query = """
+    query {
+      erc721_udts(
+        input: {limit: 1, after: "#{after_value}"}
+      ) {
+        entries {
+          id
+          name
+          contract_address_hash
+          eth_type
+          holders_count
+          minted_count
+        }
+        metadata {
+          total_count
+          after
+          before
+        }
+      }
+    }
+    """
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    assert match?(
+             %{
+               "data" => %{
+                 "erc721_udts" => %{"metadata" => %{"total_count" => 2}}
+               }
+             },
+             json_response(conn, 200)
+           )
+  end
+
+  test "graphql: erc721_udts with holders_count sorter", %{
+    conn: conn
+    # user: user,
+    # erc721_native_udt: erc721_native_udt
+    # erc1155_native_udt: erc1155_native_udt
+  } do
+    # contract_address = erc721_native_udt.contract_address_hash |> to_string()
+
+    query = """
+    query {
+      erc721_udts(
+        input: {limit: 1, sorter: [{sort_type: ASC, sort_value: EX_HOLDERS_COUNT}]
+      }
+      ) {
+        entries {
+          id
+          name
+          contract_address_hash
+          eth_type
+          holders_count
+          minted_count
+        }
+        metadata {
+          total_count
+          after
+          before
+        }
+      }
+    }
+    """
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    %{
+      "data" => %{
+        "erc721_udts" => %{"metadata" => %{"after" => after_value}}
+      }
+    } = json_response(conn, 200)
+
+    assert match?(
+             %{
+               "data" => %{
+                 "erc721_udts" => %{"metadata" => %{"total_count" => 2}}
+               }
+             },
+             json_response(conn, 200)
+           )
+
+    query = """
+    query {
+      erc721_udts(
+        input: {limit: 1, after: "#{after_value}", sorter: [{sort_type: ASC, sort_value: EX_HOLDERS_COUNT}]
+      }
+      ) {
+        entries {
+          id
+          name
+          contract_address_hash
+          eth_type
+          holders_count
+          minted_count
+        }
+        metadata {
+          total_count
+          after
+          before
+        }
+      }
+    }
+    """
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    assert match?(
+             %{
+               "data" => %{
+                 "erc721_udts" => %{"metadata" => %{"total_count" => 2}}
+               }
+             },
+             json_response(conn, 200)
+           )
+  end
+
+  test "graphql: erc1155_udts", %{
+    conn: conn,
+    # user: user,
+    # erc721_native_udt: erc721_native_udt
+    erc1155_native_udt: erc1155_native_udt
+  } do
+    contract_address = erc1155_native_udt.contract_address_hash |> to_string()
+
+    query = """
+    query {
+      erc1155_udts(
+        input: { contract_address: "#{contract_address}"}
+      ) {
+        entries {
+          id
+          name
+          contract_address_hash
+          eth_type
+          holders_count
+          minted_count
+        }
+        metadata {
+          total_count
+          after
+          before
+        }
+      }
+    }
+    """
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    assert match?(
+             %{
+               "data" => %{
+                 "erc1155_udts" => %{"metadata" => %{"total_count" => 1}}
+               }
+             },
+             json_response(conn, 200)
+           )
+  end
+
+  test "graphql: erc721_holders", %{
+    conn: conn,
+    user: user,
+    erc721_native_udt: erc721_native_udt
+    # erc1155_native_udt: erc1155_native_udt
+  } do
+    eth_address = user.eth_address |> to_string()
+    contract_address = erc721_native_udt.contract_address_hash |> to_string()
+
+    query = """
+    query {
+      erc721_holders(
+        input: { contract_address: "#{contract_address}"}
+      ) {
+        entries {
+          rank
+          address_hash
+          token_contract_address_hash
+          quantity
+        }
+        metadata {
+          total_count
+          after
+          before
+        }
+      }
+    }
+    """
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    assert match?(
+             %{
+               "data" => %{
+                 "erc721_holders" => %{
+                   "entries" => [
+                     %{
+                       "rank" => 1,
+                       "address_hash" => ^eth_address,
+                       "quantity" => "2"
+                     },
+                     %{
+                       "rank" => 2
+                     },
+                     %{
+                       "rank" => 3
+                     },
+                     %{
+                       "rank" => 4
+                     }
+                   ],
+                   "metadata" => %{"total_count" => 4}
+                 }
+               }
+             },
+             json_response(conn, 200)
+           )
+  end
+
+  test "graphql: erc721_holders with pagination", %{
+    conn: conn,
+    user: user,
+    erc721_native_udt: erc721_native_udt
+    # erc1155_native_udt: erc1155_native_udt
+  } do
+    eth_address = user.eth_address |> to_string()
+    contract_address = erc721_native_udt.contract_address_hash |> to_string()
+
+    query = """
+    query {
+      erc721_holders(
+        input: { limit: 1, contract_address: "#{contract_address}"}
+      ) {
+        entries {
+          rank
+          address_hash
+          token_contract_address_hash
+          quantity
+        }
+        metadata {
+          total_count
+          after
+          before
+        }
+      }
+    }
+    """
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    assert match?(
+             %{
+               "data" => %{
+                 "erc721_holders" => %{
+                   "entries" => [
+                     %{
+                       "rank" => 1,
+                       "quantity" => "2",
+                       "address_hash" => ^eth_address
+                     }
+                   ],
+                   "metadata" => %{"total_count" => 4}
+                 }
+               }
+             },
+             json_response(conn, 200)
+           )
+
+    %{
+      "data" => %{
+        "erc721_holders" => %{"metadata" => %{"after" => after_value}}
+      }
+    } = json_response(conn, 200)
+
+    query = """
+    query {
+      erc721_holders(
+        input: { after: "#{after_value}" limit: 1, contract_address: "#{contract_address}"}
+      ) {
+        entries {
+          rank
+          address_hash
+          token_contract_address_hash
+          quantity
+        }
+        metadata {
+          total_count
+          after
+          before
+        }
+      }
+    }
+    """
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    assert match?(
+             %{
+               "data" => %{
+                 "erc721_holders" => %{
+                   "entries" => [
+                     %{
+                       "rank" => 2
+                     }
+                   ],
+                   "metadata" => %{"total_count" => 4}
+                 }
+               }
+             },
+             json_response(conn, 200)
+           )
+  end
+
+  test "graphql: erc1155_holders", %{
+    conn: conn,
+    # user: user,
+    # erc721_native_udt: erc721_native_udt
+    erc1155_native_udt: erc1155_native_udt
+  } do
+    contract_address = erc1155_native_udt.contract_address_hash |> to_string()
+
+    query = """
+    query {
+      erc1155_holders(
+        input: { contract_address: "#{contract_address}"}
+      ) {
+        entries {
+          rank
+          address_hash
+          token_contract_address_hash
+          quantity
+        }
+        metadata {
+          total_count
+          after
+          before
+        }
+      }
+    }
+    """
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    assert match?(
+             %{
+               "data" => %{
+                 "erc1155_holders" => %{
+                   "entries" => [
+                     %{"rank" => 1},
+                     %{"rank" => 2},
+                     %{
+                       "rank" => 3
+                     },
+                     %{
+                       "rank" => 4
+                     }
+                   ],
+                   "metadata" => %{"total_count" => 4}
+                 }
+               }
+             },
+             json_response(conn, 200)
+           )
+  end
+
+  test "graphql: erc1155_holders with token_id", %{
+    conn: conn,
+    # user: user,
+    # erc721_native_udt: erc721_native_udt
+    erc1155_native_udt: erc1155_native_udt
+  } do
+    contract_address = erc1155_native_udt.contract_address_hash |> to_string()
+
+    query = """
+    query {
+      erc1155_holders(
+        input: { contract_address: "#{contract_address}", token_id: 6}
+      ) {
+        entries {
+          rank
+          address_hash
+          token_contract_address_hash
+          quantity
+        }
+        metadata {
+          total_count
+          after
+          before
+        }
+      }
+    }
+    """
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    assert match?(
+             %{
+               "data" => %{
+                 "erc1155_holders" => %{
+                   "entries" => [
+                     %{
+                       "token_contract_address_hash" => ^contract_address,
+                       "rank" => 1
+                     }
+                   ],
+                   "metadata" => %{"total_count" => 1}
+                 }
+               }
+             },
+             json_response(conn, 200)
+           )
+  end
+
+  test "graphql: user_erc721_assets", %{
+    conn: conn,
+    user: user
+    # erc721_native_udt: erc721_native_udt
+    # erc1155_native_udt: erc1155_native_udt
+  } do
+    user_address = user.eth_address |> to_string()
+
+    query = """
+    query {
+      user_erc721_assets(
+        input: { user_address: "#{user_address}"}
+      ) {
+        entries {
+          address_hash
+          token_contract_address_hash
+          token_id
+          token_type
+          value
+        }
+        metadata {
+          total_count
+          after
+          before
+        }
+      }
+    }
+    """
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    assert match?(
+             %{
+               "data" => %{
+                 "user_erc721_assets" => %{"metadata" => %{"total_count" => 2}}
+               }
+             },
+             json_response(conn, 200)
+           )
+  end
+
+  test "graphql: user_erc1155_assets", %{
+    conn: conn,
+    user: user
+    # erc721_native_udt: erc721_native_udt
+    # erc1155_native_udt: erc1155_native_udt
+  } do
+    user_address = user.eth_address |> to_string()
+
+    query = """
+    query {
+      user_erc1155_assets(
+        input: { user_address: "#{user_address}"}
+      ) {
+        entries {
+          address_hash
+          token_contract_address_hash
+          token_id
+          token_type
+          value
+        }
+        metadata {
+          total_count
+          after
+          before
+        }
+      }
+    }
+    """
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    assert match?(
+             %{
+               "data" => %{
+                 "user_erc1155_assets" => %{"metadata" => %{"total_count" => 2}}
+               }
+             },
+             json_response(conn, 200)
+           )
+  end
+
+  test "graphql: erc721_inventory", %{
+    conn: conn,
+    # user: user
+    erc721_native_udt: erc721_native_udt
+    # erc1155_native_udt: erc1155_native_udt
+  } do
+    contract_address = erc721_native_udt.contract_address_hash |> to_string()
+
+    query = """
+    query {
+      erc721_inventory(
+        input: { contract_address: "#{contract_address}"}
+      ) {
+        entries {
+          address_hash
+          token_contract_address_hash
+          token_id
+          token_type
+          value
+        }
+        metadata {
+          total_count
+          after
+          before
+        }
+      }
+    }
+    """
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    assert match?(
+             %{
+               "data" => %{
+                 "erc721_inventory" => %{"metadata" => %{"total_count" => 5}}
+               }
+             },
+             json_response(conn, 200)
+           )
+  end
+
+  test "graphql: erc1155_inventory", %{
+    conn: conn,
+    # user: user
+    # erc721_native_udt: erc721_native_udt
+    erc1155_native_udt: erc1155_native_udt
+  } do
+    contract_address = erc1155_native_udt.contract_address_hash |> to_string()
+
+    query = """
+    query {
+      erc1155_inventory(
+        input: { contract_address: "#{contract_address}"}
+      ) {
+        entries {
+          address_hash
+          token_contract_address_hash
+          token_id
+          token_type
+          value
+        }
+        metadata {
+          total_count
+          after
+          before
+        }
+      }
+    }
+    """
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    assert match?(
+             %{
+               "data" => %{
+                 "erc1155_inventory" => %{"metadata" => %{"total_count" => 5}}
                }
              },
              json_response(conn, 200)

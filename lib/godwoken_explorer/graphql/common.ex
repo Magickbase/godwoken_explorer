@@ -1,7 +1,19 @@
 defmodule GodwokenExplorer.Graphql.Common do
   import Ecto.Query
 
-  def cursor_order_sorter(sorter, type, fields) when type in [:order, :cursor] do
+  def cursor_order_sorter(%{sort_type: st, sort_value: sv}, type, fields)
+      when type in [:order, :cursor] do
+    case {type, sv in fields} do
+      {:order, true} ->
+        {st, sv}
+
+      {:cursor, true} ->
+        {sv, st}
+    end
+  end
+
+  def cursor_order_sorter(sorter, type, fields)
+      when is_list(sorter) and type in [:order, :cursor] do
     sorter
     |> Enum.map(fn %{sort_type: st, sort_value: sv} ->
       case {type, sv in fields} do

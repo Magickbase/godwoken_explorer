@@ -152,9 +152,215 @@ defmodule GodwokenExplorer.Graphql.Types.TokenTransfer do
     }
     """
     field :token_transfers, :paginate_token_transfers do
-      arg(:input, non_null(:token_transfer_input), default_value: %{})
+      arg(:input, non_null(:erc20_token_transfers_input), default_value: %{})
       middleware(NullFilter)
-      resolve(&Resolvers.TokenTransfer.token_transfers/3)
+      resolve(&Resolvers.TokenTransfer.erc20_token_transfers/3)
+    end
+
+    @desc """
+    query {
+      erc721_token_transfers(
+        input: {
+          to_address: "0x0000000000ce6d8c1fba76f26d6cc5db71432710"
+          start_block_number: 90
+          end_block_number: 909999
+          limit: 1
+          sorter: [
+            { sort_type: ASC, sort_value: BLOCK_NUMBER }
+            { sort_type: ASC, sort_value: TRANSACTION_HASH }
+            { sort_type: ASC, sort_value: LOG_INDEX }
+          ]
+        }
+      ) {
+        entries {
+          block {
+            timestamp
+          }
+          transaction_hash
+          block_number
+          to_account {
+            eth_address
+          }
+          to_address
+          from_account {
+            eth_address
+          }
+          token_id
+          token_ids
+        }
+        metadata {
+          total_count
+          before
+          after
+        }
+      }
+    }
+
+
+    {
+      "data": {
+        "erc721_token_transfers": {
+          "entries": [
+            {
+              "block": {
+                "timestamp": "2022-08-28T05:15:00.300000Z"
+              },
+              "block_number": 320956,
+              "from_account": null,
+              "to_account": {
+                "eth_address": "0x0000000000ce6d8c1fba76f26d6cc5db71432710"
+              },
+              "to_address": "0x0000000000ce6d8c1fba76f26d6cc5db71432710",
+              "token_id": "558",
+              "token_ids": null,
+              "transaction_hash": "0xe10b9659f948de345ab4aa95d8a2ed20e2ac014c44ad7aa7862485973ef3d08f"
+            }
+          ],
+          "metadata": {
+            "after": "g3QAAAADZAAMYmxvY2tfbnVtYmVyYgAE5bxkAAlsb2dfaW5kZXhhAGQAEHRyYW5zYWN0aW9uX2hhc2h0AAAAA2QACl9fc3RydWN0X19kACJFbGl4aXIuR29kd29rZW5FeHBsb3Jlci5DaGFpbi5IYXNoZAAKYnl0ZV9jb3VudGEgZAAFYnl0ZXNtAAAAIOELlln5SN40WrSqldii7SDirAFMRK16p4YkhZc-89CP",
+            "before": null,
+            "total_count": 4
+          }
+        }
+      }
+    }
+    """
+    field :erc721_token_transfers, :paginate_token_transfers do
+      arg(:input, non_null(:erc721_erc1155_token_transfers_input), default_value: %{})
+      middleware(NullFilter)
+      resolve(&Resolvers.TokenTransfer.erc721_token_transfers/3)
+    end
+
+    @desc """
+    query {
+      erc1155_token_transfers(
+        input: {
+          to_address: "0xc6e58fb4affb6ab8a392b7cc23cd3fef74517f6c"
+          start_block_number: 0
+          end_block_number: 909999
+          limit: 1
+          sorter: [
+            { sort_type: ASC, sort_value: BLOCK_NUMBER }
+            { sort_type: ASC, sort_value: TRANSACTION_HASH }
+            { sort_type: ASC, sort_value: LOG_INDEX }
+          ]
+        }
+      ) {
+        entries {
+          block {
+            timestamp
+          }
+          transaction_hash
+          block_number
+          to_account {
+            eth_address
+          }
+          to_address
+          from_account {
+            eth_address
+          }
+          token_id
+          token_ids
+          udt{
+            id
+            name
+            eth_type
+          }
+        }
+        metadata {
+          total_count
+          before
+          after
+        }
+      }
+    }
+
+    {
+      "data": {
+        "erc1155_token_transfers": {
+          "entries": [
+            {
+              "block": {
+                "timestamp": "2022-07-16T13:47:10.511000Z"
+              },
+              "block_number": 195916,
+              "from_account": null,
+              "to_account": {
+                "eth_address": "0xc6e58fb4affb6ab8a392b7cc23cd3fef74517f6c"
+              },
+              "to_address": "0xc6e58fb4affb6ab8a392b7cc23cd3fef74517f6c",
+              "token_id": "0",
+              "token_ids": null,
+              "transaction_hash": "0x9fa88935cd93531dedec0c1b6dd79a0de3e754b5600714d410a85abc3035e7e4",
+              "udt": {
+                "eth_type": "ERC1155",
+                "id": 48435,
+                "name": null
+              }
+            }
+          ],
+          "metadata": {
+            "after": "g3QAAAADZAAMYmxvY2tfbnVtYmVyYgAC_UxkAAlsb2dfaW5kZXhhAGQAEHRyYW5zYWN0aW9uX2hhc2h0AAAAA2QACl9fc3RydWN0X19kACJFbGl4aXIuR29kd29rZW5FeHBsb3Jlci5DaGFpbi5IYXNoZAAKYnl0ZV9jb3VudGEgZAAFYnl0ZXNtAAAAIJ-oiTXNk1Md7ewMG23Xmg3j51S1YAcU1BCoWrwwNefk",
+            "before": null,
+            "total_count": 10
+          }
+        }
+      }
+    }
+
+    query {
+      erc1155_token_transfers(
+        input: {
+          to_address: "0xc6e58fb4affb6ab8a392b7cc23cd3fef74517f6c"
+          start_block_number: 0
+          end_block_number: 909999
+          limit: 1
+          token_id: "0"
+          sorter: [
+            { sort_type: ASC, sort_value: BLOCK_NUMBER }
+            { sort_type: ASC, sort_value: TRANSACTION_HASH }
+            { sort_type: ASC, sort_value: LOG_INDEX }
+          ]
+        }
+      ) {
+        entries {
+          token_contract_address_hash
+          block_number
+          token_id
+          token_ids
+        }
+        metadata {
+          total_count
+          before
+          after
+        }
+      }
+    }
+
+    {
+      "data": {
+        "erc1155_token_transfers": {
+          "entries": [
+            {
+              "block_number": 195916,
+              "token_contract_address_hash": "0x6e45a282f2176d95a2bccc1a369fc9cb3f0584a0",
+              "token_id": "0",
+              "token_ids": null
+            }
+          ],
+          "metadata": {
+            "after": "g3QAAAADZAAMYmxvY2tfbnVtYmVyYgAC_UxkAAlsb2dfaW5kZXhhAGQAEHRyYW5zYWN0aW9uX2hhc2h0AAAAA2QACl9fc3RydWN0X19kACJFbGl4aXIuR29kd29rZW5FeHBsb3Jlci5DaGFpbi5IYXNoZAAKYnl0ZV9jb3VudGEgZAAFYnl0ZXNtAAAAIJ-oiTXNk1Md7ewMG23Xmg3j51S1YAcU1BCoWrwwNefk",
+            "before": null,
+            "total_count": 5
+          }
+        }
+      }
+    }
+    """
+    field :erc1155_token_transfers, :paginate_token_transfers do
+      arg(:input, non_null(:erc721_erc1155_token_transfers_input), default_value: %{})
+      middleware(NullFilter)
+      resolve(&Resolvers.TokenTransfer.erc1155_token_transfers/3)
     end
   end
 
@@ -170,6 +376,9 @@ defmodule GodwokenExplorer.Graphql.Types.TokenTransfer do
     field :block_hash, :hash_full
     field :log_index, :integer
     field :token_id, :decimal
+
+    field :amounts, list_of(:decimal)
+    field :token_ids, list_of(:decimal)
 
     field :from_address, :hash_address do
       resolve(&Resolvers.TokenTransfer.from_address/3)
@@ -212,7 +421,12 @@ defmodule GodwokenExplorer.Graphql.Types.TokenTransfer do
     value(:log_index)
   end
 
-  input_object :token_transfer_input do
+  input_object :erc721_erc1155_token_transfers_input do
+    import_fields(:erc20_token_transfers_input)
+    field :token_id, :decimal
+  end
+
+  input_object :erc20_token_transfers_input do
     field :transaction_hash, :hash_full
 
     field :sorter, list_of(:token_transfers_sorter_input),

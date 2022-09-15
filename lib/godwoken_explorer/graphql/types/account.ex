@@ -301,6 +301,7 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
       resolve(&Resolvers.Account.bridged_udt/3)
     end
 
+    @desc "erc20 udts"
     field :account_current_udts, list_of(:account_current_udt) do
       arg(:input, :account_child_udts_input,
         default_value: %{page: 1, page_size: 20, sort_type: :desc}
@@ -310,6 +311,7 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
       resolve(&Resolvers.Account.account_current_udts/3)
     end
 
+    @desc "erc20 udts"
     field :account_current_bridged_udts, list_of(:account_current_bridged_udt) do
       arg(:input, :account_child_udts_input,
         default_value: %{page: 1, page_size: 20, sort_type: :desc}

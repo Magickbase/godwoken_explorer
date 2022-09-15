@@ -129,7 +129,8 @@ defmodule GodwokenExplorer.MixProject do
       {:money, "~> 1.9"},
       {:plug_heartbeat, "~> 1.0"},
       {:paginator, "~> 1.1.0"},
-      {:tesla, "~> 1.4"}
+      {:tesla, "~> 1.4"},
+      {:quarto, "~> 1.0"}
     ]
   end
 

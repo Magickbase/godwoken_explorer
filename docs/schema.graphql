@@ -4,7 +4,10 @@ schema {
 }
 
 type Account {
+  """erc20 udts"""
   account_current_bridged_udts(input: AccountChildUdtsInput = {page: 1, page_size: 20, sort_type: DESC}): [AccountCurrentBridgedUdt]
+
+  """erc20 udts"""
   account_current_udts(input: AccountChildUdtsInput = {page: 1, page_size: 20, sort_type: DESC}): [AccountCurrentUdt]
   bridged_udt: Udt
   contract_code: String
@@ -235,6 +238,11 @@ input AccountUdtsInput {
   udt_script_hash: HashFull
 }
 
+enum ApprovalType {
+  APPROVAL
+  APPROVAL_ALL
+}
+
 """
 The `bigint` scalar type represents signed big integer
 values parsed by the elixir `Decimal` library(which support big integer scenario).  The BigInt appears in a JSON
@@ -318,6 +326,12 @@ enum BlockStatus {
 }
 
 """
+chain data is an unpadded hexadecimal number with 0 or more digits.  Each pair of digits maps directly
+to a byte in the underlying binary representation.  When interpreted as a number, it should be treated as big-endian.
+"""
+scalar ChainData
+
+"""
 The `DateTime` scalar type represents a date and time in the UTC
 timezone. The DateTime appears in a JSON response as an ISO8601 formatted
 string, including UTC timezone ("Z"). The parsed date and time string will
@@ -362,6 +376,168 @@ Some numeric strings are:
     "NaN8275"    -- diagnostic NaN
 """
 scalar Decimal
+
+input Erc1155HoldersInput {
+  """Fetch the records after this cursor."""
+  after: String
+
+  """Fetch the records before this cursor."""
+  before: String
+  contract_address: HashAddress!
+
+  """
+  Limits the number of records returned per page. Note that this number will be capped by maximum_limit=100. Defaults to 20.
+  """
+  limit: Int = 20
+  token_id: Decimal
+}
+
+input Erc1155UserTokenInput {
+  contract_address: HashAddress!
+  token_id: Decimal!
+  user_address: HashAddress!
+}
+
+input Erc20TokenTransfersInput {
+  """Fetch the records after this cursor."""
+  after: String
+  age_range_end: DateTime
+  age_range_start: DateTime
+
+  """Fetch the records before this cursor."""
+  before: String
+
+  """
+  if combine_from_to is true, then from_address and to_address are combined into
+  query condition like `address = from_address OR address = to_address`
+  """
+  combine_from_to: Boolean = true
+
+  """argument: the end of block number(inclusive) for search query"""
+  end_block_number: Int
+  from_address: HashAddress
+
+  """
+  Limits the number of records returned per page. Note that this number will be capped by maximum_limit=100. Defaults to 20.
+  """
+  limit: Int = 20
+  sorter: [TokenTransfersSorterInput] = [{sort_type: DESC, sort_value: BLOCK_NUMBER}, {sort_type: DESC, sort_value: LOG_INDEX}, {sort_type: ASC, sort_value: TRANSACTION_HASH}]
+
+  """argument: the start of block number(inclusive) for search query"""
+  start_block_number: Int
+  to_address: HashAddress
+  token_contract_address_hash: HashAddress
+  transaction_hash: HashFull
+}
+
+type Erc721Erc1155HolderItem {
+  account: Account
+  address_hash: HashAddress
+  quantity: Decimal
+  rank: Int
+  token_contract_address_hash: HashAddress
+}
+
+input Erc721Erc1155InventoryInput {
+  """Fetch the records after this cursor."""
+  after: String
+
+  """Fetch the records before this cursor."""
+  before: String
+  contract_address: HashAddress!
+
+  """
+  Limits the number of records returned per page. Note that this number will be capped by maximum_limit=100. Defaults to 20.
+  """
+  limit: Int = 20
+  token_id: Decimal
+}
+
+input Erc721Erc1155TokenTransfersInput {
+  """Fetch the records after this cursor."""
+  after: String
+  age_range_end: DateTime
+  age_range_start: DateTime
+
+  """Fetch the records before this cursor."""
+  before: String
+
+  """
+  if combine_from_to is true, then from_address and to_address are combined into
+  query condition like `address = from_address OR address = to_address`
+  """
+  combine_from_to: Boolean = true
+
+  """argument: the end of block number(inclusive) for search query"""
+  end_block_number: Int
+  from_address: HashAddress
+
+  """
+  Limits the number of records returned per page. Note that this number will be capped by maximum_limit=100. Defaults to 20.
+  """
+  limit: Int = 20
+  sorter: [TokenTransfersSorterInput] = [{sort_type: DESC, sort_value: BLOCK_NUMBER}, {sort_type: DESC, sort_value: LOG_INDEX}, {sort_type: ASC, sort_value: TRANSACTION_HASH}]
+
+  """argument: the start of block number(inclusive) for search query"""
+  start_block_number: Int
+  to_address: HashAddress
+  token_contract_address_hash: HashAddress
+  token_id: Decimal
+  transaction_hash: HashFull
+}
+
+type Erc721Erc1155Udt {
+  account: Account
+  contract_address_hash: HashAddress
+  description: String
+  eth_type: EthType
+  holders_count: Int
+  icon: String
+  id: Int
+  minted_count: Int
+  name: String
+  official_site: String
+  symbol: String
+}
+
+input Erc721Erc1155UdtsInput {
+  """Fetch the records after this cursor."""
+  after: String
+
+  """Fetch the records before this cursor."""
+  before: String
+  contract_address: HashAddress
+  fuzzy_name: String
+
+  """
+  Limits the number of records returned per page. Note that this number will be capped by maximum_limit=100. Defaults to 20.
+  """
+  limit: Int = 20
+  sorter: [UdtsSorterInput] = [{sort_type: ASC, sort_value: ID}]
+}
+
+type Erc721Erc1155UserToken {
+  address_hash: HashAddress
+  token_contract_address_hash: HashAddress
+  token_id: Decimal
+  token_type: EthType
+  udt: Erc721Erc1155Udt
+  value: Decimal
+}
+
+input Erc721HoldersInput {
+  """Fetch the records after this cursor."""
+  after: String
+
+  """Fetch the records before this cursor."""
+  before: String
+  contract_address: HashAddress!
+
+  """
+  Limits the number of records returned per page. Note that this number will be capped by maximum_limit=100. Defaults to 20.
+  """
+  limit: Int = 20
+}
 
 enum EthType {
   ERC1155
@@ -456,6 +632,21 @@ input PageAndSizeInput {
   page_size: Int = 20
 }
 
+type PaginateErc721Erc1155Holders {
+  entries: [Erc721Erc1155HolderItem]
+  metadata: PaginateMetadata
+}
+
+type PaginateErc721Erc1155Inventory {
+  entries: [Erc721Erc1155UserToken]
+  metadata: PaginateMetadata
+}
+
+type PaginateErc721Erc1155Udts {
+  entries: [Erc721Erc1155Udt]
+  metadata: PaginateMetadata
+}
+
 type PaginateMetadata {
   after: String
   before: String
@@ -466,6 +657,11 @@ type PaginateMetadata {
 
 type PaginateSmartContracts {
   entries: [SmartContract]
+  metadata: PaginateMetadata
+}
+
+type PaginateTokenApprovals {
+  entries: [TokenApproval]
   metadata: PaginateMetadata
 }
 
@@ -484,13 +680,18 @@ type PaginateUdts {
   metadata: PaginateMetadata
 }
 
+type PaginateUserErc721Erc1155Assets {
+  entries: [Erc721Erc1155UserToken]
+  metadata: PaginateMetadata
+}
+
 type Polyjuice {
   created_contract_address_hash: HashAddress
   gas_limit: Bigint
   gas_price: Bigint
   gas_used: Bigint
   id: Int
-  input: String
+  input: ChainData
   input_size: Int
   is_create: Boolean
   status: PolyjuiceStatus
@@ -987,6 +1188,7 @@ type RootQueryType {
   account_current_bridged_udts(input: AccountCurrentBridgedUdtsInput!): [AccountCurrentBridgedUdt]
 
   """
+  erc20 udts
   request-result-example:
   query {
     account_current_udts(
@@ -1026,6 +1228,7 @@ type RootQueryType {
   account_current_udts(input: AccountCurrentUdtsInput!): [AccountCurrentUdt]
 
   """
+  erc20 udts
   request-result-example:
   query {
     account_udts(
@@ -1080,6 +1283,7 @@ type RootQueryType {
   account_udts(input: AccountUdtsInput!): [AccountUdt]
 
   """
+  erc20 udts
   request-result-example:
   query {
     account_udts_by_contract_address(
@@ -1211,6 +1415,750 @@ type RootQueryType {
   }
   """
   blocks(input: BlocksInput = {page: 1, page_size: 10, sort_type: DESC}): [Block]
+
+  """
+  query {
+    erc1155_holders(
+      input: {
+        contract_address: "0xe6903e124e5bdae8784674eb625f1c212efc789e"
+        limit: 1
+      }
+    ) {
+      entries {
+        rank
+        address_hash
+        token_contract_address_hash
+        quantity
+      }
+      metadata {
+        total_count
+        after
+        before
+      }
+    }
+  }
+  
+  {
+    "data": {
+      "erc1155_holders": {
+        "entries": [
+          {
+            "address_hash": "0x46b6f87debd8f7607d00df47c31d2dc6d9999999",
+            "quantity": "21002",
+            "rank": 1,
+            "token_contract_address_hash": "0xe6903e124e5bdae8784674eb625f1c212efc789e"
+          }
+        ],
+        "metadata": {
+          "after": "g3QAAAACaAJkAAdob2xkZXJzZAAMYWRkcmVzc19oYXNodAAAAANkAApfX3N0cnVjdF9fZAAiRWxpeGlyLkdvZHdva2VuRXhwbG9yZXIuQ2hhaW4uSGFzaGQACmJ5dGVfY291bnRhFGQABWJ5dGVzbQAAABRGtvh969j3YH0A30fDHS3G2ZmZmWgCZAAHaG9sZGVyc2QACHF1YW50aXR5dAAAAARkAApfX3N0cnVjdF9fZAAORWxpeGlyLkRlY2ltYWxkAARjb2VmYgAAUgpkAANleHBhAGQABHNpZ25hAQ==",
+          "before": null,
+          "total_count": 5
+        }
+      }
+    }
+  }
+  
+  query {
+    erc1155_holders(
+      input: {
+        contract_address: "0xe6903e124e5bdae8784674eb625f1c212efc789e"
+        limit: 1
+        after: "g3QAAAACaAJkAAdob2xkZXJzZAAMYWRkcmVzc19oYXNodAAAAANkAApfX3N0cnVjdF9fZAAiRWxpeGlyLkdvZHdva2VuRXhwbG9yZXIuQ2hhaW4uSGFzaGQACmJ5dGVfY291bnRhFGQABWJ5dGVzbQAAABRGtvh969j3YH0A30fDHS3G2ZmZmWgCZAAHaG9sZGVyc2QACHF1YW50aXR5dAAAAARkAApfX3N0cnVjdF9fZAAORWxpeGlyLkRlY2ltYWxkAARjb2VmYgAAUgpkAANleHBhAGQABHNpZ25hAQ=="
+      }
+    ) {
+      entries {
+        rank
+        address_hash
+        token_contract_address_hash
+        quantity
+      }
+      metadata {
+        total_count
+        after
+        before
+      }
+    }
+  }
+  
+  {
+    "data": {
+      "erc1155_holders": {
+        "entries": [
+          {
+            "address_hash": "0xc6e58fb4affb6ab8a392b7cc23cd3fef74517f6c",
+            "quantity": "1204",
+            "rank": 2,
+            "token_contract_address_hash": "0xe6903e124e5bdae8784674eb625f1c212efc789e"
+          }
+        ],
+        "metadata": {
+          "after": "g3QAAAACaAJkAAdob2xkZXJzZAAMYWRkcmVzc19oYXNodAAAAANkAApfX3N0cnVjdF9fZAAiRWxpeGlyLkdvZHdva2VuRXhwbG9yZXIuQ2hhaW4uSGFzaGQACmJ5dGVfY291bnRhFGQABWJ5dGVzbQAAABTG5Y-0r_tquKOSt8wjzT_vdFF_bGgCZAAHaG9sZGVyc2QACHF1YW50aXR5dAAAAARkAApfX3N0cnVjdF9fZAAORWxpeGlyLkRlY2ltYWxkAARjb2VmYgAABLRkAANleHBhAGQABHNpZ25hAQ==",
+          "before": "g3QAAAACaAJkAAdob2xkZXJzZAAMYWRkcmVzc19oYXNodAAAAANkAApfX3N0cnVjdF9fZAAiRWxpeGlyLkdvZHdva2VuRXhwbG9yZXIuQ2hhaW4uSGFzaGQACmJ5dGVfY291bnRhFGQABWJ5dGVzbQAAABTG5Y-0r_tquKOSt8wjzT_vdFF_bGgCZAAHaG9sZGVyc2QACHF1YW50aXR5dAAAAARkAApfX3N0cnVjdF9fZAAORWxpeGlyLkRlY2ltYWxkAARjb2VmYgAABLRkAANleHBhAGQABHNpZ25hAQ==",
+          "total_count": 5
+        }
+      }
+    }
+  }
+  
+  query {
+    erc1155_holders(
+      input: {
+        contract_address: "0xe6903e124e5bdae8784674eb625f1c212efc789e"
+        token_id: 1
+        limit: 1
+      }
+    ) {
+      entries {
+        rank
+        address_hash
+        token_contract_address_hash
+        quantity
+      }
+      metadata {
+        total_count
+        after
+        before
+      }
+    }
+  }
+  
+  {
+    "data": {
+      "erc1155_holders": {
+        "entries": [
+          {
+            "address_hash": "0x46b6f87debd8f7607d00df47c31d2dc6d9999999",
+            "quantity": "10001",
+            "rank": 1,
+            "token_contract_address_hash": "0xe6903e124e5bdae8784674eb625f1c212efc789e"
+          }
+        ],
+        "metadata": {
+          "after": "g3QAAAACaAJkAAdob2xkZXJzZAAMYWRkcmVzc19oYXNodAAAAANkAApfX3N0cnVjdF9fZAAiRWxpeGlyLkdvZHdva2VuRXhwbG9yZXIuQ2hhaW4uSGFzaGQACmJ5dGVfY291bnRhFGQABWJ5dGVzbQAAABRGtvh969j3YH0A30fDHS3G2ZmZmWgCZAAHaG9sZGVyc2QACHF1YW50aXR5dAAAAARkAApfX3N0cnVjdF9fZAAORWxpeGlyLkRlY2ltYWxkAARjb2VmYgAAJxFkAANleHBhAGQABHNpZ25hAQ==",
+          "before": null,
+          "total_count": 3
+        }
+      }
+    }
+  }
+  """
+  erc1155_holders(input: Erc1155HoldersInput!): PaginateErc721Erc1155Holders
+
+  """
+  query {
+    erc1155_inventory(
+      input: {
+        contract_address: "0xe6903e124e5bdae8784674eb625f1c212efc789e"
+        token_id: 0
+        limit: 1
+      }
+    ) {
+      entries {
+        token_id
+        address_hash
+        token_contract_address_hash
+        value
+  
+        udt {
+          id
+          name
+          eth_type
+        }
+      }
+      metadata {
+        total_count
+        after
+        before
+      }
+    }
+  }
+  
+  
+  {
+    "data": {
+      "erc1155_inventory": {
+        "entries": [
+          {
+            "address_hash": "0xc6e58fb4affb6ab8a392b7cc23cd3fef74517f6c",
+            "token_contract_address_hash": "0xe6903e124e5bdae8784674eb625f1c212efc789e",
+            "token_id": "0",
+            "udt": {
+              "eth_type": "ERC1155",
+              "id": 48472,
+              "name": null
+            },
+            "value": "73"
+          }
+        ],
+        "metadata": {
+          "after": "g3QAAAACZAACaWRiAB4JsWQACHRva2VuX2lkdAAAAARkAApfX3N0cnVjdF9fZAAORWxpeGlyLkRlY2ltYWxkAARjb2VmYQBkAANleHBhAGQABHNpZ25hAQ==",
+          "before": null,
+          "total_count": 4
+        }
+      }
+    }
+  }
+  """
+  erc1155_inventory(input: Erc721Erc1155InventoryInput!): PaginateErc721Erc1155Inventory
+
+  """
+  query {
+    erc1155_token_transfers(
+      input: {
+        to_address: "0xc6e58fb4affb6ab8a392b7cc23cd3fef74517f6c"
+        start_block_number: 0
+        end_block_number: 909999
+        limit: 1
+        sorter: [
+          { sort_type: ASC, sort_value: BLOCK_NUMBER }
+          { sort_type: ASC, sort_value: TRANSACTION_HASH }
+          { sort_type: ASC, sort_value: LOG_INDEX }
+        ]
+      }
+    ) {
+      entries {
+        block {
+          timestamp
+        }
+        transaction_hash
+        block_number
+        to_account {
+          eth_address
+        }
+        to_address
+        from_account {
+          eth_address
+        }
+        token_id
+        token_ids
+        udt{
+          id
+          name
+          eth_type
+        }
+      }
+      metadata {
+        total_count
+        before
+        after
+      }
+    }
+  }
+  
+  {
+    "data": {
+      "erc1155_token_transfers": {
+        "entries": [
+          {
+            "block": {
+              "timestamp": "2022-07-16T13:47:10.511000Z"
+            },
+            "block_number": 195916,
+            "from_account": null,
+            "to_account": {
+              "eth_address": "0xc6e58fb4affb6ab8a392b7cc23cd3fef74517f6c"
+            },
+            "to_address": "0xc6e58fb4affb6ab8a392b7cc23cd3fef74517f6c",
+            "token_id": "0",
+            "token_ids": null,
+            "transaction_hash": "0x9fa88935cd93531dedec0c1b6dd79a0de3e754b5600714d410a85abc3035e7e4",
+            "udt": {
+              "eth_type": "ERC1155",
+              "id": 48435,
+              "name": null
+            }
+          }
+        ],
+        "metadata": {
+          "after": "g3QAAAADZAAMYmxvY2tfbnVtYmVyYgAC_UxkAAlsb2dfaW5kZXhhAGQAEHRyYW5zYWN0aW9uX2hhc2h0AAAAA2QACl9fc3RydWN0X19kACJFbGl4aXIuR29kd29rZW5FeHBsb3Jlci5DaGFpbi5IYXNoZAAKYnl0ZV9jb3VudGEgZAAFYnl0ZXNtAAAAIJ-oiTXNk1Md7ewMG23Xmg3j51S1YAcU1BCoWrwwNefk",
+          "before": null,
+          "total_count": 10
+        }
+      }
+    }
+  }
+  
+  query {
+    erc1155_token_transfers(
+      input: {
+        to_address: "0xc6e58fb4affb6ab8a392b7cc23cd3fef74517f6c"
+        start_block_number: 0
+        end_block_number: 909999
+        limit: 1
+        token_id: "0"
+        sorter: [
+          { sort_type: ASC, sort_value: BLOCK_NUMBER }
+          { sort_type: ASC, sort_value: TRANSACTION_HASH }
+          { sort_type: ASC, sort_value: LOG_INDEX }
+        ]
+      }
+    ) {
+      entries {
+        token_contract_address_hash
+        block_number
+        token_id
+        token_ids
+      }
+      metadata {
+        total_count
+        before
+        after
+      }
+    }
+  }
+  
+  {
+    "data": {
+      "erc1155_token_transfers": {
+        "entries": [
+          {
+            "block_number": 195916,
+            "token_contract_address_hash": "0x6e45a282f2176d95a2bccc1a369fc9cb3f0584a0",
+            "token_id": "0",
+            "token_ids": null
+          }
+        ],
+        "metadata": {
+          "after": "g3QAAAADZAAMYmxvY2tfbnVtYmVyYgAC_UxkAAlsb2dfaW5kZXhhAGQAEHRyYW5zYWN0aW9uX2hhc2h0AAAAA2QACl9fc3RydWN0X19kACJFbGl4aXIuR29kd29rZW5FeHBsb3Jlci5DaGFpbi5IYXNoZAAKYnl0ZV9jb3VudGEgZAAFYnl0ZXNtAAAAIJ-oiTXNk1Md7ewMG23Xmg3j51S1YAcU1BCoWrwwNefk",
+          "before": null,
+          "total_count": 5
+        }
+      }
+    }
+  }
+  """
+  erc1155_token_transfers(input: Erc721Erc1155TokenTransfersInput! = {combine_from_to: true, limit: 20, sorter: [{sort_type: DESC, sort_value: BLOCK_NUMBER}, {sort_type: DESC, sort_value: LOG_INDEX}, {sort_type: ASC, sort_value: TRANSACTION_HASH}]}): PaginateTokenTransfers
+
+  """
+  query {
+    erc1155_udts(
+      input: {
+        contract_address: "0xa87071a188e3e8d3e30f53a335ecc329d88026b7"
+        limit: 1
+        sorter: [{ sort_type: DESC, sort_value: EX_HOLDERS_COUNT }]
+      }
+    ) {
+      entries {
+        id
+        name
+        contract_address_hash
+        eth_type
+        holders_count
+        minted_count
+      }
+      metadata {
+        total_count
+        after
+        before
+      }
+    }
+  
+    udt(
+      input: { contract_address: "0xa87071a188e3e8d3e30f53a335ecc329d88026b7" }
+    ) {
+      id
+      name
+      script_hash
+      eth_type
+    }
+  }
+  
+  {
+    "data": {
+      "erc1155_udts": {
+        "entries": [
+          {
+            "contract_address_hash": "0xa87071a188e3e8d3e30f53a335ecc329d88026b7",
+            "eth_type": "ERC1155",
+            "holders_count": 3,
+            "id": 53717,
+            "minted_count": 30,
+            "name": null
+          }
+        ],
+        "metadata": {
+          "after": null,
+          "before": null,
+          "total_count": 1
+        }
+      },
+      "udt": {
+        "eth_type": "ERC1155",
+        "id": 53717,
+        "name": null,
+        "script_hash": null
+      }
+    }
+  }
+  
+  query {
+    erc1155_udts(
+      input: {
+        limit: 1
+        sorter: [{ sort_type: DESC, sort_value: EX_HOLDERS_COUNT }]
+        after: "g3QAAAABaAJkAAl1X2hvbGRlcnNkAA1ob2xkZXJzX2NvdW50YR8="
+      }
+    ) {
+      entries {
+        id
+        name
+        contract_address_hash
+        eth_type
+        holders_count
+        minted_count
+      }
+      metadata {
+        total_count
+        after
+        before
+      }
+    }
+  }
+  
+  {
+    "data": {
+      "erc1155_udts": {
+        "entries": [
+          {
+            "contract_address_hash": "0xb53f9c79eca97291c51a918779fc7a500fbb9e42",
+            "eth_type": "ERC1155",
+            "holders_count": 30,
+            "id": 24008,
+            "minted_count": 30,
+            "name": null
+          }
+        ],
+        "metadata": {
+          "after": "g3QAAAABaAJkAAl1X2hvbGRlcnNkAA1ob2xkZXJzX2NvdW50YR4=",
+          "before": "g3QAAAABaAJkAAl1X2hvbGRlcnNkAA1ob2xkZXJzX2NvdW50YR4=",
+          "total_count": 524
+        }
+      }
+    }
+  }
+  """
+  erc1155_udts(input: Erc721Erc1155UdtsInput! = {limit: 20, sorter: [{sort_type: ASC, sort_value: ID}]}): PaginateErc721Erc1155Udts
+
+  """
+  query {
+    erc1155_user_token(
+      input: {
+        user_address: "0xc6e58fb4affb6ab8a392b7cc23cd3fef74517f6c"
+        contract_address: "0xe6903e124e5bdae8784674eb625f1c212efc789e"
+        token_id: 0
+      }
+    ) {
+      value
+      token_type
+      token_id
+      token_contract_address_hash
+    }
+  }
+  
+  {
+    "data": {
+      "erc1155_user_token": {
+        "token_contract_address_hash": "0xe6903e124e5bdae8784674eb625f1c212efc789e",
+        "token_id": "0",
+        "token_type": "ERC1155",
+        "value": "73"
+      }
+    }
+  }
+  """
+  erc1155_user_token(input: Erc1155UserTokenInput!): Erc721Erc1155UserToken
+  erc721_erc1155_inventory(input: Erc721Erc1155InventoryInput!): PaginateErc721Erc1155Inventory
+
+  """
+  query {
+    erc721_holders(
+      input: {
+        contract_address: "0x784cd3c52813098763c371df8fbe8ed27d2c1ebd"
+        limit: 1
+      }
+    ) {
+      entries {
+        rank
+        address_hash
+        token_contract_address_hash
+        quantity
+      }
+      metadata {
+        total_count
+        after
+        before
+      }
+    }
+  }
+  
+  {
+    "data": {
+      "erc721_holders": {
+        "entries": [
+          {
+            "address_hash": "0xd8939812d27b0cfaa78e6925fba92bd2d61430ef",
+            "quantity": "16",
+            "rank": 1,
+            "token_contract_address_hash": "0x784cd3c52813098763c371df8fbe8ed27d2c1ebd"
+          }
+        ],
+        "metadata": {
+          "after": "g3QAAAACaAJkAAdob2xkZXJzZAAMYWRkcmVzc19oYXNodAAAAANkAApfX3N0cnVjdF9fZAAiRWxpeGlyLkdvZHdva2VuRXhwbG9yZXIuQ2hhaW4uSGFzaGQACmJ5dGVfY291bnRhFGQABWJ5dGVzbQAAABTYk5gS0nsM-qeOaSX7qSvS1hQw72gCZAAHaG9sZGVyc2QACHF1YW50aXR5YRA=",
+          "before": null,
+          "total_count": 308
+        }
+      }
+    }
+  }
+  
+  query {
+    erc721_holders(
+      input: {
+        contract_address: "0x784cd3c52813098763c371df8fbe8ed27d2c1ebd"
+        limit: 1
+        after: "g3QAAAACaAJkAAdob2xkZXJzZAAMYWRkcmVzc19oYXNodAAAAANkAApfX3N0cnVjdF9fZAAiRWxpeGlyLkdvZHdva2VuRXhwbG9yZXIuQ2hhaW4uSGFzaGQACmJ5dGVfY291bnRhFGQABWJ5dGVzbQAAABTYk5gS0nsM-qeOaSX7qSvS1hQw72gCZAAHaG9sZGVyc2QACHF1YW50aXR5YRA="
+      }
+    ) {
+      entries {
+        rank
+        address_hash
+        token_contract_address_hash
+        quantity
+      }
+      metadata {
+        total_count
+        after
+        before
+      }
+    }
+  }
+  
+  {
+    "data": {
+      "erc721_holders": {
+        "entries": [
+          {
+            "address_hash": "0x129ee9091f6017ee8cfd249402e3275fa3bc75e6",
+            "quantity": "10",
+            "rank": 2,
+            "token_contract_address_hash": "0x784cd3c52813098763c371df8fbe8ed27d2c1ebd"
+          }
+        ],
+        "metadata": {
+          "after": "g3QAAAACaAJkAAdob2xkZXJzZAAMYWRkcmVzc19oYXNodAAAAANkAApfX3N0cnVjdF9fZAAiRWxpeGlyLkdvZHdva2VuRXhwbG9yZXIuQ2hhaW4uSGFzaGQACmJ5dGVfY291bnRhFGQABWJ5dGVzbQAAABQSnukJH2AX7oz9JJQC4ydfo7x15mgCZAAHaG9sZGVyc2QACHF1YW50aXR5YQo=",
+          "before": "g3QAAAACaAJkAAdob2xkZXJzZAAMYWRkcmVzc19oYXNodAAAAANkAApfX3N0cnVjdF9fZAAiRWxpeGlyLkdvZHdva2VuRXhwbG9yZXIuQ2hhaW4uSGFzaGQACmJ5dGVfY291bnRhFGQABWJ5dGVzbQAAABQSnukJH2AX7oz9JJQC4ydfo7x15mgCZAAHaG9sZGVyc2QACHF1YW50aXR5YQo=",
+          "total_count": 308
+        }
+      }
+    }
+  }
+  """
+  erc721_holders(input: Erc721HoldersInput!): PaginateErc721Erc1155Holders
+
+  """
+  query {
+    erc721_inventory(
+      input: {
+        contract_address: "0x784cd3c52813098763c371df8fbe8ed27d2c1ebd"
+        limit: 1
+      }
+    ) {
+      entries {
+        token_id
+        address_hash
+        token_contract_address_hash
+        value
+      }
+      metadata {
+        total_count
+        after
+        before
+      }
+    }
+  }
+  
+  {
+    "data": {
+      "erc721_inventory": {
+        "entries": [
+          {
+            "address_hash": "0x7ec331e53da2ad677a7636b2da07d8dbea427ab7",
+            "token_contract_address_hash": "0x784cd3c52813098763c371df8fbe8ed27d2c1ebd",
+            "token_id": "2000",
+            "value": "1"
+          }
+        ],
+        "metadata": {
+          "after": "g3QAAAACZAACaWRiABXtp2QACHRva2VuX2lkdAAAAARkAApfX3N0cnVjdF9fZAAORWxpeGlyLkRlY2ltYWxkAARjb2VmYgAAB9BkAANleHBhAGQABHNpZ25hAQ==",
+          "before": null,
+          "total_count": 2000
+        }
+      }
+    }
+  }
+  """
+  erc721_inventory(input: Erc721Erc1155InventoryInput!): PaginateErc721Erc1155Inventory
+
+  """
+  query {
+    erc721_token_transfers(
+      input: {
+        to_address: "0x0000000000ce6d8c1fba76f26d6cc5db71432710"
+        start_block_number: 90
+        end_block_number: 909999
+        limit: 1
+        sorter: [
+          { sort_type: ASC, sort_value: BLOCK_NUMBER }
+          { sort_type: ASC, sort_value: TRANSACTION_HASH }
+          { sort_type: ASC, sort_value: LOG_INDEX }
+        ]
+      }
+    ) {
+      entries {
+        block {
+          timestamp
+        }
+        transaction_hash
+        block_number
+        to_account {
+          eth_address
+        }
+        to_address
+        from_account {
+          eth_address
+        }
+        token_id
+        token_ids
+      }
+      metadata {
+        total_count
+        before
+        after
+      }
+    }
+  }
+  
+  
+  {
+    "data": {
+      "erc721_token_transfers": {
+        "entries": [
+          {
+            "block": {
+              "timestamp": "2022-08-28T05:15:00.300000Z"
+            },
+            "block_number": 320956,
+            "from_account": null,
+            "to_account": {
+              "eth_address": "0x0000000000ce6d8c1fba76f26d6cc5db71432710"
+            },
+            "to_address": "0x0000000000ce6d8c1fba76f26d6cc5db71432710",
+            "token_id": "558",
+            "token_ids": null,
+            "transaction_hash": "0xe10b9659f948de345ab4aa95d8a2ed20e2ac014c44ad7aa7862485973ef3d08f"
+          }
+        ],
+        "metadata": {
+          "after": "g3QAAAADZAAMYmxvY2tfbnVtYmVyYgAE5bxkAAlsb2dfaW5kZXhhAGQAEHRyYW5zYWN0aW9uX2hhc2h0AAAAA2QACl9fc3RydWN0X19kACJFbGl4aXIuR29kd29rZW5FeHBsb3Jlci5DaGFpbi5IYXNoZAAKYnl0ZV9jb3VudGEgZAAFYnl0ZXNtAAAAIOELlln5SN40WrSqldii7SDirAFMRK16p4YkhZc-89CP",
+          "before": null,
+          "total_count": 4
+        }
+      }
+    }
+  }
+  """
+  erc721_token_transfers(input: Erc721Erc1155TokenTransfersInput! = {combine_from_to: true, limit: 20, sorter: [{sort_type: DESC, sort_value: BLOCK_NUMBER}, {sort_type: DESC, sort_value: LOG_INDEX}, {sort_type: ASC, sort_value: TRANSACTION_HASH}]}): PaginateTokenTransfers
+
+  """
+  query {
+    erc721_udts(
+      input: { contract_address: "0x784cd3c52813098763c371df8fbe8ed27d2c1ebd" }
+    ) {
+      entries {
+        id
+        name
+        contract_address_hash
+        eth_type
+        holders_count
+        minted_count
+      }
+      metadata {
+        total_count
+        after
+        before
+      }
+    }
+  }
+  
+  {
+    "data": {
+      "erc721_udts": {
+        "entries": [
+          {
+            "contract_address_hash": "0x784cd3c52813098763c371df8fbe8ed27d2c1ebd",
+            "eth_type": "ERC721",
+            "holders_count": 308,
+            "id": 58460,
+            "minted_count": 2000,
+            "name": null
+          }
+        ],
+        "metadata": {
+          "after": null,
+          "before": null,
+          "total_count": 1
+        }
+      }
+    }
+  }
+  
+  query {
+    erc721_udts(
+      input: {
+        limit: 1
+        sorter: [{ sort_type: DESC, sort_value: EX_HOLDERS_COUNT }]
+        after: "g3QAAAABaAJkAAl1X2hvbGRlcnNkAA1ob2xkZXJzX2NvdW50YgAAB9A="
+      }
+    ) {
+      entries {
+        id
+        name
+        contract_address_hash
+        eth_type
+        holders_count
+        minted_count
+      }
+      metadata {
+        total_count
+        after
+        before
+      }
+    }
+  }
+  
+  {
+    "data": {
+      "erc721_udts": {
+        "entries": [
+          {
+            "contract_address_hash": "0x310a1f73379a658ef0eb9c4e5bd1006a24a5ad79",
+            "eth_type": "ERC721",
+            "holders_count": 1003,
+            "id": 5845,
+            "minted_count": 1000,
+            "name": null
+          }
+        ],
+        "metadata": {
+          "after": "g3QAAAABaAJkAAl1X2hvbGRlcnNkAA1ob2xkZXJzX2NvdW50YgAAA-s=",
+          "before": "g3QAAAABaAJkAAl1X2hvbGRlcnNkAA1ob2xkZXJzX2NvdW50YgAAA-s=",
+          "total_count": 3193
+        }
+      }
+    }
+  }
+  """
+  erc721_udts(input: Erc721Erc1155UdtsInput! = {limit: 20, sorter: [{sort_type: ASC, sort_value: ID}]}): PaginateErc721Erc1155Udts
 
   """
   function: get list of logs by filter or conditions
@@ -1418,6 +2366,70 @@ type RootQueryType {
   sourcify_check_by_addresses(input: SourcifyCheckByAddressesInput!): [SourcifyCheckByAddresses]
 
   """
+  function: get list of token approvals by filter
+  
+  example:
+  query {
+    token_approvals(
+      input: {
+        address: "0x966b30e576a4d6731996748b48dd67c94ef29067"
+        token_type: ERC20
+        limit: 2
+  
+        sorter: [
+          { sort_type: DESC, sort_value: BLOCK_NUMBER },
+          { sort_type: DESC, sort_value: ID }
+        ]
+      }
+    ) {
+      entries {
+        transaction_hash
+        udt {
+          id
+          name
+          eth_type
+        }
+        block {
+          timestamp
+        }
+      }
+  
+      metadata {
+        total_count
+        before
+        after
+      }
+    }
+  }
+  
+  {
+    "data": {
+      "token_approvals": {
+        "entries": [
+          {
+            "block": {
+              "timestamp": "2022-05-08T05:19:15.637000Z"
+            },
+            "transaction_hash": "0xa22dc752ce79bc923ea86d0135b39074c6fc56a7c10cb60879180bcfd81142c7",
+            "udt": {
+              "eth_type": "ERC20",
+              "id": 22,
+              "name": "testERC20"
+            }
+          }
+        ],
+        "metadata": {
+          "after": "g3QAAAABZAAMYmxvY2tfbnVtYmVyYVk=",
+          "before": null,
+          "total_count": 6
+        }
+      }
+    }
+  }
+  """
+  token_approvals(input: TokenApprovalInput! = {limit: 20, sorter: [{sort_type: DESC, sort_value: BLOCK_NUMBER}, {sort_type: DESC, sort_value: ID}]}): PaginateTokenApprovals
+
+  """
   function: get list of token transfers by filter
   
   example:
@@ -1564,7 +2576,7 @@ type RootQueryType {
     }
   }
   """
-  token_transfers(input: TokenTransferInput! = {combine_from_to: true, limit: 20, sorter: [{sort_type: DESC, sort_value: BLOCK_NUMBER}, {sort_type: DESC, sort_value: LOG_INDEX}, {sort_type: ASC, sort_value: TRANSACTION_HASH}]}): PaginateTokenTransfers
+  token_transfers(input: Erc20TokenTransfersInput! = {combine_from_to: true, limit: 20, sorter: [{sort_type: DESC, sort_value: BLOCK_NUMBER}, {sort_type: DESC, sort_value: LOG_INDEX}, {sort_type: ASC, sort_value: TRANSACTION_HASH}]}): PaginateTokenTransfers
 
   """
   function: get transaction by transaction_hash
@@ -1898,6 +2910,44 @@ type RootQueryType {
       }
     }
   }
+  pending-transaction-example:
+  query {
+    transactions(
+      input: {
+        status: PENDING
+        sorter: [{ sort_type: DESC, sort_value: BLOCK_NUMBER }]
+      }
+    ) {
+      entries {
+        block_hash
+        hash
+      }
+  
+      metadata {
+        total_count
+        before
+        after
+      }
+    }
+  }
+  
+  {
+    "data": {
+      "transactions": {
+        "entries": [
+          {
+            "block_hash": null,
+            "hash": "0xc8e2bea0d8f779ea10e97f9139540e3c6dee8b2267285c71559477a1e5c33507"
+          },
+        ],
+        "metadata": {
+          "after": null,
+          "before": null,
+          "total_count": 0
+        }
+      }
+    }
+  }
   """
   transactions(input: TransactionsInput = {combine_from_to: true, limit: 20, sorter: [{sort_type: DESC, sort_value: BLOCK_NUMBER}, {sort_type: DESC, sort_value: INDEX}, {sort_type: ASC, sort_value: HASH}]}): PaginateTrasactions
 
@@ -2212,18 +3262,16 @@ type RootQueryType {
     udts(
       input: {
         limit: 1
-        sorter: [
-          { sort_type: DESC, sort_value: EX_HOLDERS_COUNT }
-          { sort_type: ASC, sort_value: NAME }
-        ]
+        sorter: [{ sort_type: DESC, sort_value: EX_HOLDERS_COUNT }]
+        after: "g3QAAAABaAJkAAl1X2hvbGRlcnNkAA1ob2xkZXJzX2NvdW50YgAAB9A="
       }
     ) {
       entries {
         id
         name
-        holders_count
         type
         supply
+        holders_count
         account {
           eth_address
           script_hash
@@ -2243,26 +3291,114 @@ type RootQueryType {
         "entries": [
           {
             "account": {
-              "eth_address": null,
-              "script_hash": "0x595cc14e574a708dc70a320d2026f79374246ed4659261131cdda7dd5814b5ca"
+              "eth_address": "0x975ab64f4901af5f0c96636dea0b9de3419d0c2f",
+              "script_hash": "0xb01d03bbed4d9b55cfc484a3329875df13832c64e53c554233e18231026da891"
             },
-            "holders_count": 13563,
-            "id": "1",
-            "name": "pCKB",
-            "supply": "13930369823571892421855103",
-            "type": "BRIDGE"
+            "holders_count": 1981,
+            "id": 63191,
+            "name": "CKB",
+            "supply": "31236920264242650421855103",
+            "type": "NATIVE"
           }
         ],
         "metadata": {
-          "after": "g3QAAAABZAACaWRhAQ==",
-          "before": null,
-          "total_count": 14
+          "after": "g3QAAAABaAJkAAl1X2hvbGRlcnNkAA1ob2xkZXJzX2NvdW50YgAAB70=",
+          "before": "g3QAAAABaAJkAAl1X2hvbGRlcnNkAA1ob2xkZXJzX2NvdW50YgAAB70=",
+          "total_count": 3758
         }
       }
     }
   }
   """
-  udts(input: UdtsInput = {limit: 20, sorter: [{sort_type: ASC, sort_value: NAME}]}): PaginateUdts
+  udts(input: UdtsInput = {limit: 20, sorter: [{sort_type: ASC, sort_value: ID}]}): PaginateUdts
+
+  """
+  query {
+    user_erc1155_assets(
+      input: {
+        user_address: "0xc6e58fb4affb6ab8a392b7cc23cd3fef74517f6c"
+        limit: 1
+      }
+    ) {
+      entries {
+        token_id
+        address_hash
+        token_contract_address_hash
+        value
+      }
+      metadata {
+        total_count
+        after
+        before
+      }
+    }
+  }
+  
+  {
+    "data": {
+      "user_erc1155_assets": {
+        "entries": [
+          {
+            "address_hash": "0xc6e58fb4affb6ab8a392b7cc23cd3fef74517f6c",
+            "token_contract_address_hash": "0xe6903e124e5bdae8784674eb625f1c212efc789e",
+            "token_id": "0",
+            "value": "73"
+          }
+        ],
+        "metadata": {
+          "after": "g3QAAAACZAAMYmxvY2tfbnVtYmVyYgAEU89kABB2YWx1ZV9mZXRjaGVkX2F0dAAAAA1kAApfX3N0cnVjdF9fZAAPRWxpeGlyLkRhdGVUaW1lZAAIY2FsZW5kYXJkABNFbGl4aXIuQ2FsZW5kYXIuSVNPZAADZGF5YQJkAARob3VyYQNkAAttaWNyb3NlY29uZGgCYgAK0UlhBmQABm1pbnV0ZWEwZAAFbW9udGhhCWQABnNlY29uZGEvZAAKc3RkX29mZnNldGEAZAAJdGltZV96b25lbQAAAAdFdGMvVVRDZAAKdXRjX29mZnNldGEAZAAEeWVhcmIAAAfmZAAJem9uZV9hYmJybQAAAANVVEM=",
+          "before": null,
+          "total_count": 6
+        }
+      }
+    }
+  }
+  """
+  user_erc1155_assets(input: UserErc721Erc1155AssetsInput!): PaginateUserErc721Erc1155Assets
+
+  """
+  query {
+    user_erc721_assets(
+      input: {
+        user_address: "0x0000000000ce6d8c1fba76f26d6cc5db71432710"
+        limit: 1
+      }
+    ) {
+      entries {
+        token_id
+        address_hash
+        token_contract_address_hash
+        value
+      }
+      metadata {
+        total_count
+        after
+        before
+      }
+    }
+  }
+  
+  {
+    "data": {
+      "user_erc721_assets": {
+        "entries": [
+          {
+            "address_hash": "0x0000000000ce6d8c1fba76f26d6cc5db71432710",
+            "token_contract_address_hash": "0x784cd3c52813098763c371df8fbe8ed27d2c1ebd",
+            "token_id": "641",
+            "value": "4"
+          }
+        ],
+        "metadata": {
+          "after": "g3QAAAACZAAMYmxvY2tfbnVtYmVyYgAE5cVkABB2YWx1ZV9mZXRjaGVkX2F0dAAAAA1kAApfX3N0cnVjdF9fZAAPRWxpeGlyLkRhdGVUaW1lZAAIY2FsZW5kYXJkABNFbGl4aXIuQ2FsZW5kYXIuSVNPZAADZGF5YR9kAARob3VyYRBkAAttaWNyb3NlY29uZGgCYgAEVUxhBmQABm1pbnV0ZWEUZAAFbW9udGhhCGQABnNlY29uZGEcZAAKc3RkX29mZnNldGEAZAAJdGltZV96b25lbQAAAAdFdGMvVVRDZAAKdXRjX29mZnNldGEAZAAEeWVhcmIAAAfmZAAJem9uZV9hYmJybQAAAANVVEM=",
+          "before": null,
+          "total_count": 4
+        }
+      }
+    }
+  }
+  """
+  user_erc721_assets(input: UserErc721Erc1155AssetsInput!): PaginateUserErc721Erc1155Assets
 }
 
 type SmartContract {
@@ -2324,8 +3460,55 @@ input SourcifyCheckByAddressesInput {
   addresses: [HashAddress]!
 }
 
+enum Status {
+  ON_CHAINED
+  PENDING
+}
+
+type TokenApproval {
+  approved: Boolean
+  block: Block
+  block_hash: HashFull
+  block_number: Int
+  data: Decimal
+  spender_address_hash: String
+  token_contract_address_hash: HashAddress
+  token_owner_address_hash: HashAddress
+  transaction_hash: HashFull
+  type: ApprovalType
+  udt: Udt
+}
+
+input TokenApprovalInput {
+  address: HashAddress
+
+  """Fetch the records after this cursor."""
+  after: String
+
+  """Fetch the records before this cursor."""
+  before: String
+
+  """
+  Limits the number of records returned per page. Note that this number will be capped by maximum_limit=100. Defaults to 20.
+  """
+  limit: Int = 20
+  sorter: [TokenApprovalsSorterInput] = [{sort_type: DESC, sort_value: BLOCK_NUMBER}, {sort_type: DESC, sort_value: ID}]
+  token_type: TokenType
+}
+
+enum TokenApprovalsSorter {
+  BLOCK_NUMBER
+  ID
+}
+
+input TokenApprovalsSorterInput {
+  sort_type: SortType
+  sort_value: TokenApprovalsSorter
+}
+
 type TokenTransfer {
   amount: Decimal
+  amounts: [Decimal]
   block: Block
   block_hash: HashFull
   block_number: Int
@@ -2337,41 +3520,10 @@ type TokenTransfer {
   to_address: HashAddress
   token_contract_address_hash: HashAddress
   token_id: Decimal
+  token_ids: [Decimal]
   transaction: Transaction
   transaction_hash: HashFull
   udt: Udt
-}
-
-input TokenTransferInput {
-  """Fetch the records after this cursor."""
-  after: String
-  age_range_end: DateTime
-  age_range_start: DateTime
-
-  """Fetch the records before this cursor."""
-  before: String
-
-  """
-  if combine_from_to is true, then from_address and to_address are combined into
-  query condition like `address = from_address OR address = to_address`
-  """
-  combine_from_to: Boolean = true
-
-  """argument: the end of block number(inclusive) for search query"""
-  end_block_number: Int
-  from_address: HashAddress
-
-  """
-  Limits the number of records returned per page. Note that this number will be capped by maximum_limit=100. Defaults to 20.
-  """
-  limit: Int = 20
-  sorter: [TokenTransfersSorterInput] = [{sort_type: DESC, sort_value: BLOCK_NUMBER}, {sort_type: DESC, sort_value: LOG_INDEX}, {sort_type: ASC, sort_value: TRANSACTION_HASH}]
-
-  """argument: the start of block number(inclusive) for search query"""
-  start_block_number: Int
-  to_address: HashAddress
-  token_contract_address_hash: HashAddress
-  transaction_hash: HashFull
 }
 
 enum TokenTransfersSorter {
@@ -2385,8 +3537,14 @@ input TokenTransfersSorterInput {
   sort_value: TokenTransfersSorter
 }
 
+enum TokenType {
+  ERC1155
+  ERC20
+  ERC721
+}
+
 type Transaction {
-  args: String
+  args: ChainData
   block: Block
   block_hash: HashFull
   block_number: Int
@@ -2395,6 +3553,8 @@ type Transaction {
   from_account_id: Int
   hash: HashFull
   index: Int
+  method_id: ChainData
+  method_name: String
   nonce: Int
   polyjuice: Polyjuice
   polyjuice_creator: PolyjuiceCreator
@@ -2436,6 +3596,7 @@ input TransactionsInput {
 
   """argument: the start of block number(inclusive) for search query"""
   start_block_number: Int
+  status: Status
   to_eth_address: HashAddress
   to_script_hash: HashFull
 }
@@ -2467,6 +3628,7 @@ type Udt {
   holders_count: Int
   icon: String
   id: Int
+  minted_count: Int
   name: String
   official_site: String
   price: Decimal
@@ -2490,13 +3652,14 @@ input UdtsInput {
 
   """Fetch the records before this cursor."""
   before: String
+  contract_address: HashAddress
   fuzzy_name: String
 
   """
   Limits the number of records returned per page. Note that this number will be capped by maximum_limit=100. Defaults to 20.
   """
   limit: Int = 20
-  sorter: [UdtsSorterInput] = [{sort_type: ASC, sort_value: NAME}]
+  sorter: [UdtsSorterInput] = [{sort_type: ASC, sort_value: ID}]
   type: UdtType
 }
 
@@ -2515,6 +3678,20 @@ input UdtsSorterInput {
 enum UdtType {
   BRIDGE
   NATIVE
+}
+
+input UserErc721Erc1155AssetsInput {
+  """Fetch the records after this cursor."""
+  after: String
+
+  """Fetch the records before this cursor."""
+  before: String
+
+  """
+  Limits the number of records returned per page. Note that this number will be capped by maximum_limit=100. Defaults to 20.
+  """
+  limit: Int = 20
+  user_address: HashAddress!
 }
 
 input VerifyAndUpdateFromSourcifyInput {

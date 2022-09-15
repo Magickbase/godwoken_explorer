@@ -75,7 +75,8 @@ config :godwoken_explorer, Oban,
        {"*/10 * * * *", GodwokenIndexer.Worker.CheckContractCode},
        {"*/30 * * * *", GodwokenIndexer.Worker.RefreshBridgedUDTSupply},
        {"* */1 * * *", GodwokenIndexer.Worker.UDTUpdater},
-       {"*/1 * * * *", GodwokenExplorer.Graphql.Workers.SmartContractRegister}
+       {"*/1 * * * *", GodwokenExplorer.Graphql.Workers.SmartContractRegister},
+       {"*/5 * * * *", GodwokenIndexer.Worker.ERC721UpdaterScheduler}
      ]}
   ],
   queues: [default: 3]
