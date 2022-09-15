@@ -62,7 +62,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Account do
       ) do
     return =
       from(cu in CurrentUDTBalance)
-      |> where([cu], cu.address_hash == ^eth_address)
+      |> where([cu], cu.address_hash == ^eth_address and cu.token_type == :erc20)
       |> order_by([cu], desc: cu.updated_at)
       |> join(:inner, [cu], a in Account, on: a.eth_address == cu.token_contract_address_hash)
       |> join(:inner, [cu, a], u in UDT, on: a.id == u.bridge_account_id)

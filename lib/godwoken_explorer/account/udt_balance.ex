@@ -14,6 +14,9 @@ defmodule GodwokenExplorer.Account.UDTBalance do
     belongs_to(:account, GodwokenExplorer.Account, foreign_key: :account_id, references: :id)
     belongs_to(:udt, GodwokenExplorer.UDT, foreign_key: :udt_id, references: :id)
 
+    field :token_id, :decimal
+    field :token_type, Ecto.Enum, values: [:erc20, :erc721, :erc1155]
+
     timestamps(type: :utc_datetime_usec)
   end
 
@@ -27,10 +30,11 @@ defmodule GodwokenExplorer.Account.UDTBalance do
       :token_contract_address_hash,
       :value,
       :value_fetched_at,
-      :block_number
+      :block_number,
+      :token_id,
+      :token_type
     ])
-    |> validate_required([:address_hash, :token_contract_address_hash])
-    |> unique_constraint([:address_hash, :token_contract_address_hash, :block_number])
+    |> validate_required(~w(address_hash block_number token_contract_address_hash token_type)a)
   end
 
   {:ok, burn_address_hash} =
@@ -38,12 +42,21 @@ defmodule GodwokenExplorer.Account.UDTBalance do
 
   @burn_address_hash burn_address_hash
 
+  def minted_burn_address_hash() do
+    @burn_address_hash
+  end
+
   def unfetched_udt_balances do
     from(
       ub in UDTBalance,
       where:
         ub.address_hash != ^@burn_address_hash and
-          (is_nil(ub.value_fetched_at) or is_nil(ub.value))
+          (is_nil(ub.value_fetched_at) or is_nil(ub.value)) and
+          (not is_nil(ub.token_type) and (ub.token_type == :erc20 or ub.token_type == :erc721)),
+      or_where:
+        ub.address_hash != ^@burn_address_hash and
+          (is_nil(ub.value_fetched_at) or is_nil(ub.value)) and
+          (not is_nil(ub.token_id) and ub.token_type == :erc1155)
     )
   end
 

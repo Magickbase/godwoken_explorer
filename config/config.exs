@@ -71,11 +71,12 @@ config :godwoken_explorer, Oban,
     {Oban.Plugins.Cron,
      crontab: [
        {"10 00 * * *", GodwokenIndexer.Worker.DailyStat, args: %{datetime: nil}},
-       {"*/2 * * * *", GodwokenIndexer.Worker.CheckLostAccount},
+       {"*/1 * * * *", GodwokenIndexer.Worker.CheckLostAccount},
        {"*/10 * * * *", GodwokenIndexer.Worker.CheckContractCode},
        {"*/30 * * * *", GodwokenIndexer.Worker.RefreshBridgedUDTSupply},
        {"* */1 * * *", GodwokenIndexer.Worker.UDTUpdater},
-       {"*/1 * * * *", GodwokenExplorer.Graphql.Workers.SmartContractRegister}
+       {"*/1 * * * *", GodwokenExplorer.Graphql.Workers.SmartContractRegister},
+       {"*/5 * * * *", GodwokenIndexer.Worker.ERC721UpdaterScheduler}
      ]}
   ],
   queues: [default: 3]

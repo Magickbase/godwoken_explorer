@@ -5,6 +5,7 @@ defmodule GodwokenExplorer.Graphql.Types.AccountUDT do
 
   object :account_udt_querys do
     @desc """
+    erc20 udts
     request-result-example:
     query {
       account_current_udts(
@@ -165,6 +166,7 @@ defmodule GodwokenExplorer.Graphql.Types.AccountUDT do
 
 
     @desc """
+    erc20 udts
     request-result-example:
     query {
       account_udts(
@@ -222,6 +224,7 @@ defmodule GodwokenExplorer.Graphql.Types.AccountUDT do
     end
 
     @desc """
+    erc20 udts
     request-result-example:
     query {
       account_udts_by_contract_address(

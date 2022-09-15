@@ -127,11 +127,12 @@ defmodule GodwokenExplorer.Transaction do
           tx.type == :polyjuice_creator ->
             creator = Repo.get_by(PolyjuiceCreator, tx_hash: tx.hash)
 
+            type = Account.switch_account_type(creator.code_hash, creator.script_args)
+            eth_address = Account.script_to_eth_adress(type, creator.script_args)
+
             tx
             |> Map.merge(%{
-              code_hash: creator.code_hash,
-              hash_type: creator.hash_type,
-              script_args: creator.script_args,
+              created_account: eth_address,
               fee_amount: creator.fee_amount
             })
 

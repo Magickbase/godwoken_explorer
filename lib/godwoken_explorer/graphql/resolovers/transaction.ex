@@ -1,14 +1,14 @@
 defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
-  alias GodwokenExplorer.Repo
-  alias GodwokenExplorer.{Account, Transaction, Block, Polyjuice, PolyjuiceCreator}
-
-  alias GodwokenExplorer.Chain.Data
-
   import GodwokenExplorer.Graphql.Resolvers.Common,
     only: [paginate_query: 3, query_with_block_age_range: 2]
 
   import GodwokenExplorer.Graphql.Common, only: [cursor_order_sorter: 3]
   import Ecto.Query
+  import GodwokenRPC.Util, only: [script_to_hash: 1]
+
+  alias GodwokenExplorer.Repo
+  alias GodwokenExplorer.{Account, Transaction, Block, Polyjuice, PolyjuiceCreator}
+  alias GodwokenExplorer.Chain.Data
 
   @sorter_fields [:block_number, :index, :hash]
   @default_sorter [:block_number, :index, :hash]
@@ -265,12 +265,21 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
   end
 
   def polyjuice_creator(%Transaction{hash: hash}, _args, _resolution) do
-    return =
-      from(pc in PolyjuiceCreator)
-      |> where([pc], pc.tx_hash == ^hash)
-      |> Repo.one()
+    creator = Repo.get_by(PolyjuiceCreator, tx_hash: hash)
 
-    {:ok, return}
+    {:ok, creator}
+  end
+
+  def created_account(%PolyjuiceCreator{} = creator, _args, _resolution) do
+    account_script = %{
+      "code_hash" => creator.code_hash,
+      "hash_type" => creator.hash_type,
+      "args" => creator.script_args
+    }
+
+    l2_script_hash = script_to_hash(account_script)
+
+    {:ok, Repo.get_by(Account, script_hash: l2_script_hash)}
   end
 
   def block(%Transaction{block_hash: nil}, _args, _resolution) do

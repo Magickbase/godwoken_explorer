@@ -5,6 +5,8 @@ defmodule GodwokenIndexer.Worker.CheckLostAccount do
 
   alias GodwokenExplorer.{Repo, KeyValue, Account}
 
+  @check_batch_size 100
+
   @impl Oban.Worker
   def perform(%Oban.Job{}) do
     key_value =
@@ -37,8 +39,8 @@ defmodule GodwokenIndexer.Worker.CheckLostAccount do
           |> Repo.all()
 
         current_count =
-          if last_count + 20 < total_count do
-            last_count + 20
+          if last_count + @check_batch_size < total_count do
+            last_count + @check_batch_size
           else
             total_count
           end

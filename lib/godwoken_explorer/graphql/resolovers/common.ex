@@ -80,11 +80,20 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Common do
     end
   end
 
-  def paginate_query(query, input, %{cursor_fields: cursor_fields}) do
+  def paginate_query(
+        query,
+        input,
+        %{
+          cursor_fields: cursor_fields
+        }
+      ) do
     paginate_query(
       query,
       input,
-      %{cursor_fields: cursor_fields, total_count_primary_key_field: :id}
+      %{
+        cursor_fields: cursor_fields,
+        total_count_primary_key_field: :id
+      }
     )
   end
 end

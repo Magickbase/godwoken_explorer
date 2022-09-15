@@ -26,4 +26,8 @@ alias GodwokenExplorer.Account.{CurrentUDTBalance, CurrentBridgedUDTBalance, UDT
 
 alias GodwokenExplorer.Graphql.Workers.SmartContractRegister
 
+alias GodwokenIndexer.Fetcher.UDTBalances
+
+alias GodwokenExplorer.Token.MetadataRetriever
+
 import Ecto.{Query, Queryable, Changeset}
