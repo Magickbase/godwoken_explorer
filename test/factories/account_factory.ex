@@ -7,7 +7,7 @@ defmodule GodwokenExplorer.AccountFactory do
         %Account{
           id: 0,
           nonce: 0,
-          script_hash: block_hash(),
+          script_hash: "0x946d08cc356c4fe13bc49929f1f709611fe0a2aaa336efb579dad4ca197d1551",
           type: :meta_contract
         }
       end
@@ -52,7 +52,7 @@ defmodule GodwokenExplorer.AccountFactory do
 
       def polyjuice_creator_account_factory do
         %Account{
-          id: 3,
+          id: 4,
           script_hash: block_hash(),
           type: :polyjuice_creator
         }

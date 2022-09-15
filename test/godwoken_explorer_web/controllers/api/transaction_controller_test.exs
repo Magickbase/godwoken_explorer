@@ -60,6 +60,134 @@ defmodule GodwokenExplorerWeb.API.TransactionControllerTest do
   end
 
   describe "index" do
+    test "list user all txs", %{
+      conn: conn,
+      tx: tx,
+      eth_user: eth_user,
+      polyjuice_contract_account: polyjuice_contract_account,
+      block: block,
+      polyjuice: polyjuice,
+      smart_contract: smart_contract,
+      polyjuice_creator_tx: polyjuice_creator_tx
+    } do
+      polyjuice_creator_account = insert(:polyjuice_creator_account)
+      receiver_user = insert(:user)
+
+      native_transfer_tx =
+        insert(:transaction,
+          block: block,
+          block_number: block.number,
+          from_account: eth_user,
+          to_account: polyjuice_creator_account,
+          index: 2,
+          args:
+            "0xffffff504f4c590068bf00000000000000a007c2da51000000000000000000000000e867ce97461d310000000000000000000000715ab282b873b79a7be8b0e8c13c4e8966a52040"
+        )
+
+      native_transfer_polyjuice =
+        insert(:polyjuice,
+          transaction: native_transfer_tx,
+          native_transfer_address_hash: receiver_user.eth_address
+        )
+
+      conn =
+        get(
+          conn,
+          Routes.transaction_path(conn, :index, eth_address: to_string(eth_user.eth_address))
+        )
+
+      assert json_response(conn, 200) ==
+               %{
+                 "page" => 1,
+                 "total_count" => 3,
+                 "txs" => [
+                   %{
+                     "block_number" => block.number,
+                     "l1_block_number" => nil,
+                     "block_hash" => to_string(block.hash),
+                     "fee" =>
+                       D.mult(
+                         native_transfer_polyjuice.gas_price,
+                         native_transfer_polyjuice.gas_used
+                       )
+                       |> balance_to_view(18),
+                     "from" => to_string(eth_user.eth_address),
+                     "to" => to_string(polyjuice_creator_account.script_hash),
+                     "to_alias" => "Deploy Contract",
+                     "gas_limit" => native_transfer_polyjuice.gas_limit |> balance_to_view(0),
+                     "gas_price" => native_transfer_polyjuice.gas_price |> balance_to_view(18),
+                     "gas_used" => native_transfer_polyjuice.gas_used |> balance_to_view(0),
+                     "hash" => to_string(native_transfer_tx.eth_hash),
+                     "nonce" => native_transfer_tx.nonce,
+                     "timestamp" =>
+                       block.timestamp |> DateTime.from_naive!("Etc/UTC") |> DateTime.to_unix(),
+                     "type" => "polyjuice",
+                     "value" => native_transfer_polyjuice.value |> balance_to_view(8),
+                     "status" => "finalized",
+                     "created_contract_address_hash" => "",
+                     "native_transfer_address_hash" =>
+                       native_transfer_polyjuice.native_transfer_address_hash |> to_string(),
+                     "index" => native_transfer_polyjuice.transaction_index,
+                     "method" => nil,
+                     "transaction_index" => native_transfer_polyjuice.transaction_index,
+                     "polyjuice_status" => "succeed"
+                   },
+                   %{
+                     "block_number" => block.number,
+                     "l1_block_number" => nil,
+                     "block_hash" => to_string(block.hash),
+                     "fee" =>
+                       D.mult(polyjuice.gas_price, polyjuice.gas_used) |> balance_to_view(18),
+                     "from" => to_string(eth_user.eth_address),
+                     "to" => to_string(polyjuice_contract_account.eth_address),
+                     "to_alias" => smart_contract.name,
+                     "gas_limit" => polyjuice.gas_limit |> balance_to_view(0),
+                     "gas_price" => polyjuice.gas_price |> balance_to_view(18),
+                     "gas_used" => polyjuice.gas_used |> balance_to_view(0),
+                     "hash" => to_string(tx.eth_hash),
+                     "nonce" => tx.nonce,
+                     "timestamp" =>
+                       block.timestamp |> DateTime.from_naive!("Etc/UTC") |> DateTime.to_unix(),
+                     "type" => "polyjuice",
+                     "value" => polyjuice.value |> balance_to_view(8),
+                     "status" => "finalized",
+                     "polyjuice_status" => "succeed",
+                     "created_contract_address_hash" => "",
+                     "native_transfer_address_hash" => nil,
+                     "index" => polyjuice.transaction_index,
+                     "method" => nil,
+                     "transaction_index" => polyjuice.transaction_index
+                   },
+                   %{
+                     "block_number" => block.number,
+                     "l1_block_number" => nil,
+                     "block_hash" => to_string(block.hash),
+                     "fee" => "",
+                     "from" => to_string(eth_user.eth_address),
+                     "to" => "0x946d08cc356c4fe13bc49929f1f709611fe0a2aaa336efb579dad4ca197d1551",
+                     "to_alias" =>
+                       "0x946d08cc356c4fe13bc49929f1f709611fe0a2aaa336efb579dad4ca197d1551",
+                     "gas_limit" => nil,
+                     "gas_price" => "",
+                     "gas_used" => nil,
+                     "hash" => to_string(polyjuice_creator_tx.hash),
+                     "nonce" => polyjuice_creator_tx.nonce,
+                     "timestamp" =>
+                       block.timestamp |> DateTime.from_naive!("Etc/UTC") |> DateTime.to_unix(),
+                     "type" => "polyjuice_creator",
+                     "value" => "",
+                     "status" => "finalized",
+                     "polyjuice_status" => nil,
+                     "created_contract_address_hash" => "",
+                     "native_transfer_address_hash" => nil,
+                     "index" => nil,
+                     "method" => nil,
+                     "transaction_index" => nil
+                   }
+                 ]
+               }
+    end
+
     test "lists user txs of contract", %{
       conn: conn,
       tx: tx,
@@ -104,6 +232,7 @@ defmodule GodwokenExplorerWeb.API.TransactionControllerTest do
                      "status" => "finalized",
                      "polyjuice_status" => "succeed",
                      "created_contract_address_hash" => "",
+                     "native_transfer_address_hash" => nil,
                      "index" => polyjuice.transaction_index,
                      "method" => nil,
                      "transaction_index" => polyjuice.transaction_index
@@ -154,6 +283,7 @@ defmodule GodwokenExplorerWeb.API.TransactionControllerTest do
                      "status" => "finalized",
                      "polyjuice_status" => "succeed",
                      "created_contract_address_hash" => "",
+                     "native_transfer_address_hash" => nil,
                      "index" => polyjuice.transaction_index,
                      "method" => nil,
                      "transaction_index" => polyjuice.transaction_index
@@ -178,6 +308,7 @@ defmodule GodwokenExplorerWeb.API.TransactionControllerTest do
                      "status" => "finalized",
                      "polyjuice_status" => nil,
                      "created_contract_address_hash" => "",
+                     "native_transfer_address_hash" => nil,
                      "index" => nil,
                      "method" => nil,
                      "transaction_index" => nil
@@ -228,6 +359,7 @@ defmodule GodwokenExplorerWeb.API.TransactionControllerTest do
                      "status" => "finalized",
                      "polyjuice_status" => "succeed",
                      "created_contract_address_hash" => "",
+                     "native_transfer_address_hash" => nil,
                      "index" => polyjuice.transaction_index,
                      "method" => nil,
                      "transaction_index" => polyjuice.transaction_index
@@ -252,6 +384,7 @@ defmodule GodwokenExplorerWeb.API.TransactionControllerTest do
                      "status" => "finalized",
                      "polyjuice_status" => nil,
                      "created_contract_address_hash" => "",
+                     "native_transfer_address_hash" => nil,
                      "index" => nil,
                      "method" => nil,
                      "transaction_index" => nil
@@ -302,6 +435,7 @@ defmodule GodwokenExplorerWeb.API.TransactionControllerTest do
                  "status" => "finalized",
                  "polyjuice_status" => "succeed",
                  "created_contract_address_hash" => "",
+                 "native_transfer_address_hash" => nil,
                  "index" => polyjuice.transaction_index,
                  "transaction_index" => polyjuice.transaction_index,
                  "contract_abi" => smart_contract.abi,
@@ -347,6 +481,7 @@ defmodule GodwokenExplorerWeb.API.TransactionControllerTest do
                  "status" => "finalized",
                  "polyjuice_status" => nil,
                  "created_contract_address_hash" => "",
+                 "native_transfer_address_hash" => nil,
                  "index" => nil,
                  "transaction_index" => nil,
                  "fee_amount" => polyjuice_creator.fee_amount,

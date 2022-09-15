@@ -482,7 +482,14 @@ defmodule GodwokenIndexer.Block.SyncWorker do
       conflict_target: :tx_hash,
       on_conflict:
         {:replace,
-         [:gas_used, :transaction_index, :status, :created_contract_address_hash, :updated_at]}
+         [
+           :gas_used,
+           :transaction_index,
+           :status,
+           :created_contract_address_hash,
+           :native_transfer_address_hash,
+           :updated_at
+         ]}
     )
   end
 
@@ -682,7 +689,8 @@ defmodule GodwokenIndexer.Block.SyncWorker do
                      status: status,
                      hash: hash,
                      transaction_index: transaction_index,
-                     created_contract_address_hash: created_contract_address_hash
+                     created_contract_address_hash: created_contract_address_hash,
+                     native_transfer_address_hash: native_transfer_address_hash
                    } ->
       %{
         is_create: is_create,
@@ -695,7 +703,8 @@ defmodule GodwokenIndexer.Block.SyncWorker do
         status: status,
         tx_hash: hash,
         transaction_index: transaction_index,
-        created_contract_address_hash: created_contract_address_hash
+        created_contract_address_hash: created_contract_address_hash,
+        native_transfer_address_hash: native_transfer_address_hash
       }
     end)
   end
