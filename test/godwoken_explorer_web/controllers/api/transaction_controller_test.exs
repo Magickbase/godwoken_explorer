@@ -349,11 +349,9 @@ defmodule GodwokenExplorerWeb.API.TransactionControllerTest do
                  "created_contract_address_hash" => "",
                  "index" => nil,
                  "transaction_index" => nil,
-                 "code_hash" => polyjuice_creator.code_hash,
                  "fee_amount" => polyjuice_creator.fee_amount,
-                 "hash_type" => polyjuice_creator.hash_type,
                  "input" => nil,
-                 "script_args" => polyjuice_creator.script_args
+                 "created_account" => "0x48a466ed98a517bab6158209bd54c6b29281b733"
                }
     end
   end

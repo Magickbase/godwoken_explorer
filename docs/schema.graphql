@@ -707,7 +707,8 @@ type PolyjuiceCreator {
   hash_type: String
   id: Int
   script_args: String
-  tx_hash: HashFull
+  tx_hash: HashFull,
+  created_account: Account
 }
 
 enum PolyjuiceStatus {
