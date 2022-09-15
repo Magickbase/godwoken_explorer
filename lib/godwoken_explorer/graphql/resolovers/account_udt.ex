@@ -208,7 +208,10 @@ defmodule GodwokenExplorer.Graphql.Resolvers.AccountUDT do
 
     return =
       from(cu in CurrentUDTBalance)
-      |> where([cu], cu.token_contract_address_hash == ^token_contract_address_hash and cu.token_type == :erc20)
+      |> where(
+        [cu],
+        cu.token_contract_address_hash == ^token_contract_address_hash and cu.token_type == :erc20
+      )
       |> sort_type(input, :value)
       |> page_and_size(input)
       |> Repo.all()

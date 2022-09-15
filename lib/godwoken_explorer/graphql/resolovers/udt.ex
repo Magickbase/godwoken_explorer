@@ -212,13 +212,12 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
         holders_count: count(c.address_hash, :distinct)
       })
 
-    holders_count_query =
+    s2 =
       query
       |> join(:left, [u], h in subquery(s),
         on:
           (u.id == h.udt_id and is_nil(u.bridge_account_id)) or
-            u.bridge_account_id == h.udt_id,
-        as: :u_holders
+            u.bridge_account_id == h.udt_id
       )
       |> select_merge([_u, u_holders], %{
         holders_count:
@@ -228,6 +227,11 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
             u_holders.holders_count
           )
       })
+
+    holders_count_query =
+      query
+      |> join(:inner, [u], uh in subquery(s2), on: u.id == uh.id, as: :u_holders)
+      |> select([u, u_holders], u_holders)
 
     base_udts_order_by(holders_count_query, input)
   end
@@ -247,18 +251,24 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
     sorter = Map.get(input, :sorter)
 
     if sorter do
-      sorter
-      |> Enum.map(fn e ->
-        case e do
-          %{sort_type: st, sort_value: :ex_holders_count} ->
-            {{:u_holders, :holders_count}, st}
+      return =
+        Enum.map(sorter, fn e ->
+          case e do
+            %{sort_type: st, sort_value: :ex_holders_count} ->
+              {{:u_holders, :holders_count}, st}
 
-          _ ->
-            cursor_order_sorter(e, :cursor, @sorter_fields)
-        end
-      end)
+            _ ->
+              cursor_order_sorter(e, :cursor, @sorter_fields)
+          end
+        end)
+
+      if List.keyfind(return, :id, 0) do
+        return
+      else
+        return ++ [{:id, :asc}]
+      end
     else
-      [id: :asc]
+      [{:id, :asc}]
     end
   end
 
@@ -330,11 +340,10 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
         holders_count: count(cu.address_hash, :distinct)
       })
 
-    holders_count_query =
+    s2 =
       query
       |> join(:left, [u], h in subquery(squery),
-        on: u.contract_address_hash == h.contract_address_hash,
-        as: :u_holders
+        on: u.contract_address_hash == h.contract_address_hash
       )
       |> select_merge([u, u_holders], %{
         holders_count:
@@ -344,6 +353,11 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
             u_holders.holders_count
           )
       })
+
+    holders_count_query =
+      query
+      |> join(:inner, [u], uh in subquery(s2), on: u.id == uh.id, as: :u_holders)
+      |> select([u, u_holders], u_holders)
 
     base_udts_order_by(holders_count_query, input)
   end
@@ -549,7 +563,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
               st =
                 case st do
                   :desc -> :desc_nulls_last
-                  :asc -> :asc_nulls_last
+                  :asc -> :asc_nulls_first
                 end
 
               {st, dynamic([u, u_holders: uh], field(uh, :holders_count))}
@@ -560,6 +574,13 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
         end)
       else
         cursor_order_sorter(sorter, :order, @sorter_fields)
+      end
+
+    order_params =
+      if List.keyfind(order_params, :id, 1) do
+        order_params
+      else
+        order_params ++ [{:asc, :id}]
       end
 
     order_by(holders_count_query, [u, uh], ^order_params)

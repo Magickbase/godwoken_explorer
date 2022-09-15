@@ -586,8 +586,51 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
     query = """
     query {
       erc721_udts(
-        input: {limit: 1, sorter: [{sort_type: ASC, sort_value: EX_HOLDERS_COUNT}],
-        after: "g3QAAAABaAJkAAl1X2hvbGRlcnNkAA1ob2xkZXJzX2NvdW50YQU="
+        input: {limit: 1, sorter: [{sort_type: ASC, sort_value: EX_HOLDERS_COUNT}]
+      }
+      ) {
+        entries {
+          id
+          name
+          contract_address_hash
+          eth_type
+          holders_count
+          minted_count
+        }
+        metadata {
+          total_count
+          after
+          before
+        }
+      }
+    }
+    """
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    %{
+      "data" => %{
+        "erc721_udts" => %{"metadata" => %{"after" => after_value}}
+      }
+    } = json_response(conn, 200)
+
+    assert match?(
+             %{
+               "data" => %{
+                 "erc721_udts" => %{"metadata" => %{"total_count" => 2}}
+               }
+             },
+             json_response(conn, 200)
+           )
+
+    query = """
+    query {
+      erc721_udts(
+        input: {limit: 1, after: "#{after_value}", sorter: [{sort_type: ASC, sort_value: EX_HOLDERS_COUNT}]
       }
       ) {
         entries {
