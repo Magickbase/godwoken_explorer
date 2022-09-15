@@ -434,7 +434,9 @@ defmodule GodwokenIndexer.Block.SyncWorker do
         for: Transaction,
         timestamps: import_timestamps(),
         conflict_target: :hash,
-        on_conflict: {:replace, [:block_hash, :block_number, :eth_hash, :index, :updated_at]},
+        on_conflict:
+          {:replace,
+           [:block_hash, :from_account_id, :block_number, :eth_hash, :index, :updated_at]},
         returning: [
           :from_account_id,
           :to_account_id,
