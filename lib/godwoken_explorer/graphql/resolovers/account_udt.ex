@@ -100,8 +100,6 @@ defmodule GodwokenExplorer.Graphql.Resolvers.AccountUDT do
       from(a in Account)
       |> where([a], a.eth_address in ^address_hashes or a.script_hash in ^script_hashes)
 
-    Repo.all(squery)
-
     query =
       from(cbu in CurrentBridgedUDTBalance)
       |> join(:inner, [cbu], a1 in subquery(squery), on: cbu.address_hash == a1.eth_address)
@@ -277,8 +275,8 @@ defmodule GodwokenExplorer.Graphql.Resolvers.AccountUDT do
     account_query =
       if token_contract_address_hash do
         from(a in Account, where: a.eth_address == ^token_contract_address_hash)
-        |> join(:inner, [a], u in UDT, on: a.eth_address == u.contract_address_hash)
-        |> join(:inner, [a, u], a2 in Account, on: a2.id == u.id)
+        |> join(:left, [a], u in UDT, on: a.id == u.bridge_account_id)
+        |> join(:left, [a, u], a2 in Account, on: a2.id == u.id)
         |> select([a, _, a2], %{
           token_contract_address_hash: a.eth_address,
           udt_script_hash: a2.script_hash
@@ -334,7 +332,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.AccountUDT do
             on: u.contract_address_hash == cu.token_contract_address_hash
           )
           |> where([cu, u], cu.value != 0 and not is_nil(u.name))
-          |> select_merge([_cu, u], %{udt_id: u.id, uniq_id: u.id})
+          |> select_merge([cu, u], %{udt_id: u.id, uniq_id: u.id, updated_at: cu.value_fetched_at})
           |> Repo.all()
 
         cbus =

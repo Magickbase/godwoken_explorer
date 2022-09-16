@@ -1,7 +1,7 @@
 defmodule GodwokenExplorer.Graphql.AccountUDTTest do
   use GodwokenExplorerWeb.ConnCase
 
-  alias GodwokenExplorer.Factory
+  import GodwokenExplorer.Factory, only: [insert!: 1, insert!: 2]
 
   setup do
     {:ok, script_hash} =
@@ -10,39 +10,68 @@ defmodule GodwokenExplorer.Graphql.AccountUDTTest do
         "0x0000000000000000000000000000000000000000000000000000000000000000"
       )
 
-    native_udt = Factory.insert!(:native_udt)
+    native_udt = insert!(:native_udt)
+
+    _native_account =
+      insert!(:polyjuice_contract_account,
+        eth_address: native_udt.contract_address_hash,
+        id: native_udt.id
+      )
+
+    ckb_account = insert!(:ckb_account, script_hash: script_hash)
 
     ckb_udt =
-      Factory.insert!(:ckb_udt, script_hash: script_hash, bridge_account_id: native_udt.id)
+      insert!(:ckb_udt,
+        id: ckb_account.id,
+        script_hash: script_hash,
+        bridge_account_id: native_udt.id
+      )
 
-    ckb_account = Factory.insert!(:ckb_account, script_hash: script_hash)
+    user = insert!(:user)
+
+    base_t = DateTime.utc_now()
+    inc_base_t = DateTime.add(base_t, 10, :second)
+    fetch_base_t = DateTime.add(base_t, -10, :second)
 
     cub =
-      Factory.insert!(:current_udt_balance,
+      insert!(:current_udt_balance,
+        address_hash: user.eth_address,
         token_contract_address_hash: native_udt.contract_address_hash,
-        value: Enum.random(1..100_000),
-        token_type: :erc20
+        value: 20000,
+        token_type: :erc20,
+        updated_at: inc_base_t,
+        value_fetched_at: fetch_base_t
       )
 
     cbub =
-      Factory.insert!(:current_bridged_udt_balance,
+      insert!(:current_bridged_udt_balance,
         address_hash: cub.address_hash,
-        value: Enum.random(1..100_000),
+        value: 20000,
         udt_id: ckb_udt.id,
-        udt_script_hash: ckb_udt.script_hash
+        udt_script_hash: ckb_udt.script_hash,
+        updated_at: base_t
       )
 
-    [native_udt: native_udt, ckb_udt: ckb_udt, ckb_account: ckb_account, cub: cub, cbub: cbub]
+    [
+      user: user,
+      native_udt: native_udt,
+      ckb_udt: ckb_udt,
+      ckb_account: ckb_account,
+      cub: cub,
+      cbub: cbub
+    ]
   end
 
-  test "graphql: account_udts with native and bridge token", %{conn: conn, cbub: cbub} do
+  test "graphql: account_udts with native and bridge token", %{conn: conn, cub: cub, cbub: cbub} do
     address = cbub.address_hash |> to_string()
+    token_contract_address_hash = cub.token_contract_address_hash |> to_string()
 
     query = """
     query {
       account_udts(
         input: {
           address_hashes: ["#{address}"],
+          token_contract_address_hash: "#{token_contract_address_hash}"
         }
       ) {
         value
@@ -71,17 +100,22 @@ defmodule GodwokenExplorer.Graphql.AccountUDTTest do
         "variables" => %{}
       })
 
-    %{
-      "data" => %{
-        "account_udts" => account_udts
-      }
-    } = json_response(conn, 200)
-
-    assert length(account_udts) == 2
+    assert match?(
+             %{
+               "data" => %{
+                 "account_udts" => [
+                   %{"value" => "20000"},
+                   %{"value" => "20000"}
+                 ]
+               }
+             },
+             json_response(conn, 200)
+           )
   end
 
   test "graphql: account_current_udts ", %{conn: conn, cub: cub} do
     address = cub.address_hash |> to_string()
+    token_contract_address_hash = cub.token_contract_address_hash |> to_string()
 
     query = """
     query {
@@ -114,15 +148,21 @@ defmodule GodwokenExplorer.Graphql.AccountUDTTest do
         "variables" => %{}
       })
 
-    assert json_response(conn, 200) == %{
-             "data" => %{
-               "account_current_udts" => []
-             }
-           }
+    assert match?(
+             %{
+               "data" => %{
+                 "account_current_udts" => [
+                   %{"token_contract_address_hash" => ^token_contract_address_hash}
+                 ]
+               }
+             },
+             json_response(conn, 200)
+           )
   end
 
   test "graphql: account_current_bridged_udts ", %{conn: conn, cbub: cbub} do
     address = cbub.address_hash |> to_string()
+    udt_script_hash = cbub.udt_script_hash |> to_string()
 
     query = """
     query {
@@ -159,14 +199,62 @@ defmodule GodwokenExplorer.Graphql.AccountUDTTest do
         "variables" => %{}
       })
 
-    assert json_response(conn, 200) == %{
-             "data" => %{
-               "account_current_bridged_udts" => []
-             }
-           }
+    assert match?(
+             %{
+               "data" => %{
+                 "account_current_bridged_udts" => [%{"udt_script_hash" => ^udt_script_hash}]
+               }
+             },
+             json_response(conn, 200)
+           )
   end
 
-  test "graphql: account_udts ", %{conn: conn, cbub: cbub} do
+  test "graphql: account_udts only with address_hashes", %{conn: conn, cbub: cbub} do
+    address = cbub.address_hash |> to_string()
+
+    query = """
+    query {
+      account_udts(
+        input: {
+          address_hashes: ["#{address}"]
+        }
+      ) {
+        udt_script_hash
+        value
+        udt {
+          id
+          name
+          bridge_account_id
+          script_hash
+          decimal
+          value
+        }
+        account {
+          id
+          eth_address
+          script_hash
+        }
+      }
+    }
+    """
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    assert match?(
+             %{
+               "data" => %{
+                 "account_udts" => [%{"value" => "20000"}, %{"value" => "20000"}]
+               }
+             },
+             json_response(conn, 200)
+           )
+  end
+
+  test "graphql: account_udts with script hash ", %{conn: conn, cbub: cbub} do
     address = cbub.address_hash |> to_string()
     udt_script_hash = cbub.udt_script_hash |> to_string()
 
@@ -174,8 +262,7 @@ defmodule GodwokenExplorer.Graphql.AccountUDTTest do
     query {
       account_udts(
         input: {
-          address_hashes: ["#{address}"],
-
+          address_hashes: ["#{address}"]
           udt_script_hash: "#{udt_script_hash}"
         }
       ) {
@@ -204,11 +291,61 @@ defmodule GodwokenExplorer.Graphql.AccountUDTTest do
         "variables" => %{}
       })
 
-    assert json_response(conn, 200) == %{
-             "data" => %{
-               "account_udts" => []
-             }
-           }
+    assert match?(
+             %{
+               "data" => %{
+                 "account_udts" => [%{"value" => "20000"}, %{"value" => "20000"}]
+               }
+             },
+             json_response(conn, 200)
+           )
+  end
+
+  test "graphql: account_udts with contract address hash ", %{conn: conn, cub: cub} do
+    address = cub.address_hash |> to_string()
+    token_contract_address_hash = cub.token_contract_address_hash |> to_string()
+
+    query = """
+    query {
+      account_udts(
+        input: {
+          address_hashes: ["#{address}"]
+          token_contract_address_hash: "#{token_contract_address_hash}"
+        }
+      ) {
+        token_contract_address_hash
+        value
+        udt {
+          id
+          name
+          bridge_account_id
+          script_hash
+          decimal
+          value
+        }
+        account {
+          id
+          eth_address
+          script_hash
+        }
+      }
+    }
+    """
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    assert match?(
+             %{
+               "data" => %{
+                 "account_udts" => [%{"value" => "20000"}, %{"value" => "20000"}]
+               }
+             },
+             json_response(conn, 200)
+           )
   end
 
   test "graphql: account_ckbs ", %{conn: conn, cbub: cbub} do
@@ -245,11 +382,18 @@ defmodule GodwokenExplorer.Graphql.AccountUDTTest do
         "variables" => %{}
       })
 
-    assert json_response(conn, 200) == %{
-             "data" => %{
-               "account_ckbs" => []
-             }
-           }
+    assert match?(
+             %{
+               "data" => %{
+                 "account_ckbs" => [
+                   %{
+                     "value" => "20000"
+                   }
+                 ]
+               }
+             },
+             json_response(conn, 200)
+           )
   end
 
   test "graphql: account_udts_by_contract_address ", %{conn: conn, cub: cub} do
