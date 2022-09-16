@@ -33,31 +33,25 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
           _ ->
             false
         end
-      end)
+    end)
 
     from(t in Transaction, where: ^conditions)
   end
 
-  def method_id(%Transaction{hash: hash}, _args, _resolution) do
-    p =
-      from(p in Polyjuice)
-      |> where([p], p.tx_hash == ^hash)
-      |> Repo.one()
-
-    if p do
-      input = to_string(p.input)
-      mid = String.slice(input, 0, 10)
+  def method_id(%Transaction{hash: hash, to_account_id: to_account_id}, _args, _resolution) do
+    with %Account{type: :polyjuice_contract} <- Repo.get(Account, to_account_id),
+         p when not is_nil(p) <- Repo.get_by(Polyjuice, tx_hash: hash),
+         mid <- p.input |> to_string() |> String.slice(0, 10),
+         true <- String.length(mid) >= 10 do
       Data.cast(mid)
     else
-      {:ok, nil}
+      _ ->
+        {:ok, nil}
     end
   end
 
   def method_name(%Transaction{hash: hash, to_account_id: to_account_id}, _args, _resolution) do
-    p =
-      from(p in Polyjuice)
-      |> where([p], p.tx_hash == ^hash)
-      |> Repo.one()
+    p = Repo.get_by(Polyjuice, tx_hash: hash)
 
     if p do
       input = to_string(p.input)

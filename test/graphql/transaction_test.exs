@@ -158,7 +158,7 @@ defmodule GodwokenExplorer.Graphql.TransactionTest do
         block: block
       )
 
-    polyjuice = insert!(:polyjuice, transaction: transaction)
+    polyjuice = insert(:polyjuice, transaction: transaction, input: "0x12345678")
 
     eth_hash = transaction.eth_hash |> to_string()
     input = polyjuice.input |> to_string()
@@ -171,9 +171,6 @@ defmodule GodwokenExplorer.Graphql.TransactionTest do
           eth_hash: "#{eth_hash}"
         }
       ) {
-        hash
-        from_account_id
-        to_account_id
         method_id
         method_name
         polyjuice {
@@ -194,6 +191,90 @@ defmodule GodwokenExplorer.Graphql.TransactionTest do
                "data" => %{
                  "transaction" => %{
                    "method_id" => ^method_id
+                 }
+               }
+             },
+             json_response(conn, 200)
+           )
+
+    ## input with "0x00"
+    transaction =
+      :transaction
+      |> insert(
+        from_account: user,
+        to_account: contract,
+        block_number: block.number,
+        block: block
+      )
+
+    eth_hash = transaction.eth_hash |> to_string()
+    _polyjuice = insert(:polyjuice, transaction: transaction, input: "0x00")
+
+    query = """
+    query {
+      transaction(
+        input: {
+          eth_hash: "#{eth_hash}"
+        }
+      ) {
+        method_id
+        method_name
+        polyjuice {
+          input
+        }
+      }
+    }
+    """
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    assert match?(
+             %{
+               "data" => %{
+                 "transaction" => %{
+                   "method_id" => nil
+                 }
+               }
+             },
+             json_response(conn, 200)
+           )
+
+    ## not polyjuice transaction
+    transaction = insert(:polyjuice_creator_tx)
+    transaction_hash = transaction.hash |> to_string()
+    _polyjuice = insert(:polyjuice, transaction: transaction, input: "0x12345678")
+
+    query = """
+    query {
+      transaction(
+        input: {
+          transaction_hash: "#{transaction_hash}"
+        }
+      ) {
+        method_id
+        method_name
+        polyjuice {
+          input
+        }
+      }
+    }
+    """
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    assert match?(
+             %{
+               "data" => %{
+                 "transaction" => %{
+                   "method_id" => nil
                  }
                }
              },
