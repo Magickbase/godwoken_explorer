@@ -29,15 +29,19 @@ defmodule GodwokenExplorer.Graphql.AccountUDTTest do
 
     user = insert!(:user)
 
-    base_t = DateTime.utc_now()
-    inc_base_t = DateTime.add(base_t, 10, :second)
-    fetch_base_t = DateTime.add(base_t, -10, :second)
+    # base_t = DateTime.utc_now()
+    # inc_base_t = DateTime.add(base_t, 100, :day)
+    # fetch_base_t = DateTime.add(base_t, -100, :day)
+
+    base_t = ~U[2022-09-07 10:34:14.021000Z]
+    inc_base_t = ~U[2022-09-16 02:56:57.629000Z]
+    fetch_base_t = ~U[2022-07-25 07:53:57.788000Z]
 
     cub =
       insert!(:current_udt_balance,
         address_hash: user.eth_address,
         token_contract_address_hash: native_udt.contract_address_hash,
-        value: 20000,
+        value: 10000,
         token_type: :erc20,
         updated_at: inc_base_t,
         value_fetched_at: fetch_base_t
