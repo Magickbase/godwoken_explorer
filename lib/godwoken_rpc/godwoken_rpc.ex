@@ -14,7 +14,7 @@ defmodule GodwokenRPC do
 
   alias GodwokenRPC.Transaction.FetchedTransaction, as: FetchedGWTransaction
   alias GodwokenRPC.Transaction.FetchedTransactions, as: FetchedGWTransactions
-  alias GodwokenRPC.Transaction.{GetGwTxByEthTx, FetchedPendingTxHashes}
+  alias GodwokenRPC.Transaction.{GetGwTxByEthTx, FetchedPendingTxHashes, FetchedEthHashByGwHashes}
 
   alias GodwokenRPC.CKBIndexer.{
     FetchedTransactions,
@@ -396,7 +396,8 @@ defmodule GodwokenRPC do
   def fetch_mempool_transaction(tx_hash) do
     options = Application.get_env(:godwoken_explorer, :mempool_rpc_named_arguments)
 
-    with {:ok, gw_tx_hash} <- GetGwTxByEthTx.request(tx_hash) |> HTTP.json_rpc(options),
+    with {:ok, gw_tx_hash} <-
+           GetGwTxByEthTx.request(tx_hash) |> HTTP.json_rpc(options),
          {:ok, response} <-
            FetchedGWTransaction.request(%{id: 1, gw_tx_hash: gw_tx_hash})
            |> HTTP.json_rpc(options) do
@@ -456,6 +457,18 @@ defmodule GodwokenRPC do
       _ ->
         Logger.error("Failed to fetch poly version")
         {:error, nil}
+    end
+  end
+
+  def fetch_eth_hash_by_gw_hashes(params) do
+    id_to_params = id_to_params(params)
+    options = Application.get_env(:godwoken_explorer, :json_rpc_named_arguments)
+
+    with {:ok, responses} <-
+           id_to_params
+           |> FetchedEthHashByGwHashes.requests()
+           |> HTTP.json_rpc(options) do
+      {:ok, FetchedEthHashByGwHashes.from_responses(responses, id_to_params)}
     end
   end
 
