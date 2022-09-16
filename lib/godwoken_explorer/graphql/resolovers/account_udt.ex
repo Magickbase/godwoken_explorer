@@ -53,8 +53,12 @@ defmodule GodwokenExplorer.Graphql.Resolvers.AccountUDT do
         not is_nil(u.name) and
           cu.value != 0
       )
-      |> select_merge([_cu, _a1, u], %{udt_id: u.id, uniq_id: u.id})
-      |> order_by([cu], desc: cu.updated_at)
+      |> select_merge([cu, _a1, u], %{
+        udt_id: u.id,
+        uniq_id: u.id,
+        updated_at: cu.value_fetched_at
+      })
+      |> order_by([cu], desc: cu.value_fetched_at)
 
     if is_nil(token_contract_address_hash) do
       query
