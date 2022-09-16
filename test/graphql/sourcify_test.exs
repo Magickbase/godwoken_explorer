@@ -1,7 +1,7 @@
 defmodule GodwokenExplorer.Graphql.SourcifyTest do
   use GodwokenExplorerWeb.ConnCase
 
-  alias GodwokenExplorer.Factory
+  import GodwokenExplorer.Factory, only: [insert!: 1, insert!: 2]
 
   setup do
     {:ok, contract_address_hash} =
@@ -10,25 +10,25 @@ defmodule GodwokenExplorer.Graphql.SourcifyTest do
         "0x7A4a65Db21864384d2D21a60367d7Fd5c86F8Fba"
       )
 
-    native_udt = Factory.insert!(:native_udt, contract_address_hash: contract_address_hash)
+    native_udt = insert!(:native_udt, contract_address_hash: contract_address_hash)
 
     udt_account =
-      Factory.insert!(:polyjuice_contract_account,
+      insert!(:polyjuice_contract_account,
         id: native_udt.id,
         eth_address: native_udt.contract_address_hash
       )
 
-    unregistered_udt_account = Factory.insert!(:polyjuice_contract_account)
+    unregistered_udt_account = insert!(:polyjuice_contract_account)
 
     {:ok, args} =
       GodwokenExplorer.Chain.Data.cast(
         "0x01000000060000001600000000000000000000000000000001000000000000000000000000000000"
       )
 
-    transaction = Factory.insert!(:transaction, args: args)
+    transaction = insert!(:transaction, args: args)
 
     _polyjuice =
-      Factory.insert!(:polyjuice,
+      insert!(:polyjuice,
         created_contract_address_hash: unregistered_udt_account.eth_address,
         transaction: transaction
       )

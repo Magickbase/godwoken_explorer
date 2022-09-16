@@ -1,9 +1,7 @@
 defmodule GodwokenExplorer.Graphql.TransactionTest do
   use GodwokenExplorerWeb.ConnCase
 
-  import GodwokenExplorer.Factory
-
-  alias GodwokenExplorer.Factory
+  import GodwokenExplorer.Factory, only: [insert: 1, insert: 2, insert!: 1, insert!: 2]
 
   setup do
     {:ok, args} =
@@ -11,7 +9,7 @@ defmodule GodwokenExplorer.Graphql.TransactionTest do
         "0x01000000060000001600000000000000000000000000000001000000000000000000000000000000"
       )
 
-    transaction = Factory.insert!(:transaction, args: args)
+    transaction = insert!(:transaction, args: args)
 
     [transaction: transaction]
   end
@@ -136,11 +134,11 @@ defmodule GodwokenExplorer.Graphql.TransactionTest do
   test "graphql: transactions with method id and method name", %{
     conn: conn
   } do
-    user = Factory.insert(:user)
-    contract = Factory.insert(:polyjuice_contract_account)
+    user = insert!(:user)
+    contract = insert!(:polyjuice_contract_account)
 
     _udt =
-      Factory.insert(:native_udt,
+      insert!(:native_udt,
         id: contract.id,
         type: :native,
         name: "CKB",
@@ -149,18 +147,18 @@ defmodule GodwokenExplorer.Graphql.TransactionTest do
         contract_address_hash: contract.eth_address
       )
 
-    block = Factory.insert(:block)
+    block = insert!(:block)
 
     transaction =
       :transaction
-      |> Factory.insert(
+      |> insert(
         from_account: user,
         to_account: contract,
         block_number: block.number,
         block: block
       )
 
-    polyjuice = Factory.insert(:polyjuice, transaction: transaction, input: "0x12345678")
+    polyjuice = insert(:polyjuice, transaction: transaction, input: "0x12345678")
 
     eth_hash = transaction.eth_hash |> to_string()
     input = polyjuice.input |> to_string()
@@ -202,7 +200,7 @@ defmodule GodwokenExplorer.Graphql.TransactionTest do
     ## input with "0x00"
     transaction =
       :transaction
-      |> Factory.insert(
+      |> insert(
         from_account: user,
         to_account: contract,
         block_number: block.number,
@@ -210,7 +208,7 @@ defmodule GodwokenExplorer.Graphql.TransactionTest do
       )
 
     eth_hash = transaction.eth_hash |> to_string()
-    _polyjuice = Factory.insert(:polyjuice, transaction: transaction, input: "0x00")
+    _polyjuice = insert(:polyjuice, transaction: transaction, input: "0x00")
 
     query = """
     query {
@@ -246,9 +244,9 @@ defmodule GodwokenExplorer.Graphql.TransactionTest do
            )
 
     ## not polyjuice transaction
-    transaction = Factory.insert(:polyjuice_creator_tx)
+    transaction = insert(:polyjuice_creator_tx)
     transaction_hash = transaction.hash |> to_string()
-    _polyjuice = Factory.insert(:polyjuice, transaction: transaction, input: "0x12345678")
+    _polyjuice = insert(:polyjuice, transaction: transaction, input: "0x12345678")
 
     query = """
     query {
