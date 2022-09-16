@@ -1,9 +1,9 @@
 defmodule GodwokenExplorer.Graphql.SmartContractTest do
   use GodwokenExplorerWeb.ConnCase
-  alias GodwokenExplorer.Factory
+  import GodwokenExplorer.Factory, only: [insert!: 1]
 
   setup do
-    smart_contract = Factory.insert!(:smart_contract)
+    smart_contract = insert!(:smart_contract)
     [smart_contract: smart_contract]
   end
 
@@ -72,7 +72,7 @@ defmodule GodwokenExplorer.Graphql.SmartContractTest do
                  "smart_contracts" => %{
                    "entries" => _,
                    "metadata" => %{
-                    "total_count" => 1,
+                     "total_count" => 1
                    }
                  }
                }

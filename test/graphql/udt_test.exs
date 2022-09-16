@@ -1,6 +1,7 @@
 defmodule GodwokenExplorer.Graphql.UDTTest do
   use GodwokenExplorerWeb.ConnCase
-  alias GodwokenExplorer.Factory
+
+  import GodwokenExplorer.Factory, only: [insert!: 1, insert!: 2]
 
   setup do
     {:ok, script_hash} =
@@ -9,10 +10,10 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
         "0x0000000000000000000000000000000000000000000000000000000000000000"
       )
 
-    native_udt = Factory.insert!(:native_udt)
+    native_udt = insert!(:native_udt)
 
     ckb_udt =
-      Factory.insert!(:ckb_udt,
+      insert!(:ckb_udt,
         script_hash: script_hash,
         bridge_account_id: native_udt.id,
         official_site: "official_site",
@@ -20,20 +21,20 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
       )
 
     polyjuice_contract_account =
-      Factory.insert!(:polyjuice_contract_account,
+      insert!(:polyjuice_contract_account,
         id: native_udt.id,
         eth_address: native_udt.contract_address_hash
       )
 
-    erc721_native_udt = Factory.insert!(:native_udt, eth_type: :erc721)
-    _erc721_native_udt2 = Factory.insert!(:native_udt, eth_type: :erc721)
-    erc1155_native_udt = Factory.insert!(:native_udt, eth_type: :erc1155)
-    _erc1155_native_udt2 = Factory.insert!(:native_udt, eth_type: :erc1155)
+    erc721_native_udt = insert!(:native_udt, eth_type: :erc721)
+    _erc721_native_udt2 = insert!(:native_udt, eth_type: :erc721)
+    erc1155_native_udt = insert!(:native_udt, eth_type: :erc1155)
+    _erc1155_native_udt2 = insert!(:native_udt, eth_type: :erc1155)
 
-    user = Factory.insert!(:user)
+    user = insert!(:user)
 
     _erc721_cub1 =
-      Factory.insert!(:current_udt_balance,
+      insert!(:current_udt_balance,
         address_hash: user.eth_address,
         token_contract_address_hash: erc721_native_udt.contract_address_hash,
         token_id: 1,
@@ -43,7 +44,7 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
       )
 
     _erc721_cub2 =
-      Factory.insert!(:current_udt_balance,
+      insert!(:current_udt_balance,
         address_hash: user.eth_address,
         token_contract_address_hash: erc721_native_udt.contract_address_hash,
         token_id: 2,
@@ -53,7 +54,7 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
       )
 
     for index <- 3..5 do
-      Factory.insert!(:current_udt_balance,
+      insert!(:current_udt_balance,
         token_contract_address_hash: erc721_native_udt.contract_address_hash,
         token_id: index,
         value: 1,
@@ -63,7 +64,7 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
     end
 
     _erc1155_cub1 =
-      Factory.insert!(:current_udt_balance,
+      insert!(:current_udt_balance,
         address_hash: user.eth_address,
         token_contract_address_hash: erc1155_native_udt.contract_address_hash,
         token_id: 6,
@@ -71,7 +72,7 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
       )
 
     _erc1155_cub2 =
-      Factory.insert!(:current_udt_balance,
+      insert!(:current_udt_balance,
         address_hash: user.eth_address,
         token_contract_address_hash: erc1155_native_udt.contract_address_hash,
         token_id: 7,
@@ -79,7 +80,7 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
       )
 
     for index <- 8..10 do
-      Factory.insert!(:current_udt_balance,
+      insert!(:current_udt_balance,
         token_contract_address_hash: erc1155_native_udt.contract_address_hash,
         token_id: index,
         token_type: :erc1155
@@ -262,13 +263,13 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
     contract_address_hash = native_udt.contract_address_hash
 
     cub =
-      Factory.insert!(:current_udt_balance,
+      insert!(:current_udt_balance,
         token_contract_address_hash: contract_address_hash,
         value: Enum.random(1..100_000)
       )
 
     _cbub =
-      Factory.insert!(:current_bridged_udt_balance,
+      insert!(:current_bridged_udt_balance,
         address_hash: cub.address_hash,
         value: Enum.random(1..100_000),
         udt_id: ckb_udt.id,
@@ -315,13 +316,13 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
     bridge_account_id = ckb_udt.bridge_account_id
 
     cub =
-      Factory.insert!(:current_udt_balance,
+      insert!(:current_udt_balance,
         token_contract_address_hash: native_udt.contract_address_hash,
         value: Enum.random(1..100_000)
       )
 
     _cbub =
-      Factory.insert!(:current_bridged_udt_balance,
+      insert!(:current_bridged_udt_balance,
         address_hash: cub.address_hash,
         value: Enum.random(1..100_000),
         udt_id: ckb_udt.id,

@@ -1,7 +1,7 @@
 defmodule GodwokenExplorer.Graphql.AccountTest do
   use GodwokenExplorerWeb.ConnCase
 
-  alias GodwokenExplorer.Factory
+  import GodwokenExplorer.Factory, only: [insert!: 1, insert!: 2]
 
   setup do
     {:ok, script_hash} =
@@ -10,12 +10,12 @@ defmodule GodwokenExplorer.Graphql.AccountTest do
         "0x0000000000000000000000000000000000000000000000000000000000000000"
       )
 
-    native_udt = Factory.insert!(:native_udt)
+    native_udt = insert!(:native_udt)
 
     ckb_udt =
-      Factory.insert!(:ckb_udt, script_hash: script_hash, bridge_account_id: native_udt.id)
+      insert!(:ckb_udt, script_hash: script_hash, bridge_account_id: native_udt.id)
 
-    ckb_account = Factory.insert!(:ckb_account, script_hash: script_hash)
+    ckb_account = insert!(:ckb_account, script_hash: script_hash)
     [native_udt: native_udt, ckb_udt: ckb_udt, ckb_account: ckb_account]
   end
 
@@ -73,7 +73,7 @@ defmodule GodwokenExplorer.Graphql.AccountTest do
   end
 
   test "graphql: account", %{conn: conn} do
-    user = Factory.insert!(:user)
+    user = insert!(:user)
 
     query = """
     query {

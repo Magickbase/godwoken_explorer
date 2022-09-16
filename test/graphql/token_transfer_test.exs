@@ -1,6 +1,6 @@
 defmodule GodwokenExplorer.Graphql.TokenTransferTest do
   use GodwokenExplorerWeb.ConnCase
-  alias GodwokenExplorer.Factory
+  import GodwokenExplorer.Factory, only: [insert!: 1, insert!: 2]
 
   setup do
     {:ok, args} =
@@ -8,10 +8,10 @@ defmodule GodwokenExplorer.Graphql.TokenTransferTest do
         "0x01000000060000001600000000000000000000000000000001000000000000000000000000000000"
       )
 
-    block = Factory.insert!(:block)
-    transaction = Factory.insert!(:transaction, args: args)
-    transaction721 = Factory.insert!(:transaction, args: args)
-    transaction1155 = Factory.insert!(:transaction, args: args)
+    block = insert!(:block)
+    transaction = insert!(:transaction, args: args)
+    transaction721 = insert!(:transaction, args: args)
+    transaction1155 = insert!(:transaction, args: args)
 
     {:ok, from_address_hash} =
       GodwokenExplorer.Chain.Hash.Address.cast("0x297ce8d1532704f7be447bc897ab63563d60f223")
@@ -22,7 +22,7 @@ defmodule GodwokenExplorer.Graphql.TokenTransferTest do
     {:ok, token_contract_address_hash} =
       GodwokenExplorer.Chain.Hash.Address.cast("0xb02c930c2825a960a50ba4ab005e8264498b64a0")
 
-    Factory.insert!(:native_udt,
+    insert!(:native_udt,
       eth_type: :erc20,
       contract_address_hash: token_contract_address_hash
     )
@@ -30,7 +30,7 @@ defmodule GodwokenExplorer.Graphql.TokenTransferTest do
     {:ok, erc721_token_contract_address_hash} =
       GodwokenExplorer.Chain.Hash.Address.cast("0x721c930c2825a960a50ba4ab005e8264488b64a0")
 
-    Factory.insert!(:native_udt,
+    insert!(:native_udt,
       eth_type: :erc721,
       contract_address_hash: erc721_token_contract_address_hash
     )
@@ -38,13 +38,13 @@ defmodule GodwokenExplorer.Graphql.TokenTransferTest do
     {:ok, erc1155_token_contract_address_hash} =
       GodwokenExplorer.Chain.Hash.Address.cast("0x1155930c2825a960a50ba4ab005e8264488b64a0")
 
-    Factory.insert!(:native_udt,
+    insert!(:native_udt,
       eth_type: :erc1155,
       contract_address_hash: erc1155_token_contract_address_hash
     )
 
     token_transfer =
-      Factory.insert!(:token_transfer,
+      insert!(:token_transfer,
         transaction: transaction,
         block: block,
         from_address_hash: from_address_hash,
@@ -53,7 +53,7 @@ defmodule GodwokenExplorer.Graphql.TokenTransferTest do
       )
 
     erc721_token_transfer =
-      Factory.insert!(:token_transfer,
+      insert!(:token_transfer,
         transaction: transaction721,
         block: block,
         from_address_hash: from_address_hash,
@@ -63,7 +63,7 @@ defmodule GodwokenExplorer.Graphql.TokenTransferTest do
       )
 
     _erc1155_token_transfer =
-      Factory.insert!(:token_transfer,
+      insert!(:token_transfer,
         transaction: transaction1155,
         block: block,
         from_address_hash: from_address_hash,
@@ -74,7 +74,7 @@ defmodule GodwokenExplorer.Graphql.TokenTransferTest do
       )
 
     _erc1155_token_transfer =
-      Factory.insert!(:token_transfer,
+      insert!(:token_transfer,
         transaction: transaction1155,
         block: block,
         from_address_hash: from_address_hash,
