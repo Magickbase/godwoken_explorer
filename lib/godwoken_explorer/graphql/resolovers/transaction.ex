@@ -33,7 +33,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
           _ ->
             false
         end
-      end)
+    end)
 
     from(t in Transaction, where: ^conditions)
   end
@@ -41,8 +41,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
   def method_id(%Transaction{hash: hash, to_account_id: to_account_id}, _args, _resolution) do
     with %Account{type: :polyjuice_contract} <- Repo.get(Account, to_account_id),
          p when not is_nil(p) <- Repo.get_by(Polyjuice, tx_hash: hash),
-         input when is_bitstring(input) <- p.input |> to_string(),
-         mid <- String.slice(input, 0, 10),
+         mid <- p.input |> to_string() |> String.slice(0, 10),
          true <- String.length(mid) >= 10 do
       Data.cast(mid)
     else
