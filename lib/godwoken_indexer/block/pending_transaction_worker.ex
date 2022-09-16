@@ -215,6 +215,7 @@ defmodule GodwokenIndexer.Block.PendingTransactionWorker do
 
         from_account_id = hex_to_number(from_account_id)
         to_account_id = hex_to_number(to_id)
+        native_transfer_address_hash = if args |> String.length() == 144, do: input, else: nil
 
         %{
           type: :polyjuice,
@@ -227,7 +228,8 @@ defmodule GodwokenIndexer.Block.PendingTransactionWorker do
           gas_price: gas_price,
           value: value,
           input_size: input_size,
-          input: input
+          input: input,
+          native_transfer_address_hash: native_transfer_address_hash
         }
 
       to_id == @eth_addr_reg_id ->

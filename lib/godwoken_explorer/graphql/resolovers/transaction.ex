@@ -1,17 +1,18 @@
 defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
-  alias GodwokenExplorer.Repo
-  alias GodwokenExplorer.{Account, Transaction, Block, Polyjuice, PolyjuiceCreator}
-
-  alias GodwokenExplorer.Chain.Data
-
   import GodwokenExplorer.Graphql.Resolvers.Common,
     only: [paginate_query: 3, query_with_block_age_range: 2]
 
   import GodwokenExplorer.Graphql.Common, only: [cursor_order_sorter: 3]
   import Ecto.Query
+  import GodwokenRPC.Util, only: [script_to_hash: 1]
+
+  alias GodwokenExplorer.Repo
+  alias GodwokenExplorer.{Account, Transaction, Block, Polyjuice, PolyjuiceCreator}
+  alias GodwokenExplorer.Chain.Data
 
   @sorter_fields [:block_number, :index, :hash]
   @default_sorter [:block_number, :index, :hash]
+  @account_tx_limit 100_000
 
   def transaction(_parent, %{input: input} = _args, _resolution) do
     query = query_with_eth_hash_or_tx_hash(input)
@@ -165,11 +166,25 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
 
       {from_account, to_account} ->
         if input[:combine_from_to] do
-          query
-          |> where(
-            [t],
-            t.to_account_id == ^to_account.id or t.from_account_id == ^from_account.id
-          )
+          base_query =
+            query
+            |> where(
+              [t],
+              t.to_account_id == ^to_account.id or t.from_account_id == ^from_account.id
+            )
+
+          if to_account.type == :eth_user do
+            tx_hashes =
+              Polyjuice
+              |> where([p], p.native_transfer_address_hash == ^to_account.eth_address)
+              |> select([p], p.tx_hash)
+              |> limit(@account_tx_limit)
+              |> Repo.all()
+
+            base_query |> or_where([t], t.hash in ^tx_hashes)
+          else
+            base_query
+          end
         else
           query
           |> where(
@@ -250,12 +265,21 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
   end
 
   def polyjuice_creator(%Transaction{hash: hash}, _args, _resolution) do
-    return =
-      from(pc in PolyjuiceCreator)
-      |> where([pc], pc.tx_hash == ^hash)
-      |> Repo.one()
+    creator = Repo.get_by(PolyjuiceCreator, tx_hash: hash)
 
-    {:ok, return}
+    {:ok, creator}
+  end
+
+  def created_account(%PolyjuiceCreator{} = creator, _args, _resolution) do
+    account_script = %{
+      "code_hash" => creator.code_hash,
+      "hash_type" => creator.hash_type,
+      "args" => creator.script_args
+    }
+
+    l2_script_hash = script_to_hash(account_script)
+
+    {:ok, Repo.get_by(Account, script_hash: l2_script_hash)}
   end
 
   def block(%Transaction{block_hash: nil}, _args, _resolution) do

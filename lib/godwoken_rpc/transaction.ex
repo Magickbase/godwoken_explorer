@@ -71,6 +71,8 @@ defmodule GodwokenRPC.Transaction do
       String.starts_with?(args, "ffffff504f4c59") ->
         [is_create, gas_limit, gas_price, value, input_size, input] = parse_polyjuice_args(args)
 
+        native_transfer_address_hash = if args |> String.length() == 144, do: input, else: nil
+
         %{
           type: :polyjuice,
           hash: hash,
@@ -88,6 +90,7 @@ defmodule GodwokenRPC.Transaction do
           value: value,
           input_size: input_size,
           input: input,
+          native_transfer_address_hash: native_transfer_address_hash,
           account_ids: [from_account_id, to_account_id]
         }
 

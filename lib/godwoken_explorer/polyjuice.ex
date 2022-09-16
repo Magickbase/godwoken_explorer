@@ -19,6 +19,7 @@ defmodule GodwokenExplorer.Polyjuice do
     field :gas_used, :decimal
     field :transaction_index, :integer
     field :created_contract_address_hash, Hash.Address
+    field :native_transfer_address_hash, Hash.Address
     field(:status, Ecto.Enum, values: [:succeed, :failed])
 
     belongs_to(:transaction, GodwokenExplorer.Transaction,
@@ -44,7 +45,8 @@ defmodule GodwokenExplorer.Polyjuice do
       :transaction_index,
       :status,
       :created_contract_address_hash,
-      :tx_hash
+      :tx_hash,
+      :native_transfer_address_hash
     ])
     |> validate_required([
       :tx_hash,

@@ -235,4 +235,119 @@ defmodule GodwokenExplorer.Graphql.TransactionTest do
                }
              }
   end
+
+  test "show polyjuice creator tx by hash", %{
+    conn: conn
+  } do
+    block = insert(:block)
+    eth_user = insert(:user)
+
+    created_account =
+      insert(:user,
+        script_hash: "0x76e09f2071a91828df82ceb8e97486ed680130ddd8cefbe4298a43d0037feac3",
+        eth_address: "0x48a466ed98a517bab6158209bd54c6b29281b733"
+      )
+
+    polyjuice_creator_tx =
+      insert(:polyjuice_creator_tx,
+        from_account: eth_user,
+        block: block,
+        block_number: block.number,
+        index: 0
+      )
+
+    insert(:polyjuice_creator, transaction: polyjuice_creator_tx)
+
+    query = """
+    query {
+      transaction(
+        input: {
+          transaction_hash: "#{polyjuice_creator_tx.hash |> to_string()}"
+        }
+      ) {
+          polyjuice_creator {
+            created_account {
+              eth_address
+              type
+              script_hash
+            }
+          }
+      }
+    }
+    """
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    assert json_response(conn, 200) ==
+             %{
+               "data" => %{
+                 "transaction" => %{
+                   "polyjuice_creator" => %{
+                     "created_account" => %{
+                       "eth_address" => created_account.eth_address |> to_string(),
+                       "type" => "ETH_USER",
+                       "script_hash" => created_account.script_hash |> to_string()
+                     }
+                   }
+                 }
+               }
+             }
+  end
+
+  test "native transfer transaction", %{conn: conn} do
+    block = insert(:block)
+    eth_user = insert(:user)
+    polyjuice_creator_account = insert(:polyjuice_creator_account)
+    receiver_user = insert(:user)
+
+    native_transfer_tx =
+      insert(:transaction,
+        block: block,
+        block_number: block.number,
+        from_account: eth_user,
+        to_account: polyjuice_creator_account,
+        index: 2,
+        args:
+          "0xffffff504f4c590068bf00000000000000a007c2da51000000000000000000000000e867ce97461d310000000000000000000000715ab282b873b79a7be8b0e8c13c4e8966a52040"
+      )
+
+    insert(:polyjuice,
+      transaction: native_transfer_tx,
+      native_transfer_address_hash: receiver_user.eth_address
+    )
+
+    query = """
+    query {
+      transactions(
+        input: {
+          from_eth_address: "#{receiver_user.eth_address |> to_string()}",
+          to_eth_address: "#{receiver_user.eth_address |> to_string()}"
+        }
+      ) {
+        entries {
+          hash
+        }
+      }
+    }
+    """
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    assert json_response(conn, 200) ==
+             %{
+               "data" => %{
+                 "transactions" => %{
+                   "entries" => [%{"hash" => native_transfer_tx.hash |> to_string()}]
+                 }
+               }
+             }
+  end
 end

@@ -1,6 +1,7 @@
 defmodule GodwokenExplorer.Graphql.Types.Polyjuice do
   use Absinthe.Schema.Notation
-  # alias GodwokenExplorer.Graphql.Resolvers, as: Resolvers
+
+  alias GodwokenExplorer.Graphql.Resolvers, as: Resolvers
 
   object :polyjuice do
     field :id, :integer
@@ -14,6 +15,7 @@ defmodule GodwokenExplorer.Graphql.Types.Polyjuice do
     field :gas_used, :bigint
     field :transaction_index, :integer
     field :created_contract_address_hash, :hash_address
+    field :native_transfer_address_hash, :hash_address
     field :status, :polyjuice_status
   end
 
@@ -25,6 +27,10 @@ defmodule GodwokenExplorer.Graphql.Types.Polyjuice do
     field :tx_hash, :hash_full
     field :fee_amount, :bigint
     field :fee_udt_id, :integer
+
+    field :created_account, :account do
+      resolve(&Resolvers.Transaction.created_account/3)
+    end
   end
 
   enum :polyjuice_status do
