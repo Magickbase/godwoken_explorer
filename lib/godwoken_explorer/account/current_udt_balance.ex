@@ -121,7 +121,7 @@ defmodule GodwokenExplorer.Account.CurrentUDTBalance do
           select: %{
             address_hash: cub.address_hash,
             balance: cub.value,
-            updated_at: cub.updated_at
+            updated_at: cub.value_fetched_at
           }
         )
         |> Repo.all()

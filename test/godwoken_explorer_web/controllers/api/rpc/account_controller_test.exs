@@ -29,7 +29,8 @@ defmodule GodwokenExplorerWeb.API.RPC.AccountControllerTest do
         :current_udt_balance,
         address_hash: user_eth_address,
         token_contract_address_hash: native_eth_address,
-        value: D.new(666_600_000_000)
+        value: D.new(666_600_000_000),
+        value_fetched_at: DateTime.add(DateTime.utc_now(), 3600, :second)
       )
 
       insert(
@@ -44,7 +45,8 @@ defmodule GodwokenExplorerWeb.API.RPC.AccountControllerTest do
         :current_udt_balance,
         address_hash: user2_eth_address,
         token_contract_address_hash: native_eth_address,
-        value: D.new(666_000_000_000)
+        value: D.new(666_000_000_000),
+        value_fetched_at: DateTime.add(DateTime.utc_now(), 3600, :second)
       )
 
       %{user_eth_address: user_eth_address, user2_eth_address: user2_eth_address}
