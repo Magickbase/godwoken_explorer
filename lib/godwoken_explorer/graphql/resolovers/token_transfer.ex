@@ -9,7 +9,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.TokenTransfer do
   import GodwokenExplorer.Graphql.Resolvers.Common,
     only: [paginate_query: 3, query_with_block_age_range: 2]
 
-  @sorter_fields [:transaction_hash, :log_index, :block_number, :updated_at]
+  @sorter_fields [:transaction_hash, :log_index, :block_number]
 
   def erc20_token_transfers(_parent, %{input: input}, _resolution) do
     return =
@@ -137,7 +137,12 @@ defmodule GodwokenExplorer.Graphql.Resolvers.TokenTransfer do
                 dynamic([tt], ^acc and tt.token_id == ^value)
 
               :erc1155 ->
-                dynamic([tt], (^acc and ^value in tt.token_ids) or tt.token_id == ^value)
+                dynamic(
+                  [tt],
+                  ^acc and
+                    (^value in tt.token_ids or
+                       (is_nil(tt.token_ids) and tt.token_id == ^value))
+                )
 
               :erc20 ->
                 acc
@@ -188,6 +193,11 @@ defmodule GodwokenExplorer.Graphql.Resolvers.TokenTransfer do
 
     if sorter do
       order_params = cursor_order_sorter(sorter, :order, @sorter_fields)
+      base = Enum.map(order_params, fn {_, e} -> e end)
+      extend = base -- [:transaction_hash, :log_index]
+      extend = extend |> Enum.map(fn e -> {:asc, e} end)
+
+      order_params = order_params ++ extend
       order_by(query, [u], ^order_params)
     else
       order_by(query, [u], [:block_number, :transaction_hash, :log_index])
@@ -198,7 +208,12 @@ defmodule GodwokenExplorer.Graphql.Resolvers.TokenTransfer do
     sorter = Map.get(input, :sorter)
 
     if sorter do
-      cursor_order_sorter(sorter, :cursor, @sorter_fields)
+      cursor_params = cursor_order_sorter(sorter, :cursor, @sorter_fields)
+      base = Enum.map(cursor_params, fn {e, _} -> e end)
+      extend = base -- [:transaction_hash, :log_index]
+      extend = extend |> Enum.map(fn e -> {:asc, e} end)
+
+      cursor_params ++ extend
     else
       [:block_number, :transaction_hash, :log_index]
     end
