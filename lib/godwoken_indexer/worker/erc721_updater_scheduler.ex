@@ -26,25 +26,31 @@ defmodule GodwokenIndexer.Worker.ERC721UpdaterScheduler do
     |> Enum.chunk_every(10)
     |> Enum.map(fn chunk_unfetched_udts ->
       need_update_list =
-        Task.async_stream(chunk_unfetched_udts, fn chunk_unfetched_udt ->
-          contract_address_hash = chunk_unfetched_udt.contract_address_hash
-          return = MetadataRetriever.get_functions_of(contract_address_hash)
+        Task.async_stream(
+          chunk_unfetched_udts,
+          fn chunk_unfetched_udt ->
+            contract_address_hash = chunk_unfetched_udt.contract_address_hash |> to_string()
 
-          need_update =
-            chunk_unfetched_udt
-            |> Map.merge(return)
-            |> Map.take([
-              :id,
-              :name,
-              :totalSupply,
-              :decimals,
-              :symbol,
-              :update_at,
-              :contract_address_hash
-            ])
+            return = MetadataRetriever.get_functions_of(contract_address_hash)
+            # |> IO.inspect(label: "#{contract_address_hash}")
 
-          need_update
-        end)
+            need_update =
+              chunk_unfetched_udt
+              |> Map.merge(return)
+              |> Map.take([
+                :id,
+                :name,
+                :totalSupply,
+                :decimals,
+                :symbol,
+                :update_at,
+                :contract_address_hash
+              ])
+
+            need_update
+          end,
+          timeout: 30_000
+        )
         |> Enum.map(fn {:ok, r} -> r end)
 
       Import.insert_changes_list(

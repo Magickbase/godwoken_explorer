@@ -1035,8 +1035,8 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
       resolve(&Resolvers.UDT.erc1155_inventory/3)
     end
 
-    @deprecated "Use erc721_inventory/erc1155_inventory instead"
     field :erc721_erc1155_inventory, :paginate_erc721_erc1155_inventory do
+      deprecate("Use erc721_inventory/erc1155_inventory instead")
       arg(:input, non_null(:erc721_erc1155_inventory_input))
       resolve(&Resolvers.UDT.erc721_inventory/3)
     end

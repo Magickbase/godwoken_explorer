@@ -694,6 +694,7 @@ type Polyjuice {
   input: ChainData
   input_size: Int
   is_create: Boolean
+  native_transfer_address_hash: HashAddress
   status: PolyjuiceStatus
   transaction_index: Int
   tx_hash: HashFull
@@ -702,13 +703,13 @@ type Polyjuice {
 
 type PolyjuiceCreator {
   code_hash: String
+  created_account: Account
   fee_amount: Bigint
   fee_udt_id: Int
   hash_type: String
   id: Int
   script_args: String
-  tx_hash: HashFull,
-  created_account: Account
+  tx_hash: HashFull
 }
 
 enum PolyjuiceStatus {
@@ -1868,7 +1869,7 @@ type RootQueryType {
   }
   """
   erc1155_user_token(input: Erc1155UserTokenInput!): Erc721Erc1155UserToken
-  erc721_erc1155_inventory(input: Erc721Erc1155InventoryInput!): PaginateErc721Erc1155Inventory
+  erc721_erc1155_inventory(input: Erc721Erc1155InventoryInput!): PaginateErc721Erc1155Inventory @deprecated(reason: "Use erc721_inventory/erc1155_inventory instead")
 
   """
   query {
