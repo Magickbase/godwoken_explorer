@@ -1,10 +1,10 @@
 defmodule GodwokenExplorer.Graphql.BlockTest do
   use GodwokenExplorerWeb.ConnCase
 
-  alias GodwokenExplorer.Factory
+  import GodwokenExplorer.Factory, only: [insert!: 1]
 
   setup do
-    block = Factory.insert!(:block)
+    block = insert!(:block)
 
     [block: block]
   end

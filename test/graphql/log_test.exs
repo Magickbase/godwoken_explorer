@@ -1,6 +1,7 @@
 defmodule GodwokenExplorer.Graphql.LogTest do
   use GodwokenExplorerWeb.ConnCase
-  alias GodwokenExplorer.Factory
+
+  import GodwokenExplorer.Factory, only: [insert!: 2, build: 2]
 
   setup do
     {:ok, args} =
@@ -8,8 +9,8 @@ defmodule GodwokenExplorer.Graphql.LogTest do
         "0x01000000060000001600000000000000000000000000000001000000000000000000000000000000"
       )
 
-    transaction = Factory.build(:transaction, args: args)
-    log = Factory.insert!(:log, transaction_hash: transaction.eth_hash)
+    transaction = build(:transaction, args: args)
+    log = insert!(:log, transaction_hash: transaction.eth_hash)
     [log: log]
   end
 
