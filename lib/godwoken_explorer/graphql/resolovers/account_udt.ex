@@ -257,7 +257,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.AccountUDT do
 
       result =
         (cbus ++ cus)
-        |> Enum.sort_by(&Map.fetch(&1, :updated_at), :desc)
+        |> Enum.sort_by(&Map.fetch(&1, :updated_at), &account_udts_compare_function/2)
         |> Enum.uniq_by(&Map.fetch(&1, :address_hash))
 
       {:ok, result}
@@ -357,7 +357,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.AccountUDT do
 
   defp process_cus_cbus_balance(cus_cubs) do
     cus_cubs
-    |> Enum.sort_by(&{&1.uniq_id, &1.updated_at}, :desc)
+    |> Enum.sort_by(&{&1.uniq_id, &1.updated_at}, &account_udts_compare_function/2)
     |> Enum.reduce({[], nil}, fn c_cb, {acc_list, base} ->
       case base do
         %{uniq_id: uniq_id} ->
@@ -386,5 +386,17 @@ defmodule GodwokenExplorer.Graphql.Resolvers.AccountUDT do
       end
     end)
     |> List.flatten()
+  end
+
+  def account_udts_compare_function({a1, a2}, {b1, b2}) do
+    if a1 >= b1 do
+      true
+    else
+      case DateTime.compare(a2, b2) do
+        :gt -> true
+        :eq -> true
+        _ -> false
+      end
+    end
   end
 end
