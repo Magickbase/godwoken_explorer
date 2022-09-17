@@ -29,10 +29,6 @@ defmodule GodwokenExplorer.Graphql.AccountUDTTest do
 
     user = insert!(:user)
 
-    # base_t = DateTime.utc_now()
-    # inc_base_t = DateTime.add(base_t, 100, :day)
-    # fetch_base_t = DateTime.add(base_t, -100, :day)
-
     base_t = ~U[2022-09-07 10:34:14.021000Z]
     inc_base_t = ~U[2022-09-16 02:56:57.629000Z]
     fetch_base_t = ~U[2022-07-25 07:53:57.788000Z]
