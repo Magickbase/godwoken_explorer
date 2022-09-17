@@ -194,7 +194,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.TokenTransfer do
     if sorter do
       order_params = cursor_order_sorter(sorter, :order, @sorter_fields)
       base = Enum.map(order_params, fn {_, e} -> e end)
-      extend = base -- [:transaction_hash, :log_index]
+      extend = [:transaction_hash, :log_index] -- base
       extend = extend |> Enum.map(fn e -> {:asc, e} end)
 
       order_params = order_params ++ extend
@@ -210,8 +210,8 @@ defmodule GodwokenExplorer.Graphql.Resolvers.TokenTransfer do
     if sorter do
       cursor_params = cursor_order_sorter(sorter, :cursor, @sorter_fields)
       base = Enum.map(cursor_params, fn {e, _} -> e end)
-      extend = base -- [:transaction_hash, :log_index]
-      extend = extend |> Enum.map(fn e -> {:asc, e} end)
+      extend = [:transaction_hash, :log_index] -- base
+      extend = extend |> Enum.map(fn e -> {e, :asc} end)
 
       cursor_params ++ extend
     else

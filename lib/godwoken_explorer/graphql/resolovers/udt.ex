@@ -531,9 +531,9 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
         [cu],
         cu.token_contract_address_hash == ^contract_address and cu.value > 0
       )
-      |> order_by([c], desc: :id, desc: :token_id, desc: :block_number)
+      |> order_by([c], desc: :block_number, desc: :id, desc: :token_id)
       |> paginate_query(input, %{
-        cursor_fields: [id: :desc, token_id: :desc, id: :desc],
+        cursor_fields: [block_number: :desc, id: :desc, token_id: :desc],
         total_count_primary_key_field: [:address_hash, :token_contract_address_hash, :token_id]
       })
 
