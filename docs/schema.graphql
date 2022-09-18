@@ -392,6 +392,30 @@ input Erc1155HoldersInput {
   token_id: Decimal
 }
 
+type Erc1155Udt {
+  account: Account
+  contract_address_hash: HashAddress
+  description: String
+  eth_type: EthType
+  holders_count: Int
+  icon: String
+  id: Int
+  minted_count: Int
+  name: String
+  official_site: String
+  symbol: String
+  token_type_count: Int
+}
+
+type Erc1155UserToken {
+  address_hash: HashAddress
+  token_contract_address_hash: HashAddress
+  token_id: Decimal
+  token_type: EthType
+  udt: Erc1155Udt
+  value: Decimal
+}
+
 input Erc1155UserTokenInput {
   contract_address: HashAddress!
   token_id: Decimal!
@@ -486,20 +510,6 @@ input Erc721Erc1155TokenTransfersInput {
   transaction_hash: HashFull
 }
 
-type Erc721Erc1155Udt {
-  account: Account
-  contract_address_hash: HashAddress
-  description: String
-  eth_type: EthType
-  holders_count: Int
-  icon: String
-  id: Int
-  minted_count: Int
-  name: String
-  official_site: String
-  symbol: String
-}
-
 input Erc721Erc1155UdtsInput {
   """Fetch the records after this cursor."""
   after: String
@@ -516,15 +526,6 @@ input Erc721Erc1155UdtsInput {
   sorter: [UdtsSorterInput] = [{sort_type: ASC, sort_value: ID}]
 }
 
-type Erc721Erc1155UserToken {
-  address_hash: HashAddress
-  token_contract_address_hash: HashAddress
-  token_id: Decimal
-  token_type: EthType
-  udt: Erc721Erc1155Udt
-  value: Decimal
-}
-
 input Erc721HoldersInput {
   """Fetch the records after this cursor."""
   after: String
@@ -537,6 +538,29 @@ input Erc721HoldersInput {
   Limits the number of records returned per page. Note that this number will be capped by maximum_limit=100. Defaults to 20.
   """
   limit: Int = 20
+}
+
+type Erc721Udt {
+  account: Account
+  contract_address_hash: HashAddress
+  description: String
+  eth_type: EthType
+  holders_count: Int
+  icon: String
+  id: Int
+  minted_count: Int
+  name: String
+  official_site: String
+  symbol: String
+}
+
+type Erc721UserToken {
+  address_hash: HashAddress
+  token_contract_address_hash: HashAddress
+  token_id: Decimal
+  token_type: EthType
+  udt: Erc721Udt
+  value: Decimal
 }
 
 enum EthType {
@@ -632,18 +656,28 @@ input PageAndSizeInput {
   page_size: Int = 20
 }
 
+type PaginateErc1155Inventory {
+  entries: [Erc1155UserToken]
+  metadata: PaginateMetadata
+}
+
+type PaginateErc1155Udts {
+  entries: [Erc1155Udt]
+  metadata: PaginateMetadata
+}
+
 type PaginateErc721Erc1155Holders {
   entries: [Erc721Erc1155HolderItem]
   metadata: PaginateMetadata
 }
 
-type PaginateErc721Erc1155Inventory {
-  entries: [Erc721Erc1155UserToken]
+type PaginateErc721Inventory {
+  entries: [Erc721UserToken]
   metadata: PaginateMetadata
 }
 
-type PaginateErc721Erc1155Udts {
-  entries: [Erc721Erc1155Udt]
+type PaginateErc721Udts {
+  entries: [Erc721Udt]
   metadata: PaginateMetadata
 }
 
@@ -680,8 +714,13 @@ type PaginateUdts {
   metadata: PaginateMetadata
 }
 
-type PaginateUserErc721Erc1155Assets {
-  entries: [Erc721Erc1155UserToken]
+type PaginateUserErc1155Assets {
+  entries: [Erc1155UserToken]
+  metadata: PaginateMetadata
+}
+
+type PaginateUserErc721Assets {
+  entries: [Erc721UserToken]
   metadata: PaginateMetadata
 }
 
@@ -1601,7 +1640,7 @@ type RootQueryType {
     }
   }
   """
-  erc1155_inventory(input: Erc721Erc1155InventoryInput!): PaginateErc721Erc1155Inventory
+  erc1155_inventory(input: Erc721Erc1155InventoryInput!): PaginateErc1155Inventory
 
   """
   query {
@@ -1746,6 +1785,7 @@ type RootQueryType {
         contract_address_hash
         eth_type
         holders_count
+        token_type_count
         minted_count
       }
       metadata {
@@ -1772,10 +1812,11 @@ type RootQueryType {
           {
             "contract_address_hash": "0xa87071a188e3e8d3e30f53a335ecc329d88026b7",
             "eth_type": "ERC1155",
-            "holders_count": 3,
+            "holders_count": 4,
             "id": 53717,
-            "minted_count": 30,
-            "name": null
+            "minted_count": 31,
+            "name": null,
+            "token_type_count": 31
           }
         ],
         "metadata": {
@@ -1798,7 +1839,6 @@ type RootQueryType {
       input: {
         limit: 1
         sorter: [{ sort_type: DESC, sort_value: EX_HOLDERS_COUNT }]
-        after: "g3QAAAABaAJkAAl1X2hvbGRlcnNkAA1ob2xkZXJzX2NvdW50YR8="
       }
     ) {
       entries {
@@ -1807,6 +1847,7 @@ type RootQueryType {
         contract_address_hash
         eth_type
         holders_count
+        token_type_count
         minted_count
       }
       metadata {
@@ -1824,22 +1865,71 @@ type RootQueryType {
           {
             "contract_address_hash": "0xb53f9c79eca97291c51a918779fc7a500fbb9e42",
             "eth_type": "ERC1155",
-            "holders_count": 30,
+            "holders_count": 7,
             "id": 24008,
             "minted_count": 30,
-            "name": null
+            "name": null,
+            "token_type_count": 30
           }
         ],
         "metadata": {
-          "after": "g3QAAAABaAJkAAl1X2hvbGRlcnNkAA1ob2xkZXJzX2NvdW50YR4=",
-          "before": "g3QAAAABaAJkAAl1X2hvbGRlcnNkAA1ob2xkZXJzX2NvdW50YR4=",
+          "after": "g3QAAAACZAACaWRiAABdyGgCZAAJdV9ob2xkZXJzZAANaG9sZGVyc19jb3VudGEH",
+          "before": null,
+          "total_count": 524
+        }
+      }
+    }
+  }
+  
+  query {
+    erc1155_udts(
+      input: {
+        limit: 1
+        sorter: [{ sort_type: DESC, sort_value: EX_HOLDERS_COUNT }]
+        after: "g3QAAAACZAACaWRiAABdyGgCZAAJdV9ob2xkZXJzZAANaG9sZGVyc19jb3VudGEH"
+      }
+    ) {
+      entries {
+        id
+        name
+        contract_address_hash
+        eth_type
+        holders_count
+        token_type_count
+        minted_count
+      }
+      metadata {
+        total_count
+        after
+        before
+      }
+    }
+  }
+  
+  {
+    "data": {
+      "erc1155_udts": {
+        "entries": [
+          {
+            "contract_address_hash": "0xe6903e124e5bdae8784674eb625f1c212efc789e",
+            "eth_type": "ERC1155",
+            "holders_count": 5,
+            "id": 48472,
+            "minted_count": 28,
+            "name": null,
+            "token_type_count": 6
+          }
+        ],
+        "metadata": {
+          "after": "g3QAAAACZAACaWRiAAC9WGgCZAAJdV9ob2xkZXJzZAANaG9sZGVyc19jb3VudGEF",
+          "before": "g3QAAAACZAACaWRiAAC9WGgCZAAJdV9ob2xkZXJzZAANaG9sZGVyc19jb3VudGEF",
           "total_count": 524
         }
       }
     }
   }
   """
-  erc1155_udts(input: Erc721Erc1155UdtsInput! = {limit: 20, sorter: [{sort_type: ASC, sort_value: ID}]}): PaginateErc721Erc1155Udts
+  erc1155_udts(input: Erc721Erc1155UdtsInput! = {limit: 20, sorter: [{sort_type: ASC, sort_value: ID}]}): PaginateErc1155Udts
 
   """
   query {
@@ -1868,8 +1958,7 @@ type RootQueryType {
     }
   }
   """
-  erc1155_user_token(input: Erc1155UserTokenInput!): Erc721Erc1155UserToken
-  erc721_erc1155_inventory(input: Erc721Erc1155InventoryInput!): PaginateErc721Erc1155Inventory @deprecated(reason: "Use erc721_inventory/erc1155_inventory instead")
+  erc1155_user_token(input: Erc1155UserTokenInput!): Erc1155UserToken
 
   """
   query {
@@ -1999,7 +2088,7 @@ type RootQueryType {
     }
   }
   """
-  erc721_inventory(input: Erc721Erc1155InventoryInput!): PaginateErc721Erc1155Inventory
+  erc721_inventory(input: Erc721Erc1155InventoryInput!): PaginateErc721Inventory
 
   """
   query {
@@ -2160,7 +2249,7 @@ type RootQueryType {
     }
   }
   """
-  erc721_udts(input: Erc721Erc1155UdtsInput! = {limit: 20, sorter: [{sort_type: ASC, sort_value: ID}]}): PaginateErc721Erc1155Udts
+  erc721_udts(input: Erc721Erc1155UdtsInput! = {limit: 20, sorter: [{sort_type: ASC, sort_value: ID}]}): PaginateErc721Udts
 
   """
   function: get list of logs by filter or conditions
@@ -3356,7 +3445,7 @@ type RootQueryType {
     }
   }
   """
-  user_erc1155_assets(input: UserErc721Erc1155AssetsInput!): PaginateUserErc721Erc1155Assets
+  user_erc1155_assets(input: UserErc721Erc1155AssetsInput!): PaginateUserErc1155Assets
 
   """
   query {
@@ -3400,7 +3489,7 @@ type RootQueryType {
     }
   }
   """
-  user_erc721_assets(input: UserErc721Erc1155AssetsInput!): PaginateUserErc721Erc1155Assets
+  user_erc721_assets(input: UserErc721Erc1155AssetsInput!): PaginateUserErc721Assets
 }
 
 type SmartContract {
