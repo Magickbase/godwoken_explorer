@@ -39,6 +39,7 @@ defmodule GodwokenExplorer.UDT do
     )
 
     field(:holders_count, :integer, virtual: true)
+    field(:token_type_count, :integer, virtual: true)
 
     timestamps()
   end

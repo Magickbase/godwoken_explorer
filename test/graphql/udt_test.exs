@@ -79,6 +79,13 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
         token_type: :erc1155
       )
 
+    _erc1155_cub3 =
+      insert!(:current_udt_balance,
+        token_contract_address_hash: erc1155_native_udt.contract_address_hash,
+        token_id: 7,
+        token_type: :erc1155
+      )
+
     for index <- 8..10 do
       insert!(:current_udt_balance,
         token_contract_address_hash: erc1155_native_udt.contract_address_hash,
@@ -686,6 +693,7 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
           contract_address_hash
           eth_type
           holders_count
+          token_type_count
           minted_count
         }
         metadata {
@@ -706,7 +714,17 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
     assert match?(
              %{
                "data" => %{
-                 "erc1155_udts" => %{"metadata" => %{"total_count" => 1}}
+                 "erc1155_udts" => %{
+                   "entries" => [
+                     %{
+                       "contract_address_hash" => ^contract_address,
+                       "eth_type" => "ERC1155",
+                       "holders_count" => 5,
+                       "token_type_count" => 5
+                     }
+                   ],
+                   "metadata" => %{"total_count" => 1}
+                 }
                }
              },
              json_response(conn, 200)
@@ -924,9 +942,12 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
                      },
                      %{
                        "rank" => 4
+                     },
+                     %{
+                       "rank" => 5
                      }
                    ],
-                   "metadata" => %{"total_count" => 4}
+                   "metadata" => %{"total_count" => 5}
                  }
                }
              },
@@ -1159,7 +1180,7 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
     assert match?(
              %{
                "data" => %{
-                 "erc1155_inventory" => %{"metadata" => %{"total_count" => 5}}
+                 "erc1155_inventory" => %{"metadata" => %{"total_count" => 6}}
                }
              },
              json_response(conn, 200)

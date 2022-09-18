@@ -337,7 +337,8 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
       |> group_by([cu], cu.token_contract_address_hash)
       |> select([cu], %{
         contract_address_hash: cu.token_contract_address_hash,
-        holders_count: count(cu.address_hash, :distinct)
+        holders_count: count(cu.address_hash, :distinct),
+        token_type_count: count(cu.token_id, :distinct)
       })
 
     s2 =
@@ -351,6 +352,12 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
             "CASE WHEN ? IS NULL THEN 0 ELSE ? END",
             u_holders.holders_count,
             u_holders.holders_count
+          ),
+        token_type_count:
+          fragment(
+            "CASE WHEN ? IS NULL THEN 0 ELSE ? END",
+            u_holders.token_type_count,
+            u_holders.token_type_count
           )
       })
 
