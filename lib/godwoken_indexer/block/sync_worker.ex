@@ -91,15 +91,19 @@ defmodule GodwokenIndexer.Block.SyncWorker do
         import_account(transactions_params_without_receipts)
         handle_gw_transaction_receipts(transactions_params_without_receipts, next_block_number)
 
-        {polyjuice_without_receipts, polyjuice_creator_params, _eth_addr_reg_params} =
+        {polyjuice_without_receipts, polyjuice_creator_params, eth_addr_reg_params} =
           group_transaction_params(transactions_params_without_receipts)
 
-        handle_polyjuice_transactions(polyjuice_without_receipts)
+        polyjuice_with_eth_hashes_params =
+          handle_polyjuice_transactions(polyjuice_without_receipts)
 
         import_polyjuice_creator(polyjuice_creator_params)
 
         inserted_transactions =
-          import_transactions(blocks_params, transactions_params_without_receipts)
+          import_transactions(
+            blocks_params,
+            polyjuice_creator_params ++ eth_addr_reg_params ++ polyjuice_with_eth_hashes_params
+          )
 
         update_transactions_cache(inserted_transactions)
         {:ok, inserted_transactions}
@@ -192,39 +196,39 @@ defmodule GodwokenIndexer.Block.SyncWorker do
 
   defp handle_polyjuice_transactions(polyjuice_without_receipts) do
     if polyjuice_without_receipts != [] do
-      {polyjuice_transaction, polyjuice_deploy_contract} =
-        polyjuice_without_receipts |> Enum.split_with(fn polyjuice -> polyjuice[:eth_hash] end)
+      params =
+        polyjuice_without_receipts
+        |> Enum.map(fn polyjuice -> %{gw_tx_hash: polyjuice[:hash]} end)
 
-      polyjuice_deploy_contract =
-        polyjuice_deploy_contract
-        |> Enum.map(fn x ->
-          x
-          |> Map.merge(%{
-            gas_used: 0,
-            status: :succeed,
-            transaction_index: nil,
-            created_contract_address_hash: nil
-          })
+      {:ok, %{errors: [], params_list: hash_mappings}} =
+        GodwokenRPC.fetch_eth_hash_by_gw_hashes(params)
+
+      hash_map = hash_mappings |> Enum.into(%{}, fn map -> {map[:gw_tx_hash], map[:eth_hash]} end)
+
+      polyjuice_without_receipts =
+        polyjuice_without_receipts
+        |> Enum.map(fn polyjuice ->
+          polyjuice |> Map.put(:eth_hash, hash_map[polyjuice[:hash]])
         end)
 
-      polyjuice_transaction
-      |> Stream.each(fn poly_txs ->
-        {:ok, %{logs: logs, receipts: receipts}} =
-          GodwokenRPC.fetch_transaction_receipts([poly_txs])
+      {:ok, %{logs: logs, receipts: receipts}} =
+        GodwokenRPC.fetch_transaction_receipts(polyjuice_without_receipts)
 
-        logs = logs |> Enum.reject(fn x -> x[:topic] == [] end)
-        import_logs(logs)
-        import_token_transfers(logs)
-        import_token_approvals(logs)
-        polyjuice_with_receipts = Receipts.put([poly_txs], receipts)
+      logs = logs |> Enum.reject(fn x -> x[:first_topic] == nil end)
+      import_logs(logs)
+      import_token_transfers(logs)
+      import_token_approvals(logs)
+      polyjuice_with_receipts = Receipts.put(polyjuice_without_receipts, receipts)
 
-        import_polyjuice(polyjuice_with_receipts ++ polyjuice_deploy_contract)
-        async_contract_code(polyjuice_with_receipts)
-      end)
-      |> Enum.to_list()
+      import_polyjuice(polyjuice_with_receipts)
+      async_contract_code(polyjuice_with_receipts)
 
       if length(polyjuice_without_receipts) > 0,
         do: {:ok, :import} = update_ckb_balance(polyjuice_without_receipts)
+
+      polyjuice_without_receipts
+    else
+      []
     end
   end
 
