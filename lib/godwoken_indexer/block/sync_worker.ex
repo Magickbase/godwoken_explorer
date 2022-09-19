@@ -342,8 +342,20 @@ defmodule GodwokenIndexer.Block.SyncWorker do
   defp import_token_approvals(logs) do
     token_approvals = TokenApprovals.parse(logs)
 
+    uniq_token_approvals =
+      token_approvals
+      |> Enum.uniq_by(
+        &Map.take(&1, [
+          :token_owner_address_hash,
+          :spender_address_hash,
+          :token_contract_address_hash,
+          :data,
+          :type
+        ])
+      )
+
     if length(token_approvals) > 0 do
-      Import.insert_changes_list(token_approvals,
+      Import.insert_changes_list(uniq_token_approvals,
         for: TokenApproval,
         timestamps: import_timestamps(),
         on_conflict:
