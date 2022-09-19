@@ -258,7 +258,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.AccountUDT do
       result =
         (cbus ++ cus)
         |> Enum.sort_by(&{&1.uniq_id, &1.updated_at}, &account_udts_compare_function/2)
-        |> Enum.uniq_by(&Map.fetch(&1, :address_hash))
+        |> Enum.uniq_by(& &1.address_hash)
 
       {:ok, result}
     else
