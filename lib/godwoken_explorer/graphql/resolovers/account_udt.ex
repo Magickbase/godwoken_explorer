@@ -130,21 +130,16 @@ defmodule GodwokenExplorer.Graphql.Resolvers.AccountUDT do
          token_contract_address_hash: token_contract_address_hash
        }) do
     if udt_id do
-      from(u in UDT)
-      |> where([u], u.id == ^udt_id)
-      |> Repo.one()
-    else
-      result =
-        from(u in UDT)
-        |> where([u], u.contract_address_hash == ^token_contract_address_hash)
-        |> first()
-        |> Repo.all()
+      case Repo.get(UDT, udt_id) do
+        nil ->
+          a = Repo.get(Account, udt_id)
+          %UDT{id: udt_id, contract_address_hash: a.eth_address}
 
-      if result == [] do
-        nil
-      else
-        hd(result)
+        %UDT{} = u ->
+          u
       end
+    else
+      Repo.get_by(UDT, contract_address_hash: token_contract_address_hash)
     end
   end
 
@@ -257,8 +252,8 @@ defmodule GodwokenExplorer.Graphql.Resolvers.AccountUDT do
 
       result =
         (cbus ++ cus)
-        |> Enum.sort_by(&Map.fetch(&1, :updated_at), &account_udts_compare_function/2)
-        |> Enum.uniq_by(&Map.fetch(&1, :address_hash))
+        |> Enum.sort_by(&{&1.uniq_id, &1.updated_at}, &account_udts_compare_function/2)
+        |> Enum.uniq_by(& &1.address_hash)
 
       {:ok, result}
     else
@@ -379,7 +374,15 @@ defmodule GodwokenExplorer.Graphql.Resolvers.AccountUDT do
         e
       else
         if e.udt_id != e.uniq_id do
-          [e, %CurrentUDTBalance{address_hash: e.address_hash, value: e.value, udt_id: e.uniq_id}]
+          [
+            e,
+            %CurrentUDTBalance{
+              address_hash: e.address_hash,
+              value: e.value,
+              udt_id: e.uniq_id,
+              uniq_id: e.uniq_id
+            }
+          ]
         else
           e
         end
@@ -389,8 +392,8 @@ defmodule GodwokenExplorer.Graphql.Resolvers.AccountUDT do
   end
 
   def account_udts_compare_function({a1, a2}, {b1, b2}) do
-    if a1 >= b1 do
-      true
+    if a1 != b1 do
+      a1 < b1
     else
       case DateTime.compare(a2, b2) do
         :gt -> true

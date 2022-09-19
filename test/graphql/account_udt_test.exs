@@ -1,7 +1,7 @@
 defmodule GodwokenExplorer.Graphql.AccountUDTTest do
   use GodwokenExplorerWeb.ConnCase
 
-  import GodwokenExplorer.Factory, only: [insert!: 1, insert!: 2]
+  import GodwokenExplorer.Factory, only: [insert!: 1, insert!: 2, insert: 2]
 
   setup do
     {:ok, script_hash} =
@@ -10,12 +10,20 @@ defmodule GodwokenExplorer.Graphql.AccountUDTTest do
         "0x0000000000000000000000000000000000000000000000000000000000000000"
       )
 
-    native_udt = insert!(:native_udt)
+    native_udt1 = insert!(:native_udt)
 
     _native_account =
       insert!(:polyjuice_contract_account,
-        eth_address: native_udt.contract_address_hash,
-        id: native_udt.id
+        eth_address: native_udt1.contract_address_hash,
+        id: native_udt1.id
+      )
+
+    native_udt2 = insert!(:native_udt)
+
+    _native_account =
+      insert!(:polyjuice_contract_account,
+        eth_address: native_udt2.contract_address_hash,
+        id: native_udt2.id
       )
 
     ckb_account = insert!(:ckb_account, script_hash: script_hash)
@@ -24,7 +32,7 @@ defmodule GodwokenExplorer.Graphql.AccountUDTTest do
       insert!(:ckb_udt,
         id: ckb_account.id,
         script_hash: script_hash,
-        bridge_account_id: native_udt.id
+        bridge_account_id: native_udt2.id
       )
 
     user = insert!(:user)
@@ -36,12 +44,21 @@ defmodule GodwokenExplorer.Graphql.AccountUDTTest do
     cub =
       insert!(:current_udt_balance,
         address_hash: user.eth_address,
-        token_contract_address_hash: native_udt.contract_address_hash,
+        token_contract_address_hash: native_udt2.contract_address_hash,
         value: 10000,
         token_type: :erc20,
         updated_at: inc_base_t,
         value_fetched_at: fetch_base_t
       )
+
+    insert!(:current_udt_balance,
+      address_hash: user.eth_address,
+      token_contract_address_hash: native_udt1.contract_address_hash,
+      token_type: :erc20,
+      value: 30000,
+      updated_at: ~U[2022-09-16 02:56:57.629000Z],
+      value_fetched_at: ~U[2022-07-25 07:53:57.788000Z]
+    )
 
     cbub =
       insert!(:current_bridged_udt_balance,
@@ -54,12 +71,85 @@ defmodule GodwokenExplorer.Graphql.AccountUDTTest do
 
     [
       user: user,
-      native_udt: native_udt,
+      native_udt: native_udt2,
+      native_udt1: native_udt1,
       ckb_udt: ckb_udt,
       ckb_account: ckb_account,
       cub: cub,
       cbub: cbub
     ]
+  end
+
+  test "graphql: account_udts with bridge without mapping native token", %{conn: conn} do
+    {:ok, script_hash} =
+      GodwokenExplorer.Chain.Hash.cast(
+        GodwokenExplorer.Chain.Hash.Full,
+        "0x1100000000000000000000000000000000000000000000000000000000000011"
+      )
+
+    native_account = insert!(:polyjuice_contract_account)
+    bridge_account = insert(:ckb_account, id: 678_686, script_hash: script_hash)
+
+    bridge_udt =
+      insert!(:ckb_udt,
+        id: bridge_account.id,
+        script_hash: script_hash,
+        bridge_account_id: native_account.id
+      )
+
+    cbub =
+      insert!(:current_bridged_udt_balance,
+        value: 30000,
+        udt_id: bridge_udt.id,
+        udt_script_hash: bridge_udt.script_hash
+      )
+
+    query = """
+    query {
+      account_udts(
+        input: {
+          address_hashes: ["#{cbub.address_hash}"]
+        }
+      ) {
+        value
+        uniq_id
+        udt {
+          id
+          type
+          name
+          bridge_account_id
+          script_hash
+          decimal
+          value
+        }
+        account {
+          id
+          eth_address
+          script_hash
+        }
+      }
+    }
+    """
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    native_account_id = native_account.id
+
+    assert match?(
+             %{
+               "data" => %{
+                 "account_udts" => [
+                   %{"value" => "30000"},
+                   %{"value" => "30000", "udt" => %{"id" => ^native_account_id}}
+                 ]
+               }
+             },
+             json_response(conn, 200)
+           )
   end
 
   test "graphql: account_udts with native and bridge token", %{conn: conn, cub: cub, cbub: cbub} do
@@ -113,9 +203,16 @@ defmodule GodwokenExplorer.Graphql.AccountUDTTest do
            )
   end
 
-  test "graphql: account_current_udts ", %{conn: conn, cub: cub} do
+  test "graphql: account_current_udts ", %{
+    conn: conn,
+    cub: cub,
+    native_udt1: native_udt1,
+    native_udt: native_udt
+  } do
     address = cub.address_hash |> to_string()
-    token_contract_address_hash = cub.token_contract_address_hash |> to_string()
+
+    native_udt1_id = native_udt1.id
+    native_udt2_id = native_udt.id
 
     query = """
     query {
@@ -152,7 +249,8 @@ defmodule GodwokenExplorer.Graphql.AccountUDTTest do
              %{
                "data" => %{
                  "account_current_udts" => [
-                   %{"token_contract_address_hash" => ^token_contract_address_hash}
+                   %{"account" => %{"id" => ^native_udt2_id}},
+                   %{"account" => %{"id" => ^native_udt1_id}},
                  ]
                }
              },
@@ -209,8 +307,15 @@ defmodule GodwokenExplorer.Graphql.AccountUDTTest do
            )
   end
 
-  test "graphql: account_udts only with address_hashes", %{conn: conn, cbub: cbub} do
+  test "graphql: account_udts only with address_hashes", %{
+    conn: conn,
+    cbub: cbub,
+    native_udt1: native_udt1,
+    native_udt: native_udt
+  } do
     address = cbub.address_hash |> to_string()
+    native_udt1_id = native_udt1.id
+    native_udt2_id = native_udt.id
 
     query = """
     query {
@@ -247,7 +352,11 @@ defmodule GodwokenExplorer.Graphql.AccountUDTTest do
     assert match?(
              %{
                "data" => %{
-                 "account_udts" => [%{"value" => "20000"}, %{"value" => "20000"}]
+                 "account_udts" => [
+                   %{"value" => "30000", "account" => %{"id" => ^native_udt1_id}},
+                   %{"value" => "20000", "account" => %{"id" => 1}},
+                   %{"value" => "20000", "account" => %{"id" => ^native_udt2_id}}
+                 ]
                }
              },
              json_response(conn, 200)
