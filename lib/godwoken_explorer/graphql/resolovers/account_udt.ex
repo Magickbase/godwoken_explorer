@@ -397,19 +397,14 @@ defmodule GodwokenExplorer.Graphql.Resolvers.AccountUDT do
   end
 
   def account_udts_compare_function({a1, a2}, {b1, b2}) do
-    case {a1, b1} do
-      {a1, b1} when a1 < b1 ->
-        true
-
-      {a1, b1} when a1 > b1 ->
-        false
-
-      {a1, b1} when a1 == b1 ->
-        case DateTime.compare(a2, b2) do
-          :gt -> true
-          :eq -> true
-          _ -> false
-        end
+    if a1 != b1 do
+      a1 < b1
+    else
+      case DateTime.compare(a2, b2) do
+        :gt -> true
+        :eq -> true
+        _ -> false
+      end
     end
   end
 end
