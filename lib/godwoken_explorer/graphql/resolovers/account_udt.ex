@@ -130,21 +130,16 @@ defmodule GodwokenExplorer.Graphql.Resolvers.AccountUDT do
          token_contract_address_hash: token_contract_address_hash
        }) do
     if udt_id do
-      from(u in UDT)
-      |> where([u], u.id == ^udt_id)
-      |> Repo.one()
-    else
-      result =
-        from(u in UDT)
-        |> where([u], u.contract_address_hash == ^token_contract_address_hash)
-        |> first()
-        |> Repo.all()
+      case Repo.get(UDT, udt_id) do
+        nil ->
+          a = Repo.get(Account, udt_id)
+          %UDT{id: udt_id, contract_address_hash: a.eth_address}
 
-      if result == [] do
-        nil
-      else
-        hd(result)
+        %UDT{} = u ->
+          u
       end
+    else
+      Repo.get_by(UDT, contract_address_hash: token_contract_address_hash)
     end
   end
 
