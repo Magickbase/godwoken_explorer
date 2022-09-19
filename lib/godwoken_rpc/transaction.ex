@@ -19,8 +19,7 @@ defmodule GodwokenRPC.Transaction do
              "nonce" => nonce,
              "args" => "0x" <> args
            },
-           "hash" => hash,
-           "eth_hash" => eth_hash
+           "hash" => hash
          }, index}
       )
       when to_account_id == "0x0" do
@@ -33,7 +32,7 @@ defmodule GodwokenRPC.Transaction do
     %{
       type: :polyjuice_creator,
       hash: hash,
-      eth_hash: eth_hash,
+      eth_hash: nil,
       block_hash: block_hash,
       block_number: block_number,
       index: index,
@@ -60,8 +59,7 @@ defmodule GodwokenRPC.Transaction do
              "nonce" => nonce,
              "args" => "0x" <> args
            },
-           "hash" => hash,
-           "eth_hash" => eth_hash
+           "hash" => hash
          }, index}
       ) do
     from_account_id = hex_to_number(from_account_id)
@@ -76,7 +74,6 @@ defmodule GodwokenRPC.Transaction do
         %{
           type: :polyjuice,
           hash: hash,
-          eth_hash: eth_hash,
           block_hash: block_hash,
           block_number: block_number,
           index: index,
@@ -114,7 +111,7 @@ defmodule GodwokenRPC.Transaction do
         %{
           type: :eth_address_registry,
           hash: hash,
-          eth_hash: eth_hash,
+          eth_hash: nil,
           block_hash: block_hash,
           block_number: block_number,
           index: index,

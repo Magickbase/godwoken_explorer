@@ -6,8 +6,6 @@ defmodule GodwokenRPC.Block do
 
   require Logger
 
-  @eth_addr_reg_id Application.get_env(:godwoken_explorer, :eth_addr_reg_id)
-
   def from_response(%{id: id, result: nil}, id_to_params) when is_map(id_to_params) do
     params = Map.fetch!(id_to_params, id)
 
@@ -83,65 +81,10 @@ defmodule GodwokenRPC.Block do
         "transactions" => transactions
       })
       when transactions != [] do
-    case GodwokenRPC.fetch_eth_block_by_hash(block_hash) do
-      {:ok,
-       %{
-         "transactions" => []
-       }} ->
-        transactions
-        |> Enum.map(fn t ->
-          Map.merge(t, %{
-            "block_hash" => block_hash,
-            "block_number" => hex_to_number(block_number),
-            "eth_hash" => nil
-          })
-        end)
-
-      {:ok,
-       %{
-         "transactions" => eth_transactions
-       }} ->
-        if length(eth_transactions) != length(transactions) do
-          {other_type_txs, polyjuice_txs} =
-            transactions
-            |> Enum.split_with(fn t ->
-              t["raw"]["to_id"] in ["0x0", @eth_addr_reg_id]
-            end)
-
-          parsed_polyjuice_txs =
-            polyjuice_txs
-            |> Enum.with_index()
-            |> Enum.map(fn {t, index} ->
-              Map.merge(t, %{
-                "block_hash" => block_hash,
-                "block_number" => hex_to_number(block_number),
-                "eth_hash" => eth_transactions |> Enum.at(index)
-              })
-            end)
-
-          parsed_other_type_txs =
-            other_type_txs
-            |> Enum.map(fn t ->
-              Map.merge(t, %{
-                "block_hash" => block_hash,
-                "block_number" => hex_to_number(block_number),
-                "eth_hash" => nil
-              })
-            end)
-
-          parsed_other_type_txs ++ parsed_polyjuice_txs
-        else
-          transactions
-          |> Enum.with_index()
-          |> Enum.map(fn {t, index} ->
-            Map.merge(t, %{
-              "block_hash" => block_hash,
-              "block_number" => hex_to_number(block_number),
-              "eth_hash" => eth_transactions |> Enum.at(index)
-            })
-          end)
-        end
-    end
+    transactions
+    |> Enum.map(fn t ->
+      Map.merge(t, %{"block_hash" => block_hash, "block_number" => hex_to_number(block_number)})
+    end)
   end
 
   def elixir_to_transactions(_), do: []
