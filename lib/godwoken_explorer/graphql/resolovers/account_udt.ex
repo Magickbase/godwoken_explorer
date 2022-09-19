@@ -379,7 +379,15 @@ defmodule GodwokenExplorer.Graphql.Resolvers.AccountUDT do
         e
       else
         if e.udt_id != e.uniq_id do
-          [e, %CurrentUDTBalance{address_hash: e.address_hash, value: e.value, udt_id: e.uniq_id}]
+          [
+            e,
+            %CurrentUDTBalance{
+              address_hash: e.address_hash,
+              value: e.value,
+              udt_id: e.uniq_id,
+              uniq_id: e.uniq_id
+            }
+          ]
         else
           e
         end
