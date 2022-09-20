@@ -18,7 +18,7 @@ For technology infrastructure, this project is inspired by [blockscout](https://
 - Rust
 
 ### Run local development
-1. export your enviroment: [reference](./docker_compose/envs/.env)
+1. copy [reference](./docker_compose/envs/.env) to project root and rename `.env.dev` and `.env.test`
 2. `$ mix ecto.setup`
 3. `$ mix phx.server`
 4. Visit `http://localhost:4001`
