@@ -14,7 +14,7 @@ defmodule GodwokenIndexer.Worker.ERC721UpdaterScheduler do
   end
 
   def do_perform() do
-    shift_seconds = 60 * 60
+    shift_seconds = 5 * 60
     limit_value = 20
 
     unfetched_udts = get_unfetched_udts(shift_seconds, limit_value)
@@ -70,7 +70,7 @@ defmodule GodwokenIndexer.Worker.ERC721UpdaterScheduler do
     from(u in UDT,
       where:
         u.type == :native and u.eth_type == :erc721 and
-          (is_nil(u.name) or is_nil(u.symbol)) and
+          (is_nil(u.name) or is_nil(u.symbol)) and (is_nil(u.is_fetched) or u.is_fetched == false) and
           u.updated_at < ^datetime,
       order_by: [desc: u.id]
     )

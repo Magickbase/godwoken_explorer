@@ -31,6 +31,7 @@ defmodule GodwokenExplorer.UDT do
     field(:type, Ecto.Enum, values: [:bridge, :native])
     field(:eth_type, Ecto.Enum, values: [:erc20, :erc721, :erc1155])
     field(:skip_metadata, :boolean)
+    field(:is_fetched, :boolean)
 
     belongs_to(:account, Account,
       foreign_key: :bridge_account_id,
@@ -63,7 +64,8 @@ defmodule GodwokenExplorer.UDT do
       :contract_address_hash,
       :bridge_account_id,
       :eth_type,
-      :skip_metadata
+      :skip_metadata,
+      :is_fetched
     ])
     |> unique_constraint(:id, name: :udts_pkey)
     |> unique_constraint(:contract_address_hash, name: :udts_contract_address_hash_index)
