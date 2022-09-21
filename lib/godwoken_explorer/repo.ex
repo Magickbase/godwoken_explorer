@@ -8,6 +8,8 @@ defmodule GodwokenExplorer.Repo do
 
   require Logger
 
+  alias GodwokenExplorer.Repo.ConfigHelper
+
   @graphql_paginate_defaults [
     limit: 20,
     # sets the maximum limit to 100
@@ -16,6 +18,24 @@ defmodule GodwokenExplorer.Repo do
     include_total_count: true,
     total_count_primary_key_field: :id
   ]
+
+  def init(_, opts) do
+    db_url = System.get_env("DATABASE_URL")
+    repo_conf = Application.get_env(:godwoken_explorer, GodwokenExplorer.Repo)
+
+    merged =
+      %{url: db_url}
+      |> ConfigHelper.get_db_config()
+      |> Keyword.merge(repo_conf, fn
+        _key, v1, nil -> v1
+        _key, nil, v2 -> v2
+        _, _, v2 -> v2
+      end)
+
+    Application.put_env(:godwoken_explorer, GodwokenExplorer.Repo, merged)
+
+    {:ok, Keyword.put(opts, :url, db_url)}
+  end
 
   def graphql_paginate(queryable, opts \\ [], repo_opts \\ []) do
     opts = Keyword.merge(@graphql_paginate_defaults, opts)

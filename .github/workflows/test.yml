@@ -11,6 +11,7 @@ jobs:
       GODWOKEN_MEMPOOL_RPC_URL: "http://localhost:8024"
       CKB_INDEXER_URL: "http://localhost:8116"
       CKB_RPC_URL: "http://localhost:8114"
+      DATABASE_URL: "ecto://postgres:postgres@localhost:5432/godwoken_explorer_test"
     strategy:
       matrix:
         elixir: ['1.13']
