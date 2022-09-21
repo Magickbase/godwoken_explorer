@@ -80,7 +80,8 @@ defmodule GodwokenIndexer.Worker.ERC1155UpdaterScheduler do
         :decimals,
         :symbol,
         :update_at,
-        :contract_address_hash
+        :contract_address_hash,
+        :is_fetched
       ])
     end)
   end

@@ -32,11 +32,11 @@ defmodule GodwokenIndexer.Worker.ERC721UpdaterScheduler do
             contract_address_hash = chunk_unfetched_udt.contract_address_hash |> to_string()
 
             return = MetadataRetriever.get_functions_of(contract_address_hash)
-            # |> IO.inspect(label: "#{contract_address_hash}")
 
             need_update =
               chunk_unfetched_udt
               |> Map.merge(return)
+              |> Map.merge(%{is_fetched: true})
               |> Map.take([
                 :id,
                 :name,
@@ -44,7 +44,8 @@ defmodule GodwokenIndexer.Worker.ERC721UpdaterScheduler do
                 :decimals,
                 :symbol,
                 :update_at,
-                :contract_address_hash
+                :contract_address_hash,
+                :is_fetched
               ])
 
             need_update
@@ -57,7 +58,7 @@ defmodule GodwokenIndexer.Worker.ERC721UpdaterScheduler do
         need_update_list |> Enum.map(fn udt -> Map.delete(udt, :contract_address_hash) end),
         for: UDT,
         timestamps: import_timestamps(),
-        on_conflict: {:replace, [:name, :symbol, :updated_at]},
+        on_conflict: {:replace, [:name, :symbol, :updated_at, :is_fetched]},
         conflict_target: :id
       )
     end)
@@ -86,7 +87,8 @@ defmodule GodwokenIndexer.Worker.ERC721UpdaterScheduler do
         :decimals,
         :symbol,
         :update_at,
-        :contract_address_hash
+        :contract_address_hash,
+        :is_fetched
       ])
     end)
   end
