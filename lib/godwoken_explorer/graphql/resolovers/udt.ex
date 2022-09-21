@@ -22,6 +22,14 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
     {:ok, UDT.minted_count(udt)}
   end
 
+  def erc1155_minted_count(
+        %{contract_address_hash: _contract_address_hash} = udt,
+        _args,
+        _resolution
+      ) do
+    {:ok, UDT.minted_count(udt)}
+  end
+
   def erc1155_user_token(_, %{input: input}, _) do
     user_address = Map.get(input, :user_address)
     contract_address = Map.get(input, :contract_address)
@@ -77,12 +85,8 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
         _,
         _
       ) do
-    query =
-      from(u in UDT,
-        where: u.contract_address_hash == ^token_contract_address_hash
-      )
-
-    {:ok, Repo.one(query)}
+    return = Repo.get_by(UDT, contract_address_hash: token_contract_address_hash)
+    {:ok, return}
   end
 
   def udt(
@@ -518,6 +522,56 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
   end
 
   def erc1155_inventory(_, %{input: input} = _args, _) do
+    contract_address = Map.get(input, :contract_address)
+
+    conditions =
+      Enum.reduce(input, true, fn arg, acc ->
+        case arg do
+          {:token_id, value} ->
+            dynamic([cu], ^acc and cu.token_id == ^value)
+
+          _ ->
+            acc
+        end
+      end)
+
+    sq =
+      from(cu in CurrentUDTBalance)
+      |> where([_], ^conditions)
+      |> where(
+        [cu],
+        cu.token_contract_address_hash == ^contract_address
+      )
+      |> group_by([cu], [cu.token_contract_address_hash, cu.token_id])
+      |> select([cu], %{
+        contract_address_hash: cu.token_contract_address_hash,
+        token_id: cu.token_id,
+        counts: sum(cu.value)
+      })
+
+    query =
+      from(u in UDT,
+        join: scu in subquery(sq),
+        on: u.contract_address_hash == scu.contract_address_hash,
+        as: :inventory,
+        order_by: [desc: scu.counts, asc: scu.contract_address_hash],
+        select: scu
+      )
+
+    return =
+      query
+      |> paginate_query(input, %{
+        cursor_fields: [
+          {{:inventory, :counts}, :desc},
+          {{:inventory, :contract_address_hash}, :asc}
+        ],
+        total_count_primary_key_field: [:contract_address_hash, :token_id]
+      })
+
+    {:ok, return}
+  end
+
+  def erc1155_user_inventory(_, %{input: input} = _args, _) do
     contract_address = Map.get(input, :contract_address)
 
     conditions =

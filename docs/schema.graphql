@@ -392,6 +392,12 @@ input Erc1155HoldersInput {
   token_id: Decimal
 }
 
+type Erc1155Inventory {
+  contract_address_hash: HashAddress
+  counts: Decimal
+  token_id: Decimal
+}
+
 type Erc1155Udt {
   account: Account
   contract_address_hash: HashAddress
@@ -412,7 +418,7 @@ type Erc1155UserToken {
   token_contract_address_hash: HashAddress
   token_id: Decimal
   token_type: EthType
-  udt: Erc1155Udt
+  udt: Erc7211155CommonUdt
   value: Decimal
 }
 
@@ -452,6 +458,26 @@ input Erc20TokenTransfersInput {
   to_address: HashAddress
   token_contract_address_hash: HashAddress
   transaction_hash: HashFull
+}
+
+type Erc7211155CommonUdt {
+  account: Account
+  contract_address_hash: HashAddress
+  description: String
+  eth_type: EthType
+  icon: String
+  id: Int
+  name: String
+  official_site: String
+  symbol: String
+}
+
+type Erc721Erc1155CommonUserToken {
+  address_hash: HashAddress
+  token_contract_address_hash: HashAddress
+  token_id: Decimal
+  token_type: EthType
+  value: Decimal
 }
 
 type Erc721Erc1155HolderItem {
@@ -559,7 +585,7 @@ type Erc721UserToken {
   token_contract_address_hash: HashAddress
   token_id: Decimal
   token_type: EthType
-  udt: Erc721Udt
+  udt: Erc721Erc1155CommonUserToken
   value: Decimal
 }
 
@@ -657,12 +683,17 @@ input PageAndSizeInput {
 }
 
 type PaginateErc1155Inventory {
-  entries: [Erc1155UserToken]
+  entries: [Erc1155Inventory]
   metadata: PaginateMetadata
 }
 
 type PaginateErc1155Udts {
   entries: [Erc1155Udt]
+  metadata: PaginateMetadata
+}
+
+type PaginateErc1155UserInventory {
+  entries: [Erc1155UserToken]
   metadata: PaginateMetadata
 }
 
@@ -1590,21 +1621,14 @@ type RootQueryType {
     erc1155_inventory(
       input: {
         contract_address: "0xe6903e124e5bdae8784674eb625f1c212efc789e"
-        token_id: 0
         limit: 1
+        after: "g3QAAAACaAJkAAlpbnZlbnRvcnlkABVjb250cmFjdF9hZGRyZXNzX2hhc2h0AAAAA2QACl9fc3RydWN0X19kACJFbGl4aXIuR29kd29rZW5FeHBsb3Jlci5DaGFpbi5IYXNoZAAKYnl0ZV9jb3VudGEUZAAFYnl0ZXNtAAAAFOaQPhJOW9roeEZ062JfHCEu_HieaAJkAAlpbnZlbnRvcnlkAAZjb3VudHN0AAAABGQACl9fc3RydWN0X19kAA5FbGl4aXIuRGVjaW1hbGQABGNvZWZiAAArVWQAA2V4cGEAZAAEc2lnbmEB"
       }
     ) {
       entries {
+        contract_address_hash
         token_id
-        address_hash
-        token_contract_address_hash
-        value
-  
-        udt {
-          id
-          name
-          eth_type
-        }
+        counts
       }
       metadata {
         total_count
@@ -1614,27 +1638,20 @@ type RootQueryType {
     }
   }
   
-  
   {
     "data": {
       "erc1155_inventory": {
         "entries": [
           {
-            "address_hash": "0xc6e58fb4affb6ab8a392b7cc23cd3fef74517f6c",
-            "token_contract_address_hash": "0xe6903e124e5bdae8784674eb625f1c212efc789e",
-            "token_id": "0",
-            "udt": {
-              "eth_type": "ERC1155",
-              "id": 48472,
-              "name": null
-            },
-            "value": "73"
+            "contract_address_hash": "0xe6903e124e5bdae8784674eb625f1c212efc789e",
+            "counts": "10103",
+            "token_id": "1"
           }
         ],
         "metadata": {
-          "after": "g3QAAAACZAACaWRiAB4JsWQACHRva2VuX2lkdAAAAARkAApfX3N0cnVjdF9fZAAORWxpeGlyLkRlY2ltYWxkAARjb2VmYQBkAANleHBhAGQABHNpZ25hAQ==",
-          "before": null,
-          "total_count": 4
+          "after": "g3QAAAACaAJkAAlpbnZlbnRvcnlkABVjb250cmFjdF9hZGRyZXNzX2hhc2h0AAAAA2QACl9fc3RydWN0X19kACJFbGl4aXIuR29kd29rZW5FeHBsb3Jlci5DaGFpbi5IYXNoZAAKYnl0ZV9jb3VudGEUZAAFYnl0ZXNtAAAAFOaQPhJOW9roeEZ062JfHCEu_HieaAJkAAlpbnZlbnRvcnlkAAZjb3VudHN0AAAABGQACl9fc3RydWN0X19kAA5FbGl4aXIuRGVjaW1hbGQABGNvZWZiAAAnd2QAA2V4cGEAZAAEc2lnbmEB",
+          "before": "g3QAAAACaAJkAAlpbnZlbnRvcnlkABVjb250cmFjdF9hZGRyZXNzX2hhc2h0AAAAA2QACl9fc3RydWN0X19kACJFbGl4aXIuR29kd29rZW5FeHBsb3Jlci5DaGFpbi5IYXNoZAAKYnl0ZV9jb3VudGEUZAAFYnl0ZXNtAAAAFOaQPhJOW9roeEZ062JfHCEu_HieaAJkAAlpbnZlbnRvcnlkAAZjb3VudHN0AAAABGQACl9fc3RydWN0X19kAA5FbGl4aXIuRGVjaW1hbGQABGNvZWZiAAAnd2QAA2V4cGEAZAAEc2lnbmEB",
+          "total_count": 6
         }
       }
     }
@@ -1930,6 +1947,63 @@ type RootQueryType {
   }
   """
   erc1155_udts(input: Erc721Erc1155UdtsInput! = {limit: 20, sorter: [{sort_type: ASC, sort_value: ID}]}): PaginateErc1155Udts
+
+  """
+  query {
+    erc1155_inventory(
+      input: {
+        contract_address: "0xe6903e124e5bdae8784674eb625f1c212efc789e"
+        token_id: 0
+        limit: 1
+      }
+    ) {
+      entries {
+        token_id
+        address_hash
+        token_contract_address_hash
+        value
+  
+        udt {
+          id
+          name
+          eth_type
+        }
+      }
+      metadata {
+        total_count
+        after
+        before
+      }
+    }
+  }
+  
+  
+  {
+    "data": {
+      "erc1155_inventory": {
+        "entries": [
+          {
+            "address_hash": "0xc6e58fb4affb6ab8a392b7cc23cd3fef74517f6c",
+            "token_contract_address_hash": "0xe6903e124e5bdae8784674eb625f1c212efc789e",
+            "token_id": "0",
+            "udt": {
+              "eth_type": "ERC1155",
+              "id": 48472,
+              "name": null
+            },
+            "value": "73"
+          }
+        ],
+        "metadata": {
+          "after": "g3QAAAACZAACaWRiAB4JsWQACHRva2VuX2lkdAAAAARkAApfX3N0cnVjdF9fZAAORWxpeGlyLkRlY2ltYWxkAARjb2VmYQBkAANleHBhAGQABHNpZ25hAQ==",
+          "before": null,
+          "total_count": 4
+        }
+      }
+    }
+  }
+  """
+  erc1155_user_inventory(input: Erc721Erc1155InventoryInput!): PaginateErc1155UserInventory
 
   """
   query {
