@@ -1029,7 +1029,7 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
 
     @desc """
     query {
-      erc1155_inventory(
+      erc1155_user_inventory(
         input: {
           contract_address: "0xe6903e124e5bdae8784674eb625f1c212efc789e"
           token_id: 0
@@ -1059,7 +1059,7 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
 
     {
       "data": {
-        "erc1155_inventory": {
+        "erc1155_user_inventory": {
           "entries": [
             {
               "address_hash": "0xc6e58fb4affb6ab8a392b7cc23cd3fef74517f6c",
@@ -1074,7 +1074,7 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
             }
           ],
           "metadata": {
-            "after": "g3QAAAACZAACaWRiAB4JsWQACHRva2VuX2lkdAAAAARkAApfX3N0cnVjdF9fZAAORWxpeGlyLkRlY2ltYWxkAARjb2VmYQBkAANleHBhAGQABHNpZ25hAQ==",
+            "after": "g3QAAAADZAAMYmxvY2tfbnVtYmVyYgAEU89kAAJpZGIAHgmxZAAIdG9rZW5faWR0AAAABGQACl9fc3RydWN0X19kAA5FbGl4aXIuRGVjaW1hbGQABGNvZWZhAGQAA2V4cGEAZAAEc2lnbmEB",
             "before": null,
             "total_count": 4
           }
