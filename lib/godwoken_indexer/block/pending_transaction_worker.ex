@@ -90,7 +90,8 @@ defmodule GodwokenIndexer.Block.PendingTransactionWorker do
                      value: value,
                      input_size: input_size,
                      input: input,
-                     hash: hash
+                     hash: hash,
+                     native_transfer_address_hash: native_transfer_address_hash
                    } ->
       %{
         is_create: is_create,
@@ -99,7 +100,8 @@ defmodule GodwokenIndexer.Block.PendingTransactionWorker do
         value: value,
         input_size: input_size,
         input: input,
-        tx_hash: hash
+        tx_hash: hash,
+        native_transfer_address_hash: native_transfer_address_hash
       }
     end)
   end
