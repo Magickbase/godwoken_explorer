@@ -1,5 +1,9 @@
 import Config
 
+if File.exists?(".env.#{config_env()}") and config_env() in [:dev, :test] do
+  Dotenv.load!(".env.#{config_env()}")
+end
+
 gwscan_endpoint_host = System.get_env("GWSCAN_ENDPOINT_HOST", "localhost")
 gwscan_endpoint_port = System.get_env("GWSCAN_ENDPOINT_PORT", "4001") |> String.to_integer()
 gwscan_endpoint_scheme = System.get_env("GWSCAN_ENDPOINT_SCHEME", "http")
@@ -52,30 +56,22 @@ logger_level =
 
 config :logger, level: logger_level
 
-pg_username = System.get_env("PG_USERNAME", "postgres")
-pg_password = System.get_env("PG_PADDWORD", "postgres")
-
-pg_database = System.get_env("PG_DATABASE", "godwoken_explorer_dev")
-pg_hostname = System.get_env("PG_HOSTNAME", "localhost")
-pg_port = System.get_env("PG_PORT", "5432") |> String.to_integer()
 pg_pool_size = System.get_env("PG_POOL_SIZE", "20") |> String.to_integer()
 pg_timeout = System.get_env("PG_TIMEOUT", "20000") |> String.to_integer()
 pg_connect_timeout = System.get_env("PG_CONNECT_TIMEOUT", "30000") |> String.to_integer()
 pg_queue_target = System.get_env("PG_QUEUE_TARGET", "5000") |> String.to_integer()
 
-# database_url =
-#   System.get_env("DATABASE_URL") ||
-#     "postgresql://#{pg_username}:#{pg_password}@#{pg_hostname}:#{pg_port}/#{pg_database}"
+database_url =
+  System.get_env("DATABASE_URL") ||
+    raise """
+    environment variable DATABASE_URL is missing.
+    For example: ecto://USER:PASS@HOST/DATABASE
+    """
 
 maybe_ipv6 = if System.get_env("ECTO_IPV6"), do: [:inet6], else: []
 
 config :godwoken_explorer, GodwokenExplorer.Repo,
-  username: pg_username,
-  password: pg_password,
-  database: pg_database,
-  hostname: pg_hostname,
-  port: pg_port,
-  # url: database_url,
+  url: database_url,
   pool_size: pg_pool_size,
   queue_target: pg_queue_target,
   timeout: pg_timeout,

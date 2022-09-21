@@ -12,13 +12,9 @@ defmodule GodwokenExplorer.Chain.Events.Listener do
   end
 
   def init(channel) do
-    explorer_repo =
-      :godwoken_explorer
-      |> Application.get_env(GodwokenExplorer.Repo)
+    explorer_repo = GodwokenExplorer.Repo.config()
 
-    {:ok, pid} =
-      explorer_repo
-      |> Notifications.start_link()
+    {:ok, pid} = Notifications.start_link(explorer_repo)
 
     ref = Notifications.listen!(pid, channel)
 

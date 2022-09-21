@@ -45,12 +45,8 @@ native/*/target
 .elixir_ls
 .vscode/
 
-.env
-dev.env
-prod_mainnet.env
-prod_testnet.env
-staging_testnet.env
-staging_testnet_v1.env
+.env.dev
+.env.test
 
 # smart contract compiler
 priv/solc_compilers
