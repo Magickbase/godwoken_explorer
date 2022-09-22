@@ -6,8 +6,8 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
   object :udt_querys do
     @desc """
     function: get udt by contract address
-
     contract address example:
+    ```
     query {
       udt(
         input: { contract_address: "0x2275AFE815DE66BEABE7A2C03005537AB843AFB2" }
@@ -18,7 +18,8 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         contract_address_hash
       }
     }
-
+    ```
+    ```
     {
       "data": {
         "udt": {
@@ -29,8 +30,9 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         }
       }
     }
-
+    ```
     id example:
+    ```
     query {
       udt(
         input: {
@@ -45,8 +47,8 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         contract_address_hash
       }
     }
-
-
+    ```
+    ```
     {
       "data": {
         "udt": {
@@ -58,6 +60,7 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         }
       }
     }
+    ```
     """
     field :udt, :udt do
       arg(:input, non_null(:udt_input))
@@ -66,8 +69,8 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
 
     @desc """
     function: get list of udts
-
     pagination-example:
+    ```
     query {
       udts(
         input: {
@@ -93,7 +96,8 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         }
       }
     }
-
+    ```
+    ```
     {
       "data": {
         "udts": {
@@ -117,11 +121,10 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         }
       }
     }
-
-
+    ```
     fuzzy-name-example:
     fuzzy name use postgresql ilike keyword, pattern matching docs like: https://www.postgresql.org/docs/current/functions-matching.html#FUNCTIONS-LIKE
-
+    ```
     query {
       udts(
         input: {
@@ -147,7 +150,8 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         }
       }
     }
-
+    ```
+    ```
     {
       "data": {
         "udts": {
@@ -171,8 +175,9 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         }
       }
     }
-
+    ```
     sorter-example:
+    ```
     query {
       udts(
         input: {
@@ -197,7 +202,8 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         }
       }
     }
-
+    ```
+    ```
     {
       "data": {
         "udts": {
@@ -241,8 +247,9 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         }
       }
     }
-
+    ```
     sorter-example:
+    ```
     query {
       udts(
         input: {
@@ -267,7 +274,8 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         }
       }
     }
-
+    ```
+    ```
     {
       "data": {
         "udts": {
@@ -311,8 +319,9 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         }
       }
     }
-
+    ```
     holders example:
+    ```
     query {
       udts(
         input: {
@@ -339,7 +348,8 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         }
       }
     }
-
+    ```
+    ```
     {
       "data": {
         "udts": {
@@ -364,6 +374,7 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         }
       }
     }
+    ```
     """
     field :udts, :paginate_udts do
       arg(:input, :udts_input, default_value: %{})
@@ -371,6 +382,7 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
     end
 
     @desc """
+    ```
     query {
       erc1155_user_token(
         input: {
@@ -385,7 +397,8 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         token_contract_address_hash
       }
     }
-
+    ```
+    ```
     {
       "data": {
         "erc1155_user_token": {
@@ -396,6 +409,7 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         }
       }
     }
+    ```
     """
     field :erc1155_user_token, :erc1155_user_token do
       arg(:input, non_null(:erc1155_user_token_input))
@@ -403,6 +417,7 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
     end
 
     @desc """
+    ```
     query {
       erc721_udts(
         input: { contract_address: "0x784cd3c52813098763c371df8fbe8ed27d2c1ebd" }
@@ -422,7 +437,8 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         }
       }
     }
-
+    ```
+    ```
     {
       "data": {
         "erc721_udts": {
@@ -444,7 +460,8 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         }
       }
     }
-
+    ```
+    ```
     query {
       erc721_udts(
         input: {
@@ -468,7 +485,8 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         }
       }
     }
-
+    ```
+    ```
     {
       "data": {
         "erc721_udts": {
@@ -490,6 +508,7 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         }
       }
     }
+    ```
     """
     field :erc721_udts, :paginate_erc721_udts do
       arg(:input, non_null(:erc721_erc1155_udts_input), default_value: %{})
@@ -498,7 +517,7 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
     end
 
     @desc """
-
+    ```
     query {
       erc1155_udts(
         input: {
@@ -522,7 +541,6 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
           before
         }
       }
-
       udt(
         input: { contract_address: "0xa87071a188e3e8d3e30f53a335ecc329d88026b7" }
       ) {
@@ -532,7 +550,8 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         eth_type
       }
     }
-
+    ```
+    ```
     {
       "data": {
         "erc1155_udts": {
@@ -561,7 +580,8 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         }
       }
     }
-
+    ```
+    ```
     query {
       erc1155_udts(
         input: {
@@ -585,7 +605,8 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         }
       }
     }
-
+    ```
+    ```
     {
       "data": {
         "erc1155_udts": {
@@ -608,7 +629,8 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         }
       }
     }
-
+    ```
+    ```
     query {
       erc1155_udts(
         input: {
@@ -633,7 +655,8 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         }
       }
     }
-
+    ```
+    ```
     {
       "data": {
         "erc1155_udts": {
@@ -656,7 +679,7 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         }
       }
     }
-
+    ```
     """
     field :erc1155_udts, :paginate_erc1155_udts do
       arg(:input, non_null(:erc721_erc1155_udts_input), default_value: %{})
@@ -665,6 +688,7 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
     end
 
     @desc """
+    ```
     query {
       erc721_holders(
         input: {
@@ -685,7 +709,8 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         }
       }
     }
-
+    ```
+    ```
     {
       "data": {
         "erc721_holders": {
@@ -705,7 +730,8 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         }
       }
     }
-
+    ```
+    ```
     query {
       erc721_holders(
         input: {
@@ -727,7 +753,8 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         }
       }
     }
-
+    ```
+    ```
     {
       "data": {
         "erc721_holders": {
@@ -747,6 +774,7 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         }
       }
     }
+    ```
     """
     field :erc721_holders, :paginate_erc721_erc1155_holders do
       arg(:input, non_null(:erc721_holders_input))
@@ -754,6 +782,7 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
     end
 
     @desc """
+    ```
     query {
       erc1155_holders(
         input: {
@@ -774,7 +803,8 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         }
       }
     }
-
+    ```
+    ```
     {
       "data": {
         "erc1155_holders": {
@@ -794,7 +824,8 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         }
       }
     }
-
+    ```
+    ```
     query {
       erc1155_holders(
         input: {
@@ -816,7 +847,8 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         }
       }
     }
-
+    ```
+    ```
     {
       "data": {
         "erc1155_holders": {
@@ -836,7 +868,8 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         }
       }
     }
-
+    ```
+    ```
     query {
       erc1155_holders(
         input: {
@@ -858,7 +891,8 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         }
       }
     }
-
+    ```
+    ```
     {
       "data": {
         "erc1155_holders": {
@@ -878,6 +912,7 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         }
       }
     }
+    ```
     """
     field :erc1155_holders, :paginate_erc721_erc1155_holders do
       arg(:input, non_null(:erc1155_holders_input))
@@ -885,6 +920,7 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
     end
 
     @desc """
+    ```
     query {
       user_erc721_assets(
         input: {
@@ -905,7 +941,8 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         }
       }
     }
-
+    ```
+    ```
     {
       "data": {
         "user_erc721_assets": {
@@ -925,6 +962,7 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         }
       }
     }
+    ```
     """
     field :user_erc721_assets, :paginate_user_erc721_assets do
       arg(:input, non_null(:user_erc721_erc1155_assets_input))
@@ -932,6 +970,7 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
     end
 
     @desc """
+    ```
     query {
       user_erc1155_assets(
         input: {
@@ -952,7 +991,8 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         }
       }
     }
-
+    ```
+    ```
     {
       "data": {
         "user_erc1155_assets": {
@@ -972,6 +1012,7 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         }
       }
     }
+    ```
     """
     field :user_erc1155_assets, :paginate_user_erc1155_assets do
       arg(:input, non_null(:user_erc721_erc1155_assets_input))
@@ -979,6 +1020,7 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
     end
 
     @desc """
+    ```
     query {
       erc721_inventory(
         input: {
@@ -999,7 +1041,8 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         }
       }
     }
-
+    ```
+    ```
     {
       "data": {
         "erc721_inventory": {
@@ -1019,8 +1062,7 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         }
       }
     }
-
-
+    ```
     """
     field :erc721_inventory, :paginate_erc721_inventory do
       arg(:input, non_null(:erc721_erc1155_inventory_input))
@@ -1028,6 +1070,7 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
     end
 
     @desc """
+    ```
     query {
       erc1155_user_inventory(
         input: {
@@ -1041,7 +1084,6 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
           address_hash
           token_contract_address_hash
           value
-
           udt {
             id
             name
@@ -1055,8 +1097,8 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         }
       }
     }
-
-
+    ```
+    ```
     {
       "data": {
         "erc1155_user_inventory": {
@@ -1081,6 +1123,7 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         }
       }
     }
+    ```
     """
     field :erc1155_user_inventory, :paginate_erc1155_user_inventory do
       arg(:input, non_null(:erc721_erc1155_inventory_input))
@@ -1088,6 +1131,7 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
     end
 
     @desc """
+    ```
     query {
       erc1155_inventory(
         input: {
@@ -1108,7 +1152,8 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         }
       }
     }
-
+    ```
+    ```
     {
       "data": {
         "erc1155_inventory": {
@@ -1127,6 +1172,7 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         }
       }
     }
+    ```
     """
     field :erc1155_inventory, :paginate_erc1155_inventory do
       arg(:input, non_null(:erc721_erc1155_inventory_input))

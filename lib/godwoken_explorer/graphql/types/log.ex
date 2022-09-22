@@ -7,8 +7,8 @@ defmodule GodwokenExplorer.Graphql.Types.Log do
   object :log_querys do
     @desc """
     function: get list of logs by filter or conditions
-
     request-example:
+    ```
     query {
       logs(input: {first_topic: "0x95e0325a2d4f803db1237b0e454f7d9a09ec46941e478e3e98c510d8f1506031",end_block_number: 9988, page: 1, page_size: 1}) {
         transaction_hash
@@ -21,8 +21,8 @@ defmodule GodwokenExplorer.Graphql.Types.Log do
         fourth_topic
       }
     }
-
-    result-example:
+    ```
+    ```
     {
       "data": {
         "logs": [
@@ -39,6 +39,7 @@ defmodule GodwokenExplorer.Graphql.Types.Log do
         ]
       }
     }
+    ```
     """
     field :logs, list_of(:log) do
       arg(:input, non_null(:log_input))

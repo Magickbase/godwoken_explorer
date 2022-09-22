@@ -5,6 +5,7 @@ defmodule GodwokenExplorer.Graphql.Types.Sourcify do
   object :sourcify_querys do
     @desc """
     check by addresses example:
+    ```
     query {
       sourcify_check_by_addresses(
         input: { addresses: ["0x7A4a65Db21864384d2D21a60367d7Fd5c86F8Fba"] }
@@ -14,8 +15,8 @@ defmodule GodwokenExplorer.Graphql.Types.Sourcify do
         chain_ids
       }
     }
-
-
+    ```
+    ```
     {
       "data": {
         "sourcify_check_by_addresses": [
@@ -29,6 +30,7 @@ defmodule GodwokenExplorer.Graphql.Types.Sourcify do
         ]
       }
     }
+    ```
     """
     field :sourcify_check_by_addresses, list_of(:sourcify_check_by_addresses) do
       arg(:input, non_null(:sourcify_check_by_addresses_input))
@@ -39,6 +41,7 @@ defmodule GodwokenExplorer.Graphql.Types.Sourcify do
   object :sourcify_mutations do
     @desc """
     example:
+    ```
     mutation {
       verify_and_update_from_sourcify(
         input: { address: "0x7A4a65Db21864384d2D21a60367d7Fd5c86F8Fba" }
@@ -47,12 +50,13 @@ defmodule GodwokenExplorer.Graphql.Types.Sourcify do
         account_id
         # contract_source_code
         # abi
-				compiler_version
+    compiler_version
         deployment_tx_hash
-				name
+    name
       }
     }
-
+    ```
+    ```
     {
       "data": {
         "verify_and_update_from_sourcify": {
@@ -64,6 +68,7 @@ defmodule GodwokenExplorer.Graphql.Types.Sourcify do
         }
       }
     }
+    ```
     """
     field :verify_and_update_from_sourcify, :smart_contract do
       arg(:input, non_null(:verify_and_update_from_sourcify_input))

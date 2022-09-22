@@ -26,25 +26,28 @@ type Account {
 
 input AccountBridgedUdtsByScriptHashInput {
   """
+  ```
   argument: the page of query result, the relations of postgres offset: offset = (page - 1) * page_size
-  
   default: 1
   limit: > 0
+  ```
   """
   page: Int = 1
 
   """
+  ```
   argument: the page_size of query result, it's the same of postgres limit
-  
   default: 20
   limit: > 0
+  ```
   """
   page_size: Int = 20
 
   """
+  ```
   argument: the sort of type by custom condition
-  
   default: desc
+  ```
   """
   sort_type: SortType = DESC
   udt_script_hash: HashFull!
@@ -52,25 +55,28 @@ input AccountBridgedUdtsByScriptHashInput {
 
 input AccountChildUdtsInput {
   """
+  ```
   argument: the page of query result, the relations of postgres offset: offset = (page - 1) * page_size
-  
   default: 1
   limit: > 0
+  ```
   """
   page: Int = 1
 
   """
+  ```
   argument: the page_size of query result, it's the same of postgres limit
-  
   default: 20
   limit: > 0
+  ```
   """
   page_size: Int = 20
 
   """
+  ```
   argument: the sort of type by custom condition
-  
   default: desc
+  ```
   """
   sort_type: SortType = DESC
 }
@@ -102,18 +108,20 @@ input AccountCurrentBridgedUdtsInput {
   address_hashes: [HashAddress] = []
 
   """
+  ```
   argument: the page of query result, the relations of postgres offset: offset = (page - 1) * page_size
-  
   default: 1
   limit: > 0
+  ```
   """
   page: Int = 1
 
   """
+  ```
   argument: the page_size of query result, it's the same of postgres limit
-  
   default: 20
   limit: > 0
+  ```
   """
   page_size: Int = 20
 
@@ -146,18 +154,20 @@ input AccountCurrentUdtsInput {
   address_hashes: [HashAddress] = []
 
   """
+  ```
   argument: the page of query result, the relations of postgres offset: offset = (page - 1) * page_size
-  
   default: 1
   limit: > 0
+  ```
   """
   page: Int = 1
 
   """
+  ```
   argument: the page_size of query result, it's the same of postgres limit
-  
   default: 20
   limit: > 0
+  ```
   """
   page_size: Int = 20
 
@@ -176,11 +186,14 @@ input AccountCurrentUdtsInput {
 
 input AccountInput {
   """
+  ```
   address: account address(eth_address)
   example: "0x59b670e9fa9d0a427751af201d676719a970857b"
-  
+  ```
+  ```
   script_hash: script hash with hash_full type
   example: "0x08c9937e412e135928fd6dec7255965ddd7df4d5a163564b60895100bb3b2f9e"
+  ```
   """
   address: HashAddress
   script_hash: HashFull
@@ -207,25 +220,28 @@ type AccountUdt {
 
 input AccountUdtsByContractAddressInput {
   """
+  ```
   argument: the page of query result, the relations of postgres offset: offset = (page - 1) * page_size
-  
   default: 1
   limit: > 0
+  ```
   """
   page: Int = 1
 
   """
+  ```
   argument: the page_size of query result, it's the same of postgres limit
-  
   default: 20
   limit: > 0
+  ```
   """
   page_size: Int = 20
 
   """
+  ```
   argument: the sort of type by custom condition
-  
   default: desc
+  ```
   """
   sort_type: SortType = DESC
   token_contract_address_hash: HashAddress!
@@ -297,25 +313,28 @@ input BlockInput {
 
 input BlocksInput {
   """
+  ```
   argument: the page of query result, the relations of postgres offset: offset = (page - 1) * page_size
-  
   default: 1
   limit: > 0
+  ```
   """
   page: Int = 1
 
   """
+  ```
   argument: the page_size of query result, it's the same of postgres limit
-  
   default: 20
   limit: > 0
+  ```
   """
   page_size: Int = 20
 
   """
+  ```
   argument: the sort of type by custom condition
-  
   default: desc
+  ```
   """
   sort_type: SortType = DESC
 }
@@ -638,26 +657,29 @@ input LogInput {
   fourth_topic: String
 
   """
+  ```
   argument: the page of query result, the relations of postgres offset: offset = (page - 1) * page_size
-  
   default: 1
   limit: > 0
+  ```
   """
   page: Int = 1
 
   """
+  ```
   argument: the page_size of query result, it's the same of postgres limit
-  
   default: 20
   limit: > 0
+  ```
   """
   page_size: Int = 20
   second_topic: String
 
   """
+  ```
   argument: the sort of type by custom condition
-  
   default: desc
+  ```
   """
   sort_type: SortType = DESC
 
@@ -669,18 +691,20 @@ input LogInput {
 
 input PageAndSizeInput {
   """
+  ```
   argument: the page of query result, the relations of postgres offset: offset = (page - 1) * page_size
-  
   default: 1
   limit: > 0
+  ```
   """
   page: Int = 1
 
   """
+  ```
   argument: the page_size of query result, it's the same of postgres limit
-  
   default: 20
   limit: > 0
+  ```
   """
   page_size: Int = 20
 }
@@ -793,6 +817,7 @@ enum PolyjuiceStatus {
 type RootMutationType {
   """
   example:
+  ```
   mutation {
     verify_and_update_from_sourcify(
       input: { address: "0x7A4a65Db21864384d2D21a60367d7Fd5c86F8Fba" }
@@ -806,7 +831,8 @@ type RootMutationType {
   name
     }
   }
-  
+  ```
+  ```
   {
     "data": {
       "verify_and_update_from_sourcify": {
@@ -818,6 +844,7 @@ type RootMutationType {
       }
     }
   }
+  ```
   """
   verify_and_update_from_sourcify(input: VerifyAndUpdateFromSourcifyInput!): SmartContract
 }
@@ -825,16 +852,16 @@ type RootMutationType {
 type RootQueryType {
   """
   function: get account by account addresses
-  
-  request-example:
+  request-with-address-example:
+  ```
   query {
     account(input: {address: "0x59b670e9fa9d0a427751af201d676719a970857b"}){
       type
       eth_address
     }
   }
-  
-  result-example:
+  ```
+  ```
   {
     "data": {
       "account": {
@@ -843,8 +870,9 @@ type RootQueryType {
       }
     }
   }
-  
-  request-example:
+  ```
+  request-with-script-hash-example:
+  ```
   query {
     account(input: {script_hash: "0x08c9937e412e135928fd6dec7255965ddd7df4d5a163564b60895100bb3b2f9e"}){
       type
@@ -852,7 +880,8 @@ type RootQueryType {
       script_hash
     }
   }
-  
+  ```
+  ```
   {
     "data": {
       "account": {
@@ -862,8 +891,8 @@ type RootQueryType {
       }
     }
   }
-  
-  request-example:
+  ```
+  ```
   query {
     account(
       input: {
@@ -876,8 +905,8 @@ type RootQueryType {
       script
     }
   }
-  
-  
+  ```
+  ```
   {
     "data": {
       "account": {
@@ -903,8 +932,8 @@ type RootQueryType {
       }
     }
   }
-  
-  request-example:
+  ```
+  ```
   query {
     account(
       input: {
@@ -921,7 +950,8 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
+  ```
   {
     "data": {
       "account": {
@@ -940,8 +970,8 @@ type RootQueryType {
       }
     }
   }
-  
-  request-example:
+  ```
+  ```
   query {
     account(
       input: {
@@ -954,7 +984,8 @@ type RootQueryType {
       script
     }
   }
-  
+  ```
+  ```
   {
     "data": {
       "account": {
@@ -969,8 +1000,8 @@ type RootQueryType {
       }
     }
   }
-  
-  request-example:
+  ```
+  ```
   query {
     account(
       input: {
@@ -983,7 +1014,8 @@ type RootQueryType {
       script
     }
   }
-  
+  ```
+  ```
   {
     "data": {
       "account": {
@@ -998,8 +1030,8 @@ type RootQueryType {
       }
     }
   }
-  
-  request-example:
+  ```
+  ```
   query {
     account(
       input: {
@@ -1025,8 +1057,8 @@ type RootQueryType {
       }
     }
   }
-  
-  
+  ```
+  ```
   {
     "data": {
       "account": {
@@ -1049,8 +1081,9 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
   bridge-account-udt-example:
+  ```
   query {
     account(
       input: {
@@ -1071,7 +1104,8 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
+  ```
   {
     "data": {
       "account": {
@@ -1090,11 +1124,13 @@ type RootQueryType {
       }
     }
   }
+  ```
   """
   account(input: AccountInput!): Account
 
   """
   request-result-example:
+  ```
   query {
     account_bridged_udts_by_script_hash(
       input: {
@@ -1123,7 +1159,8 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
+  ```
   {
     "data": {
       "account_bridged_udts_by_script_hash": [
@@ -1150,11 +1187,13 @@ type RootQueryType {
       ]
     }
   }
+  ```
   """
   account_bridged_udts_by_script_hash(input: AccountBridgedUdtsByScriptHashInput!): [AccountCurrentBridgedUdt]
 
   """
   request-result-example:
+  ```
   query {
     account_ckbs(
       input: { address_hashes: ["0x715AB282B873B79A7BE8B0E8C13C4E8966A52040"] }
@@ -1176,7 +1215,8 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
+  ```
   {
     "data": {
       "account_ckbs": [
@@ -1200,11 +1240,13 @@ type RootQueryType {
       ]
     }
   }
+  ```
   """
   account_ckbs(input: AccountCkbsInput!): [AccountUdt]
 
   """
   request-result-example:
+  ```
   query {
     account_current_bridged_udts(
       input: {
@@ -1232,7 +1274,8 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
+  ```
   {
     "data": {
       "account_current_bridged_udts": [
@@ -1259,12 +1302,14 @@ type RootQueryType {
       ]
     }
   }
+  ```
   """
   account_current_bridged_udts(input: AccountCurrentBridgedUdtsInput!): [AccountCurrentBridgedUdt]
 
   """
   erc20 udts
   request-result-example:
+  ```
   query {
     account_current_udts(
       input: {
@@ -1292,19 +1337,21 @@ type RootQueryType {
       }
     }
   }
-  
-  
+  ```
+  ```
   {
     "data": {
       "account_current_udts": []
     }
   }
+  ```
   """
   account_current_udts(input: AccountCurrentUdtsInput!): [AccountCurrentUdt]
 
   """
   erc20 udts
   request-result-example:
+  ```
   query {
     account_udts(
       input: {
@@ -1330,7 +1377,8 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
+  ```
   {
     "data": {
       "account_udts": [
@@ -1354,12 +1402,14 @@ type RootQueryType {
       ]
     }
   }
+  ```
   """
   account_udts(input: AccountUdtsInput!): [AccountUdt]
 
   """
   erc20 udts
   request-result-example:
+  ```
   query {
     account_udts_by_contract_address(
       input: {
@@ -1388,7 +1438,8 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
+  ```
   {
     "data": {
       "account_udts_by_contract_address": [
@@ -1408,13 +1459,14 @@ type RootQueryType {
       ]
     }
   }
+  ```
   """
   account_udts_by_contract_address(input: AccountUdtsByContractAddressInput!): [AccountCurrentUdt]
 
   """
   function: get block by block number or block hash
-  
   request-result-example:
+  ```
   query {
     block(input: {number: 1}){
       hash
@@ -1433,7 +1485,8 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
+  ```
   {
     "data": {
       "block": {
@@ -1447,13 +1500,14 @@ type RootQueryType {
       }
     }
   }
+  ```
   """
   block(input: BlockInput): Block
 
   """
   function: get list of block sort by block number
-  
   request-example:
+  ```
   query {
     blocks(input: {}){
       hash
@@ -1472,7 +1526,8 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
+  ```
   result-example:
   {
     "data": {
@@ -1488,10 +1543,12 @@ type RootQueryType {
       }
     }
   }
+  ```
   """
   blocks(input: BlocksInput = {page: 1, page_size: 10, sort_type: DESC}): [Block]
 
   """
+  ```
   query {
     erc1155_holders(
       input: {
@@ -1512,7 +1569,8 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
+  ```
   {
     "data": {
       "erc1155_holders": {
@@ -1532,7 +1590,8 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
+  ```
   query {
     erc1155_holders(
       input: {
@@ -1554,7 +1613,8 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
+  ```
   {
     "data": {
       "erc1155_holders": {
@@ -1574,7 +1634,8 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
+  ```
   query {
     erc1155_holders(
       input: {
@@ -1596,7 +1657,8 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
+  ```
   {
     "data": {
       "erc1155_holders": {
@@ -1616,10 +1678,12 @@ type RootQueryType {
       }
     }
   }
+  ```
   """
   erc1155_holders(input: Erc1155HoldersInput!): PaginateErc721Erc1155Holders
 
   """
+  ```
   query {
     erc1155_inventory(
       input: {
@@ -1640,7 +1704,8 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
+  ```
   {
     "data": {
       "erc1155_inventory": {
@@ -1659,10 +1724,12 @@ type RootQueryType {
       }
     }
   }
+  ```
   """
   erc1155_inventory(input: Erc721Erc1155InventoryInput!): PaginateErc1155Inventory
 
   """
+  ```
   query {
     erc1155_token_transfers(
       input: {
@@ -1705,7 +1772,8 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
+  ```
   {
     "data": {
       "erc1155_token_transfers": {
@@ -1738,7 +1806,8 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
+  ```
   query {
     erc1155_token_transfers(
       input: {
@@ -1767,7 +1836,8 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
+  ```
   {
     "data": {
       "erc1155_token_transfers": {
@@ -1787,10 +1857,12 @@ type RootQueryType {
       }
     }
   }
+  ```
   """
   erc1155_token_transfers(input: Erc721Erc1155TokenTransfersInput! = {combine_from_to: true, limit: 20, sorter: [{sort_type: DESC, sort_value: BLOCK_NUMBER}, {sort_type: DESC, sort_value: LOG_INDEX}, {sort_type: ASC, sort_value: TRANSACTION_HASH}]}): PaginateTokenTransfers
 
   """
+  ```
   query {
     erc1155_udts(
       input: {
@@ -1814,7 +1886,6 @@ type RootQueryType {
         before
       }
     }
-  
     udt(
       input: { contract_address: "0xa87071a188e3e8d3e30f53a335ecc329d88026b7" }
     ) {
@@ -1824,7 +1895,8 @@ type RootQueryType {
       eth_type
     }
   }
-  
+  ```
+  ```
   {
     "data": {
       "erc1155_udts": {
@@ -1853,7 +1925,8 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
+  ```
   query {
     erc1155_udts(
       input: {
@@ -1877,7 +1950,8 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
+  ```
   {
     "data": {
       "erc1155_udts": {
@@ -1900,7 +1974,8 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
+  ```
   query {
     erc1155_udts(
       input: {
@@ -1925,7 +2000,8 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
+  ```
   {
     "data": {
       "erc1155_udts": {
@@ -1948,10 +2024,12 @@ type RootQueryType {
       }
     }
   }
+  ```
   """
   erc1155_udts(input: Erc721Erc1155UdtsInput! = {limit: 20, sorter: [{sort_type: ASC, sort_value: ID}]}): PaginateErc1155Udts
 
   """
+  ```
   query {
     erc1155_user_inventory(
       input: {
@@ -1965,7 +2043,6 @@ type RootQueryType {
         address_hash
         token_contract_address_hash
         value
-  
         udt {
           id
           name
@@ -1979,8 +2056,8 @@ type RootQueryType {
       }
     }
   }
-  
-  
+  ```
+  ```
   {
     "data": {
       "erc1155_user_inventory": {
@@ -2005,10 +2082,12 @@ type RootQueryType {
       }
     }
   }
+  ```
   """
   erc1155_user_inventory(input: Erc721Erc1155InventoryInput!): PaginateErc1155UserInventory
 
   """
+  ```
   query {
     erc1155_user_token(
       input: {
@@ -2023,7 +2102,8 @@ type RootQueryType {
       token_contract_address_hash
     }
   }
-  
+  ```
+  ```
   {
     "data": {
       "erc1155_user_token": {
@@ -2034,10 +2114,12 @@ type RootQueryType {
       }
     }
   }
+  ```
   """
   erc1155_user_token(input: Erc1155UserTokenInput!): Erc1155UserToken
 
   """
+  ```
   query {
     erc721_holders(
       input: {
@@ -2058,7 +2140,8 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
+  ```
   {
     "data": {
       "erc721_holders": {
@@ -2078,7 +2161,8 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
+  ```
   query {
     erc721_holders(
       input: {
@@ -2100,7 +2184,8 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
+  ```
   {
     "data": {
       "erc721_holders": {
@@ -2120,10 +2205,12 @@ type RootQueryType {
       }
     }
   }
+  ```
   """
   erc721_holders(input: Erc721HoldersInput!): PaginateErc721Erc1155Holders
 
   """
+  ```
   query {
     erc721_inventory(
       input: {
@@ -2144,7 +2231,8 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
+  ```
   {
     "data": {
       "erc721_inventory": {
@@ -2164,10 +2252,12 @@ type RootQueryType {
       }
     }
   }
+  ```
   """
   erc721_inventory(input: Erc721Erc1155InventoryInput!): PaginateErc721Inventory
 
   """
+  ```
   query {
     erc721_token_transfers(
       input: {
@@ -2205,8 +2295,8 @@ type RootQueryType {
       }
     }
   }
-  
-  
+  ```
+  ```
   {
     "data": {
       "erc721_token_transfers": {
@@ -2234,10 +2324,12 @@ type RootQueryType {
       }
     }
   }
+  ```
   """
   erc721_token_transfers(input: Erc721Erc1155TokenTransfersInput! = {combine_from_to: true, limit: 20, sorter: [{sort_type: DESC, sort_value: BLOCK_NUMBER}, {sort_type: DESC, sort_value: LOG_INDEX}, {sort_type: ASC, sort_value: TRANSACTION_HASH}]}): PaginateTokenTransfers
 
   """
+  ```
   query {
     erc721_udts(
       input: { contract_address: "0x784cd3c52813098763c371df8fbe8ed27d2c1ebd" }
@@ -2257,7 +2349,8 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
+  ```
   {
     "data": {
       "erc721_udts": {
@@ -2279,7 +2372,8 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
+  ```
   query {
     erc721_udts(
       input: {
@@ -2303,7 +2397,8 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
+  ```
   {
     "data": {
       "erc721_udts": {
@@ -2325,13 +2420,14 @@ type RootQueryType {
       }
     }
   }
+  ```
   """
   erc721_udts(input: Erc721Erc1155UdtsInput! = {limit: 20, sorter: [{sort_type: ASC, sort_value: ID}]}): PaginateErc721Udts
 
   """
   function: get list of logs by filter or conditions
-  
   request-example:
+  ```
   query {
     logs(input: {first_topic: "0x95e0325a2d4f803db1237b0e454f7d9a09ec46941e478e3e98c510d8f1506031",end_block_number:
   9988, page: 1, page_size: 1}) {
@@ -2345,8 +2441,8 @@ type RootQueryType {
       fourth_topic
     }
   }
-  
-  result-example:
+  ```
+  ```
   {
     "data": {
       "logs": [
@@ -2363,13 +2459,14 @@ type RootQueryType {
       ]
     }
   }
+  ```
   """
   logs(input: LogInput!): [Log]
 
   """
   function: get smart contract by address
-  
   request-result-example:
+  ```
   query {
     smart_contract(
       input: { contract_address: "0x2503A1A79A443F3961EE96A8C5EC513638129614" }
@@ -2381,6 +2478,8 @@ type RootQueryType {
       }
     }
   }
+  ```
+  ```
   {
     "data": {
       "smart_contract": {
@@ -2392,8 +2491,9 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
   request-result-example2:
+  ```
   query {
     smart_contract(
       input: { script_hash: "0x9B55204439C78D3B9CBCC62C03F31E47C8457FD39CA9A9EB805B364B45C26C38" }
@@ -2405,6 +2505,8 @@ type RootQueryType {
       }
     }
   }
+  ```
+  ```
   {
     "data": {
       "smart_contract": {
@@ -2416,13 +2518,14 @@ type RootQueryType {
       }
     }
   }
+  ```
   """
   smart_contract(input: SmartContractInput!): SmartContract
 
   """
   function: get list of smart contracts
-  
   request-result-example:
+  ```
   query {
     smart_contracts(input: { sorter: [{ sort_type: ASC, sort_value: ID }] }) {
       entries {
@@ -2439,8 +2542,8 @@ type RootQueryType {
       }
     }
   }
-  
-  
+  ```
+  ```
   {
     "data": {
       "smart_contracts": {
@@ -2461,8 +2564,9 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
   multi-table-sorter-example:
+  ```
   query {
     smart_contracts(
       input: { sorter: [{ sort_type: ASC, sort_value: EX_TX_COUNT }] }
@@ -2481,6 +2585,8 @@ type RootQueryType {
       }
     }
   }
+  ```
+  ```
   {
     "data": {
       "smart_contracts": {
@@ -2501,11 +2607,13 @@ type RootQueryType {
       }
     }
   }
+  ```
   """
   smart_contracts(input: SmartContractsInput): PaginateSmartContracts
 
   """
   check by addresses example:
+  ```
   query {
     sourcify_check_by_addresses(
       input: { addresses: ["0x7A4a65Db21864384d2D21a60367d7Fd5c86F8Fba"] }
@@ -2515,8 +2623,8 @@ type RootQueryType {
       chain_ids
     }
   }
-  
-  
+  ```
+  ```
   {
     "data": {
       "sourcify_check_by_addresses": [
@@ -2530,20 +2638,20 @@ type RootQueryType {
       ]
     }
   }
+  ```
   """
   sourcify_check_by_addresses(input: SourcifyCheckByAddressesInput!): [SourcifyCheckByAddresses]
 
   """
   function: get list of token approvals by filter
-  
   example:
+  ```
   query {
     token_approvals(
       input: {
         address: "0x966b30e576a4d6731996748b48dd67c94ef29067"
         token_type: ERC20
         limit: 2
-  
         sorter: [
           { sort_type: DESC, sort_value: BLOCK_NUMBER },
           { sort_type: DESC, sort_value: ID }
@@ -2561,7 +2669,6 @@ type RootQueryType {
           timestamp
         }
       }
-  
       metadata {
         total_count
         before
@@ -2569,7 +2676,8 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
+  ```
   {
     "data": {
       "token_approvals": {
@@ -2594,13 +2702,14 @@ type RootQueryType {
       }
     }
   }
+  ```
   """
   token_approvals(input: TokenApprovalInput! = {limit: 20, sorter: [{sort_type: DESC, sort_value: BLOCK_NUMBER}, {sort_type: DESC, sort_value: ID}]}): PaginateTokenApprovals
 
   """
   function: get list of token transfers by filter
-  
   example:
+  ```
   query {
     token_transfers(
       input: {
@@ -2610,7 +2719,6 @@ type RootQueryType {
         end_block_number: 90
         limit: 2
         combine_from_to: true
-  
         sorter: [
           { sort_type: ASC, sort_value: BLOCK_NUMBER }
           { sort_type: ASC, sort_value: TRANSACTION_HASH }
@@ -2629,7 +2737,6 @@ type RootQueryType {
           eth_address
         }
       }
-  
       metadata {
         total_count
         before
@@ -2637,7 +2744,8 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
+  ```
   {
     "data": {
       "token_transfers": {
@@ -2673,8 +2781,9 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
   example2:
+  ```
   query {
     token_transfers(
       input: {
@@ -2706,7 +2815,6 @@ type RootQueryType {
           eth_address
         }
       }
-  
       metadata {
         total_count
         before
@@ -2714,8 +2822,8 @@ type RootQueryType {
       }
     }
   }
-  
-  
+  ```
+  ```
   {
     "data": {
       "token_transfers": {
@@ -2743,13 +2851,14 @@ type RootQueryType {
       }
     }
   }
+  ```
   """
   token_transfers(input: Erc20TokenTransfersInput! = {combine_from_to: true, limit: 20, sorter: [{sort_type: DESC, sort_value: BLOCK_NUMBER}, {sort_type: DESC, sort_value: LOG_INDEX}, {sort_type: ASC, sort_value: TRANSACTION_HASH}]}): PaginateTokenTransfers
 
   """
   function: get transaction by transaction_hash
-  
   request-example:
+  ```
   query {
     transaction(
       input: {
@@ -2787,9 +2896,8 @@ type RootQueryType {
       }
     }
   }
-  
-  
-  result-example:
+  ```
+  ```
   {
     "data": {
       "transaction": {
@@ -2825,11 +2933,13 @@ type RootQueryType {
       }
     }
   }
+  ```
   """
   transaction(input: TransactionInput!): Transaction
 
   """
   sorter-example:
+  ```
   query {
     transactions(
       input: {
@@ -2855,7 +2965,6 @@ type RootQueryType {
         }
         to_account_id
       }
-  
       metadata {
         total_count
         before
@@ -2863,7 +2972,8 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
+  ```
   {
     "data": {
       "transactions": {
@@ -2891,8 +3001,9 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
   block-number-and-age-range-example:
+  ```
   query {
     transactions(
       input: {
@@ -2920,7 +3031,6 @@ type RootQueryType {
         }
         to_account_id
       }
-  
       metadata {
         total_count
         before
@@ -2928,8 +3038,8 @@ type RootQueryType {
       }
     }
   }
-  
-  
+  ```
+  ```
   {
     "data": {
       "transactions": {
@@ -2958,8 +3068,9 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
   from-to-example:
+  ```
   query {
     transactions(
       input: {
@@ -2987,7 +3098,6 @@ type RootQueryType {
           eth_address
         }
       }
-  
       metadata {
         total_count
         before
@@ -2995,7 +3105,8 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
+  ```
   {
     "data": {
       "transactions": {
@@ -3026,8 +3137,9 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
   combine-example:
+  ```
   query {
     transactions(
       input: {
@@ -3057,7 +3169,6 @@ type RootQueryType {
           eth_address
         }
       }
-  
       metadata {
         total_count
         before
@@ -3065,7 +3176,8 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
+  ```
   {
     "data": {
       "transactions": {
@@ -3078,7 +3190,9 @@ type RootQueryType {
       }
     }
   }
+  ```
   pending-transaction-example:
+  ```
   query {
     transactions(
       input: {
@@ -3090,7 +3204,6 @@ type RootQueryType {
         block_hash
         hash
       }
-  
       metadata {
         total_count
         before
@@ -3098,7 +3211,8 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
+  ```
   {
     "data": {
       "transactions": {
@@ -3116,13 +3230,14 @@ type RootQueryType {
       }
     }
   }
+  ```
   """
   transactions(input: TransactionsInput = {combine_from_to: true, limit: 20, sorter: [{sort_type: DESC, sort_value: BLOCK_NUMBER}, {sort_type: DESC, sort_value: INDEX}, {sort_type: ASC, sort_value: HASH}]}): PaginateTrasactions
 
   """
   function: get udt by contract address
-  
   contract address example:
+  ```
   query {
     udt(
       input: { contract_address: "0x2275AFE815DE66BEABE7A2C03005537AB843AFB2" }
@@ -3133,7 +3248,8 @@ type RootQueryType {
       contract_address_hash
     }
   }
-  
+  ```
+  ```
   {
     "data": {
       "udt": {
@@ -3144,8 +3260,9 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
   id example:
+  ```
   query {
     udt(
       input: {
@@ -3160,8 +3277,8 @@ type RootQueryType {
       contract_address_hash
     }
   }
-  
-  
+  ```
+  ```
   {
     "data": {
       "udt": {
@@ -3173,13 +3290,14 @@ type RootQueryType {
       }
     }
   }
+  ```
   """
   udt(input: UdtInput!): Udt
 
   """
   function: get list of udts
-  
   pagination-example:
+  ```
   query {
     udts(
       input: {
@@ -3205,7 +3323,8 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
+  ```
   {
     "data": {
       "udts": {
@@ -3229,12 +3348,11 @@ type RootQueryType {
       }
     }
   }
-  
-  
+  ```
   fuzzy-name-example:
   fuzzy name use postgresql ilike keyword, pattern matching docs like:
   https://www.postgresql.org/docs/current/functions-matching.html#FUNCTIONS-LIKE
-  
+  ```
   query {
     udts(
       input: {
@@ -3260,7 +3378,8 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
+  ```
   {
     "data": {
       "udts": {
@@ -3284,8 +3403,9 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
   sorter-example:
+  ```
   query {
     udts(
       input: {
@@ -3310,7 +3430,8 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
+  ```
   {
     "data": {
       "udts": {
@@ -3354,8 +3475,9 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
   sorter-example:
+  ```
   query {
     udts(
       input: {
@@ -3380,7 +3502,8 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
+  ```
   {
     "data": {
       "udts": {
@@ -3424,8 +3547,9 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
   holders example:
+  ```
   query {
     udts(
       input: {
@@ -3452,7 +3576,8 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
+  ```
   {
     "data": {
       "udts": {
@@ -3477,10 +3602,12 @@ type RootQueryType {
       }
     }
   }
+  ```
   """
   udts(input: UdtsInput = {limit: 20, sorter: [{sort_type: ASC, sort_value: ID}]}): PaginateUdts
 
   """
+  ```
   query {
     user_erc1155_assets(
       input: {
@@ -3501,7 +3628,8 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
+  ```
   {
     "data": {
       "user_erc1155_assets": {
@@ -3521,10 +3649,12 @@ type RootQueryType {
       }
     }
   }
+  ```
   """
   user_erc1155_assets(input: UserErc721Erc1155AssetsInput!): PaginateUserErc1155Assets
 
   """
+  ```
   query {
     user_erc721_assets(
       input: {
@@ -3545,7 +3675,8 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
+  ```
   {
     "data": {
       "user_erc721_assets": {
@@ -3565,6 +3696,7 @@ type RootQueryType {
       }
     }
   }
+  ```
   """
   user_erc721_assets(input: UserErc721Erc1155AssetsInput!): PaginateUserErc721Assets
 }
