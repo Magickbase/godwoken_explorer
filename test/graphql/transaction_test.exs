@@ -284,6 +284,7 @@ defmodule GodwokenExplorer.Graphql.TransactionTest do
 
   test "pending transaction", %{conn: conn} do
     pending_tx = insert(:pending_transaction)
+    pending_tx_2 = insert(:pending_transaction)
 
     query = """
     query {
@@ -309,7 +310,10 @@ defmodule GodwokenExplorer.Graphql.TransactionTest do
              %{
                "data" => %{
                  "transactions" => %{
-                   "entries" => [%{"hash" => pending_tx.hash |> to_string()}]
+                   "entries" => [
+                     %{"hash" => pending_tx.hash |> to_string()},
+                     %{"hash" => pending_tx_2.hash |> to_string()}
+                   ]
                  }
                }
              }

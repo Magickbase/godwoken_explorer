@@ -33,7 +33,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
           _ ->
             false
         end
-    end)
+      end)
 
     from(t in Transaction, where: ^conditions)
   end
@@ -230,22 +230,32 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
 
   defp transactions_order_by(query, input) do
     sorter = Map.get(input, :sorter)
+    status = Map.get(input, :status)
 
-    if sorter do
-      order_params = cursor_order_sorter(sorter, :order, @sorter_fields)
-      order_by(query, [u], ^order_params)
+    if status == :pending do
+      order_by(query, [u], [:hash])
     else
-      order_by(query, [u], @default_sorter)
+      if sorter do
+        order_params = cursor_order_sorter(sorter, :order, @sorter_fields)
+        order_by(query, [u], ^order_params)
+      else
+        order_by(query, [u], @default_sorter)
+      end
     end
   end
 
   defp paginate_cursor(input) do
     sorter = Map.get(input, :sorter)
+    status = Map.get(input, :status)
 
-    if sorter do
-      cursor_order_sorter(sorter, :cursor, @sorter_fields)
+    if status == :pending do
+      [:hash]
     else
-      @default_sorter
+      if sorter do
+        cursor_order_sorter(sorter, :cursor, @sorter_fields)
+      else
+        @default_sorter
+      end
     end
   end
 
