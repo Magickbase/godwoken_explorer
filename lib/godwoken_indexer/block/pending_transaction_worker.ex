@@ -213,11 +213,11 @@ defmodule GodwokenIndexer.Block.PendingTransactionWorker do
        }) do
     cond do
       String.starts_with?(args, "ffffff504f4c59") ->
-        [is_create, gas_limit, gas_price, value, input_size, input] = parse_polyjuice_args(args)
+        [is_create, gas_limit, gas_price, value, input_size, input, native_transfer_address_hash] =
+          parse_polyjuice_args(args)
 
         from_account_id = hex_to_number(from_account_id)
         to_account_id = hex_to_number(to_id)
-        native_transfer_address_hash = if args |> String.length() == 144, do: input, else: nil
 
         %{
           type: :polyjuice,

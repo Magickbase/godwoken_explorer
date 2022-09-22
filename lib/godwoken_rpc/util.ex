@@ -189,8 +189,12 @@ defmodule GodwokenRPC.Util do
       |> String.slice(96, 8)
       |> parse_le_number()
 
-    input = hex_string |> String.slice(104..-1)
-    [is_create, gas_limit, gas_price, value, input_size, "0x" <> input]
+    input = hex_string |> String.slice(104, input_size * 2)
+
+    native_transfer_address =
+      if input_size == 0, do: "0x" <> (hex_string |> String.slice(104..-1)), else: nil
+
+    [is_create, gas_limit, gas_price, value, input_size, "0x" <> input, native_transfer_address]
   end
 
   def transform_hash_type(hash_type) do
