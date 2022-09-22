@@ -51,6 +51,9 @@ defmodule GodwokenIndexer.Block.PendingTransactionWorkerTest do
       assert pending_tx.hash |> to_string() ==
                "0xa312962527ae503c23dadc95fb007683d99a525006781ec6990b1671cc025800"
 
+      assert p.input_size == 0
+      assert p.input |> to_string() == "0x"
+
       assert p.native_transfer_address_hash |> to_string() ==
                "0xd1667cbf1cc60da94c1cf6c9cfb261e71b6047f7"
     end
