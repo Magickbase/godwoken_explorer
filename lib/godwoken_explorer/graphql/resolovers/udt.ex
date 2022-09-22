@@ -13,21 +13,33 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
 
   @sorter_fields [:name, :supply, :id]
 
+  def alias_counts(%{value: value}, _args, _resolution) do
+    {:ok, value}
+  end
+
   def holders_count(%{id: id}, _args, _resolution) do
     udt = Repo.get(UDT, id)
     {:ok, UDT.count_holder(udt)}
   end
 
   def minted_count(%{contract_address_hash: _contract_address_hash} = udt, _args, _resolution) do
-    {:ok, UDT.minted_count(udt)}
+    return = UDT.minted_count(udt) |> Decimal.new()
+    {:ok, return}
   end
 
   def erc1155_minted_count(
-        %{contract_address_hash: _contract_address_hash} = udt,
+        %{contract_address_hash: contract_address_hash} = _udt,
         _args,
         _resolution
       ) do
-    {:ok, UDT.minted_count(udt)}
+    query =
+      from(cu in CurrentUDTBalance,
+        where: cu.token_contract_address_hash == ^contract_address_hash,
+        select: sum(cu.value)
+      )
+
+    return = Repo.one(query)
+    {:ok, return}
   end
 
   def erc1155_user_token(_, %{input: input}, _) do

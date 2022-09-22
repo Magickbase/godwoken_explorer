@@ -1201,7 +1201,12 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
     field(:token_contract_address_hash, :hash_address)
     field(:token_id, :decimal)
     field(:token_type, :eth_type)
-    field(:value, :decimal)
+
+    field(:value, :decimal, deprecate: true)
+
+    field(:counts, :decimal) do
+      resolve(&Resolvers.UDT.alias_counts/3)
+    end
   end
 
   object :erc721_user_token do
@@ -1239,7 +1244,7 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
   object :erc1155_udt do
     import_fields(:erc721_1155_common_udt)
 
-    field :minted_count, :integer do
+    field :minted_count, :decimal do
       resolve(&Resolvers.UDT.erc1155_minted_count/3)
     end
 
@@ -1250,7 +1255,7 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
   object :erc721_udt do
     import_fields(:erc721_1155_common_udt)
 
-    field :minted_count, :integer do
+    field :minted_count, :decimal do
       resolve(&Resolvers.UDT.minted_count/3)
     end
 
@@ -1284,7 +1289,7 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
     #   resolve(&Resolvers.UDT.holders_count/3)
     # end
 
-    field :minted_count, :integer do
+    field :minted_count, :decimal do
       resolve(&Resolvers.UDT.minted_count/3)
     end
   end

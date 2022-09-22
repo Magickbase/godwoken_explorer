@@ -406,7 +406,7 @@ type Erc1155Udt {
   holders_count: Int
   icon: String
   id: Int
-  minted_count: Int
+  minted_count: Decimal
   name: String
   official_site: String
   symbol: String
@@ -415,6 +415,7 @@ type Erc1155Udt {
 
 type Erc1155UserToken {
   address_hash: HashAddress
+  counts: Decimal
   token_contract_address_hash: HashAddress
   token_id: Decimal
   token_type: EthType
@@ -474,6 +475,7 @@ type Erc7211155CommonUdt {
 
 type Erc721Erc1155CommonUserToken {
   address_hash: HashAddress
+  counts: Decimal
   token_contract_address_hash: HashAddress
   token_id: Decimal
   token_type: EthType
@@ -574,7 +576,7 @@ type Erc721Udt {
   holders_count: Int
   icon: String
   id: Int
-  minted_count: Int
+  minted_count: Decimal
   name: String
   official_site: String
   symbol: String
@@ -582,6 +584,7 @@ type Erc721Udt {
 
 type Erc721UserToken {
   address_hash: HashAddress
+  counts: Decimal
   token_contract_address_hash: HashAddress
   token_id: Decimal
   token_type: EthType
@@ -3793,7 +3796,7 @@ type Udt {
   holders_count: Int
   icon: String
   id: Int
-  minted_count: Int
+  minted_count: Decimal
   name: String
   official_site: String
   price: Decimal

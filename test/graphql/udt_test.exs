@@ -68,7 +68,8 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
         address_hash: user.eth_address,
         token_contract_address_hash: erc1155_native_udt.contract_address_hash,
         token_id: 6,
-        token_type: :erc1155
+        token_type: :erc1155,
+        value: 100
       )
 
     _erc1155_cub2 =
@@ -76,21 +77,24 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
         address_hash: user.eth_address,
         token_contract_address_hash: erc1155_native_udt.contract_address_hash,
         token_id: 7,
-        token_type: :erc1155
+        token_type: :erc1155,
+        value: 100
       )
 
     _erc1155_cub3 =
       insert!(:current_udt_balance,
         token_contract_address_hash: erc1155_native_udt.contract_address_hash,
         token_id: 7,
-        token_type: :erc1155
+        token_type: :erc1155,
+        value: 100
       )
 
     for index <- 8..10 do
       insert!(:current_udt_balance,
         token_contract_address_hash: erc1155_native_udt.contract_address_hash,
         token_id: index,
-        token_type: :erc1155
+        token_type: :erc1155,
+        value: 100
       )
     end
 
@@ -720,7 +724,8 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
                        "contract_address_hash" => ^contract_address,
                        "eth_type" => "ERC1155",
                        "holders_count" => 5,
-                       "token_type_count" => 5
+                       "token_type_count" => 5,
+                       "minted_count" => "600"
                      }
                    ],
                    "metadata" => %{"total_count" => 1}
@@ -1025,7 +1030,7 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
           token_contract_address_hash
           token_id
           token_type
-          value
+          counts
         }
         metadata {
           total_count
@@ -1070,7 +1075,7 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
           token_contract_address_hash
           token_id
           token_type
-          value
+          counts
         }
         metadata {
           total_count
@@ -1115,7 +1120,7 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
           token_contract_address_hash
           token_id
           token_type
-          value
+          counts
         }
         metadata {
           total_count
@@ -1160,7 +1165,7 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
           token_contract_address_hash
           token_id
           token_type
-          value
+          counts
         }
         metadata {
           total_count
