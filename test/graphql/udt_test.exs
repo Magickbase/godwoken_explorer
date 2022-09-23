@@ -98,6 +98,14 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
       )
     end
 
+    _erc1155_cu6 =
+      insert!(:current_udt_balance,
+        token_contract_address_hash: erc1155_native_udt.contract_address_hash,
+        token_id: 11,
+        token_type: :erc1155,
+        value: 0
+      )
+
     [
       ckb_udt: ckb_udt,
       native_udt: native_udt,
@@ -724,7 +732,7 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
                        "contract_address_hash" => ^contract_address,
                        "eth_type" => "ERC1155",
                        "holders_count" => 5,
-                       "token_type_count" => 5,
+                       "token_type_count" => 6,
                        "minted_count" => "600"
                      }
                    ],

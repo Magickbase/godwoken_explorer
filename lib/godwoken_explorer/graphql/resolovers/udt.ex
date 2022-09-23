@@ -584,6 +584,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
 
     sq =
       from(cu in CurrentUDTBalance)
+      |> where([c], c.token_type == :erc1155 and c.value > 0)
       |> where([_], ^conditions)
       |> where(
         [cu],
@@ -637,7 +638,8 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
       |> where([_], ^conditions)
       |> where(
         [cu],
-        cu.token_contract_address_hash == ^contract_address and cu.value > 0
+        cu.token_contract_address_hash == ^contract_address and cu.token_type == :erc1155 and
+          cu.value > 0
       )
       |> order_by([c], desc: :block_number, desc: :id, desc: :token_id)
       |> paginate_query(input, %{
