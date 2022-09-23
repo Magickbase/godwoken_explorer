@@ -584,7 +584,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
 
     sq =
       from(cu in CurrentUDTBalance)
-      |> where([c], c.token_type == :erc1155 and c.value > 0)
+      |> where([c], c.token_type == :erc1155)
       |> where([_], ^conditions)
       |> where(
         [cu],

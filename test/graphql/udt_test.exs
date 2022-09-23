@@ -1236,7 +1236,7 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
     assert match?(
              %{
                "data" => %{
-                 "erc1155_inventory" => %{"metadata" => %{"total_count" => 5}}
+                 "erc1155_inventory" => %{"metadata" => %{"total_count" => 6}}
                }
              },
              json_response(conn, 200)
