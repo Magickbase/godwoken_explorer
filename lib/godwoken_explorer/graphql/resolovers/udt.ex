@@ -307,24 +307,38 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
   end
 
   def erc721_udts(_parent, %{input: input} = _args, _resolution) do
-    return = do_erc721_erc1155_udts(input, :erc721)
+    return =
+      from(u in UDT)
+      |> where([u], u.eth_type == :erc721)
+      |> udts_condition_query(input)
+      |> udts_where_fuzzy_name(input)
+      |> erc721_erc1155_udts_order_by(input, :erc721)
+      |> paginate_query(input, %{
+        cursor_fields: paginate_cursor(input),
+        total_count_primary_key_field: :id
+      })
+
     {:ok, return}
   end
 
   def erc1155_udts(_parent, %{input: input} = _args, _resolution) do
-    return = do_erc721_erc1155_udts(input, :erc1155)
+    return =
+      from(u in UDT)
+      |> where([u], u.eth_type == :erc1155)
+      |> udts_condition_query(input)
+      |> udts_where_fuzzy_name(input)
+      |> erc721_erc1155_udts_order_by(input, :erc1155)
+      |> paginate_query(input, %{
+        cursor_fields: paginate_cursor(input),
+        total_count_primary_key_field: :id
+      })
+
     {:ok, return}
   end
 
-  defp do_erc721_erc1155_udts(input, type) do
-    base_conditions =
-      case type do
-        :erc721 -> dynamic([u], u.eth_type == :erc721)
-        :erc1155 -> dynamic([u], u.eth_type == :erc1155)
-      end
-
+  defp udts_condition_query(query, input) do
     conditions =
-      Enum.reduce(input, base_conditions, fn arg, acc ->
+      Enum.reduce(input, true, fn arg, acc ->
         case arg do
           {:contract_address, value} ->
             dynamic([u], ^acc and u.contract_address_hash == ^value)
@@ -334,17 +348,11 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
         end
       end)
 
-    from(u in UDT)
+    query
     |> where([u], ^conditions)
-    |> udts_where_fuzzy_name(input)
-    |> erc721_erc1155_udts_order_by(input)
-    |> paginate_query(input, %{
-      cursor_fields: paginate_cursor(input),
-      total_count_primary_key_field: :id
-    })
   end
 
-  defp erc721_erc1155_udts_order_by(query, input) do
+  defp erc721_erc1155_udts_order_by(query, input, type) do
     squery =
       from(
         cu in CurrentUDTBalance,
@@ -353,29 +361,56 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
       |> group_by([cu], cu.token_contract_address_hash)
       |> select([cu], %{
         contract_address_hash: cu.token_contract_address_hash,
-        holders_count: count(cu.address_hash, :distinct),
+        holders_count: count(cu.address_hash, :distinct)
+      })
+
+    ## erc1155 need token_type_count
+    s1 =
+      from(cu in CurrentUDTBalance)
+      |> where([cu], cu.token_type == :erc1155)
+      |> group_by([cu], cu.token_contract_address_hash)
+      |> select([cu], %{
+        contract_address_hash: cu.token_contract_address_hash,
         token_type_count: count(cu.token_id, :distinct)
       })
 
     s2 =
-      query
-      |> join(:left, [u], h in subquery(squery),
-        on: u.contract_address_hash == h.contract_address_hash
-      )
-      |> select_merge([u, u_holders], %{
-        holders_count:
-          fragment(
-            "CASE WHEN ? IS NULL THEN 0 ELSE ? END",
-            u_holders.holders_count,
-            u_holders.holders_count
-          ),
-        token_type_count:
-          fragment(
-            "CASE WHEN ? IS NULL THEN 0 ELSE ? END",
-            u_holders.token_type_count,
-            u_holders.token_type_count
-          )
-      })
+      if type == :erc1155 do
+        query
+        |> join(:left, [u], h in subquery(squery),
+          on: u.contract_address_hash == h.contract_address_hash
+        )
+        |> join(:left, [u], ttc in subquery(s1),
+          on: u.contract_address_hash == ttc.contract_address_hash
+        )
+        |> select_merge([u, u_holders, u_type_counts], %{
+          holders_count:
+            fragment(
+              "CASE WHEN ? IS NULL THEN 0 ELSE ? END",
+              u_holders.holders_count,
+              u_holders.holders_count
+            ),
+          token_type_count:
+            fragment(
+              "CASE WHEN ? IS NULL THEN 0 ELSE ? END",
+              u_type_counts.token_type_count,
+              u_type_counts.token_type_count
+            )
+        })
+      else
+        query
+        |> join(:left, [u], h in subquery(squery),
+          on: u.contract_address_hash == h.contract_address_hash
+        )
+        |> select_merge([u, u_holders], %{
+          holders_count:
+            fragment(
+              "CASE WHEN ? IS NULL THEN 0 ELSE ? END",
+              u_holders.holders_count,
+              u_holders.holders_count
+            )
+        })
+      end
 
     holders_count_query =
       query
