@@ -1,7 +1,6 @@
 defmodule GodwokenExplorer.WithdrawalHistoryView do
   use JSONAPI.View, type: "withdrawal_history"
   use Retry
-
   use GodwokenExplorer, :schema
 
   def fields do
@@ -47,21 +46,35 @@ defmodule GodwokenExplorer.WithdrawalHistoryView do
     to_string(withdrawal_history.payment_lock_hash)
   end
 
-  def find_by_l2_script_hash(l2_script_hash, page) do
-    query_results = base_query(dynamic([h], h.l2_script_hash == ^l2_script_hash), page)
+  def find_by_l2_script_hash(l2_script_hash, state, page) do
+    base_condition = dynamic([h], h.l2_script_hash == ^l2_script_hash)
+
+    condition =
+      if state in ["pending", "available", "succeed"],
+        do: dynamic([h], h.state == ^state and ^base_condition),
+        else: base_condition
+
+    query_results = base_query(condition, page)
 
     if updated_state?(query_results) do
-      base_query(dynamic([h], h.l2_script_hash == ^l2_script_hash), page)
+      base_query(condition, page)
     else
       query_results
     end
   end
 
-  def find_by_owner_lock_hash(owner_lock_hash, page) do
-    query_results = base_query(dynamic([h], h.owner_lock_hash == ^owner_lock_hash), page)
+  def find_by_owner_lock_hash(owner_lock_hash, state, page) do
+    base_condition = dynamic([h], h.owner_lock_hash == ^owner_lock_hash)
+
+    condition =
+      if state in ["pending", "available", "succeed"],
+        do: dynamic([h], h.state == ^state and ^base_condition),
+        else: base_condition
+
+    query_results = base_query(condition, page)
 
     if updated_state?(query_results) do
-      base_query(dynamic([h], h.owner_lock_hash == ^owner_lock_hash), page)
+      base_query(condition, page)
     else
       query_results
     end
