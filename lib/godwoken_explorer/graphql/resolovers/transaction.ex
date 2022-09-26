@@ -33,7 +33,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
           _ ->
             false
         end
-    end)
+      end)
 
     from(t in Transaction, where: ^conditions)
   end
@@ -233,6 +233,11 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
 
     if sorter do
       order_params = cursor_order_sorter(sorter, :order, @sorter_fields)
+      base = Enum.map(order_params, fn {_, e} -> e end)
+      extend = [:hash] -- base
+      extend = extend |> Enum.map(fn e -> {:asc, e} end)
+      order_params = order_params ++ extend
+
       order_by(query, [u], ^order_params)
     else
       order_by(query, [u], @default_sorter)
@@ -243,7 +248,11 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
     sorter = Map.get(input, :sorter)
 
     if sorter do
-      cursor_order_sorter(sorter, :cursor, @sorter_fields)
+      cursor_params = cursor_order_sorter(sorter, :cursor, @sorter_fields)
+      base = Enum.map(cursor_params, fn {e, _} -> e end)
+      extend = [:hash] -- base
+      extend = extend |> Enum.map(fn e -> {e, :asc} end)
+      cursor_params ++ extend
     else
       @default_sorter
     end
