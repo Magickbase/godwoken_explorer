@@ -6,8 +6,8 @@ defmodule GodwokenExplorer.Graphql.Types.TokenTransfer do
   object :token_transfer_querys do
     @desc """
     function: get list of token transfers by filter
-
     example:
+    ```
     query {
       token_transfers(
         input: {
@@ -17,7 +17,6 @@ defmodule GodwokenExplorer.Graphql.Types.TokenTransfer do
           end_block_number: 90
           limit: 2
           combine_from_to: true
-
           sorter: [
             { sort_type: ASC, sort_value: BLOCK_NUMBER }
             { sort_type: ASC, sort_value: TRANSACTION_HASH }
@@ -36,7 +35,6 @@ defmodule GodwokenExplorer.Graphql.Types.TokenTransfer do
             eth_address
           }
         }
-
         metadata {
           total_count
           before
@@ -44,7 +42,8 @@ defmodule GodwokenExplorer.Graphql.Types.TokenTransfer do
         }
       }
     }
-
+    ```
+    ```
     {
       "data": {
         "token_transfers": {
@@ -80,8 +79,9 @@ defmodule GodwokenExplorer.Graphql.Types.TokenTransfer do
         }
       }
     }
-
+    ```
     example2:
+    ```
     query {
       token_transfers(
         input: {
@@ -113,7 +113,6 @@ defmodule GodwokenExplorer.Graphql.Types.TokenTransfer do
             eth_address
           }
         }
-
         metadata {
           total_count
           before
@@ -121,8 +120,8 @@ defmodule GodwokenExplorer.Graphql.Types.TokenTransfer do
         }
       }
     }
-
-
+    ```
+    ```
     {
       "data": {
         "token_transfers": {
@@ -150,6 +149,7 @@ defmodule GodwokenExplorer.Graphql.Types.TokenTransfer do
         }
       }
     }
+    ```
     """
     field :token_transfers, :paginate_token_transfers do
       arg(:input, non_null(:erc20_token_transfers_input), default_value: %{})
@@ -158,6 +158,7 @@ defmodule GodwokenExplorer.Graphql.Types.TokenTransfer do
     end
 
     @desc """
+    ```
     query {
       erc721_token_transfers(
         input: {
@@ -195,8 +196,8 @@ defmodule GodwokenExplorer.Graphql.Types.TokenTransfer do
         }
       }
     }
-
-
+    ```
+    ```
     {
       "data": {
         "erc721_token_transfers": {
@@ -224,6 +225,7 @@ defmodule GodwokenExplorer.Graphql.Types.TokenTransfer do
         }
       }
     }
+    ```
     """
     field :erc721_token_transfers, :paginate_token_transfers do
       arg(:input, non_null(:erc721_erc1155_token_transfers_input), default_value: %{})
@@ -232,6 +234,7 @@ defmodule GodwokenExplorer.Graphql.Types.TokenTransfer do
     end
 
     @desc """
+    ```
     query {
       erc1155_token_transfers(
         input: {
@@ -274,7 +277,8 @@ defmodule GodwokenExplorer.Graphql.Types.TokenTransfer do
         }
       }
     }
-
+    ```
+    ```
     {
       "data": {
         "erc1155_token_transfers": {
@@ -307,7 +311,8 @@ defmodule GodwokenExplorer.Graphql.Types.TokenTransfer do
         }
       }
     }
-
+    ```
+    ```
     query {
       erc1155_token_transfers(
         input: {
@@ -336,7 +341,8 @@ defmodule GodwokenExplorer.Graphql.Types.TokenTransfer do
         }
       }
     }
-
+    ```
+    ```
     {
       "data": {
         "erc1155_token_transfers": {
@@ -356,6 +362,7 @@ defmodule GodwokenExplorer.Graphql.Types.TokenTransfer do
         }
       }
     }
+    ```
     """
     field :erc1155_token_transfers, :paginate_token_transfers do
       arg(:input, non_null(:erc721_erc1155_token_transfers_input), default_value: %{})

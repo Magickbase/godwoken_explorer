@@ -6,16 +6,16 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
   object :account_querys do
     @desc """
     function: get account by account addresses
-
-    request-example:
+    request-with-address-example:
+    ```
     query {
       account(input: {address: "0x59b670e9fa9d0a427751af201d676719a970857b"}){
         type
         eth_address
       }
     }
-
-    result-example:
+    ```
+    ```
     {
       "data": {
         "account": {
@@ -24,8 +24,9 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
         }
       }
     }
-
-    request-example:
+    ```
+    request-with-script-hash-example:
+    ```
     query {
       account(input: {script_hash: "0x08c9937e412e135928fd6dec7255965ddd7df4d5a163564b60895100bb3b2f9e"}){
         type
@@ -33,7 +34,8 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
         script_hash
       }
     }
-
+    ```
+    ```
     {
       "data": {
         "account": {
@@ -43,8 +45,8 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
         }
       }
     }
-
-    request-example:
+    ```
+    ```
     query {
       account(
         input: {
@@ -57,8 +59,8 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
         script
       }
     }
-
-
+    ```
+    ```
     {
       "data": {
         "account": {
@@ -84,8 +86,8 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
         }
       }
     }
-
-    request-example:
+    ```
+    ```
     query {
       account(
         input: {
@@ -102,7 +104,8 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
         }
       }
     }
-
+    ```
+    ```
     {
       "data": {
         "account": {
@@ -121,8 +124,8 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
         }
       }
     }
-
-    request-example:
+    ```
+    ```
     query {
       account(
         input: {
@@ -135,7 +138,8 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
         script
       }
     }
-
+    ```
+    ```
     {
       "data": {
         "account": {
@@ -150,8 +154,8 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
         }
       }
     }
-
-    request-example:
+    ```
+    ```
     query {
       account(
         input: {
@@ -164,7 +168,8 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
         script
       }
     }
-
+    ```
+    ```
     {
       "data": {
         "account": {
@@ -179,8 +184,8 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
         }
       }
     }
-
-    request-example:
+    ```
+    ```
     query {
       account(
         input: {
@@ -206,8 +211,8 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
         }
       }
     }
-
-
+    ```
+    ```
     {
       "data": {
         "account": {
@@ -230,8 +235,9 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
         }
       }
     }
-
+    ```
     bridge-account-udt-example:
+    ```
     query {
       account(
         input: {
@@ -252,7 +258,8 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
         }
       }
     }
-
+    ```
+    ```
     {
       "data": {
         "account": {
@@ -271,6 +278,7 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
         }
       }
     }
+    ```
     """
     field :account, :account do
       arg(:input, non_null(:account_input))
@@ -337,11 +345,14 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
 
   input_object :account_input do
     @desc """
+    ```
     address: account address(eth_address)
     example: "0x59b670e9fa9d0a427751af201d676719a970857b"
-
+    ```
+    ```
     script_hash: script hash with hash_full type
     example: "0x08c9937e412e135928fd6dec7255965ddd7df4d5a163564b60895100bb3b2f9e"
+    ```
     """
     field :address, :hash_address
     field :script_hash, :hash_full

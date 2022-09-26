@@ -5,8 +5,8 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
   object :transaction_querys do
     @desc """
     function: get transaction by transaction_hash
-
     request-example:
+    ```
     query {
       transaction(
         input: {
@@ -44,9 +44,8 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
         }
       }
     }
-
-
-    result-example:
+    ```
+    ```
     {
       "data": {
         "transaction": {
@@ -82,6 +81,7 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
         }
       }
     }
+    ```
     """
     field :transaction, :transaction do
       arg(:input, non_null(:transaction_input))
@@ -90,6 +90,7 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
 
     @desc """
     sorter-example:
+    ```
     query {
       transactions(
         input: {
@@ -115,7 +116,6 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
           }
           to_account_id
         }
-
         metadata {
           total_count
           before
@@ -123,7 +123,8 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
         }
       }
     }
-
+    ```
+    ```
     {
       "data": {
         "transactions": {
@@ -151,8 +152,9 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
         }
       }
     }
-
+    ```
     block-number-and-age-range-example:
+    ```
     query {
       transactions(
         input: {
@@ -180,7 +182,6 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
           }
           to_account_id
         }
-
         metadata {
           total_count
           before
@@ -188,8 +189,8 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
         }
       }
     }
-
-
+    ```
+    ```
     {
       "data": {
         "transactions": {
@@ -218,8 +219,9 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
         }
       }
     }
-
+    ```
     from-to-example:
+    ```
     query {
       transactions(
         input: {
@@ -247,7 +249,6 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
             eth_address
           }
         }
-
         metadata {
           total_count
           before
@@ -255,7 +256,8 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
         }
       }
     }
-
+    ```
+    ```
     {
       "data": {
         "transactions": {
@@ -286,8 +288,9 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
         }
       }
     }
-
+    ```
     combine-example:
+    ```
     query {
       transactions(
         input: {
@@ -317,7 +320,6 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
             eth_address
           }
         }
-
         metadata {
           total_count
           before
@@ -325,7 +327,8 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
         }
       }
     }
-
+    ```
+    ```
     {
       "data": {
         "transactions": {
@@ -338,7 +341,9 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
         }
       }
     }
+    ```
     pending-transaction-example:
+    ```
     query {
       transactions(
         input: {
@@ -350,7 +355,6 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
           block_hash
           hash
         }
-
         metadata {
           total_count
           before
@@ -358,7 +362,8 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
         }
       }
     }
-
+    ```
+    ```
     {
       "data": {
         "transactions": {
@@ -376,6 +381,7 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
         }
       }
     }
+    ```
     """
     field :transactions, :paginate_trasactions do
       arg(:input, :transactions_input, default_value: %{})

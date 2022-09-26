@@ -77,11 +77,13 @@ defmodule GodwokenIndexer.Fetcher.UDTBalance do
     {format_without_token_ids, format_with_token_ids} =
       UDTBalances.to_address_current_token_balances(without_token_ids, with_token_ids)
 
+    ub_default_conflict = default_token_balance_on_conflict()
+
     return1 =
       Import.insert_changes_list(without_token_ids,
         for: UDTBalance,
         timestamps: import_utc_timestamps(),
-        on_conflict: {:replace, [:value, :value_fetched_at, :updated_at]},
+        on_conflict: ub_default_conflict,
         conflict_target:
           {:unsafe_fragment,
            ~s<(address_hash, token_contract_address_hash, block_number) WHERE token_id IS NULL>}
@@ -91,7 +93,7 @@ defmodule GodwokenIndexer.Fetcher.UDTBalance do
       Import.insert_changes_list(with_token_ids,
         for: UDTBalance,
         timestamps: import_utc_timestamps(),
-        on_conflict: {:replace, [:value, :value_fetched_at, :updated_at]},
+        on_conflict: ub_default_conflict,
         conflict_target:
           {:unsafe_fragment,
            ~s<(address_hash, token_contract_address_hash, token_id, block_number) WHERE token_id IS NOT NULL>}

@@ -21,11 +21,13 @@ defmodule Mix.Tasks.CheckInvalidTokenTransfer do
       from(tt in TokenTransfer,
         left_join: u in UDT,
         on: u.contract_address_hash == tt.token_contract_address_hash,
-        where: is_nil(u.eth_type)
+        where: is_nil(u.eth_type),
+        distinct: u.contract_address_hash,
+        select: u.contract_address_hash
       )
 
     return = Repo.all(query)
-    return = return |> Enum.map(&(&1.token_contract_address_hash |> to_string))
+    return = return |> Enum.map(&(&1 |> to_string))
     IO.inspect(return)
     IO.inspect(length(return))
   end

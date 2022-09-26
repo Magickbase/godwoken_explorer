@@ -5,8 +5,8 @@ defmodule GodwokenExplorer.Graphql.Types.SmartContract do
   object :smart_contract_querys do
     @desc """
     function: get smart contract by address
-
     request-result-example:
+    ```
     query {
       smart_contract(
         input: { contract_address: "0x2503A1A79A443F3961EE96A8C5EC513638129614" }
@@ -18,6 +18,8 @@ defmodule GodwokenExplorer.Graphql.Types.SmartContract do
         }
       }
     }
+    ```
+    ```
     {
       "data": {
         "smart_contract": {
@@ -29,8 +31,9 @@ defmodule GodwokenExplorer.Graphql.Types.SmartContract do
         }
       }
     }
-
+    ```
     request-result-example2:
+    ```
     query {
       smart_contract(
         input: { script_hash: "0x9B55204439C78D3B9CBCC62C03F31E47C8457FD39CA9A9EB805B364B45C26C38" }
@@ -42,6 +45,8 @@ defmodule GodwokenExplorer.Graphql.Types.SmartContract do
         }
       }
     }
+    ```
+    ```
     {
       "data": {
         "smart_contract": {
@@ -53,7 +58,7 @@ defmodule GodwokenExplorer.Graphql.Types.SmartContract do
         }
       }
     }
-
+    ```
     """
     field :smart_contract, :smart_contract do
       arg(:input, non_null(:smart_contract_input))
@@ -63,8 +68,8 @@ defmodule GodwokenExplorer.Graphql.Types.SmartContract do
 
     @desc """
     function: get list of smart contracts
-
     request-result-example:
+    ```
     query {
       smart_contracts(input: { sorter: [{ sort_type: ASC, sort_value: ID }] }) {
         entries {
@@ -81,8 +86,8 @@ defmodule GodwokenExplorer.Graphql.Types.SmartContract do
         }
       }
     }
-
-
+    ```
+    ```
     {
       "data": {
         "smart_contracts": {
@@ -103,8 +108,9 @@ defmodule GodwokenExplorer.Graphql.Types.SmartContract do
         }
       }
     }
-
+    ```
     multi-table-sorter-example:
+    ```
     query {
       smart_contracts(
         input: { sorter: [{ sort_type: ASC, sort_value: EX_TX_COUNT }] }
@@ -123,6 +129,8 @@ defmodule GodwokenExplorer.Graphql.Types.SmartContract do
         }
       }
     }
+    ```
+    ```
     {
       "data": {
         "smart_contracts": {
@@ -143,6 +151,7 @@ defmodule GodwokenExplorer.Graphql.Types.SmartContract do
         }
       }
     }
+    ```
     """
     field :smart_contracts, :paginate_smart_contracts do
       arg(:input, :smart_contracts_input)

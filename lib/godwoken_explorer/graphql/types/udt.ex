@@ -6,8 +6,8 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
   object :udt_querys do
     @desc """
     function: get udt by contract address
-
     contract address example:
+    ```
     query {
       udt(
         input: { contract_address: "0x2275AFE815DE66BEABE7A2C03005537AB843AFB2" }
@@ -18,7 +18,8 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         contract_address_hash
       }
     }
-
+    ```
+    ```
     {
       "data": {
         "udt": {
@@ -29,8 +30,9 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         }
       }
     }
-
+    ```
     id example:
+    ```
     query {
       udt(
         input: {
@@ -45,8 +47,8 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         contract_address_hash
       }
     }
-
-
+    ```
+    ```
     {
       "data": {
         "udt": {
@@ -58,6 +60,7 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         }
       }
     }
+    ```
     """
     field :udt, :udt do
       arg(:input, non_null(:udt_input))
@@ -66,8 +69,8 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
 
     @desc """
     function: get list of udts
-
     pagination-example:
+    ```
     query {
       udts(
         input: {
@@ -93,7 +96,8 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         }
       }
     }
-
+    ```
+    ```
     {
       "data": {
         "udts": {
@@ -117,11 +121,10 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         }
       }
     }
-
-
+    ```
     fuzzy-name-example:
     fuzzy name use postgresql ilike keyword, pattern matching docs like: https://www.postgresql.org/docs/current/functions-matching.html#FUNCTIONS-LIKE
-
+    ```
     query {
       udts(
         input: {
@@ -147,7 +150,8 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         }
       }
     }
-
+    ```
+    ```
     {
       "data": {
         "udts": {
@@ -171,8 +175,9 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         }
       }
     }
-
+    ```
     sorter-example:
+    ```
     query {
       udts(
         input: {
@@ -197,7 +202,8 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         }
       }
     }
-
+    ```
+    ```
     {
       "data": {
         "udts": {
@@ -241,8 +247,9 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         }
       }
     }
-
+    ```
     sorter-example:
+    ```
     query {
       udts(
         input: {
@@ -267,7 +274,8 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         }
       }
     }
-
+    ```
+    ```
     {
       "data": {
         "udts": {
@@ -311,8 +319,9 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         }
       }
     }
-
+    ```
     holders example:
+    ```
     query {
       udts(
         input: {
@@ -339,7 +348,8 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         }
       }
     }
-
+    ```
+    ```
     {
       "data": {
         "udts": {
@@ -364,6 +374,7 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         }
       }
     }
+    ```
     """
     field :udts, :paginate_udts do
       arg(:input, :udts_input, default_value: %{})
@@ -371,6 +382,7 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
     end
 
     @desc """
+    ```
     query {
       erc1155_user_token(
         input: {
@@ -385,7 +397,8 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         token_contract_address_hash
       }
     }
-
+    ```
+    ```
     {
       "data": {
         "erc1155_user_token": {
@@ -396,13 +409,15 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         }
       }
     }
+    ```
     """
-    field :erc1155_user_token, :erc721_erc1155_user_token do
+    field :erc1155_user_token, :erc1155_user_token do
       arg(:input, non_null(:erc1155_user_token_input))
       resolve(&Resolvers.UDT.erc1155_user_token/3)
     end
 
     @desc """
+    ```
     query {
       erc721_udts(
         input: { contract_address: "0x784cd3c52813098763c371df8fbe8ed27d2c1ebd" }
@@ -422,7 +437,8 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         }
       }
     }
-
+    ```
+    ```
     {
       "data": {
         "erc721_udts": {
@@ -444,7 +460,8 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         }
       }
     }
-
+    ```
+    ```
     query {
       erc721_udts(
         input: {
@@ -468,7 +485,8 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         }
       }
     }
-
+    ```
+    ```
     {
       "data": {
         "erc721_udts": {
@@ -490,15 +508,16 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         }
       }
     }
+    ```
     """
-    field :erc721_udts, :paginate_erc721_erc1155_udts do
+    field :erc721_udts, :paginate_erc721_udts do
       arg(:input, non_null(:erc721_erc1155_udts_input), default_value: %{})
       middleware(NullFilter)
       resolve(&Resolvers.UDT.erc721_udts/3)
     end
 
     @desc """
-
+    ```
     query {
       erc1155_udts(
         input: {
@@ -513,6 +532,7 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
           contract_address_hash
           eth_type
           holders_count
+          token_type_count
           minted_count
         }
         metadata {
@@ -521,7 +541,6 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
           before
         }
       }
-
       udt(
         input: { contract_address: "0xa87071a188e3e8d3e30f53a335ecc329d88026b7" }
       ) {
@@ -531,7 +550,8 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         eth_type
       }
     }
-
+    ```
+    ```
     {
       "data": {
         "erc1155_udts": {
@@ -539,10 +559,11 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
             {
               "contract_address_hash": "0xa87071a188e3e8d3e30f53a335ecc329d88026b7",
               "eth_type": "ERC1155",
-              "holders_count": 3,
+              "holders_count": 4,
               "id": 53717,
-              "minted_count": 30,
-              "name": null
+              "minted_count": 31,
+              "name": null,
+              "token_type_count": 31
             }
           ],
           "metadata": {
@@ -559,13 +580,13 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         }
       }
     }
-
+    ```
+    ```
     query {
       erc1155_udts(
         input: {
           limit: 1
           sorter: [{ sort_type: DESC, sort_value: EX_HOLDERS_COUNT }]
-          after: "g3QAAAABaAJkAAl1X2hvbGRlcnNkAA1ob2xkZXJzX2NvdW50YR8="
         }
       ) {
         entries {
@@ -574,6 +595,7 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
           contract_address_hash
           eth_type
           holders_count
+          token_type_count
           minted_count
         }
         metadata {
@@ -583,7 +605,8 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         }
       }
     }
-
+    ```
+    ```
     {
       "data": {
         "erc1155_udts": {
@@ -591,28 +614,81 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
             {
               "contract_address_hash": "0xb53f9c79eca97291c51a918779fc7a500fbb9e42",
               "eth_type": "ERC1155",
-              "holders_count": 30,
+              "holders_count": 7,
               "id": 24008,
               "minted_count": 30,
-              "name": null
+              "name": null,
+              "token_type_count": 30
             }
           ],
           "metadata": {
-            "after": "g3QAAAABaAJkAAl1X2hvbGRlcnNkAA1ob2xkZXJzX2NvdW50YR4=",
-            "before": "g3QAAAABaAJkAAl1X2hvbGRlcnNkAA1ob2xkZXJzX2NvdW50YR4=",
+            "after": "g3QAAAACZAACaWRiAABdyGgCZAAJdV9ob2xkZXJzZAANaG9sZGVyc19jb3VudGEH",
+            "before": null,
             "total_count": 524
           }
         }
       }
     }
+    ```
+    ```
+    query {
+      erc1155_udts(
+        input: {
+          limit: 1
+          sorter: [{ sort_type: DESC, sort_value: EX_HOLDERS_COUNT }]
+          after: "g3QAAAACZAACaWRiAABdyGgCZAAJdV9ob2xkZXJzZAANaG9sZGVyc19jb3VudGEH"
+        }
+      ) {
+        entries {
+          id
+          name
+          contract_address_hash
+          eth_type
+          holders_count
+          token_type_count
+          minted_count
+        }
+        metadata {
+          total_count
+          after
+          before
+        }
+      }
+    }
+    ```
+    ```
+    {
+      "data": {
+        "erc1155_udts": {
+          "entries": [
+            {
+              "contract_address_hash": "0xe6903e124e5bdae8784674eb625f1c212efc789e",
+              "eth_type": "ERC1155",
+              "holders_count": 5,
+              "id": 48472,
+              "minted_count": 28,
+              "name": null,
+              "token_type_count": 6
+            }
+          ],
+          "metadata": {
+            "after": "g3QAAAACZAACaWRiAAC9WGgCZAAJdV9ob2xkZXJzZAANaG9sZGVyc19jb3VudGEF",
+            "before": "g3QAAAACZAACaWRiAAC9WGgCZAAJdV9ob2xkZXJzZAANaG9sZGVyc19jb3VudGEF",
+            "total_count": 524
+          }
+        }
+      }
+    }
+    ```
     """
-    field :erc1155_udts, :paginate_erc721_erc1155_udts do
+    field :erc1155_udts, :paginate_erc1155_udts do
       arg(:input, non_null(:erc721_erc1155_udts_input), default_value: %{})
       middleware(NullFilter)
       resolve(&Resolvers.UDT.erc1155_udts/3)
     end
 
     @desc """
+    ```
     query {
       erc721_holders(
         input: {
@@ -633,7 +709,8 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         }
       }
     }
-
+    ```
+    ```
     {
       "data": {
         "erc721_holders": {
@@ -653,7 +730,8 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         }
       }
     }
-
+    ```
+    ```
     query {
       erc721_holders(
         input: {
@@ -675,7 +753,8 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         }
       }
     }
-
+    ```
+    ```
     {
       "data": {
         "erc721_holders": {
@@ -695,6 +774,7 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         }
       }
     }
+    ```
     """
     field :erc721_holders, :paginate_erc721_erc1155_holders do
       arg(:input, non_null(:erc721_holders_input))
@@ -702,6 +782,7 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
     end
 
     @desc """
+    ```
     query {
       erc1155_holders(
         input: {
@@ -722,7 +803,8 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         }
       }
     }
-
+    ```
+    ```
     {
       "data": {
         "erc1155_holders": {
@@ -742,7 +824,8 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         }
       }
     }
-
+    ```
+    ```
     query {
       erc1155_holders(
         input: {
@@ -764,7 +847,8 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         }
       }
     }
-
+    ```
+    ```
     {
       "data": {
         "erc1155_holders": {
@@ -784,7 +868,8 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         }
       }
     }
-
+    ```
+    ```
     query {
       erc1155_holders(
         input: {
@@ -806,7 +891,8 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         }
       }
     }
-
+    ```
+    ```
     {
       "data": {
         "erc1155_holders": {
@@ -826,6 +912,7 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         }
       }
     }
+    ```
     """
     field :erc1155_holders, :paginate_erc721_erc1155_holders do
       arg(:input, non_null(:erc1155_holders_input))
@@ -833,6 +920,7 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
     end
 
     @desc """
+    ```
     query {
       user_erc721_assets(
         input: {
@@ -853,7 +941,8 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         }
       }
     }
-
+    ```
+    ```
     {
       "data": {
         "user_erc721_assets": {
@@ -873,13 +962,15 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         }
       }
     }
+    ```
     """
-    field :user_erc721_assets, :paginate_user_erc721_erc1155_assets do
+    field :user_erc721_assets, :paginate_user_erc721_assets do
       arg(:input, non_null(:user_erc721_erc1155_assets_input))
       resolve(&Resolvers.UDT.user_erc721_assets/3)
     end
 
     @desc """
+    ```
     query {
       user_erc1155_assets(
         input: {
@@ -900,7 +991,8 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         }
       }
     }
-
+    ```
+    ```
     {
       "data": {
         "user_erc1155_assets": {
@@ -920,13 +1012,15 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         }
       }
     }
+    ```
     """
-    field :user_erc1155_assets, :paginate_user_erc721_erc1155_assets do
+    field :user_erc1155_assets, :paginate_user_erc1155_assets do
       arg(:input, non_null(:user_erc721_erc1155_assets_input))
       resolve(&Resolvers.UDT.user_erc1155_assets/3)
     end
 
     @desc """
+    ```
     query {
       erc721_inventory(
         input: {
@@ -947,7 +1041,8 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         }
       }
     }
-
+    ```
+    ```
     {
       "data": {
         "erc721_inventory": {
@@ -967,17 +1062,17 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         }
       }
     }
-
-
+    ```
     """
-    field :erc721_inventory, :paginate_erc721_erc1155_inventory do
+    field :erc721_inventory, :paginate_erc721_inventory do
       arg(:input, non_null(:erc721_erc1155_inventory_input))
       resolve(&Resolvers.UDT.erc721_inventory/3)
     end
 
     @desc """
+    ```
     query {
-      erc1155_inventory(
+      erc1155_user_inventory(
         input: {
           contract_address: "0xe6903e124e5bdae8784674eb625f1c212efc789e"
           token_id: 0
@@ -989,7 +1084,6 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
           address_hash
           token_contract_address_hash
           value
-
           udt {
             id
             name
@@ -1003,11 +1097,11 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
         }
       }
     }
-
-
+    ```
+    ```
     {
       "data": {
-        "erc1155_inventory": {
+        "erc1155_user_inventory": {
           "entries": [
             {
               "address_hash": "0xc6e58fb4affb6ab8a392b7cc23cd3fef74517f6c",
@@ -1022,23 +1116,67 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
             }
           ],
           "metadata": {
-            "after": "g3QAAAACZAACaWRiAB4JsWQACHRva2VuX2lkdAAAAARkAApfX3N0cnVjdF9fZAAORWxpeGlyLkRlY2ltYWxkAARjb2VmYQBkAANleHBhAGQABHNpZ25hAQ==",
+            "after": "g3QAAAADZAAMYmxvY2tfbnVtYmVyYgAEU89kAAJpZGIAHgmxZAAIdG9rZW5faWR0AAAABGQACl9fc3RydWN0X19kAA5FbGl4aXIuRGVjaW1hbGQABGNvZWZhAGQAA2V4cGEAZAAEc2lnbmEB",
             "before": null,
             "total_count": 4
           }
         }
       }
     }
+    ```
     """
-    field :erc1155_inventory, :paginate_erc721_erc1155_inventory do
+    field :erc1155_user_inventory, :paginate_erc1155_user_inventory do
       arg(:input, non_null(:erc721_erc1155_inventory_input))
-      resolve(&Resolvers.UDT.erc1155_inventory/3)
+      resolve(&Resolvers.UDT.erc1155_user_inventory/3)
     end
 
-    @deprecated "Use erc721_inventory/erc1155_inventory instead"
-    field :erc721_erc1155_inventory, :paginate_erc721_erc1155_inventory do
+    @desc """
+    ```
+    query {
+      erc1155_inventory(
+        input: {
+          contract_address: "0xe6903e124e5bdae8784674eb625f1c212efc789e"
+          limit: 1
+          after: "g3QAAAACaAJkAAlpbnZlbnRvcnlkABVjb250cmFjdF9hZGRyZXNzX2hhc2h0AAAAA2QACl9fc3RydWN0X19kACJFbGl4aXIuR29kd29rZW5FeHBsb3Jlci5DaGFpbi5IYXNoZAAKYnl0ZV9jb3VudGEUZAAFYnl0ZXNtAAAAFOaQPhJOW9roeEZ062JfHCEu_HieaAJkAAlpbnZlbnRvcnlkAAZjb3VudHN0AAAABGQACl9fc3RydWN0X19kAA5FbGl4aXIuRGVjaW1hbGQABGNvZWZiAAArVWQAA2V4cGEAZAAEc2lnbmEB"
+        }
+      ) {
+        entries {
+          contract_address_hash
+          token_id
+          counts
+        }
+        metadata {
+          total_count
+          after
+          before
+        }
+      }
+    }
+    ```
+    ```
+    {
+      "data": {
+        "erc1155_inventory": {
+          "entries": [
+            {
+              "contract_address_hash": "0xe6903e124e5bdae8784674eb625f1c212efc789e",
+              "counts": "10103",
+              "token_id": "1"
+            }
+          ],
+          "metadata": {
+            "after": "g3QAAAACaAJkAAlpbnZlbnRvcnlkABVjb250cmFjdF9hZGRyZXNzX2hhc2h0AAAAA2QACl9fc3RydWN0X19kACJFbGl4aXIuR29kd29rZW5FeHBsb3Jlci5DaGFpbi5IYXNoZAAKYnl0ZV9jb3VudGEUZAAFYnl0ZXNtAAAAFOaQPhJOW9roeEZ062JfHCEu_HieaAJkAAlpbnZlbnRvcnlkAAZjb3VudHN0AAAABGQACl9fc3RydWN0X19kAA5FbGl4aXIuRGVjaW1hbGQABGNvZWZiAAAnd2QAA2V4cGEAZAAEc2lnbmEB",
+            "before": "g3QAAAACaAJkAAlpbnZlbnRvcnlkABVjb250cmFjdF9hZGRyZXNzX2hhc2h0AAAAA2QACl9fc3RydWN0X19kACJFbGl4aXIuR29kd29rZW5FeHBsb3Jlci5DaGFpbi5IYXNoZAAKYnl0ZV9jb3VudGEUZAAFYnl0ZXNtAAAAFOaQPhJOW9roeEZ062JfHCEu_HieaAJkAAlpbnZlbnRvcnlkAAZjb3VudHN0AAAABGQACl9fc3RydWN0X19kAA5FbGl4aXIuRGVjaW1hbGQABGNvZWZiAAAnd2QAA2V4cGEAZAAEc2lnbmEB",
+            "total_count": 6
+          }
+        }
+      }
+    }
+    ```
+    """
+    field :erc1155_inventory, :paginate_erc1155_inventory do
       arg(:input, non_null(:erc721_erc1155_inventory_input))
-      resolve(&Resolvers.UDT.erc721_inventory/3)
+      resolve(&Resolvers.UDT.erc1155_inventory/3)
     end
   end
 
@@ -1047,13 +1185,28 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
     field(:metadata, :paginate_metadata)
   end
 
-  object :paginate_erc721_erc1155_udts do
-    field(:entries, list_of(:erc721_erc1155_udt))
+  object :paginate_erc721_udts do
+    field(:entries, list_of(:erc721_udt))
     field(:metadata, :paginate_metadata)
   end
 
-  object :paginate_erc721_erc1155_inventory do
-    field(:entries, list_of(:erc721_erc1155_user_token))
+  object :paginate_erc1155_udts do
+    field(:entries, list_of(:erc1155_udt))
+    field(:metadata, :paginate_metadata)
+  end
+
+  object :paginate_erc721_inventory do
+    field(:entries, list_of(:erc721_user_token))
+    field(:metadata, :paginate_metadata)
+  end
+
+  object :paginate_erc1155_user_inventory do
+    field(:entries, list_of(:erc1155_user_token))
+    field(:metadata, :paginate_metadata)
+  end
+
+  object :paginate_erc1155_inventory do
+    field(:entries, list_of(:erc1155_inventory))
     field(:metadata, :paginate_metadata)
   end
 
@@ -1062,9 +1215,20 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
     field(:metadata, :paginate_metadata)
   end
 
-  object :paginate_user_erc721_erc1155_assets do
-    field(:entries, list_of(:erc721_erc1155_user_token))
+  object :paginate_user_erc721_assets do
+    field(:entries, list_of(:erc721_user_token))
     field(:metadata, :paginate_metadata)
+  end
+
+  object :paginate_user_erc1155_assets do
+    field(:entries, list_of(:erc1155_user_token))
+    field(:metadata, :paginate_metadata)
+  end
+
+  object :erc1155_inventory do
+    field :contract_address_hash, :hash_address
+    field :token_id, :decimal
+    field :counts, :decimal
   end
 
   object :erc721_erc1155_holder_item do
@@ -1078,19 +1242,36 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
     end
   end
 
-  object :erc721_erc1155_user_token do
+  object :erc721_erc1155_common_user_token do
     field(:address_hash, :hash_address)
     field(:token_contract_address_hash, :hash_address)
     field(:token_id, :decimal)
     field(:token_type, :eth_type)
-    field(:value, :decimal)
 
-    field :udt, :erc721_erc1155_udt do
+    field(:value, :decimal, deprecate: true)
+
+    field(:counts, :decimal) do
+      resolve(&Resolvers.UDT.alias_counts/3)
+    end
+  end
+
+  object :erc721_user_token do
+    import_fields(:erc721_erc1155_common_user_token)
+
+    field :udt, :erc721_erc1155_common_user_token do
       resolve(&Resolvers.UDT.erc721_erc1155_udt/3)
     end
   end
 
-  object :erc721_erc1155_udt do
+  object :erc1155_user_token do
+    import_fields(:erc721_erc1155_common_user_token)
+
+    field :udt, :erc721_1155_common_udt do
+      resolve(&Resolvers.UDT.erc721_erc1155_udt/3)
+    end
+  end
+
+  object :erc721_1155_common_udt do
     field(:id, :integer)
     field(:name, :string)
     field(:symbol, :string)
@@ -1104,12 +1285,27 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
 
     field(:description, :string)
     field(:official_site, :string)
+  end
+
+  object :erc1155_udt do
+    import_fields(:erc721_1155_common_udt)
+
+    field :minted_count, :decimal do
+      resolve(&Resolvers.UDT.erc1155_minted_count/3)
+    end
 
     field :holders_count, :integer
+    field :token_type_count, :integer
+  end
 
-    field :minted_count, :integer do
+  object :erc721_udt do
+    import_fields(:erc721_1155_common_udt)
+
+    field :minted_count, :decimal do
       resolve(&Resolvers.UDT.minted_count/3)
     end
+
+    field :holders_count, :integer
   end
 
   object :udt do
@@ -1139,7 +1335,7 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
     #   resolve(&Resolvers.UDT.holders_count/3)
     # end
 
-    field :minted_count, :integer do
+    field :minted_count, :decimal do
       resolve(&Resolvers.UDT.minted_count/3)
     end
   end

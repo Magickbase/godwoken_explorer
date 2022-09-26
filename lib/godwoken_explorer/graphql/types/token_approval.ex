@@ -6,15 +6,14 @@ defmodule GodwokenExplorer.Graphql.Types.TokenApproval do
   object :token_approval_querys do
     @desc """
     function: get list of token approvals by filter
-
     example:
+    ```
     query {
       token_approvals(
         input: {
           address: "0x966b30e576a4d6731996748b48dd67c94ef29067"
           token_type: ERC20
           limit: 2
-
           sorter: [
             { sort_type: DESC, sort_value: BLOCK_NUMBER },
             { sort_type: DESC, sort_value: ID }
@@ -32,7 +31,6 @@ defmodule GodwokenExplorer.Graphql.Types.TokenApproval do
             timestamp
           }
         }
-
         metadata {
           total_count
           before
@@ -40,7 +38,8 @@ defmodule GodwokenExplorer.Graphql.Types.TokenApproval do
         }
       }
     }
-
+    ```
+    ```
     {
       "data": {
         "token_approvals": {
@@ -65,6 +64,7 @@ defmodule GodwokenExplorer.Graphql.Types.TokenApproval do
         }
       }
     }
+    ```
     """
     field :token_approvals, :paginate_token_approvals do
       arg(:input, non_null(:token_approval_input), default_value: %{})
