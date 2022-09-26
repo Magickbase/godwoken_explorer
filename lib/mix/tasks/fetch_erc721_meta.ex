@@ -11,11 +11,22 @@ defmodule Mix.Tasks.FetchErc721Meta do
   # @chunk_size 100
 
   @impl Mix.Task
-  def run(_args) do
+  def run(args) do
     Mix.Task.run("app.start")
-    shift_seconds = 1
 
-    unfetched_udts = ERC721UpdaterScheduler.get_unfetched_udts(shift_seconds, nil)
+    {shift_seconds, limit_value} =
+      case args do
+        [] ->
+          {1, nil}
+
+        [shift_seconds] ->
+          {shift_seconds |> String.to_integer(), nil}
+
+        [shift_seconds, limit] ->
+          {shift_seconds |> String.to_integer(), limit |> String.to_integer()}
+      end
+
+    unfetched_udts = ERC721UpdaterScheduler.get_unfetched_udts(shift_seconds, limit_value)
 
     length(unfetched_udts) |> IO.inspect(label: "unfetched_udts length")
 

@@ -309,7 +309,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
   def erc721_udts(_parent, %{input: input} = _args, _resolution) do
     return =
       from(u in UDT)
-      |> where([u], u.eth_type == :erc721)
+      |> udts_condition_with_type(:erc721)
       |> udts_condition_query(input)
       |> udts_where_fuzzy_name(input)
       |> erc721_erc1155_udts_order_by(input, :erc721)
@@ -324,7 +324,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
   def erc1155_udts(_parent, %{input: input} = _args, _resolution) do
     return =
       from(u in UDT)
-      |> where([u], u.eth_type == :erc1155)
+      |> udts_condition_with_type(:erc1155)
       |> udts_condition_query(input)
       |> udts_where_fuzzy_name(input)
       |> erc721_erc1155_udts_order_by(input, :erc1155)
@@ -334,6 +334,10 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
       })
 
     {:ok, return}
+  end
+
+  defp udts_condition_with_type(query, type) when type in [:erc20, :erc721, :erc1155] do
+    query |> where([u], u.eth_type == ^type)
   end
 
   defp udts_condition_query(query, input) do
