@@ -7,6 +7,7 @@ defmodule GodwokenExplorerWeb.API.WithdrawalHistoryController do
     results =
       WithdrawalHistoryView.find_by_owner_lock_hash(
         String.downcase(params["owner_lock_hash"]),
+        conn.params["state"],
         conn.params["page"] || 1
       )
 
@@ -23,6 +24,7 @@ defmodule GodwokenExplorerWeb.API.WithdrawalHistoryController do
     results =
       WithdrawalHistoryView.find_by_l2_script_hash(
         String.downcase(params["l2_script_hash"]),
+        conn.params["state"],
         conn.params["page"] || 1
       )
 
@@ -42,7 +44,11 @@ defmodule GodwokenExplorerWeb.API.WithdrawalHistoryController do
            %Account{script_hash: script_hash} <-
              Repo.get_by(Account, eth_address: address_hash) do
         results =
-          WithdrawalHistoryView.find_by_l2_script_hash(script_hash, conn.params["page"] || 1)
+          WithdrawalHistoryView.find_by_l2_script_hash(
+            script_hash,
+            conn.params["state"],
+            conn.params["page"] || 1
+          )
 
         JSONAPI.Serializer.serialize(WithdrawalHistoryView, results.entries, conn, %{
           total_page: results.total_pages,
