@@ -606,7 +606,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
         join: scu in subquery(sq),
         on: u.contract_address_hash == scu.contract_address_hash,
         as: :inventory,
-        order_by: [desc: scu.counts, asc: scu.contract_address_hash],
+        order_by: [desc: scu.counts, asc: scu.contract_address_hash, desc: scu.token_id],
         select: scu
       )
 
@@ -615,7 +615,8 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
       |> paginate_query(input, %{
         cursor_fields: [
           {{:inventory, :counts}, :desc},
-          {{:inventory, :contract_address_hash}, :asc}
+          {{:inventory, :contract_address_hash}, :asc},
+          {{:inventory, :token_id}, :desc}
         ],
         total_count_primary_key_field: [:contract_address_hash, :token_id]
       })
