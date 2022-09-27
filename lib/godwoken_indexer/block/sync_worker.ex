@@ -340,35 +340,83 @@ defmodule GodwokenIndexer.Block.SyncWorker do
   end
 
   defp import_token_approvals(logs) do
-    token_approvals = TokenApprovals.parse(logs)
+    %{
+      approval_erc20: erc20_approval_params,
+      approval_erc721: erc721_approval_params,
+      approval_all_tokens: approval_all_tokens
+    } = TokenApprovals.parse(logs)
 
-    uniq_token_approvals =
-      token_approvals
-      |> Enum.uniq_by(
-        &Map.take(&1, [
-          :token_owner_address_hash,
-          :spender_address_hash,
-          :token_contract_address_hash,
-          :data,
-          :type
-        ])
-      )
-
-    if length(token_approvals) > 0 do
-      Import.insert_changes_list(uniq_token_approvals,
+    if length(erc20_approval_params) > 0 do
+      Import.insert_changes_list(uniq_token_approval_params(erc20_approval_params),
         for: TokenApproval,
         timestamps: import_timestamps(),
         on_conflict:
-          {:replace, [:block_hash, :block_number, :transaction_hash, :approved, :updated_at]},
+          {:replace,
+           [:block_hash, :block_number, :transaction_hash, :approved, :data, :updated_at]},
         conflict_target: [
           :token_owner_address_hash,
           :spender_address_hash,
-          :token_contract_address_hash,
-          :data,
-          :type
+          :token_contract_address_hash
         ]
       )
     end
+
+    if length(erc721_approval_params) > 0 do
+      Import.insert_changes_list(uniq_token_approval_params(erc721_approval_params),
+        for: TokenApproval,
+        timestamps: import_timestamps(),
+        on_conflict:
+          {:replace,
+           [
+             :block_hash,
+             :block_number,
+             :transaction_hash,
+             :approved,
+             :spender_address_hash,
+             :updated_at
+           ]},
+        conflict_target: [
+          :token_owner_address_hash,
+          :token_contract_address_hash,
+          :data
+        ]
+      )
+    end
+
+    if length(approval_all_tokens) > 0 do
+      Import.insert_changes_list(uniq_token_approval_params(approval_all_tokens),
+        for: TokenApproval,
+        timestamps: import_timestamps(),
+        on_conflict:
+          {:replace,
+           [
+             :block_hash,
+             :block_number,
+             :transaction_hash,
+             :approved,
+             :spender_address_hash,
+             :data,
+             :updated_at
+           ]},
+        conflict_target: [
+          :token_owner_address_hash,
+          :token_contract_address_hash
+        ]
+      )
+    end
+  end
+
+  defp uniq_token_approval_params(params) do
+    params
+    |> Enum.uniq_by(
+      &Map.take(&1, [
+        :token_owner_address_hash,
+        :spender_address_hash,
+        :token_contract_address_hash,
+        :data,
+        :type
+      ])
+    )
   end
 
   defp import_token_transfers(logs) do

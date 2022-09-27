@@ -4,63 +4,61 @@ defmodule GodwokenIndexer.Transform.TokenApprovals do
       hex_to_number: 1
     ]
 
-  import Ecto.Query
-  alias GodwokenExplorer.{Repo, TokenApproval, UDT}
+  alias GodwokenExplorer.{Repo, UDT}
 
   @approval_event "0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925"
   @approval_for_all_event "0x17307eab39ab6107e8899845ad3d59bd9653f200f220920489ca2b5937696c31"
   @zero_address "0x0000000000000000000000000000000000000000000000000000000000000000"
 
   def parse(logs) do
+    initial_acc = %{approval_erc20: [], approval_erc721: []}
+
     approval_events =
       logs
       |> Enum.filter(&(&1.first_topic == @approval_event))
-      |> Enum.map(fn log ->
-        {approved, spender_address_hash} =
-          cond do
-            log.third_topic == @zero_address ->
-              token_contract_address_hash = log.address_hash |> to_string()
-              token_owner_address_hash = parse_address(log.second_topic)
-              data = log.data |> to_string() |> hex_to_number()
+      |> Enum.reduce(initial_acc, fn log,
+                                     %{
+                                       approval_erc20: erc20_tokens,
+                                       approval_erc721: erc721_tokens
+                                     } ->
+        case Repo.get_by(UDT, contract_address_hash: log.address_hash) do
+          %{eth_type: :erc20} ->
+            approved = log.data |> to_string() != @zero_address
 
-              case from(ta in TokenApproval,
-                     where:
-                       ta.token_owner_address_hash == ^token_owner_address_hash and
-                         ta.token_contract_address_hash == ^token_contract_address_hash and
-                         ta.data == ^data and
-                         ta.type == :approval and
-                         ta.approved == true,
-                     order_by: [desc: :block_number],
-                     limit: 1
-                   )
-                   |> Repo.one() do
-                nil ->
-                  {false, @zero_address}
+            params = %{
+              block_hash: log.block_hash,
+              block_number: log.block_number,
+              transaction_hash: log.transaction_hash,
+              token_owner_address_hash: parse_address(log.second_topic),
+              spender_address_hash: parse_address(log.third_topic),
+              token_contract_address_hash: log.address_hash |> to_string(),
+              data: log.data |> to_string() |> hex_to_number(),
+              approved: approved,
+              type: :approval
+            }
 
-                %{spender_address_hash: spender_address_hash} ->
-                  {false, spender_address_hash |> to_string()}
-              end
+            %{approval_erc20: [params | erc20_tokens], approval_erc721: erc721_tokens}
 
-            log.data |> to_string() == @zero_address &&
-                (Repo.get_by(UDT, contract_address_hash: log.address_hash) || %{eth_type: nil}).eth_type ==
-                  :erc20 ->
-              {false, parse_address(log.third_topic)}
+          %{eth_type: :erc721} ->
+            approved = log.third_topic == @zero_address
 
-            true ->
-              {true, parse_address(log.third_topic)}
-          end
+            params = %{
+              block_hash: log.block_hash,
+              block_number: log.block_number,
+              transaction_hash: log.transaction_hash,
+              token_owner_address_hash: parse_address(log.second_topic),
+              spender_address_hash: parse_address(log.third_topic),
+              token_contract_address_hash: log.address_hash |> to_string(),
+              data: log.data |> to_string() |> hex_to_number(),
+              approved: approved,
+              type: :approval
+            }
 
-        %{
-          block_hash: log.block_hash,
-          block_number: log.block_number,
-          transaction_hash: log.transaction_hash,
-          token_owner_address_hash: parse_address(log.second_topic),
-          spender_address_hash: spender_address_hash,
-          token_contract_address_hash: log.address_hash |> to_string(),
-          data: log.data |> to_string() |> hex_to_number(),
-          approved: approved,
-          type: :approval
-        }
+            %{approval_erc20: erc20_tokens, approval_erc721: [params | erc721_tokens]}
+
+          _ ->
+            %{approval_erc20: erc20_tokens, approval_erc721: erc721_tokens}
+        end
       end)
 
     approval_all_events =
@@ -86,7 +84,7 @@ defmodule GodwokenIndexer.Transform.TokenApprovals do
         }
       end)
 
-    (approval_events ++ approval_all_events) |> Enum.uniq()
+    approval_events |> Map.put(:approval_all_tokens, approval_all_events)
   end
 
   defp parse_address(topic) do
