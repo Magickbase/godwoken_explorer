@@ -2,12 +2,13 @@ defmodule GodwokenIndexer.Transform.TokenTransfers do
   @moduledoc """
   Helper functions for transforming data for ERC-20 and ERC-721 token transfers.
   """
+  import Ecto.Query
 
   require Logger
 
   alias GodwokenExplorer.{Chain, Repo, UDT}
   alias ABI.TypeDecoder
-  alias GodwokenExplorer.TokenTransfer
+  alias GodwokenExplorer.{TokenApproval, TokenTransfer}
   alias GodwokenExplorer.Token.MetadataRetriever
 
   @burn_address "0x0000000000000000000000000000000000000000"
@@ -131,6 +132,12 @@ defmodule GodwokenIndexer.Transform.TokenTransfers do
       eth_type: :erc721
     }
 
+    delete_token_approval(
+      token_transfer[:from_address_hash],
+      token_transfer[:token_contract_address_hash],
+      token_transfer[:token_id]
+    )
+
     {token, token_transfer}
   end
 
@@ -164,7 +171,22 @@ defmodule GodwokenIndexer.Transform.TokenTransfers do
       eth_type: :erc721
     }
 
+    delete_token_approval(
+      token_transfer[:from_address_hash],
+      token_transfer[:token_contract_address_hash],
+      token_transfer[:token_id]
+    )
+
     {token, token_transfer}
+  end
+
+  defp delete_token_approval(owner_address_hash, token_contract_address_hash, token_id) do
+    from(ta in TokenApproval,
+      where:
+        ta.token_owner_address_hash == ^owner_address_hash and
+          ta.token_contract_address_hash == ^token_contract_address_hash and ta.data == ^token_id
+    )
+    |> Repo.delete_all()
   end
 
   defp update_token(nil), do: :ok
