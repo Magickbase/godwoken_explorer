@@ -34,7 +34,8 @@ defmodule GodwokenIndexer.Transform.TokenApprovals do
               token_contract_address_hash: log.address_hash |> to_string(),
               data: log.data |> to_string() |> hex_to_number(),
               approved: approved,
-              type: :approval
+              type: :approval,
+              token_type: :erc20
             }
 
             %{approval_erc20: [params | erc20_tokens], approval_erc721: erc721_tokens}
@@ -51,7 +52,8 @@ defmodule GodwokenIndexer.Transform.TokenApprovals do
               token_contract_address_hash: log.address_hash |> to_string(),
               data: log.data |> to_string() |> hex_to_number(),
               approved: approved,
-              type: :approval
+              type: :approval,
+              token_type: :erc721
             }
 
             %{approval_erc20: erc20_tokens, approval_erc721: [params | erc721_tokens]}
