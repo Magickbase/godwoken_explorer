@@ -355,7 +355,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
            [:block_hash, :block_number, :transaction_hash, :approved, :data, :updated_at]},
         conflict_target:
           {:unsafe_fragment,
-           ~s<(token_owner_address_hash token_contract_address_hash spender_address_hash) WHERE token_type = 'erc20'>}
+           ~s<(token_owner_address_hash, token_contract_address_hash, spender_address_hash) WHERE token_type = 'erc20'>}
       )
     end
 
@@ -375,7 +375,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
            ]},
         conflict_target:
           {:unsafe_fragment,
-           ~s<(token_owner_address_hash token_contract_address_hash data) WHERE token_type = 'erc721'>}
+           ~s<(token_owner_address_hash, token_contract_address_hash, data) WHERE token_type = 'erc721'>}
       )
     end
 
@@ -396,7 +396,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
            ]},
         conflict_target:
           {:unsafe_fragment,
-           ~s<(token_owner_address_hash token_contract_address_hash ) WHERE type = 'approval_all'>}
+           ~s<(token_owner_address_hash, token_contract_address_hash ) WHERE type = 'approval_all'>}
       )
     end
   end
