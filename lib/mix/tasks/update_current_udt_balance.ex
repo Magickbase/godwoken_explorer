@@ -80,14 +80,14 @@ defmodule Mix.Tasks.UpdateCurrentUdtBalance do
     {format_without_token_ids, format_with_token_ids} =
       UDTBalances.to_address_current_token_balances(without_token_ids, with_token_ids)
 
-    default_conflict =
-      GodwokenIndexer.Fetcher.UDTBalance.default_current_token_balance_on_conflict()
+    # default_conflict =
+    #   GodwokenIndexer.Fetcher.UDTBalance.default_current_token_balance_on_conflict()
 
     Import.insert_changes_list(format_without_token_ids,
       for: CurrentUDTBalance,
       timestamps: import_utc_timestamps(),
-      # on_conflict: {:replace, [:token_type, :value, :value_fetched_at, :updated_at]},
-      on_conflict: default_conflict,
+      on_conflict: {:replace, [:token_type, :value, :value_fetched_at, :updated_at]},
+      # on_conflict: default_conflict,
       conflict_target:
         {:unsafe_fragment, ~s<(address_hash, token_contract_address_hash) WHERE token_id IS NULL>}
     )
@@ -95,8 +95,8 @@ defmodule Mix.Tasks.UpdateCurrentUdtBalance do
     Import.insert_changes_list(format_with_token_ids,
       for: CurrentUDTBalance,
       timestamps: import_utc_timestamps(),
-      # on_conflict: {:replace, [:token_id, :token_type, :value, :value_fetched_at, :updated_at]},
-      on_conflict: default_conflict,
+      on_conflict: {:replace, [:token_id, :token_type, :value, :value_fetched_at, :updated_at]},
+      # on_conflict: default_conflict,
       conflict_target:
         {:unsafe_fragment,
          ~s<(address_hash, token_contract_address_hash, token_id) WHERE token_id IS NOT NULL>}

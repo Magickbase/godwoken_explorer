@@ -6,8 +6,8 @@ defmodule GodwokenExplorer.Graphql.Types.Block do
   object :block_querys do
     @desc """
     function: get block by block number or block hash
-
     request-result-example:
+    ```
     query {
       block(input: {number: 1}){
         hash
@@ -26,7 +26,8 @@ defmodule GodwokenExplorer.Graphql.Types.Block do
         }
       }
     }
-
+    ```
+    ```
     {
       "data": {
         "block": {
@@ -40,6 +41,7 @@ defmodule GodwokenExplorer.Graphql.Types.Block do
         }
       }
     }
+    ```
     """
     field :block, :block do
       arg(:input, :block_input)
@@ -48,8 +50,8 @@ defmodule GodwokenExplorer.Graphql.Types.Block do
 
     @desc """
     function: get list of block sort by block number
-
     request-example:
+    ```
     query {
       blocks(input: {}){
         hash
@@ -68,7 +70,8 @@ defmodule GodwokenExplorer.Graphql.Types.Block do
         }
       }
     }
-
+    ```
+    ```
     result-example:
     {
       "data": {
@@ -84,6 +87,7 @@ defmodule GodwokenExplorer.Graphql.Types.Block do
         }
       }
     }
+    ```
     """
     field :blocks, list_of(:block) do
       arg(:input, :blocks_input, default_value: %{page: 1, page_size: 10, sort_type: :desc})

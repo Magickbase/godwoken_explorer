@@ -31,18 +31,20 @@ defmodule GodwokenExplorer.Graphql.Types.Common do
 
   input_object :page_and_size_input do
     @desc """
+    ```
     argument: the page of query result, the relations of postgres offset: offset = (page - 1) * page_size
-
     default: 1
     limit: > 0
+    ```
     """
     field :page, :integer, default_value: 1
 
     @desc """
+    ```
     argument: the page_size of query result, it's the same of postgres limit
-
     default: 20
     limit: > 0
+    ```
     """
     field :page_size, :integer, default_value: 20
   end
@@ -66,9 +68,10 @@ defmodule GodwokenExplorer.Graphql.Types.Common do
 
   input_object :sort_type_input do
     @desc """
+    ```
     argument: the sort of type by custom condition
-
     default: desc
+    ```
     """
     field :sort_type, :sort_type, default_value: :desc
   end

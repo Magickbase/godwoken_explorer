@@ -99,13 +99,13 @@ defmodule Mix.Tasks.UpdateUdtBalance do
       end)
       |> filter_udt_balance_params()
 
-    default_conflict = GodwokenIndexer.Fetcher.UDTBalance.default_token_balance_on_conflict()
+    # default_conflict = GodwokenIndexer.Fetcher.UDTBalance.default_token_balance_on_conflict()
 
     Import.insert_changes_list(without_token_ids,
       for: UDTBalance,
       timestamps: import_utc_timestamps(),
-      # on_conflict: {:replace, [:token_type]},
-      on_conflict: default_conflict,
+      on_conflict: {:replace, [:token_type]},
+      # on_conflict: default_conflict,
       conflict_target:
         {:unsafe_fragment,
          ~s<(address_hash, token_contract_address_hash, block_number) WHERE token_id IS NULL>}
@@ -114,8 +114,8 @@ defmodule Mix.Tasks.UpdateUdtBalance do
     Import.insert_changes_list(with_token_ids,
       for: UDTBalance,
       timestamps: import_utc_timestamps(),
-      # on_conflict: {:replace, [:token_id, :token_type]},
-      on_conflict: default_conflict,
+      on_conflict: {:replace, [:token_id, :token_type]},
+      # on_conflict: default_conflict,
       conflict_target:
         {:unsafe_fragment,
          ~s<(address_hash, token_contract_address_hash, token_id, block_number) WHERE token_id IS NOT NULL>}

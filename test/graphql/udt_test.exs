@@ -68,7 +68,8 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
         address_hash: user.eth_address,
         token_contract_address_hash: erc1155_native_udt.contract_address_hash,
         token_id: 6,
-        token_type: :erc1155
+        token_type: :erc1155,
+        value: 100
       )
 
     _erc1155_cub2 =
@@ -76,16 +77,34 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
         address_hash: user.eth_address,
         token_contract_address_hash: erc1155_native_udt.contract_address_hash,
         token_id: 7,
-        token_type: :erc1155
+        token_type: :erc1155,
+        value: 100
+      )
+
+    _erc1155_cub3 =
+      insert!(:current_udt_balance,
+        token_contract_address_hash: erc1155_native_udt.contract_address_hash,
+        token_id: 7,
+        token_type: :erc1155,
+        value: 100
       )
 
     for index <- 8..10 do
       insert!(:current_udt_balance,
         token_contract_address_hash: erc1155_native_udt.contract_address_hash,
         token_id: index,
-        token_type: :erc1155
+        token_type: :erc1155,
+        value: 100
       )
     end
+
+    _erc1155_cu6 =
+      insert!(:current_udt_balance,
+        token_contract_address_hash: erc1155_native_udt.contract_address_hash,
+        token_id: 11,
+        token_type: :erc1155,
+        value: 0
+      )
 
     [
       ckb_udt: ckb_udt,
@@ -686,6 +705,7 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
           contract_address_hash
           eth_type
           holders_count
+          token_type_count
           minted_count
         }
         metadata {
@@ -706,7 +726,18 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
     assert match?(
              %{
                "data" => %{
-                 "erc1155_udts" => %{"metadata" => %{"total_count" => 1}}
+                 "erc1155_udts" => %{
+                   "entries" => [
+                     %{
+                       "contract_address_hash" => ^contract_address,
+                       "eth_type" => "ERC1155",
+                       "holders_count" => 5,
+                       "token_type_count" => 6,
+                       "minted_count" => "600"
+                     }
+                   ],
+                   "metadata" => %{"total_count" => 1}
+                 }
                }
              },
              json_response(conn, 200)
@@ -924,9 +955,12 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
                      },
                      %{
                        "rank" => 4
+                     },
+                     %{
+                       "rank" => 5
                      }
                    ],
-                   "metadata" => %{"total_count" => 4}
+                   "metadata" => %{"total_count" => 5}
                  }
                }
              },
@@ -1004,7 +1038,7 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
           token_contract_address_hash
           token_id
           token_type
-          value
+          counts
         }
         metadata {
           total_count
@@ -1049,7 +1083,7 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
           token_contract_address_hash
           token_id
           token_type
-          value
+          counts
         }
         metadata {
           total_count
@@ -1094,7 +1128,7 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
           token_contract_address_hash
           token_id
           token_type
-          value
+          counts
         }
         metadata {
           total_count
@@ -1121,7 +1155,7 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
            )
   end
 
-  test "graphql: erc1155_inventory", %{
+  test "graphql: erc1155_user_inventory", %{
     conn: conn,
     # user: user
     # erc721_native_udt: erc721_native_udt
@@ -1131,7 +1165,7 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
 
     query = """
     query {
-      erc1155_inventory(
+      erc1155_user_inventory(
         input: { contract_address: "#{contract_address}"}
       ) {
         entries {
@@ -1139,7 +1173,7 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
           token_contract_address_hash
           token_id
           token_type
-          value
+          counts
         }
         metadata {
           total_count
@@ -1159,10 +1193,128 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
     assert match?(
              %{
                "data" => %{
-                 "erc1155_inventory" => %{"metadata" => %{"total_count" => 5}}
+                 "erc1155_user_inventory" => %{"metadata" => %{"total_count" => 6}}
                }
              },
              json_response(conn, 200)
            )
+  end
+
+  test "graphql: erc1155_inventory", %{
+    conn: conn,
+    # user: user
+    # erc721_native_udt: erc721_native_udt
+    erc1155_native_udt: erc1155_native_udt
+  } do
+    contract_address = erc1155_native_udt.contract_address_hash |> to_string()
+
+    query = """
+    query {
+      erc1155_inventory(
+        input: { contract_address: "#{contract_address}"}
+      ) {
+        entries {
+          contract_address_hash
+          token_id
+          counts
+        }
+        metadata {
+          total_count
+          after
+          before
+        }
+      }
+    }
+    """
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    assert match?(
+             %{
+               "data" => %{
+                 "erc1155_inventory" => %{"metadata" => %{"total_count" => 6}}
+               }
+             },
+             json_response(conn, 200)
+           )
+  end
+
+  test "graphql: erc1155_inventory with paginator", %{
+    conn: conn,
+    # user: user
+    # erc721_native_udt: erc721_native_udt
+    erc1155_native_udt: erc1155_native_udt
+  } do
+    contract_address = erc1155_native_udt.contract_address_hash |> to_string()
+
+    query = """
+    query {
+      erc1155_inventory(
+        input: { contract_address: "#{contract_address}", limit: 3}
+      ) {
+        entries {
+          contract_address_hash
+          token_id
+          counts
+        }
+        metadata {
+          total_count
+          after
+          before
+        }
+      }
+    }
+    """
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    %{
+      "data" => %{
+        "erc1155_inventory" => %{"entries" => entries, "metadata" => %{"after" => after_value}}
+      }
+    } = json_response(conn, 200)
+
+    assert(length(entries) == 3)
+
+    query = """
+    query {
+      erc1155_inventory(
+        input: { contract_address: "#{contract_address}", limit: 3, after: "#{after_value}"}
+      ) {
+        entries {
+          contract_address_hash
+          token_id
+          counts
+        }
+        metadata {
+          total_count
+          after
+          before
+        }
+      }
+    }
+    """
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    %{
+      "data" => %{
+        "erc1155_inventory" => %{"entries" => entries, "metadata" => %{"total_count" => 6}}
+      }
+    } = json_response(conn, 200)
+
+    assert(length(entries) == 3)
   end
 end

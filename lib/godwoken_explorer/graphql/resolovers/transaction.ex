@@ -10,6 +10,8 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
   alias GodwokenExplorer.{Account, Transaction, Block, Polyjuice, PolyjuiceCreator}
   alias GodwokenExplorer.Chain.Data
 
+  import GodwokenExplorer.Graphql.Utils, only: [default_uniq_cursor_order_fields: 3]
+
   @sorter_fields [:block_number, :index, :hash]
   @default_sorter [:block_number, :index, :hash]
   @account_tx_limit 100_000
@@ -33,7 +35,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
           _ ->
             false
         end
-    end)
+      end)
 
     from(t in Transaction, where: ^conditions)
   end
@@ -232,7 +234,11 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
     sorter = Map.get(input, :sorter)
 
     if sorter do
-      order_params = cursor_order_sorter(sorter, :order, @sorter_fields)
+      order_params =
+        sorter
+        |> cursor_order_sorter(:order, @sorter_fields)
+        |> default_uniq_cursor_order_fields(:order, [:hash])
+
       order_by(query, [u], ^order_params)
     else
       order_by(query, [u], @default_sorter)
@@ -243,7 +249,9 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
     sorter = Map.get(input, :sorter)
 
     if sorter do
-      cursor_order_sorter(sorter, :cursor, @sorter_fields)
+      sorter
+      |> cursor_order_sorter(:cursor, @sorter_fields)
+      |> default_uniq_cursor_order_fields(:cursor, [:hash])
     else
       @default_sorter
     end

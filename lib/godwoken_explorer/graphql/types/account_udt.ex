@@ -7,6 +7,7 @@ defmodule GodwokenExplorer.Graphql.Types.AccountUDT do
     @desc """
     erc20 udts
     request-result-example:
+    ```
     query {
       account_current_udts(
         input: {
@@ -34,13 +35,14 @@ defmodule GodwokenExplorer.Graphql.Types.AccountUDT do
         }
       }
     }
-
-
+    ```
+    ```
     {
       "data": {
         "account_current_udts": []
       }
     }
+    ```
     """
     field :account_current_udts, list_of(:account_current_udt) do
       arg(:input, non_null(:account_current_udts_input))
@@ -50,6 +52,7 @@ defmodule GodwokenExplorer.Graphql.Types.AccountUDT do
 
     @desc """
     request-result-example:
+    ```
     query {
       account_current_bridged_udts(
         input: {
@@ -77,7 +80,8 @@ defmodule GodwokenExplorer.Graphql.Types.AccountUDT do
         }
       }
     }
-
+    ```
+    ```
     {
       "data": {
         "account_current_bridged_udts": [
@@ -104,6 +108,7 @@ defmodule GodwokenExplorer.Graphql.Types.AccountUDT do
         ]
       }
     }
+    ```
     """
     field :account_current_bridged_udts, list_of(:account_current_bridged_udt) do
       arg(:input, non_null(:account_current_bridged_udts_input))
@@ -113,6 +118,7 @@ defmodule GodwokenExplorer.Graphql.Types.AccountUDT do
 
     @desc """
     request-result-example:
+    ```
     query {
       account_ckbs(
         input: { address_hashes: ["0x715AB282B873B79A7BE8B0E8C13C4E8966A52040"] }
@@ -134,7 +140,8 @@ defmodule GodwokenExplorer.Graphql.Types.AccountUDT do
         }
       }
     }
-
+    ```
+    ```
     {
       "data": {
         "account_ckbs": [
@@ -158,16 +165,17 @@ defmodule GodwokenExplorer.Graphql.Types.AccountUDT do
         ]
       }
     }
+    ```
     """
     field :account_ckbs, list_of(:account_udt) do
       arg(:input, non_null(:account_ckbs_input))
       resolve(&Resolvers.AccountUDT.account_ckbs/3)
     end
 
-
     @desc """
     erc20 udts
     request-result-example:
+    ```
     query {
       account_udts(
         input: {
@@ -193,7 +201,8 @@ defmodule GodwokenExplorer.Graphql.Types.AccountUDT do
         }
       }
     }
-
+    ```
+    ```
     {
       "data": {
         "account_udts": [
@@ -217,6 +226,7 @@ defmodule GodwokenExplorer.Graphql.Types.AccountUDT do
         ]
       }
     }
+    ```
     """
     field :account_udts, list_of(:account_udt) do
       arg(:input, non_null(:account_udts_input))
@@ -226,6 +236,7 @@ defmodule GodwokenExplorer.Graphql.Types.AccountUDT do
     @desc """
     erc20 udts
     request-result-example:
+    ```
     query {
       account_udts_by_contract_address(
         input: {
@@ -254,7 +265,8 @@ defmodule GodwokenExplorer.Graphql.Types.AccountUDT do
         }
       }
     }
-
+    ```
+    ```
     {
       "data": {
         "account_udts_by_contract_address": [
@@ -274,6 +286,7 @@ defmodule GodwokenExplorer.Graphql.Types.AccountUDT do
         ]
       }
     }
+    ```
     """
     field :account_udts_by_contract_address, list_of(:account_current_udt) do
       arg(:input, non_null(:account_udts_by_contract_address_input))
@@ -283,6 +296,7 @@ defmodule GodwokenExplorer.Graphql.Types.AccountUDT do
 
     @desc """
     request-result-example:
+    ```
     query {
       account_bridged_udts_by_script_hash(
         input: {
@@ -311,7 +325,8 @@ defmodule GodwokenExplorer.Graphql.Types.AccountUDT do
         }
       }
     }
-
+    ```
+    ```
     {
       "data": {
         "account_bridged_udts_by_script_hash": [
@@ -338,6 +353,7 @@ defmodule GodwokenExplorer.Graphql.Types.AccountUDT do
         ]
       }
     }
+    ```
     """
     field :account_bridged_udts_by_script_hash, list_of(:account_current_bridged_udt) do
       arg(:input, non_null(:account_bridged_udts_by_script_hash_input))

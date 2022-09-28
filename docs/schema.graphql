@@ -26,25 +26,28 @@ type Account {
 
 input AccountBridgedUdtsByScriptHashInput {
   """
+  ```
   argument: the page of query result, the relations of postgres offset: offset = (page - 1) * page_size
-  
   default: 1
   limit: > 0
+  ```
   """
   page: Int = 1
 
   """
+  ```
   argument: the page_size of query result, it's the same of postgres limit
-  
   default: 20
   limit: > 0
+  ```
   """
   page_size: Int = 20
 
   """
+  ```
   argument: the sort of type by custom condition
-  
   default: desc
+  ```
   """
   sort_type: SortType = DESC
   udt_script_hash: HashFull!
@@ -52,25 +55,28 @@ input AccountBridgedUdtsByScriptHashInput {
 
 input AccountChildUdtsInput {
   """
+  ```
   argument: the page of query result, the relations of postgres offset: offset = (page - 1) * page_size
-  
   default: 1
   limit: > 0
+  ```
   """
   page: Int = 1
 
   """
+  ```
   argument: the page_size of query result, it's the same of postgres limit
-  
   default: 20
   limit: > 0
+  ```
   """
   page_size: Int = 20
 
   """
+  ```
   argument: the sort of type by custom condition
-  
   default: desc
+  ```
   """
   sort_type: SortType = DESC
 }
@@ -102,18 +108,20 @@ input AccountCurrentBridgedUdtsInput {
   address_hashes: [HashAddress] = []
 
   """
+  ```
   argument: the page of query result, the relations of postgres offset: offset = (page - 1) * page_size
-  
   default: 1
   limit: > 0
+  ```
   """
   page: Int = 1
 
   """
+  ```
   argument: the page_size of query result, it's the same of postgres limit
-  
   default: 20
   limit: > 0
+  ```
   """
   page_size: Int = 20
 
@@ -146,18 +154,20 @@ input AccountCurrentUdtsInput {
   address_hashes: [HashAddress] = []
 
   """
+  ```
   argument: the page of query result, the relations of postgres offset: offset = (page - 1) * page_size
-  
   default: 1
   limit: > 0
+  ```
   """
   page: Int = 1
 
   """
+  ```
   argument: the page_size of query result, it's the same of postgres limit
-  
   default: 20
   limit: > 0
+  ```
   """
   page_size: Int = 20
 
@@ -176,11 +186,14 @@ input AccountCurrentUdtsInput {
 
 input AccountInput {
   """
+  ```
   address: account address(eth_address)
   example: "0x59b670e9fa9d0a427751af201d676719a970857b"
-  
+  ```
+  ```
   script_hash: script hash with hash_full type
   example: "0x08c9937e412e135928fd6dec7255965ddd7df4d5a163564b60895100bb3b2f9e"
+  ```
   """
   address: HashAddress
   script_hash: HashFull
@@ -207,25 +220,28 @@ type AccountUdt {
 
 input AccountUdtsByContractAddressInput {
   """
+  ```
   argument: the page of query result, the relations of postgres offset: offset = (page - 1) * page_size
-  
   default: 1
   limit: > 0
+  ```
   """
   page: Int = 1
 
   """
+  ```
   argument: the page_size of query result, it's the same of postgres limit
-  
   default: 20
   limit: > 0
+  ```
   """
   page_size: Int = 20
 
   """
+  ```
   argument: the sort of type by custom condition
-  
   default: desc
+  ```
   """
   sort_type: SortType = DESC
   token_contract_address_hash: HashAddress!
@@ -297,25 +313,28 @@ input BlockInput {
 
 input BlocksInput {
   """
+  ```
   argument: the page of query result, the relations of postgres offset: offset = (page - 1) * page_size
-  
   default: 1
   limit: > 0
+  ```
   """
   page: Int = 1
 
   """
+  ```
   argument: the page_size of query result, it's the same of postgres limit
-  
   default: 20
   limit: > 0
+  ```
   """
   page_size: Int = 20
 
   """
+  ```
   argument: the sort of type by custom condition
-  
   default: desc
+  ```
   """
   sort_type: SortType = DESC
 }
@@ -392,6 +411,37 @@ input Erc1155HoldersInput {
   token_id: Decimal
 }
 
+type Erc1155Inventory {
+  contract_address_hash: HashAddress
+  counts: Decimal
+  token_id: Decimal
+}
+
+type Erc1155Udt {
+  account: Account
+  contract_address_hash: HashAddress
+  description: String
+  eth_type: EthType
+  holders_count: Int
+  icon: String
+  id: Int
+  minted_count: Decimal
+  name: String
+  official_site: String
+  symbol: String
+  token_type_count: Int
+}
+
+type Erc1155UserToken {
+  address_hash: HashAddress
+  counts: Decimal
+  token_contract_address_hash: HashAddress
+  token_id: Decimal
+  token_type: EthType
+  udt: Erc7211155CommonUdt
+  value: Decimal
+}
+
 input Erc1155UserTokenInput {
   contract_address: HashAddress!
   token_id: Decimal!
@@ -428,6 +478,27 @@ input Erc20TokenTransfersInput {
   to_address: HashAddress
   token_contract_address_hash: HashAddress
   transaction_hash: HashFull
+}
+
+type Erc7211155CommonUdt {
+  account: Account
+  contract_address_hash: HashAddress
+  description: String
+  eth_type: EthType
+  icon: String
+  id: Int
+  name: String
+  official_site: String
+  symbol: String
+}
+
+type Erc721Erc1155CommonUserToken {
+  address_hash: HashAddress
+  counts: Decimal
+  token_contract_address_hash: HashAddress
+  token_id: Decimal
+  token_type: EthType
+  value: Decimal
 }
 
 type Erc721Erc1155HolderItem {
@@ -486,20 +557,6 @@ input Erc721Erc1155TokenTransfersInput {
   transaction_hash: HashFull
 }
 
-type Erc721Erc1155Udt {
-  account: Account
-  contract_address_hash: HashAddress
-  description: String
-  eth_type: EthType
-  holders_count: Int
-  icon: String
-  id: Int
-  minted_count: Int
-  name: String
-  official_site: String
-  symbol: String
-}
-
 input Erc721Erc1155UdtsInput {
   """Fetch the records after this cursor."""
   after: String
@@ -516,15 +573,6 @@ input Erc721Erc1155UdtsInput {
   sorter: [UdtsSorterInput] = [{sort_type: ASC, sort_value: ID}]
 }
 
-type Erc721Erc1155UserToken {
-  address_hash: HashAddress
-  token_contract_address_hash: HashAddress
-  token_id: Decimal
-  token_type: EthType
-  udt: Erc721Erc1155Udt
-  value: Decimal
-}
-
 input Erc721HoldersInput {
   """Fetch the records after this cursor."""
   after: String
@@ -537,6 +585,30 @@ input Erc721HoldersInput {
   Limits the number of records returned per page. Note that this number will be capped by maximum_limit=100. Defaults to 20.
   """
   limit: Int = 20
+}
+
+type Erc721Udt {
+  account: Account
+  contract_address_hash: HashAddress
+  description: String
+  eth_type: EthType
+  holders_count: Int
+  icon: String
+  id: Int
+  minted_count: Decimal
+  name: String
+  official_site: String
+  symbol: String
+}
+
+type Erc721UserToken {
+  address_hash: HashAddress
+  counts: Decimal
+  token_contract_address_hash: HashAddress
+  token_id: Decimal
+  token_type: EthType
+  udt: Erc721Erc1155CommonUserToken
+  value: Decimal
 }
 
 enum EthType {
@@ -585,26 +657,29 @@ input LogInput {
   fourth_topic: String
 
   """
+  ```
   argument: the page of query result, the relations of postgres offset: offset = (page - 1) * page_size
-  
   default: 1
   limit: > 0
+  ```
   """
   page: Int = 1
 
   """
+  ```
   argument: the page_size of query result, it's the same of postgres limit
-  
   default: 20
   limit: > 0
+  ```
   """
   page_size: Int = 20
   second_topic: String
 
   """
+  ```
   argument: the sort of type by custom condition
-  
   default: desc
+  ```
   """
   sort_type: SortType = DESC
 
@@ -616,20 +691,37 @@ input LogInput {
 
 input PageAndSizeInput {
   """
+  ```
   argument: the page of query result, the relations of postgres offset: offset = (page - 1) * page_size
-  
   default: 1
   limit: > 0
+  ```
   """
   page: Int = 1
 
   """
+  ```
   argument: the page_size of query result, it's the same of postgres limit
-  
   default: 20
   limit: > 0
+  ```
   """
   page_size: Int = 20
+}
+
+type PaginateErc1155Inventory {
+  entries: [Erc1155Inventory]
+  metadata: PaginateMetadata
+}
+
+type PaginateErc1155Udts {
+  entries: [Erc1155Udt]
+  metadata: PaginateMetadata
+}
+
+type PaginateErc1155UserInventory {
+  entries: [Erc1155UserToken]
+  metadata: PaginateMetadata
 }
 
 type PaginateErc721Erc1155Holders {
@@ -637,13 +729,13 @@ type PaginateErc721Erc1155Holders {
   metadata: PaginateMetadata
 }
 
-type PaginateErc721Erc1155Inventory {
-  entries: [Erc721Erc1155UserToken]
+type PaginateErc721Inventory {
+  entries: [Erc721UserToken]
   metadata: PaginateMetadata
 }
 
-type PaginateErc721Erc1155Udts {
-  entries: [Erc721Erc1155Udt]
+type PaginateErc721Udts {
+  entries: [Erc721Udt]
   metadata: PaginateMetadata
 }
 
@@ -680,8 +772,13 @@ type PaginateUdts {
   metadata: PaginateMetadata
 }
 
-type PaginateUserErc721Erc1155Assets {
-  entries: [Erc721Erc1155UserToken]
+type PaginateUserErc1155Assets {
+  entries: [Erc1155UserToken]
+  metadata: PaginateMetadata
+}
+
+type PaginateUserErc721Assets {
+  entries: [Erc721UserToken]
   metadata: PaginateMetadata
 }
 
@@ -694,6 +791,7 @@ type Polyjuice {
   input: ChainData
   input_size: Int
   is_create: Boolean
+  native_transfer_address_hash: HashAddress
   status: PolyjuiceStatus
   transaction_index: Int
   tx_hash: HashFull
@@ -702,13 +800,13 @@ type Polyjuice {
 
 type PolyjuiceCreator {
   code_hash: String
+  created_account: Account
   fee_amount: Bigint
   fee_udt_id: Int
   hash_type: String
   id: Int
   script_args: String
-  tx_hash: HashFull,
-  created_account: Account
+  tx_hash: HashFull
 }
 
 enum PolyjuiceStatus {
@@ -719,6 +817,7 @@ enum PolyjuiceStatus {
 type RootMutationType {
   """
   example:
+  ```
   mutation {
     verify_and_update_from_sourcify(
       input: { address: "0x7A4a65Db21864384d2D21a60367d7Fd5c86F8Fba" }
@@ -732,7 +831,8 @@ type RootMutationType {
   name
     }
   }
-  
+  ```
+  ```
   {
     "data": {
       "verify_and_update_from_sourcify": {
@@ -744,6 +844,7 @@ type RootMutationType {
       }
     }
   }
+  ```
   """
   verify_and_update_from_sourcify(input: VerifyAndUpdateFromSourcifyInput!): SmartContract
 }
@@ -751,16 +852,16 @@ type RootMutationType {
 type RootQueryType {
   """
   function: get account by account addresses
-  
-  request-example:
+  request-with-address-example:
+  ```
   query {
     account(input: {address: "0x59b670e9fa9d0a427751af201d676719a970857b"}){
       type
       eth_address
     }
   }
-  
-  result-example:
+  ```
+  ```
   {
     "data": {
       "account": {
@@ -769,8 +870,9 @@ type RootQueryType {
       }
     }
   }
-  
-  request-example:
+  ```
+  request-with-script-hash-example:
+  ```
   query {
     account(input: {script_hash: "0x08c9937e412e135928fd6dec7255965ddd7df4d5a163564b60895100bb3b2f9e"}){
       type
@@ -778,7 +880,8 @@ type RootQueryType {
       script_hash
     }
   }
-  
+  ```
+  ```
   {
     "data": {
       "account": {
@@ -788,8 +891,8 @@ type RootQueryType {
       }
     }
   }
-  
-  request-example:
+  ```
+  ```
   query {
     account(
       input: {
@@ -802,8 +905,8 @@ type RootQueryType {
       script
     }
   }
-  
-  
+  ```
+  ```
   {
     "data": {
       "account": {
@@ -829,8 +932,8 @@ type RootQueryType {
       }
     }
   }
-  
-  request-example:
+  ```
+  ```
   query {
     account(
       input: {
@@ -847,7 +950,8 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
+  ```
   {
     "data": {
       "account": {
@@ -866,8 +970,8 @@ type RootQueryType {
       }
     }
   }
-  
-  request-example:
+  ```
+  ```
   query {
     account(
       input: {
@@ -880,7 +984,8 @@ type RootQueryType {
       script
     }
   }
-  
+  ```
+  ```
   {
     "data": {
       "account": {
@@ -895,8 +1000,8 @@ type RootQueryType {
       }
     }
   }
-  
-  request-example:
+  ```
+  ```
   query {
     account(
       input: {
@@ -909,7 +1014,8 @@ type RootQueryType {
       script
     }
   }
-  
+  ```
+  ```
   {
     "data": {
       "account": {
@@ -924,8 +1030,8 @@ type RootQueryType {
       }
     }
   }
-  
-  request-example:
+  ```
+  ```
   query {
     account(
       input: {
@@ -951,8 +1057,8 @@ type RootQueryType {
       }
     }
   }
-  
-  
+  ```
+  ```
   {
     "data": {
       "account": {
@@ -975,8 +1081,9 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
   bridge-account-udt-example:
+  ```
   query {
     account(
       input: {
@@ -997,7 +1104,8 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
+  ```
   {
     "data": {
       "account": {
@@ -1016,11 +1124,13 @@ type RootQueryType {
       }
     }
   }
+  ```
   """
   account(input: AccountInput!): Account
 
   """
   request-result-example:
+  ```
   query {
     account_bridged_udts_by_script_hash(
       input: {
@@ -1049,7 +1159,8 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
+  ```
   {
     "data": {
       "account_bridged_udts_by_script_hash": [
@@ -1076,11 +1187,13 @@ type RootQueryType {
       ]
     }
   }
+  ```
   """
   account_bridged_udts_by_script_hash(input: AccountBridgedUdtsByScriptHashInput!): [AccountCurrentBridgedUdt]
 
   """
   request-result-example:
+  ```
   query {
     account_ckbs(
       input: { address_hashes: ["0x715AB282B873B79A7BE8B0E8C13C4E8966A52040"] }
@@ -1102,7 +1215,8 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
+  ```
   {
     "data": {
       "account_ckbs": [
@@ -1126,11 +1240,13 @@ type RootQueryType {
       ]
     }
   }
+  ```
   """
   account_ckbs(input: AccountCkbsInput!): [AccountUdt]
 
   """
   request-result-example:
+  ```
   query {
     account_current_bridged_udts(
       input: {
@@ -1158,7 +1274,8 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
+  ```
   {
     "data": {
       "account_current_bridged_udts": [
@@ -1185,12 +1302,14 @@ type RootQueryType {
       ]
     }
   }
+  ```
   """
   account_current_bridged_udts(input: AccountCurrentBridgedUdtsInput!): [AccountCurrentBridgedUdt]
 
   """
   erc20 udts
   request-result-example:
+  ```
   query {
     account_current_udts(
       input: {
@@ -1218,19 +1337,21 @@ type RootQueryType {
       }
     }
   }
-  
-  
+  ```
+  ```
   {
     "data": {
       "account_current_udts": []
     }
   }
+  ```
   """
   account_current_udts(input: AccountCurrentUdtsInput!): [AccountCurrentUdt]
 
   """
   erc20 udts
   request-result-example:
+  ```
   query {
     account_udts(
       input: {
@@ -1256,7 +1377,8 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
+  ```
   {
     "data": {
       "account_udts": [
@@ -1280,12 +1402,14 @@ type RootQueryType {
       ]
     }
   }
+  ```
   """
   account_udts(input: AccountUdtsInput!): [AccountUdt]
 
   """
   erc20 udts
   request-result-example:
+  ```
   query {
     account_udts_by_contract_address(
       input: {
@@ -1314,7 +1438,8 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
+  ```
   {
     "data": {
       "account_udts_by_contract_address": [
@@ -1334,13 +1459,14 @@ type RootQueryType {
       ]
     }
   }
+  ```
   """
   account_udts_by_contract_address(input: AccountUdtsByContractAddressInput!): [AccountCurrentUdt]
 
   """
   function: get block by block number or block hash
-  
   request-result-example:
+  ```
   query {
     block(input: {number: 1}){
       hash
@@ -1359,7 +1485,8 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
+  ```
   {
     "data": {
       "block": {
@@ -1373,13 +1500,14 @@ type RootQueryType {
       }
     }
   }
+  ```
   """
   block(input: BlockInput): Block
 
   """
   function: get list of block sort by block number
-  
   request-example:
+  ```
   query {
     blocks(input: {}){
       hash
@@ -1398,7 +1526,8 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
+  ```
   result-example:
   {
     "data": {
@@ -1414,10 +1543,12 @@ type RootQueryType {
       }
     }
   }
+  ```
   """
   blocks(input: BlocksInput = {page: 1, page_size: 10, sort_type: DESC}): [Block]
 
   """
+  ```
   query {
     erc1155_holders(
       input: {
@@ -1438,7 +1569,8 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
+  ```
   {
     "data": {
       "erc1155_holders": {
@@ -1458,7 +1590,8 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
+  ```
   query {
     erc1155_holders(
       input: {
@@ -1480,7 +1613,8 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
+  ```
   {
     "data": {
       "erc1155_holders": {
@@ -1500,7 +1634,8 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
+  ```
   query {
     erc1155_holders(
       input: {
@@ -1522,7 +1657,8 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
+  ```
   {
     "data": {
       "erc1155_holders": {
@@ -1542,29 +1678,24 @@ type RootQueryType {
       }
     }
   }
+  ```
   """
   erc1155_holders(input: Erc1155HoldersInput!): PaginateErc721Erc1155Holders
 
   """
+  ```
   query {
     erc1155_inventory(
       input: {
         contract_address: "0xe6903e124e5bdae8784674eb625f1c212efc789e"
-        token_id: 0
         limit: 1
+        after: "g3QAAAACaAJkAAlpbnZlbnRvcnlkABVjb250cmFjdF9hZGRyZXNzX2hhc2h0AAAAA2QACl9fc3RydWN0X19kACJFbGl4aXIuR29kd29rZW5FeHBsb3Jlci5DaGFpbi5IYXNoZAAKYnl0ZV9jb3VudGEUZAAFYnl0ZXNtAAAAFOaQPhJOW9roeEZ062JfHCEu_HieaAJkAAlpbnZlbnRvcnlkAAZjb3VudHN0AAAABGQACl9fc3RydWN0X19kAA5FbGl4aXIuRGVjaW1hbGQABGNvZWZiAAArVWQAA2V4cGEAZAAEc2lnbmEB"
       }
     ) {
       entries {
+        contract_address_hash
         token_id
-        address_hash
-        token_contract_address_hash
-        value
-  
-        udt {
-          id
-          name
-          eth_type
-        }
+        counts
       }
       metadata {
         total_count
@@ -1573,36 +1704,32 @@ type RootQueryType {
       }
     }
   }
-  
-  
+  ```
+  ```
   {
     "data": {
       "erc1155_inventory": {
         "entries": [
           {
-            "address_hash": "0xc6e58fb4affb6ab8a392b7cc23cd3fef74517f6c",
-            "token_contract_address_hash": "0xe6903e124e5bdae8784674eb625f1c212efc789e",
-            "token_id": "0",
-            "udt": {
-              "eth_type": "ERC1155",
-              "id": 48472,
-              "name": null
-            },
-            "value": "73"
+            "contract_address_hash": "0xe6903e124e5bdae8784674eb625f1c212efc789e",
+            "counts": "10103",
+            "token_id": "1"
           }
         ],
         "metadata": {
-          "after": "g3QAAAACZAACaWRiAB4JsWQACHRva2VuX2lkdAAAAARkAApfX3N0cnVjdF9fZAAORWxpeGlyLkRlY2ltYWxkAARjb2VmYQBkAANleHBhAGQABHNpZ25hAQ==",
-          "before": null,
-          "total_count": 4
+          "after": "g3QAAAACaAJkAAlpbnZlbnRvcnlkABVjb250cmFjdF9hZGRyZXNzX2hhc2h0AAAAA2QACl9fc3RydWN0X19kACJFbGl4aXIuR29kd29rZW5FeHBsb3Jlci5DaGFpbi5IYXNoZAAKYnl0ZV9jb3VudGEUZAAFYnl0ZXNtAAAAFOaQPhJOW9roeEZ062JfHCEu_HieaAJkAAlpbnZlbnRvcnlkAAZjb3VudHN0AAAABGQACl9fc3RydWN0X19kAA5FbGl4aXIuRGVjaW1hbGQABGNvZWZiAAAnd2QAA2V4cGEAZAAEc2lnbmEB",
+          "before": "g3QAAAACaAJkAAlpbnZlbnRvcnlkABVjb250cmFjdF9hZGRyZXNzX2hhc2h0AAAAA2QACl9fc3RydWN0X19kACJFbGl4aXIuR29kd29rZW5FeHBsb3Jlci5DaGFpbi5IYXNoZAAKYnl0ZV9jb3VudGEUZAAFYnl0ZXNtAAAAFOaQPhJOW9roeEZ062JfHCEu_HieaAJkAAlpbnZlbnRvcnlkAAZjb3VudHN0AAAABGQACl9fc3RydWN0X19kAA5FbGl4aXIuRGVjaW1hbGQABGNvZWZiAAAnd2QAA2V4cGEAZAAEc2lnbmEB",
+          "total_count": 6
         }
       }
     }
   }
+  ```
   """
-  erc1155_inventory(input: Erc721Erc1155InventoryInput!): PaginateErc721Erc1155Inventory
+  erc1155_inventory(input: Erc721Erc1155InventoryInput!): PaginateErc1155Inventory
 
   """
+  ```
   query {
     erc1155_token_transfers(
       input: {
@@ -1645,7 +1772,8 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
+  ```
   {
     "data": {
       "erc1155_token_transfers": {
@@ -1678,7 +1806,8 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
+  ```
   query {
     erc1155_token_transfers(
       input: {
@@ -1707,7 +1836,8 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
+  ```
   {
     "data": {
       "erc1155_token_transfers": {
@@ -1727,10 +1857,12 @@ type RootQueryType {
       }
     }
   }
+  ```
   """
   erc1155_token_transfers(input: Erc721Erc1155TokenTransfersInput! = {combine_from_to: true, limit: 20, sorter: [{sort_type: DESC, sort_value: BLOCK_NUMBER}, {sort_type: DESC, sort_value: LOG_INDEX}, {sort_type: ASC, sort_value: TRANSACTION_HASH}]}): PaginateTokenTransfers
 
   """
+  ```
   query {
     erc1155_udts(
       input: {
@@ -1745,6 +1877,7 @@ type RootQueryType {
         contract_address_hash
         eth_type
         holders_count
+        token_type_count
         minted_count
       }
       metadata {
@@ -1753,7 +1886,6 @@ type RootQueryType {
         before
       }
     }
-  
     udt(
       input: { contract_address: "0xa87071a188e3e8d3e30f53a335ecc329d88026b7" }
     ) {
@@ -1763,7 +1895,8 @@ type RootQueryType {
       eth_type
     }
   }
-  
+  ```
+  ```
   {
     "data": {
       "erc1155_udts": {
@@ -1771,10 +1904,11 @@ type RootQueryType {
           {
             "contract_address_hash": "0xa87071a188e3e8d3e30f53a335ecc329d88026b7",
             "eth_type": "ERC1155",
-            "holders_count": 3,
+            "holders_count": 4,
             "id": 53717,
-            "minted_count": 30,
-            "name": null
+            "minted_count": 31,
+            "name": null,
+            "token_type_count": 31
           }
         ],
         "metadata": {
@@ -1791,13 +1925,13 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
+  ```
   query {
     erc1155_udts(
       input: {
         limit: 1
         sorter: [{ sort_type: DESC, sort_value: EX_HOLDERS_COUNT }]
-        after: "g3QAAAABaAJkAAl1X2hvbGRlcnNkAA1ob2xkZXJzX2NvdW50YR8="
       }
     ) {
       entries {
@@ -1806,6 +1940,7 @@ type RootQueryType {
         contract_address_hash
         eth_type
         holders_count
+        token_type_count
         minted_count
       }
       metadata {
@@ -1815,7 +1950,8 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
+  ```
   {
     "data": {
       "erc1155_udts": {
@@ -1823,24 +1959,135 @@ type RootQueryType {
           {
             "contract_address_hash": "0xb53f9c79eca97291c51a918779fc7a500fbb9e42",
             "eth_type": "ERC1155",
-            "holders_count": 30,
+            "holders_count": 7,
             "id": 24008,
             "minted_count": 30,
-            "name": null
+            "name": null,
+            "token_type_count": 30
           }
         ],
         "metadata": {
-          "after": "g3QAAAABaAJkAAl1X2hvbGRlcnNkAA1ob2xkZXJzX2NvdW50YR4=",
-          "before": "g3QAAAABaAJkAAl1X2hvbGRlcnNkAA1ob2xkZXJzX2NvdW50YR4=",
+          "after": "g3QAAAACZAACaWRiAABdyGgCZAAJdV9ob2xkZXJzZAANaG9sZGVyc19jb3VudGEH",
+          "before": null,
           "total_count": 524
         }
       }
     }
   }
+  ```
+  ```
+  query {
+    erc1155_udts(
+      input: {
+        limit: 1
+        sorter: [{ sort_type: DESC, sort_value: EX_HOLDERS_COUNT }]
+        after: "g3QAAAACZAACaWRiAABdyGgCZAAJdV9ob2xkZXJzZAANaG9sZGVyc19jb3VudGEH"
+      }
+    ) {
+      entries {
+        id
+        name
+        contract_address_hash
+        eth_type
+        holders_count
+        token_type_count
+        minted_count
+      }
+      metadata {
+        total_count
+        after
+        before
+      }
+    }
+  }
+  ```
+  ```
+  {
+    "data": {
+      "erc1155_udts": {
+        "entries": [
+          {
+            "contract_address_hash": "0xe6903e124e5bdae8784674eb625f1c212efc789e",
+            "eth_type": "ERC1155",
+            "holders_count": 5,
+            "id": 48472,
+            "minted_count": 28,
+            "name": null,
+            "token_type_count": 6
+          }
+        ],
+        "metadata": {
+          "after": "g3QAAAACZAACaWRiAAC9WGgCZAAJdV9ob2xkZXJzZAANaG9sZGVyc19jb3VudGEF",
+          "before": "g3QAAAACZAACaWRiAAC9WGgCZAAJdV9ob2xkZXJzZAANaG9sZGVyc19jb3VudGEF",
+          "total_count": 524
+        }
+      }
+    }
+  }
+  ```
   """
-  erc1155_udts(input: Erc721Erc1155UdtsInput! = {limit: 20, sorter: [{sort_type: ASC, sort_value: ID}]}): PaginateErc721Erc1155Udts
+  erc1155_udts(input: Erc721Erc1155UdtsInput! = {limit: 20, sorter: [{sort_type: ASC, sort_value: ID}]}): PaginateErc1155Udts
 
   """
+  ```
+  query {
+    erc1155_user_inventory(
+      input: {
+        contract_address: "0xe6903e124e5bdae8784674eb625f1c212efc789e"
+        token_id: 0
+        limit: 1
+      }
+    ) {
+      entries {
+        token_id
+        address_hash
+        token_contract_address_hash
+        value
+        udt {
+          id
+          name
+          eth_type
+        }
+      }
+      metadata {
+        total_count
+        after
+        before
+      }
+    }
+  }
+  ```
+  ```
+  {
+    "data": {
+      "erc1155_user_inventory": {
+        "entries": [
+          {
+            "address_hash": "0xc6e58fb4affb6ab8a392b7cc23cd3fef74517f6c",
+            "token_contract_address_hash": "0xe6903e124e5bdae8784674eb625f1c212efc789e",
+            "token_id": "0",
+            "udt": {
+              "eth_type": "ERC1155",
+              "id": 48472,
+              "name": null
+            },
+            "value": "73"
+          }
+        ],
+        "metadata": {
+          "after": "g3QAAAADZAAMYmxvY2tfbnVtYmVyYgAEU89kAAJpZGIAHgmxZAAIdG9rZW5faWR0AAAABGQACl9fc3RydWN0X19kAA5FbGl4aXIuRGVjaW1hbGQABGNvZWZhAGQAA2V4cGEAZAAEc2lnbmEB",
+          "before": null,
+          "total_count": 4
+        }
+      }
+    }
+  }
+  ```
+  """
+  erc1155_user_inventory(input: Erc721Erc1155InventoryInput!): PaginateErc1155UserInventory
+
+  """
+  ```
   query {
     erc1155_user_token(
       input: {
@@ -1855,7 +2102,8 @@ type RootQueryType {
       token_contract_address_hash
     }
   }
-  
+  ```
+  ```
   {
     "data": {
       "erc1155_user_token": {
@@ -1866,11 +2114,12 @@ type RootQueryType {
       }
     }
   }
+  ```
   """
-  erc1155_user_token(input: Erc1155UserTokenInput!): Erc721Erc1155UserToken
-  erc721_erc1155_inventory(input: Erc721Erc1155InventoryInput!): PaginateErc721Erc1155Inventory
+  erc1155_user_token(input: Erc1155UserTokenInput!): Erc1155UserToken
 
   """
+  ```
   query {
     erc721_holders(
       input: {
@@ -1891,7 +2140,8 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
+  ```
   {
     "data": {
       "erc721_holders": {
@@ -1911,7 +2161,8 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
+  ```
   query {
     erc721_holders(
       input: {
@@ -1933,7 +2184,8 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
+  ```
   {
     "data": {
       "erc721_holders": {
@@ -1953,10 +2205,12 @@ type RootQueryType {
       }
     }
   }
+  ```
   """
   erc721_holders(input: Erc721HoldersInput!): PaginateErc721Erc1155Holders
 
   """
+  ```
   query {
     erc721_inventory(
       input: {
@@ -1977,7 +2231,8 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
+  ```
   {
     "data": {
       "erc721_inventory": {
@@ -1997,10 +2252,12 @@ type RootQueryType {
       }
     }
   }
+  ```
   """
-  erc721_inventory(input: Erc721Erc1155InventoryInput!): PaginateErc721Erc1155Inventory
+  erc721_inventory(input: Erc721Erc1155InventoryInput!): PaginateErc721Inventory
 
   """
+  ```
   query {
     erc721_token_transfers(
       input: {
@@ -2038,8 +2295,8 @@ type RootQueryType {
       }
     }
   }
-  
-  
+  ```
+  ```
   {
     "data": {
       "erc721_token_transfers": {
@@ -2067,10 +2324,12 @@ type RootQueryType {
       }
     }
   }
+  ```
   """
   erc721_token_transfers(input: Erc721Erc1155TokenTransfersInput! = {combine_from_to: true, limit: 20, sorter: [{sort_type: DESC, sort_value: BLOCK_NUMBER}, {sort_type: DESC, sort_value: LOG_INDEX}, {sort_type: ASC, sort_value: TRANSACTION_HASH}]}): PaginateTokenTransfers
 
   """
+  ```
   query {
     erc721_udts(
       input: { contract_address: "0x784cd3c52813098763c371df8fbe8ed27d2c1ebd" }
@@ -2090,7 +2349,8 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
+  ```
   {
     "data": {
       "erc721_udts": {
@@ -2112,7 +2372,8 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
+  ```
   query {
     erc721_udts(
       input: {
@@ -2136,7 +2397,8 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
+  ```
   {
     "data": {
       "erc721_udts": {
@@ -2158,13 +2420,14 @@ type RootQueryType {
       }
     }
   }
+  ```
   """
-  erc721_udts(input: Erc721Erc1155UdtsInput! = {limit: 20, sorter: [{sort_type: ASC, sort_value: ID}]}): PaginateErc721Erc1155Udts
+  erc721_udts(input: Erc721Erc1155UdtsInput! = {limit: 20, sorter: [{sort_type: ASC, sort_value: ID}]}): PaginateErc721Udts
 
   """
   function: get list of logs by filter or conditions
-  
   request-example:
+  ```
   query {
     logs(input: {first_topic: "0x95e0325a2d4f803db1237b0e454f7d9a09ec46941e478e3e98c510d8f1506031",end_block_number:
   9988, page: 1, page_size: 1}) {
@@ -2178,8 +2441,8 @@ type RootQueryType {
       fourth_topic
     }
   }
-  
-  result-example:
+  ```
+  ```
   {
     "data": {
       "logs": [
@@ -2196,13 +2459,14 @@ type RootQueryType {
       ]
     }
   }
+  ```
   """
   logs(input: LogInput!): [Log]
 
   """
   function: get smart contract by address
-  
   request-result-example:
+  ```
   query {
     smart_contract(
       input: { contract_address: "0x2503A1A79A443F3961EE96A8C5EC513638129614" }
@@ -2214,6 +2478,8 @@ type RootQueryType {
       }
     }
   }
+  ```
+  ```
   {
     "data": {
       "smart_contract": {
@@ -2225,8 +2491,9 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
   request-result-example2:
+  ```
   query {
     smart_contract(
       input: { script_hash: "0x9B55204439C78D3B9CBCC62C03F31E47C8457FD39CA9A9EB805B364B45C26C38" }
@@ -2238,6 +2505,8 @@ type RootQueryType {
       }
     }
   }
+  ```
+  ```
   {
     "data": {
       "smart_contract": {
@@ -2249,13 +2518,14 @@ type RootQueryType {
       }
     }
   }
+  ```
   """
   smart_contract(input: SmartContractInput!): SmartContract
 
   """
   function: get list of smart contracts
-  
   request-result-example:
+  ```
   query {
     smart_contracts(input: { sorter: [{ sort_type: ASC, sort_value: ID }] }) {
       entries {
@@ -2272,8 +2542,8 @@ type RootQueryType {
       }
     }
   }
-  
-  
+  ```
+  ```
   {
     "data": {
       "smart_contracts": {
@@ -2294,8 +2564,9 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
   multi-table-sorter-example:
+  ```
   query {
     smart_contracts(
       input: { sorter: [{ sort_type: ASC, sort_value: EX_TX_COUNT }] }
@@ -2314,6 +2585,8 @@ type RootQueryType {
       }
     }
   }
+  ```
+  ```
   {
     "data": {
       "smart_contracts": {
@@ -2334,11 +2607,13 @@ type RootQueryType {
       }
     }
   }
+  ```
   """
   smart_contracts(input: SmartContractsInput): PaginateSmartContracts
 
   """
   check by addresses example:
+  ```
   query {
     sourcify_check_by_addresses(
       input: { addresses: ["0x7A4a65Db21864384d2D21a60367d7Fd5c86F8Fba"] }
@@ -2348,8 +2623,8 @@ type RootQueryType {
       chain_ids
     }
   }
-  
-  
+  ```
+  ```
   {
     "data": {
       "sourcify_check_by_addresses": [
@@ -2363,20 +2638,20 @@ type RootQueryType {
       ]
     }
   }
+  ```
   """
   sourcify_check_by_addresses(input: SourcifyCheckByAddressesInput!): [SourcifyCheckByAddresses]
 
   """
   function: get list of token approvals by filter
-  
   example:
+  ```
   query {
     token_approvals(
       input: {
         address: "0x966b30e576a4d6731996748b48dd67c94ef29067"
         token_type: ERC20
         limit: 2
-  
         sorter: [
           { sort_type: DESC, sort_value: BLOCK_NUMBER },
           { sort_type: DESC, sort_value: ID }
@@ -2394,7 +2669,6 @@ type RootQueryType {
           timestamp
         }
       }
-  
       metadata {
         total_count
         before
@@ -2402,7 +2676,8 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
+  ```
   {
     "data": {
       "token_approvals": {
@@ -2427,13 +2702,14 @@ type RootQueryType {
       }
     }
   }
+  ```
   """
   token_approvals(input: TokenApprovalInput! = {limit: 20, sorter: [{sort_type: DESC, sort_value: BLOCK_NUMBER}, {sort_type: DESC, sort_value: ID}]}): PaginateTokenApprovals
 
   """
   function: get list of token transfers by filter
-  
   example:
+  ```
   query {
     token_transfers(
       input: {
@@ -2443,7 +2719,6 @@ type RootQueryType {
         end_block_number: 90
         limit: 2
         combine_from_to: true
-  
         sorter: [
           { sort_type: ASC, sort_value: BLOCK_NUMBER }
           { sort_type: ASC, sort_value: TRANSACTION_HASH }
@@ -2462,7 +2737,6 @@ type RootQueryType {
           eth_address
         }
       }
-  
       metadata {
         total_count
         before
@@ -2470,7 +2744,8 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
+  ```
   {
     "data": {
       "token_transfers": {
@@ -2506,8 +2781,9 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
   example2:
+  ```
   query {
     token_transfers(
       input: {
@@ -2539,7 +2815,6 @@ type RootQueryType {
           eth_address
         }
       }
-  
       metadata {
         total_count
         before
@@ -2547,8 +2822,8 @@ type RootQueryType {
       }
     }
   }
-  
-  
+  ```
+  ```
   {
     "data": {
       "token_transfers": {
@@ -2576,13 +2851,14 @@ type RootQueryType {
       }
     }
   }
+  ```
   """
   token_transfers(input: Erc20TokenTransfersInput! = {combine_from_to: true, limit: 20, sorter: [{sort_type: DESC, sort_value: BLOCK_NUMBER}, {sort_type: DESC, sort_value: LOG_INDEX}, {sort_type: ASC, sort_value: TRANSACTION_HASH}]}): PaginateTokenTransfers
 
   """
   function: get transaction by transaction_hash
-  
   request-example:
+  ```
   query {
     transaction(
       input: {
@@ -2620,9 +2896,8 @@ type RootQueryType {
       }
     }
   }
-  
-  
-  result-example:
+  ```
+  ```
   {
     "data": {
       "transaction": {
@@ -2658,11 +2933,13 @@ type RootQueryType {
       }
     }
   }
+  ```
   """
   transaction(input: TransactionInput!): Transaction
 
   """
   sorter-example:
+  ```
   query {
     transactions(
       input: {
@@ -2688,7 +2965,6 @@ type RootQueryType {
         }
         to_account_id
       }
-  
       metadata {
         total_count
         before
@@ -2696,7 +2972,8 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
+  ```
   {
     "data": {
       "transactions": {
@@ -2724,8 +3001,9 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
   block-number-and-age-range-example:
+  ```
   query {
     transactions(
       input: {
@@ -2753,7 +3031,6 @@ type RootQueryType {
         }
         to_account_id
       }
-  
       metadata {
         total_count
         before
@@ -2761,8 +3038,8 @@ type RootQueryType {
       }
     }
   }
-  
-  
+  ```
+  ```
   {
     "data": {
       "transactions": {
@@ -2791,8 +3068,9 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
   from-to-example:
+  ```
   query {
     transactions(
       input: {
@@ -2820,7 +3098,6 @@ type RootQueryType {
           eth_address
         }
       }
-  
       metadata {
         total_count
         before
@@ -2828,7 +3105,8 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
+  ```
   {
     "data": {
       "transactions": {
@@ -2859,8 +3137,9 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
   combine-example:
+  ```
   query {
     transactions(
       input: {
@@ -2890,7 +3169,6 @@ type RootQueryType {
           eth_address
         }
       }
-  
       metadata {
         total_count
         before
@@ -2898,7 +3176,8 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
+  ```
   {
     "data": {
       "transactions": {
@@ -2911,7 +3190,9 @@ type RootQueryType {
       }
     }
   }
+  ```
   pending-transaction-example:
+  ```
   query {
     transactions(
       input: {
@@ -2923,7 +3204,6 @@ type RootQueryType {
         block_hash
         hash
       }
-  
       metadata {
         total_count
         before
@@ -2931,7 +3211,8 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
+  ```
   {
     "data": {
       "transactions": {
@@ -2949,13 +3230,14 @@ type RootQueryType {
       }
     }
   }
+  ```
   """
   transactions(input: TransactionsInput = {combine_from_to: true, limit: 20, sorter: [{sort_type: DESC, sort_value: BLOCK_NUMBER}, {sort_type: DESC, sort_value: INDEX}, {sort_type: ASC, sort_value: HASH}]}): PaginateTrasactions
 
   """
   function: get udt by contract address
-  
   contract address example:
+  ```
   query {
     udt(
       input: { contract_address: "0x2275AFE815DE66BEABE7A2C03005537AB843AFB2" }
@@ -2966,7 +3248,8 @@ type RootQueryType {
       contract_address_hash
     }
   }
-  
+  ```
+  ```
   {
     "data": {
       "udt": {
@@ -2977,8 +3260,9 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
   id example:
+  ```
   query {
     udt(
       input: {
@@ -2993,8 +3277,8 @@ type RootQueryType {
       contract_address_hash
     }
   }
-  
-  
+  ```
+  ```
   {
     "data": {
       "udt": {
@@ -3006,13 +3290,14 @@ type RootQueryType {
       }
     }
   }
+  ```
   """
   udt(input: UdtInput!): Udt
 
   """
   function: get list of udts
-  
   pagination-example:
+  ```
   query {
     udts(
       input: {
@@ -3038,7 +3323,8 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
+  ```
   {
     "data": {
       "udts": {
@@ -3062,12 +3348,11 @@ type RootQueryType {
       }
     }
   }
-  
-  
+  ```
   fuzzy-name-example:
   fuzzy name use postgresql ilike keyword, pattern matching docs like:
   https://www.postgresql.org/docs/current/functions-matching.html#FUNCTIONS-LIKE
-  
+  ```
   query {
     udts(
       input: {
@@ -3093,7 +3378,8 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
+  ```
   {
     "data": {
       "udts": {
@@ -3117,8 +3403,9 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
   sorter-example:
+  ```
   query {
     udts(
       input: {
@@ -3143,7 +3430,8 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
+  ```
   {
     "data": {
       "udts": {
@@ -3187,8 +3475,9 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
   sorter-example:
+  ```
   query {
     udts(
       input: {
@@ -3213,7 +3502,8 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
+  ```
   {
     "data": {
       "udts": {
@@ -3257,8 +3547,9 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
   holders example:
+  ```
   query {
     udts(
       input: {
@@ -3285,7 +3576,8 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
+  ```
   {
     "data": {
       "udts": {
@@ -3310,10 +3602,12 @@ type RootQueryType {
       }
     }
   }
+  ```
   """
   udts(input: UdtsInput = {limit: 20, sorter: [{sort_type: ASC, sort_value: ID}]}): PaginateUdts
 
   """
+  ```
   query {
     user_erc1155_assets(
       input: {
@@ -3334,7 +3628,8 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
+  ```
   {
     "data": {
       "user_erc1155_assets": {
@@ -3354,10 +3649,12 @@ type RootQueryType {
       }
     }
   }
+  ```
   """
-  user_erc1155_assets(input: UserErc721Erc1155AssetsInput!): PaginateUserErc721Erc1155Assets
+  user_erc1155_assets(input: UserErc721Erc1155AssetsInput!): PaginateUserErc1155Assets
 
   """
+  ```
   query {
     user_erc721_assets(
       input: {
@@ -3378,7 +3675,8 @@ type RootQueryType {
       }
     }
   }
-  
+  ```
+  ```
   {
     "data": {
       "user_erc721_assets": {
@@ -3398,8 +3696,9 @@ type RootQueryType {
       }
     }
   }
+  ```
   """
-  user_erc721_assets(input: UserErc721Erc1155AssetsInput!): PaginateUserErc721Erc1155Assets
+  user_erc721_assets(input: UserErc721Erc1155AssetsInput!): PaginateUserErc721Assets
 }
 
 type SmartContract {
@@ -3629,7 +3928,7 @@ type Udt {
   holders_count: Int
   icon: String
   id: Int
-  minted_count: Int
+  minted_count: Decimal
   name: String
   official_site: String
   price: Decimal

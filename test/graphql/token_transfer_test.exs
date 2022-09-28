@@ -155,7 +155,6 @@ defmodule GodwokenExplorer.Graphql.TokenTransferTest do
       erc1155_token_transfers(
         input: {
           limit: 2
-          combine_from_to: true
           token_id: 1
           token_contract_address_hash: "0x1155930c2825a960a50ba4ab005e8264488b64a0"
           sorter: [

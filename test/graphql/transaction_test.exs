@@ -9,9 +9,13 @@ defmodule GodwokenExplorer.Graphql.TransactionTest do
         "0x01000000060000001600000000000000000000000000000001000000000000000000000000000000"
       )
 
-    transaction = insert!(:transaction, args: args)
+    block = insert(:block)
 
-    [transaction: transaction]
+    transaction = insert!(:transaction, args: args, block: block, block_number: block.number)
+    _transaction2 = insert!(:transaction, args: args, block: block, block_number: block.number)
+    _transaction3 = insert!(:transaction, args: args)
+
+    [transaction: transaction, block: block]
   end
 
   test "graphql: transaction ", %{conn: conn, transaction: transaction} do
@@ -122,7 +126,134 @@ defmodule GodwokenExplorer.Graphql.TransactionTest do
                  "transactions" => %{
                    "entries" => _,
                    "metadata" => %{
-                     "total_count" => 1
+                     "total_count" => 3
+                   }
+                 }
+               }
+             },
+             json_response(conn, 200)
+           )
+  end
+
+  test "graphql: transactions with paginator", %{
+    conn: conn,
+    block: block,
+    transaction: _transaction
+  } do
+    block_number = block.number
+
+    query = """
+    query {
+      transactions(
+        input: {
+          limit: 1
+          sorter: [
+            { sort_type: ASC, sort_value: BLOCK_NUMBER }
+          ]
+        }
+      ) {
+        entries {
+          hash
+          eth_hash
+          block_hash
+          block_number
+          type
+          from_account_id
+          from_account {
+            script_hash
+            id
+            eth_address
+          }
+          to_account_id
+        }
+
+        metadata {
+          total_count
+          before
+          after
+        }
+      }
+    }
+    """
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    %{
+      "data" => %{
+        "transactions" => %{
+          "metadata" => %{
+            "after" => after_value
+          }
+        }
+      }
+    } = json_response(conn, 200)
+
+    assert match?(
+             %{
+               "data" => %{
+                 "transactions" => %{
+                   "entries" => [%{"block_number" => ^block_number}],
+                   "metadata" => %{
+                     "total_count" => 3
+                   }
+                 }
+               }
+             },
+             json_response(conn, 200)
+           )
+
+    query = """
+    query {
+      transactions(
+        input: {
+          limit: 1
+          after: "#{after_value}"
+          sorter: [
+            { sort_type: ASC, sort_value: BLOCK_NUMBER }
+          ]
+        }
+      ) {
+        entries {
+          hash
+          eth_hash
+          block_hash
+          block_number
+          type
+          from_account_id
+          from_account {
+            script_hash
+            id
+            eth_address
+          }
+          to_account_id
+        }
+
+        metadata {
+          total_count
+          before
+          after
+        }
+      }
+    }
+    """
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    assert match?(
+             %{
+               "data" => %{
+                 "transactions" => %{
+                   "entries" => [%{"block_number" => ^block_number}],
+                   "metadata" => %{
+                     "total_count" => 3
                    }
                  }
                }
