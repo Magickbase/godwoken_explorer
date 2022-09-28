@@ -576,7 +576,12 @@ defmodule GodwokenExplorer.Account do
   end
 
   def batch_import_accounts_with_script_hashes(script_hashes) do
-    params = script_hashes |> Enum.map(&%{script_hash: &1, script: nil})
+    exist_script_hashes =
+      from(a in Account, where: a.script_hash in ^script_hashes, select: a.script_hash)
+      |> Repo.all()
+
+    not_exist_script_hashes = script_hashes -- exist_script_hashes
+    params = not_exist_script_hashes |> Enum.map(&%{script_hash: &1, script: nil})
 
     {:ok, %GodwokenRPC.Account.FetchedAccountIDs{errors: [], params_list: l2_script_hash_and_ids}} =
       GodwokenRPC.fetch_account_ids(params)

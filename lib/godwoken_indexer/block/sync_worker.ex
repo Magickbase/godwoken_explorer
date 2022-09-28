@@ -1,7 +1,9 @@
 defmodule GodwokenIndexer.Block.SyncWorker do
   use GenServer
 
-  import GodwokenRPC.Util, only: [import_timestamps: 0, import_utc_timestamps: 0]
+  import GodwokenRPC.Util,
+    only: [import_timestamps: 0, import_utc_timestamps: 0, script_to_hash: 1]
+
   import Ecto.Query, only: [from: 2]
 
   require Logger
@@ -581,6 +583,20 @@ defmodule GodwokenIndexer.Block.SyncWorker do
     if polyjuice_creator_params != [] do
       inserted_polyjuice_creator_params =
         filter_polyjuice_creator_columns(polyjuice_creator_params)
+
+      inserted_script_hashes =
+        inserted_polyjuice_creator_params
+        |> Enum.map(fn creator ->
+          account_script = %{
+            "code_hash" => creator[:code_hash],
+            "hash_type" => creator[:hash_type],
+            "args" => creator[:script_args]
+          }
+
+          script_to_hash(account_script)
+        end)
+
+      Account.batch_import_accounts_with_script_hashes(inserted_script_hashes)
 
       Import.insert_changes_list(inserted_polyjuice_creator_params,
         for: PolyjuiceCreator,
