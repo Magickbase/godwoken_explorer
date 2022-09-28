@@ -1242,4 +1242,79 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
              json_response(conn, 200)
            )
   end
+
+  test "graphql: erc1155_inventory with paginator", %{
+    conn: conn,
+    # user: user
+    # erc721_native_udt: erc721_native_udt
+    erc1155_native_udt: erc1155_native_udt
+  } do
+    contract_address = erc1155_native_udt.contract_address_hash |> to_string()
+
+    query = """
+    query {
+      erc1155_inventory(
+        input: { contract_address: "#{contract_address}", limit: 3}
+      ) {
+        entries {
+          contract_address_hash
+          token_id
+          counts
+        }
+        metadata {
+          total_count
+          after
+          before
+        }
+      }
+    }
+    """
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    %{
+      "data" => %{
+        "erc1155_inventory" => %{"entries" => entries, "metadata" => %{"after" => after_value}}
+      }
+    } = json_response(conn, 200)
+
+    assert(length(entries) == 3)
+
+    query = """
+    query {
+      erc1155_inventory(
+        input: { contract_address: "#{contract_address}", limit: 3, after: "#{after_value}"}
+      ) {
+        entries {
+          contract_address_hash
+          token_id
+          counts
+        }
+        metadata {
+          total_count
+          after
+          before
+        }
+      }
+    }
+    """
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    %{
+      "data" => %{
+        "erc1155_inventory" => %{"entries" => entries, "metadata" => %{"total_count" => 6}}
+      }
+    } = json_response(conn, 200)
+
+    assert(length(entries) == 3)
+  end
 end
