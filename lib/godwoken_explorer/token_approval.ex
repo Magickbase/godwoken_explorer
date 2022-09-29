@@ -14,6 +14,7 @@ defmodule GodwokenExplorer.TokenApproval do
     field(:data, :decimal)
     field(:approved, :boolean)
     field(:type, Ecto.Enum, values: [:approval, :approval_all])
+    field(:token_type, Ecto.Enum, values: [:erc20, :erc721])
 
     timestamps()
   end
@@ -30,7 +31,8 @@ defmodule GodwokenExplorer.TokenApproval do
       :token_contract_address_hash,
       :data,
       :approved,
-      :type
+      :type,
+      :token_type
     ])
     |> validate_required([
       :block_hash,
@@ -41,13 +43,6 @@ defmodule GodwokenExplorer.TokenApproval do
       :token_contract_address_hash,
       :data,
       :approved,
-      :type
-    ])
-    |> unique_constraint([
-      :token_owner_address_hash,
-      :spender_address_hash,
-      :token_contract_address_hash,
-      :data,
       :type
     ])
   end
