@@ -347,7 +347,12 @@ defmodule GodwokenIndexer.Block.SyncWorker do
     } = TokenApprovals.parse(logs)
 
     if length(erc20_approval_params) > 0 do
-      Import.insert_changes_list(uniq_token_approval_params(erc20_approval_params),
+      Import.insert_changes_list(
+        uniq_token_approval_params(erc20_approval_params, [
+          :token_owner_address_hash,
+          :spender_address_hash,
+          :token_contract_address_hash
+        ]),
         for: TokenApproval,
         timestamps: import_timestamps(),
         on_conflict:
@@ -360,7 +365,12 @@ defmodule GodwokenIndexer.Block.SyncWorker do
     end
 
     if length(erc721_approval_params) > 0 do
-      Import.insert_changes_list(uniq_token_approval_params(erc721_approval_params),
+      Import.insert_changes_list(
+        uniq_token_approval_params(erc721_approval_params, [
+          :token_owner_address_hash,
+          :token_contract_address_hash,
+          :data
+        ]),
         for: TokenApproval,
         timestamps: import_timestamps(),
         on_conflict:
@@ -380,7 +390,11 @@ defmodule GodwokenIndexer.Block.SyncWorker do
     end
 
     if length(approval_all_tokens) > 0 do
-      Import.insert_changes_list(uniq_token_approval_params(approval_all_tokens),
+      Import.insert_changes_list(
+        uniq_token_approval_params(approval_all_tokens, [
+          :token_owner_address_hash,
+          :token_contract_address_hash
+        ]),
         for: TokenApproval,
         timestamps: import_timestamps(),
         on_conflict:
@@ -401,17 +415,9 @@ defmodule GodwokenIndexer.Block.SyncWorker do
     end
   end
 
-  defp uniq_token_approval_params(params) do
+  defp uniq_token_approval_params(params, uniq_columns) do
     params
-    |> Enum.uniq_by(
-      &Map.take(&1, [
-        :token_owner_address_hash,
-        :spender_address_hash,
-        :token_contract_address_hash,
-        :data,
-        :type
-      ])
-    )
+    |> Enum.uniq_by(&Map.take(&1, uniq_columns))
   end
 
   defp import_token_transfers(logs) do
