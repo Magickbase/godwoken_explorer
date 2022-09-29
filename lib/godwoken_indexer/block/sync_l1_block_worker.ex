@@ -338,13 +338,7 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
 
       script_hashes = Enum.map(parsed_deposit_histories, &Map.fetch!(&1, :script_hash))
       udt_ids = Enum.map(parsed_deposit_histories, &Map.fetch!(&1, :udt_id))
-
-      exist_script_hashes =
-        from(a in Account, where: a.script_hash in ^script_hashes, select: a.script_hash)
-        |> Repo.all()
-
-      not_exist_script_hashes = script_hashes -- exist_script_hashes
-      Account.batch_import_accounts_with_script_hashes(not_exist_script_hashes)
+      Account.batch_import_accounts_with_script_hashes(script_hashes)
 
       script_hash_with_account_infos =
         from(a in Account,
