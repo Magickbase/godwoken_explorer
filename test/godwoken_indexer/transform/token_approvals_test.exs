@@ -33,12 +33,17 @@ defmodule GodwokenIndexer.Transform.TokenApprovalsTest do
     approval_all_log: approval_all_log
   } do
     logs = Log |> Repo.all()
-    token_approvals = TokenApprovals.parse(logs)
-    approval = token_approvals |> Enum.at(0)
-    approval_false = token_approvals |> Enum.at(1)
-    approval_all = token_approvals |> Enum.at(2)
 
-    assert token_approvals |> Enum.count() == 3
+    %{
+      approval_erc20: erc20_approval_params,
+      approval_erc721: _erc721_approval_params,
+      approval_all_tokens: approval_all_tokens
+    } = TokenApprovals.parse(logs)
+
+    approval_false = erc20_approval_params |> Enum.at(0)
+    approval = erc20_approval_params |> Enum.at(1)
+    approval_all = approval_all_tokens |> Enum.at(0)
+
     assert approval.type == :approval
 
     assert approval.token_owner_address_hash ==

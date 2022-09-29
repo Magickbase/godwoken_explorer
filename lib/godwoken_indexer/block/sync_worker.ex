@@ -1,7 +1,9 @@
 defmodule GodwokenIndexer.Block.SyncWorker do
   use GenServer
 
-  import GodwokenRPC.Util, only: [import_timestamps: 0, import_utc_timestamps: 0]
+  import GodwokenRPC.Util,
+    only: [import_timestamps: 0, import_utc_timestamps: 0, script_to_hash: 1]
+
   import Ecto.Query, only: [from: 2]
 
   require Logger
@@ -340,35 +342,84 @@ defmodule GodwokenIndexer.Block.SyncWorker do
   end
 
   defp import_token_approvals(logs) do
-    token_approvals = TokenApprovals.parse(logs)
+    %{
+      approval_erc20: erc20_approval_params,
+      approval_erc721: erc721_approval_params,
+      approval_all_tokens: approval_all_tokens
+    } = TokenApprovals.parse(logs)
 
-    uniq_token_approvals =
-      token_approvals
-      |> Enum.uniq_by(
-        &Map.take(&1, [
+    if length(erc20_approval_params) > 0 do
+      Import.insert_changes_list(
+        uniq_token_approval_params(erc20_approval_params, [
           :token_owner_address_hash,
           :spender_address_hash,
-          :token_contract_address_hash,
-          :data,
-          :type
-        ])
-      )
-
-    if length(token_approvals) > 0 do
-      Import.insert_changes_list(uniq_token_approvals,
+          :token_contract_address_hash
+        ]),
         for: TokenApproval,
         timestamps: import_timestamps(),
         on_conflict:
-          {:replace, [:block_hash, :block_number, :transaction_hash, :approved, :updated_at]},
-        conflict_target: [
-          :token_owner_address_hash,
-          :spender_address_hash,
-          :token_contract_address_hash,
-          :data,
-          :type
-        ]
+          {:replace,
+           [:block_hash, :block_number, :transaction_hash, :approved, :data, :updated_at]},
+        conflict_target:
+          {:unsafe_fragment,
+           ~s<(token_owner_address_hash, token_contract_address_hash, spender_address_hash) WHERE token_type = 'erc20'>}
       )
     end
+
+    if length(erc721_approval_params) > 0 do
+      Import.insert_changes_list(
+        uniq_token_approval_params(erc721_approval_params, [
+          :token_owner_address_hash,
+          :token_contract_address_hash,
+          :data
+        ]),
+        for: TokenApproval,
+        timestamps: import_timestamps(),
+        on_conflict:
+          {:replace,
+           [
+             :block_hash,
+             :block_number,
+             :transaction_hash,
+             :approved,
+             :spender_address_hash,
+             :updated_at
+           ]},
+        conflict_target:
+          {:unsafe_fragment,
+           ~s<(token_owner_address_hash, token_contract_address_hash, data) WHERE token_type = 'erc721'>}
+      )
+    end
+
+    if length(approval_all_tokens) > 0 do
+      Import.insert_changes_list(
+        uniq_token_approval_params(approval_all_tokens, [
+          :token_owner_address_hash,
+          :token_contract_address_hash
+        ]),
+        for: TokenApproval,
+        timestamps: import_timestamps(),
+        on_conflict:
+          {:replace,
+           [
+             :block_hash,
+             :block_number,
+             :transaction_hash,
+             :approved,
+             :spender_address_hash,
+             :data,
+             :updated_at
+           ]},
+        conflict_target:
+          {:unsafe_fragment,
+           ~s<(token_owner_address_hash, token_contract_address_hash ) WHERE type = 'approval_all'>}
+      )
+    end
+  end
+
+  defp uniq_token_approval_params(params, uniq_columns) do
+    params
+    |> Enum.uniq_by(&Map.take(&1, uniq_columns))
   end
 
   defp import_token_transfers(logs) do
@@ -581,6 +632,20 @@ defmodule GodwokenIndexer.Block.SyncWorker do
     if polyjuice_creator_params != [] do
       inserted_polyjuice_creator_params =
         filter_polyjuice_creator_columns(polyjuice_creator_params)
+
+      inserted_script_hashes =
+        inserted_polyjuice_creator_params
+        |> Enum.map(fn creator ->
+          account_script = %{
+            "code_hash" => creator[:code_hash],
+            "hash_type" => creator[:hash_type],
+            "args" => creator[:script_args]
+          }
+
+          script_to_hash(account_script)
+        end)
+
+      Account.batch_import_accounts_with_script_hashes(inserted_script_hashes)
 
       Import.insert_changes_list(inserted_polyjuice_creator_params,
         for: PolyjuiceCreator,
