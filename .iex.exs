@@ -29,5 +29,6 @@ alias GodwokenExplorer.Graphql.Workers.SmartContractRegister
 alias GodwokenIndexer.Fetcher.UDTBalances
 
 alias GodwokenExplorer.Token.MetadataRetriever
+alias GodwokenExplorer.Token.InstanceMetadataRetriever
 
 import Ecto.{Query, Queryable, Changeset}
