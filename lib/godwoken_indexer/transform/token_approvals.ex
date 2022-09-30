@@ -41,7 +41,7 @@ defmodule GodwokenIndexer.Transform.TokenApprovals do
             %{approval_erc20: [params | erc20_tokens], approval_erc721: erc721_tokens}
 
           %{eth_type: :erc721} ->
-            approved = log.third_topic == @zero_address
+            approved = log.third_topic != @zero_address
 
             params = %{
               block_hash: log.block_hash,
