@@ -1258,7 +1258,7 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
   object :erc721_user_token do
     import_fields(:erc721_erc1155_common_user_token)
 
-    field :udt, :erc721_erc1155_common_user_token do
+    field :udt, :erc721_1155_common_udt do
       resolve(&Resolvers.UDT.erc721_erc1155_udt/3)
     end
   end

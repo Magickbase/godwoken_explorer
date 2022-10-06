@@ -1022,16 +1022,19 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
 
   test "graphql: user_erc721_assets", %{
     conn: conn,
-    user: user
-    # erc721_native_udt: erc721_native_udt
+    user: user,
+    erc721_native_udt: erc721_native_udt
     # erc1155_native_udt: erc1155_native_udt
   } do
     user_address = user.eth_address |> to_string()
+    erc721_udt_id = erc721_native_udt.id
+    erc721_udt_name = erc721_native_udt.name
+    erc721_udt_contract_address_hash = erc721_native_udt.contract_address_hash |> to_string()
 
     query = """
     query {
       user_erc721_assets(
-        input: { user_address: "#{user_address}"}
+        input: {limit: 1, user_address: "#{user_address}"}
       ) {
         entries {
           address_hash
@@ -1039,6 +1042,10 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
           token_id
           token_type
           counts
+          udt {
+            id
+            name
+          }
         }
         metadata {
           total_count
@@ -1058,7 +1065,17 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
     assert match?(
              %{
                "data" => %{
-                 "user_erc721_assets" => %{"metadata" => %{"total_count" => 2}}
+                 "user_erc721_assets" => %{
+                   "entries" => [
+                     %{
+                       "address_hash" => ^user_address,
+                       "token_contract_address_hash" => ^erc721_udt_contract_address_hash,
+                       "token_type" => "ERC721",
+                       "udt" => %{"id" => ^erc721_udt_id, "name" => ^erc721_udt_name}
+                     }
+                   ],
+                   "metadata" => %{"total_count" => 2}
+                 }
                }
              },
              json_response(conn, 200)
@@ -1067,11 +1084,14 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
 
   test "graphql: user_erc1155_assets", %{
     conn: conn,
-    user: user
+    user: user,
     # erc721_native_udt: erc721_native_udt
-    # erc1155_native_udt: erc1155_native_udt
+    erc1155_native_udt: erc1155_native_udt
   } do
     user_address = user.eth_address |> to_string()
+    erc1155_udt_id = erc1155_native_udt.id
+    erc1155_udt_name = erc1155_native_udt.name
+    erc1155_udt_contract_address_hash = erc1155_native_udt.contract_address_hash |> to_string()
 
     query = """
     query {
@@ -1084,6 +1104,10 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
           token_id
           token_type
           counts
+          udt {
+            id
+            name
+          }
         }
         metadata {
           total_count
@@ -1103,7 +1127,18 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
     assert match?(
              %{
                "data" => %{
-                 "user_erc1155_assets" => %{"metadata" => %{"total_count" => 2}}
+                 "user_erc1155_assets" => %{
+                   "entries" => [
+                     %{
+                       "address_hash" => ^user_address,
+                       "token_contract_address_hash" => ^erc1155_udt_contract_address_hash,
+                       "token_type" => "ERC1155",
+                       "udt" => %{"id" => ^erc1155_udt_id, "name" => ^erc1155_udt_name}
+                     },
+                     _
+                   ],
+                   "metadata" => %{"total_count" => 2}
+                 }
                }
              },
              json_response(conn, 200)
