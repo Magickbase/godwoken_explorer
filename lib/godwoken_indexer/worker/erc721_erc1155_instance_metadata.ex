@@ -5,6 +5,8 @@ defmodule GodwokenIndexer.Worker.ERC721ERC1155InstanceMetadata do
   alias GodwokenExplorer.Token.InstanceMetadataRetriever
   alias GodowokenExplorer.TokenInstance
 
+  alias GodwokenExplorer.Chain.Hash.Address
+
   require Logger
 
   @impl Oban.Worker
@@ -54,6 +56,8 @@ defmodule GodwokenIndexer.Worker.ERC721ERC1155InstanceMetadata do
           fetcher: :token_instances
         )
     end
+
+    :ok
   end
 
   def token_instance_upsert(params) do
@@ -63,5 +67,26 @@ defmodule GodwokenIndexer.Worker.ERC721ERC1155InstanceMetadata do
       on_conflict: :replace_all,
       conflict_target: [:token_id, :token_contract_address_hash]
     )
+  end
+
+  def check_token_instance_retrieved(%{
+        "token_contract_address_hash" => token_contract_address_hash,
+        "token_id" => token_id
+      })
+      when is_bitstring(token_contract_address_hash) and is_integer(token_id) do
+    {:ok, token_contract_address_hash} = Address.cast(token_contract_address_hash)
+    token_id = Decimal.new(token_id)
+
+    with return when not is_nil(return) <-
+           Repo.get_by(TokenInstance,
+             token_contract_address_hash: token_contract_address_hash,
+             token_id: token_id
+           ),
+         _metadata when not is_nil(return) <- return.metadata do
+      true
+    else
+      _ ->
+        false
+    end
   end
 end
