@@ -70,9 +70,6 @@ defmodule GodwokenRPC.Transaction do
         [is_create, gas_limit, gas_price, value, input_size, input, native_transfer_address_hash] =
           parse_polyjuice_args(args)
 
-        native_transfer_address_hash =
-          if native_transfer_address_hash == "0x", do: nil, else: native_transfer_address_hash
-
         %{
           type: :polyjuice,
           hash: hash,

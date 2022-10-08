@@ -192,7 +192,9 @@ defmodule GodwokenRPC.Util do
     input = hex_string |> String.slice(104, input_size * 2)
 
     native_transfer_address =
-      if input_size == 0, do: "0x" <> (hex_string |> String.slice(104..-1)), else: nil
+      if input_size == 0 and String.length(hex_string) == 144,
+        do: "0x" <> (hex_string |> String.slice(104..-1)),
+        else: nil
 
     [is_create, gas_limit, gas_price, value, input_size, "0x" <> input, native_transfer_address]
   end
