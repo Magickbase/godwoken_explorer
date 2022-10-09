@@ -37,6 +37,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
   alias GodwokenExplorer.Chain.Cache.Transactions
 
   alias GodwokenExplorer.Chain.{Hash}
+  alias GodwokenIndexer.Worker.ERC721ERC1155InstanceMetadata
 
   @default_worker_interval 20
 
@@ -904,6 +905,37 @@ defmodule GodwokenIndexer.Block.SyncWorker do
     case Repo.one(from(block in Block, order_by: [desc: block.number], limit: 1)) do
       %Block{number: number} -> number + 1
       nil -> 0
+    end
+  end
+
+  defp update_udt_token_instance_metadata(token_transfers) do
+    token_transfers =
+      Enum.filter(token_transfers, fn tt ->
+        if tt.token_type in [:erc721, :erc1155] do
+          tt.from_address_hash == "0x0000000000000000000000000000000000000000"
+        else
+          false
+        end
+      end)
+
+    {_without_token_ids, with_token_ids} =
+      TokenBalances.params_set(%{token_transfers_params: token_transfers})
+      |> Enum.split_with(fn udt_balance -> is_nil(Map.get(udt_balance, :token_id)) end)
+
+    with_token_ids =
+      with_token_ids
+      |> MapSet.to_list()
+      |> Enum.map(fn tt ->
+        %{
+          "token_contract_address_hash" => tt.token_contract_address_hash,
+          "token_id" => tt.token_id
+        }
+      end)
+
+    if length(with_token_ids) > 0 do
+      Enum.each(with_token_ids, fn args -> ERC721ERC1155InstanceMetadata.new_job(args) end)
+    else
+      :skip
     end
   end
 
