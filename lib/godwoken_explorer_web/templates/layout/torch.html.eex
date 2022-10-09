@@ -4,6 +4,7 @@
     <!-- Uncomment to just use the bare bones torch styles rather than the theme -->
     <!--<link rel="stylesheet" href="<%= Routes.static_path(@conn, "/torch/base.css") %>">-->
     <link rel="stylesheet" href="<%= Routes.static_path(@conn, "/torch/theme.css") %>">
+    <link rel="icon" href="<%= Routes.static_path(@conn, "/torch/torch-logo.png") %>">
   </head>
 
   <body class="<%= Torch.PageView.body_classes(@conn) %>">
