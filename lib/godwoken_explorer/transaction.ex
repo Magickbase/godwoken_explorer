@@ -41,6 +41,8 @@ defmodule GodwokenExplorer.Transaction do
       type: :integer
     )
 
+    field :method_id, Data
+    field :method_name, :string
     timestamps()
   end
 
@@ -56,7 +58,9 @@ defmodule GodwokenExplorer.Transaction do
       :args,
       :block_number,
       :eth_hash,
-      :index
+      :index,
+      :method_id,
+      :method_name
     ])
     |> validate_required([
       :hash,

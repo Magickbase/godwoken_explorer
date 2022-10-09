@@ -36,6 +36,8 @@ defmodule GodwokenIndexer.Block.SyncWorker do
   alias GodwokenExplorer.Chain.Cache.Blocks, as: BlocksCache
   alias GodwokenExplorer.Chain.Cache.Transactions
 
+  alias GodwokenExplorer.Chain.{Hash}
+
   @default_worker_interval 20
 
   def start_link(state \\ []) do
@@ -499,8 +501,53 @@ defmodule GodwokenIndexer.Block.SyncWorker do
     end
   end
 
+  def add_method_id_and_name_to_tx_params(txs_params) do
+    {txs_hashes, txs_to_account_ids} =
+      Enum.map(txs_params, fn tx ->
+        {:ok, r} = Hash.Full.cast(tx.hash)
+        {r, tx.to_account_id}
+      end)
+      |> Enum.unzip()
+
+    polyjuices = from(p in Polyjuice, where: p.tx_hash in ^txs_hashes) |> Repo.all()
+
+    accounts = from(a in Account, where: a.id in ^txs_to_account_ids) |> Repo.all()
+
+    Enum.map(txs_params, fn tx ->
+      {method_id, method_name} =
+        if Enum.find(accounts, fn a ->
+             a.id == tx.to_account_id and a.type == :polyjuice_contract
+           end) do
+          p =
+            Enum.find(polyjuices, fn p ->
+              ptx = p.tx_hash |> to_string
+              tx.hash == ptx
+            end)
+
+          with p when not is_nil(p) <- p,
+               input = p.input |> to_string(),
+               mid <- p.input |> to_string() |> String.slice(0, 10),
+               true <- String.length(mid) >= 10 do
+            method_name = Polyjuice.get_method_name(tx.to_account_id, input)
+            {mid, method_name}
+          else
+            _ ->
+              {"0x0", nil}
+          end
+        else
+          {"0x0", nil}
+        end
+
+      tx
+      |> Map.put(:method_id, method_id)
+      |> Map.put(:method_name, method_name)
+    end)
+  end
+
   defp import_transactions(block_params, transactions_params_without_receipts) do
-    inserted_transaction_params = filter_transaction_columns(transactions_params_without_receipts)
+    inserted_transaction_params =
+      filter_transaction_columns(transactions_params_without_receipts)
+      |> add_method_id_and_name_to_tx_params()
 
     {_count, returned_values} =
       Import.insert_changes_list(inserted_transaction_params,
@@ -509,7 +556,16 @@ defmodule GodwokenIndexer.Block.SyncWorker do
         conflict_target: :hash,
         on_conflict:
           {:replace,
-           [:block_hash, :from_account_id, :block_number, :eth_hash, :index, :updated_at]},
+           [
+             :block_hash,
+             :from_account_id,
+             :block_number,
+             :eth_hash,
+             :index,
+             :updated_at,
+             :method_id,
+             :method_name
+           ]},
         returning: [
           :from_account_id,
           :to_account_id,
