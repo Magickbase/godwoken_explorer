@@ -492,15 +492,6 @@ type Erc7211155CommonUdt {
   symbol: String
 }
 
-type Erc721Erc1155CommonUserToken {
-  address_hash: HashAddress
-  counts: Decimal
-  token_contract_address_hash: HashAddress
-  token_id: Decimal
-  token_type: EthType
-  value: Decimal
-}
-
 type Erc721Erc1155HolderItem {
   account: Account
   address_hash: HashAddress
@@ -607,7 +598,7 @@ type Erc721UserToken {
   token_contract_address_hash: HashAddress
   token_id: Decimal
   token_type: EthType
-  udt: Erc721Erc1155CommonUserToken
+  udt: Erc7211155CommonUdt
   value: Decimal
 }
 

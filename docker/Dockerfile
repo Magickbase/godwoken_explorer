@@ -64,6 +64,9 @@ COPY priv priv
 COPY assets assets
 
 # compile assets
+RUN cd assets && \
+  npm install 
+
 RUN mix assets.deploy
 
 # Compile the release
@@ -81,10 +84,8 @@ FROM bitwalker/alpine-elixir-phoenix:1.13.1 as deploy
 WORKDIR "/app"
 ENV MIX_ENV="prod"
 
-# contract compile needs solc
-RUN npm install --save solc
-
 # Only copy the final release from the build stage
 COPY --from=builder --chown=nobody:root /app/_build/${MIX_ENV}/rel/godwoken_explorer ./
+COPY --from=builder /app/assets/node_modules ./node_modules
 
 CMD ["/app/bin/server"]
