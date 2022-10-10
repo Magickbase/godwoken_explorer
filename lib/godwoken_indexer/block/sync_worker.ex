@@ -525,8 +525,8 @@ defmodule GodwokenIndexer.Block.SyncWorker do
             end)
 
           with p when not is_nil(p) <- p,
-               input = p.input |> to_string(),
-               mid <- p.input |> to_string() |> String.slice(0, 10),
+               input <- p.input |> to_string(),
+               mid <- input |> to_string() |> String.slice(0, 10),
                true <- String.length(mid) >= 10 do
             method_name = Polyjuice.get_method_name(tx.to_account_id, input)
             {mid, method_name}
