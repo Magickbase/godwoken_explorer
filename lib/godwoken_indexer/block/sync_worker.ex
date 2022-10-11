@@ -438,6 +438,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
       )
 
       update_udt_balance(token_transfers)
+      update_udt_token_instance_metadata(token_transfers)
     end
 
     if length(tokens) > 0 do
@@ -924,7 +925,6 @@ defmodule GodwokenIndexer.Block.SyncWorker do
 
     with_token_ids =
       with_token_ids
-      |> MapSet.to_list()
       |> Enum.map(fn tt ->
         %{
           "token_contract_address_hash" => tt.token_contract_address_hash,

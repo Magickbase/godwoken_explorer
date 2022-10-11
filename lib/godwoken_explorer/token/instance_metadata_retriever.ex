@@ -55,21 +55,12 @@ defmodule GodwokenExplorer.Token.InstanceMetadataRetriever do
     }
   ]
 
-  @cryptokitties_address_hash "0x06012c8cf97bead5deae237070f9587f8e7a266d"
-
   @no_uri_error "no uri"
   @vm_execution_error "VM execution error"
-
-  def fetch_metadata(unquote(@cryptokitties_address_hash), token_id) do
-    %{"tokenURI" => {:ok, ["https://api.cryptokitties.co/kitties/#{token_id}"]}}
-    |> fetch_json()
-  end
 
   def fetch_metadata(contract_address_hash, token_id) do
     # c87b56dd =  keccak256(tokenURI(uint256))
     contract_functions = %{@token_uri => [token_id]}
-
-    IO.inspect("fetch_metadata, trying abi()")
 
     res =
       contract_address_hash
@@ -125,6 +116,16 @@ defmodule GodwokenExplorer.Token.InstanceMetadataRetriever do
 
   def fetch_json(%{@uri => {:ok, ["https://" <> _ = token_uri]}}) do
     fetch_metadata(token_uri)
+  end
+
+  def fetch_json(%{@token_uri => {:ok, ["data:application/json;base64," <> json]}}) do
+    json = Base.decode64!(json)
+    fetch_json(%{@token_uri => {:ok, ["data:application/json," <> json]}})
+  end
+
+  def fetch_json(%{@uri => {:ok, ["data:application/json;base64," <> json]}}) do
+    json = Base.decode64!(json)
+    fetch_json(%{@uri => {:ok, ["data:application/json," <> json]}})
   end
 
   def fetch_json(%{@token_uri => {:ok, ["data:application/json," <> json]}}) do
@@ -206,7 +207,7 @@ defmodule GodwokenExplorer.Token.InstanceMetadataRetriever do
   end
 
   defp fetch_metadata(uri) do
-    case HTTPoison.get(uri, [], timeout: 60_000, recv_timeout: 60_000) do
+    case HTTPoison.get(uri) do
       {:ok, %Response{body: body, status_code: 200, headers: headers}} ->
         if Enum.member?(headers, {"Content-Type", "image/png"}) do
           json = %{"image" => uri}
