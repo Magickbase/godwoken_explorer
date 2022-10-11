@@ -66,7 +66,7 @@ defmodule GodwokenExplorer.MixProject do
       {:plug_cowboy, "~> 2.0"},
       {:httpoison, "~> 1.8"},
       {:rustler, "~> 0.25.0"},
-      {:con_cache, "~> 0.14"},
+      {:con_cache, "~> 1.0"},
       {:scrivener_ecto, "~> 2.0"},
       {:decimal, "~> 2.0"},
       {:logger_file_backend, "~> 0.0.10"},
