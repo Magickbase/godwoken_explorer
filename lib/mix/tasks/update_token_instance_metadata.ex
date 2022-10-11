@@ -6,18 +6,11 @@ defmodule Mix.Tasks.UpdateTokenInstanceMetadata do
   alias GodwokenExplorer.TokenTransfer
   alias GodwokenExplorer.Repo
   alias GodwokenIndexer.Transform.TokenBalances
-  alias GodwokenExplorer.Account.UDTBalance
-  alias GodwokenExplorer.Chain.{Import}
   alias GodwokenExplorer.UDT
+
+  alias GodwokenIndexer.Worker.ERC721ERC1155InstanceMetadata
+
   import Ecto.Query
-
-  import GodwokenIndexer.Block.SyncWorker, only: [filter_udt_balance_params: 1]
-
-  import GodwokenRPC.Util,
-    only: [
-      import_utc_timestamps: 0
-    ]
-
   use Mix.Task
 
   require Logger
@@ -76,50 +69,39 @@ defmodule Mix.Tasks.UpdateTokenInstanceMetadata do
   end
 
   def do_update_token_instance_metadata(token_transfers) do
-    {without_token_ids, with_token_ids} =
+    {_without_token_ids, with_token_ids} =
       TokenBalances.params_set(%{token_transfers_params: token_transfers})
       |> Enum.split_with(fn udt_balance -> is_nil(Map.get(udt_balance, :token_id)) end)
 
-    jobs = length(without_token_ids) + length(with_token_ids)
+    jobs = length(with_token_ids)
     IO.inspect("processing #{jobs} jobs")
 
     with_token_ids =
       with_token_ids
-      |> Enum.uniq_by(fn map ->
-        {map[:address_hash], map[:token_contract_address_hash], map[:block_number],
-         map[:token_id], map[:token_type]}
+      |> Enum.map(fn tt ->
+        %{
+          "token_contract_address_hash" => tt.token_contract_address_hash,
+          "token_id" => tt.token_id |> Decimal.to_integer()
+        }
       end)
-      |> filter_udt_balance_params()
 
-    without_token_ids =
-      without_token_ids
-      |> Enum.uniq_by(fn map ->
-        {map[:address_hash], map[:token_contract_address_hash], map[:block_number],
-         map[:token_type]}
+    if length(with_token_ids) > 0 do
+      Enum.chunk_every(with_token_ids, 100)
+      |> Enum.each(fn args ->
+        Task.async_stream(
+          args,
+          fn arg ->
+            ERC721ERC1155InstanceMetadata.do_perform(arg)
+          end,
+          timeout: :infinity
+        )
+        |> Enum.to_list()
+        |> Enum.filter(fn {a, _} -> a != :ok end)
+        |> IO.inspect(label: "fail fetch ===> ")
       end)
-      |> filter_udt_balance_params()
-
-    # default_conflict = GodwokenIndexer.Fetcher.UDTBalance.default_token_balance_on_conflict()
-
-    Import.insert_changes_list(without_token_ids,
-      for: UDTBalance,
-      timestamps: import_utc_timestamps(),
-      on_conflict: {:replace, [:token_type]},
-      # on_conflict: default_conflict,
-      conflict_target:
-        {:unsafe_fragment,
-         ~s<(address_hash, token_contract_address_hash, block_number) WHERE token_id IS NULL>}
-    )
-
-    Import.insert_changes_list(with_token_ids,
-      for: UDTBalance,
-      timestamps: import_utc_timestamps(),
-      on_conflict: {:replace, [:token_id, :token_type]},
-      # on_conflict: default_conflict,
-      conflict_target:
-        {:unsafe_fragment,
-         ~s<(address_hash, token_contract_address_hash, token_id, block_number) WHERE token_id IS NOT NULL>}
-    )
+    else
+      :skip
+    end
   end
 
   def get_token_transfer_with_base(limit, start, walk) do

@@ -63,8 +63,17 @@ defmodule GodwokenIndexer.Worker.ERC721ERC1155InstanceMetadata do
 
           token_instance_upsert(params)
 
+        {:error, :timeout} ->
+          params = %{
+            token_id: token_id,
+            token_contract_address_hash: token_contract_address_hash,
+            error: "timeout"
+          }
+
+          token_instance_upsert(params)
+
         result ->
-          Logger.debug(
+          Logger.info(
             [
               "failed to fetch token instance metadata for #{inspect({token_contract_address_hash, token_id})}: ",
               inspect(result)
@@ -72,8 +81,17 @@ defmodule GodwokenIndexer.Worker.ERC721ERC1155InstanceMetadata do
             fetcher: :token_instances
           )
 
+          # params = %{
+          #   token_id: token_id,
+          #   token_contract_address_hash: token_contract_address_hash,
+          #   error: :fail
+          # }
+
+          # token_instance_upsert(params)
           {:error, :fail}
       end
+    else
+      {:ok, :skip}
     end
   end
 
