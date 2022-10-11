@@ -40,7 +40,7 @@ jobs:
           - 5432:5432
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Setup elixir
       uses: erlef/setup-beam@v1
