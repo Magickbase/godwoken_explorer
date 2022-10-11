@@ -54,7 +54,7 @@ defmodule GodwokenExplorer.MixProject do
       # default phoneix template deps
       {:phoenix, "~> 1.6.6", override: true},
       {:phoenix_ecto, "~> 4.4"},
-      {:ecto_sql, "~> 3.9.0"},
+      {:ecto_sql, "~> 3.7.2"},
       {:postgrex, ">= 0.0.0"},
       {:phoenix_html, "~> 3.2.0", override: true},
       {:phoenix_live_reload, "~> 1.3.3", only: :dev},
