@@ -62,7 +62,7 @@ defmodule GodwokenExplorer.MixProject do
       {:esbuild, "~> 0.5", runtime: Mix.env() == :dev},
       {:telemetry_metrics, "~> 0.6.1"},
       {:telemetry_poller, "~> 1.0.0"},
-      {:gettext, "~> 0.11"},
+      {:gettext, "~> 0.20"},
       {:plug_cowboy, "~> 2.0"},
       {:httpoison, "~> 1.8"},
       {:rustler, "~> 0.25.0"},
