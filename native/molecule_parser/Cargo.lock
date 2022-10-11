@@ -3,6 +3,15 @@
 version = 3
 
 [[package]]
+name = "aho-corasick"
+version = "0.7.19"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b4f55bd91a0978cbfd91c457a164bab8b4001c833b7f323132c0a4e1922dd44e"
+dependencies = [
+ "memchr",
+]
+
+[[package]]
 name = "blake2b-ref"
 version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -10,11 +19,12 @@ checksum = "95916998c798756098a4eb1b3f2cd510659705a9817bf203d61abd30fbec3e7b"
 
 [[package]]
 name = "blake2b-rs"
-version = "0.1.5"
+version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6e35e362830ef90ecea16f09b21b75d22d33a8562a679c74ab4f4fa49b4fcb87"
+checksum = "a89a8565807f21b913288968e391819e7f9b2f0f46c7b89549c051cccf3a2771"
 dependencies = [
  "cc",
+ "cty",
 ]
 
 [[package]]
@@ -31,22 +41,25 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 
 [[package]]
 name = "ckb-hash"
-version = "0.43.2"
+version = "0.104.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ebd26652b885ee0e484907e055d37983ce4a2f2043e8b1f20523aa54a1715615"
+checksum = "a1ba4f6c1ffe2b03db7b91f5eb3a7894c268c7c0c5b2d340153351f13be4ff37"
 dependencies = [
  "blake2b-ref",
  "blake2b-rs",
 ]
 
 [[package]]
-name = "heck"
-version = "0.3.2"
+name = "cty"
+version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "87cbf45460356b7deeb5e3415b5563308c0a9b057c85e12b06ad551f98d0a6ac"
-dependencies = [
- "unicode-segmentation",
-]
+checksum = "b365fabc795046672053e29c954733ec3b05e4be654ab130fe8f1f94d7051f35"
+
+[[package]]
+name = "heck"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2540771e65fc8cb83cd6e8a237f70c319bd5c29f78ed1084ba5d50eeac86f7f9"
 
 [[package]]
 name = "hex"
@@ -61,10 +74,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e2abad23fbc42b3700f2f279844dc832adb2b2eb069b2df918f455c4e18cc646"
 
 [[package]]
-name = "molecule"
-version = "0.7.2"
+name = "memchr"
+version = "2.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "be5f63176422224eadd975789462a96cedaf339cd1009ef92fbdfaad39d35f5f"
+checksum = "2dffe52ecf27772e601905b7522cb4ef790d2cc203488bbd0e2fe85fcb74566d"
+
+[[package]]
+name = "molecule"
+version = "0.7.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "edc8276c02a006bddad7d1c28c1a88f30421e1b5f0ba0ca96ceb8077c7d20c01"
 dependencies = [
  "cfg-if",
 ]
@@ -98,10 +117,27 @@ dependencies = [
 ]
 
 [[package]]
-name = "rustler"
-version = "0.22.0"
+name = "regex"
+version = "1.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b787d3b2a80007f41cd4c0c310cdeb3936192768159585f65ecc7e96faf97fc3"
+checksum = "4c4eb3267174b8c6c2f654116623910a0fef09c4753f8dd83db29c48a0df988b"
+dependencies = [
+ "aho-corasick",
+ "memchr",
+ "regex-syntax",
+]
+
+[[package]]
+name = "regex-syntax"
+version = "0.6.27"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a3f87b73ce11b1619a3c6332f45341e0047173771e8b8b73f87bfeefb7b56244"
+
+[[package]]
+name = "rustler"
+version = "0.26.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d61e8ddf75de20513455d7b6f17241a595abbb01b53a6340cecc798a1b13422d"
 dependencies = [
  "lazy_static",
  "rustler_codegen",
@@ -110,9 +146,9 @@ dependencies = [
 
 [[package]]
 name = "rustler_codegen"
-version = "0.22.0"
+version = "0.26.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b5a1f867002b6f0130f47abf215cac4405646db6f5d7b009b21c890980490aa4"
+checksum = "baa2e45c0165272070f80ce93bcd7dd5407a3c84a1ef73ab9900e00f00ef3d36"
 dependencies = [
  "heck",
  "proc-macro2",
@@ -122,10 +158,11 @@ dependencies = [
 
 [[package]]
 name = "rustler_sys"
-version = "2.1.0"
+version = "2.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9fb96034ff33723615fd19223d58c987c1f6476342e83557a6e467ef95f83bda"
+checksum = "3ff26a42e62d538f82913dd34f60105ecfdffbdb25abdc3c3580b0c622285332"
 dependencies = [
+ "regex",
  "unreachable",
 ]
 
@@ -139,12 +176,6 @@ dependencies = [
  "quote",
  "unicode-xid",
 ]
-
-[[package]]
-name = "unicode-segmentation"
-version = "1.7.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bb0d2e7be6ae3a5fa87eed5fb451aff96f2573d2694942e40543ae0bbe19c796"
 
 [[package]]
 name = "unicode-xid"

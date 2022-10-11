@@ -40,7 +40,7 @@ jobs:
           - 5432:5432
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Setup elixir
       uses: erlef/setup-beam@v1
@@ -54,13 +54,13 @@ jobs:
         rust-version: stable
 
     - name: Get deps cache
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         path: deps/
         key: deps-${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-${{ hashFiles('**/mix.lock') }}
 
     - name: Get build cache
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         path: _build/test/
         key: build-${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-${{ hashFiles('**/mix.lock') }}
