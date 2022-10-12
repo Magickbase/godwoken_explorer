@@ -14,6 +14,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
   alias GodwokenExplorer.Chain.Import
   alias GodwokenExplorer.GW.Log, as: GWLog
   alias GodwokenExplorer.GW.{SudtPayFee, SudtTransfer}
+  alias GodwokenExplorer.GlobalConstants
 
   alias GodwokenExplorer.{
     Block,
@@ -833,7 +834,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
     token_transfers =
       Enum.filter(token_transfers, fn tt ->
         if tt.token_type in [:erc721, :erc1155] do
-          tt.from_address_hash == "0x0000000000000000000000000000000000000000"
+          tt.from_address_hash == GlobalConstants.minted_burned_address()
         else
           false
         end
