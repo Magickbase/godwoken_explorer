@@ -133,7 +133,7 @@ defmodule Mix.Tasks.UpdateTxsMethodIdName do
           {mid, method_name}
         else
           _ ->
-            {"0x0", nil}
+            {"0x00", nil}
         end
 
       map
