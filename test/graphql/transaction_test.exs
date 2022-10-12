@@ -286,14 +286,16 @@ defmodule GodwokenExplorer.Graphql.TransactionTest do
         from_account: user,
         to_account: contract,
         block_number: block.number,
-        block: block
+        block: block,
+        method_id: "0x12345678"
       )
 
     polyjuice = insert(:polyjuice, transaction: transaction, input: "0x12345678")
 
-    eth_hash = transaction.eth_hash |> to_string()
     input = polyjuice.input |> to_string()
     method_id = String.slice(input, 0, 10)
+
+    eth_hash = transaction.eth_hash |> to_string()
 
     query = """
     query {
@@ -322,6 +324,47 @@ defmodule GodwokenExplorer.Graphql.TransactionTest do
                "data" => %{
                  "transaction" => %{
                    "method_id" => ^method_id
+                 }
+               }
+             },
+             json_response(conn, 200)
+           )
+
+    query = """
+    query {
+      transactions(
+        input: {
+           method_id: "0x12345678"
+        }
+      ) {
+        entries {
+          method_id
+          method_name
+          polyjuice {
+            input
+          }
+        }
+      }
+    }
+    """
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    assert match?(
+             %{
+               "data" => %{
+                 "transactions" => %{
+                   "entries" => [
+                     %{
+                       "method_id" => "0x12345678",
+                       "method_name" => nil,
+                       "polyjuice" => %{"input" => "0x12345678"}
+                     }
+                   ]
                  }
                }
              },
