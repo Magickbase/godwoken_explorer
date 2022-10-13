@@ -70,7 +70,7 @@ defmodule GodwokenExplorer.Counters.AverageBlockTime do
 
     timestamps =
       timestamps_row
-      |> Enum.sort_by(fn {_, timestamp} -> timestamp end, &>=/2)
+      |> Enum.sort_by(fn {_, timestamp} -> timestamp end, &(DateTime.compare(&1, &2) != :lt))
       |> Enum.map(fn {number, timestamp} ->
         {number, DateTime.to_unix(timestamp, :millisecond)}
       end)
