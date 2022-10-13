@@ -5,8 +5,6 @@ defmodule GodwokenIndexer.Worker.GenerateYokSeriesContract do
 
   alias GodwokenExplorer.{Repo, Account, UDT, SmartContract}
 
-  @yok_mainnet_account_id 12119
-
   @impl Oban.Worker
   def perform(%Oban.Job{args: %{"account_id" => account_id}}) do
     with account when account != nil <-
@@ -29,7 +27,7 @@ defmodule GodwokenIndexer.Worker.GenerateYokSeriesContract do
           type: :native
         })
 
-        yok_account = Account |> preload(:smart_contract) |> Repo.get(@yok_mainnet_account_id)
+        yok_account = Account |> preload(:smart_contract) |> Repo.get(Account.yok_sample_id())
 
         Repo.insert!(%SmartContract{
           name: name,

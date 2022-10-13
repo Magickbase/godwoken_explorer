@@ -5,8 +5,6 @@ defmodule GodwokenIndexer.Worker.GenerateERC20SeriesContract do
 
   alias GodwokenExplorer.{Repo, Account, UDT, SmartContract}
 
-  @erc20_account_id 33
-
   @impl Oban.Worker
   def perform(%Oban.Job{args: %{"account_id" => account_id}}) do
     with account when account != nil <-
@@ -14,7 +12,14 @@ defmodule GodwokenIndexer.Worker.GenerateERC20SeriesContract do
          udt when is_nil(udt) <- Repo.get(UDT, account_id),
          smart_contract when is_nil(smart_contract) <- Repo.get(SmartContract, account_id) do
       Repo.transaction(fn ->
-        erc20_account = Account |> preload(:smart_contract) |> Repo.get(@erc20_account_id)
+        erc20_account = Account |> preload(:smart_contract) |> Repo.get(Account.erc20_sample_id())
+
+        Repo.insert!(%UDT{
+          id: account.id,
+          contract_address_hash: account.eth_address,
+          type: :native,
+          eth_type: :erc20
+        })
 
         Repo.insert!(%SmartContract{
           name: "ERC20",
