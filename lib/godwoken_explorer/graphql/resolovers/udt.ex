@@ -131,7 +131,13 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
     mapping_udt = UDT.find_mapping_udt(udt)
     udt = merge_bridge_info_to_udt(udt, mapping_udt)
     hc = UDT.count_holder(udt)
-    udt = udt |> Map.put(:holders_count, hc)
+
+    udt =
+      if udt do
+        udt |> Map.put(:holders_count, hc)
+      else
+        nil
+      end
 
     {:ok, udt}
   end
