@@ -85,8 +85,8 @@ defmodule GodwokenExplorer.Account.CurrentUDTBalance do
       |> Repo.all()
 
     (bridged_udt_balances ++ udt_balances)
-    |> Enum.sort_by(&Map.fetch(&1, :updated_at), :desc)
-    |> Enum.uniq_by(&Map.fetch(&1, :id))
+    |> Enum.sort_by(&Map.fetch!(&1, :updated_at), &(DateTime.compare(&1, &2) != :lt))
+    |> Enum.uniq_by(&Map.fetch!(&1, :id))
     |> Enum.map(fn record ->
       record
       |> Map.merge(%{balance: balance_to_view(record[:balance], record[:udt_decimal] || 0)})
@@ -127,8 +127,8 @@ defmodule GodwokenExplorer.Account.CurrentUDTBalance do
         |> Repo.all()
 
       (bridged_results ++ results)
-      |> Enum.sort_by(&Map.fetch(&1, :updated_at), :desc)
-      |> Enum.uniq_by(&Map.fetch(&1, :address_hash))
+      |> Enum.sort_by(&Map.fetch!(&1, :updated_at), &(DateTime.compare(&1, &2) != :lt))
+      |> Enum.uniq_by(&Map.fetch!(&1, :address_hash))
     else
       bridged_results
     end
