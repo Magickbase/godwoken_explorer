@@ -67,59 +67,48 @@ defmodule GodwokenIndexer.Worker.ERC721ERC1155InstanceMetadata do
         %{
           "token_contract_address_hash" => token_contract_address_hash,
           "token_id" => token_id
-        } = args
+        } = _args
       )
       when is_bitstring(token_contract_address_hash) and is_integer(token_id) do
-    if not check_token_instance_retrieved(args) do
-      case InstanceMetadataRetriever.fetch_metadata(token_contract_address_hash, token_id) do
-        {:ok, %{metadata: metadata}} ->
-          params = %{
-            token_id: token_id,
-            token_contract_address_hash: token_contract_address_hash,
-            metadata: metadata,
-            error: nil
-          }
+    case InstanceMetadataRetriever.fetch_metadata(token_contract_address_hash, token_id) do
+      {:ok, %{metadata: metadata}} ->
+        params = %{
+          token_id: token_id,
+          token_contract_address_hash: token_contract_address_hash,
+          metadata: metadata,
+          error: nil
+        }
 
-          token_instance_upsert(params)
+        token_instance_upsert(params)
 
-        {:ok, %{error: error}} ->
-          params = %{
-            token_id: token_id,
-            token_contract_address_hash: token_contract_address_hash,
-            error: error
-          }
+      {:ok, %{error: error}} ->
+        params = %{
+          token_id: token_id,
+          token_contract_address_hash: token_contract_address_hash,
+          error: error
+        }
 
-          token_instance_upsert(params)
+        token_instance_upsert(params)
 
-        {:error, :timeout} ->
-          params = %{
-            token_id: token_id,
-            token_contract_address_hash: token_contract_address_hash,
-            error: "timeout"
-          }
+      {:error, :timeout} ->
+        params = %{
+          token_id: token_id,
+          token_contract_address_hash: token_contract_address_hash,
+          error: "timeout"
+        }
 
-          token_instance_upsert(params)
+        token_instance_upsert(params)
 
-        result ->
-          Logger.info(
-            [
-              "failed to fetch token instance metadata for #{inspect({token_contract_address_hash, token_id})}: ",
-              inspect(result)
-            ],
-            fetcher: :token_instances
-          )
+      result ->
+        Logger.info(
+          [
+            "failed to fetch token instance metadata for #{inspect({token_contract_address_hash, token_id})}: ",
+            inspect(result)
+          ],
+          fetcher: :token_instances
+        )
 
-          # params = %{
-          #   token_id: token_id,
-          #   token_contract_address_hash: token_contract_address_hash,
-          #   error: :fail
-          # }
-
-          # token_instance_upsert(params)
-          {:error, :fail}
-      end
-    else
-      {:ok, :skip}
+        {:error, :fail}
     end
   end
 
