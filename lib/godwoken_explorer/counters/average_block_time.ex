@@ -10,7 +10,7 @@ defmodule GodwokenExplorer.Counters.AverageBlockTime do
   alias GodwokenExplorer.{Block, Repo}
   alias Timex.Duration
 
-  @latest_block_count 24
+  @latest_block_count 200
 
   @doc """
   Starts a process to periodically update the counter of the token holders.
