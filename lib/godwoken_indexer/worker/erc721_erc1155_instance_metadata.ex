@@ -11,6 +11,8 @@ defmodule GodwokenIndexer.Worker.ERC721ERC1155InstanceMetadata do
 
   require Logger
 
+  import Ecto.Query
+
   @impl Oban.Worker
   def perform(%Oban.Job{
         args:
@@ -23,16 +25,42 @@ defmodule GodwokenIndexer.Worker.ERC721ERC1155InstanceMetadata do
     do_perform(args)
   end
 
-  def new_job(
-        %{
-          "token_contract_address_hash" => token_contract_address_hash,
-          "token_id" => token_id
-        } = args
-      )
-      when is_bitstring(token_contract_address_hash) and is_integer(token_id) do
+  def new_job(args)
+      when is_list(args) do
     args
-    |> ERC721ERC1155InstanceMetadata.new()
-    |> Oban.insert()
+    |> pre_check()
+    |> Enum.each(fn arg ->
+      arg
+      |> ERC721ERC1155InstanceMetadata.new()
+      |> Oban.insert()
+    end)
+  end
+
+  def pre_check(args) when is_list(args) do
+    check_list =
+      Enum.map(args, fn %{
+                          "token_contract_address_hash" => token_contract_address_hash,
+                          "token_id" => token_id
+                        } ->
+        {:ok, token_contract_address_hash} = Address.cast(token_contract_address_hash)
+        token_id = Decimal.new(token_id)
+        [token_contract_address_hash, token_id]
+      end)
+
+    q =
+      from(t in TokenInstance,
+        where: fragment("(?, ?)", t.token_contract_address_hash, t.token_id) in ^check_list
+      )
+
+    existed = Repo.all(q)
+
+    (check_list -- existed)
+    |> Enum.map(
+      &%{
+        "token_contract_address_hash" => &1.token_contract_address_hash |> to_string,
+        "token_id" => &1.token_id |> Decimal.to_integer()
+      }
+    )
   end
 
   def do_perform(

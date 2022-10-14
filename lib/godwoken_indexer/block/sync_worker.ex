@@ -934,7 +934,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
       end)
 
     if length(with_token_ids) > 0 do
-      Enum.each(with_token_ids, fn args -> ERC721ERC1155InstanceMetadata.new_job(args) end)
+      ERC721ERC1155InstanceMetadata.new_job(with_token_ids)
     end
   end
 
