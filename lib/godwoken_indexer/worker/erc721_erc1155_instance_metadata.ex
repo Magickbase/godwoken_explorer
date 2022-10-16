@@ -36,29 +36,59 @@ defmodule GodwokenIndexer.Worker.ERC721ERC1155InstanceMetadata do
     end)
   end
 
+  # [
+  #   %{
+  #     "token_contract_address_hash" => "0x821543e1e3923bb6c7efa6e5ebd5f83da3b25cd8",
+  #     "token_id" => 5
+  #   },
+  #   %{
+  #     "token_contract_address_hash" => "0x89e82acc1928b48543b6139a0a25694eb93e9aa5",
+  #     "token_id" => 1
+  #   }
+  # ]
+
   def pre_check(args) when is_list(args) do
-    check_list =
+    args =
       Enum.map(args, fn %{
                           "token_contract_address_hash" => token_contract_address_hash,
                           "token_id" => token_id
                         } ->
         {:ok, token_contract_address_hash} = Address.cast(token_contract_address_hash)
         token_id = Decimal.new(token_id)
-        [token_contract_address_hash, token_id]
+
+        %{
+          "token_contract_address_hash" => token_contract_address_hash,
+          "token_id" => token_id
+        }
+      end)
+
+    {tx_hashes, tids} =
+      args
+      |> Enum.reduce({[], []}, fn %{
+                                    "token_contract_address_hash" => token_contract_address_hash,
+                                    "token_id" => token_id
+                                  },
+                                  {acc1, acc2} ->
+        {[token_contract_address_hash | acc1], [token_id | acc2]}
       end)
 
     q =
       from(t in TokenInstance,
-        where: fragment("(?, ?)", t.token_contract_address_hash, t.token_id) in ^check_list
+        select: %{
+          "token_contract_address_hash" => t.token_contract_address_hash,
+          "token_id" => t.token_id
+        },
+        where: t.token_contract_address_hash in ^tx_hashes,
+        where: t.token_id in ^tids
       )
 
     existed = Repo.all(q)
 
-    (check_list -- existed)
+    (args -- existed)
     |> Enum.map(
       &%{
-        "token_contract_address_hash" => &1.token_contract_address_hash |> to_string,
-        "token_id" => &1.token_id |> Decimal.to_integer()
+        "token_contract_address_hash" => &1["token_contract_address_hash"] |> to_string,
+        "token_id" => &1["token_id"] |> Decimal.to_integer()
       }
     )
   end
