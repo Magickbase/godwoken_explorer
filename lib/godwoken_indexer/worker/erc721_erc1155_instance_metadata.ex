@@ -36,17 +36,6 @@ defmodule GodwokenIndexer.Worker.ERC721ERC1155InstanceMetadata do
     end)
   end
 
-  # [
-  #   %{
-  #     "token_contract_address_hash" => "0x821543e1e3923bb6c7efa6e5ebd5f83da3b25cd8",
-  #     "token_id" => 5
-  #   },
-  #   %{
-  #     "token_contract_address_hash" => "0x89e82acc1928b48543b6139a0a25694eb93e9aa5",
-  #     "token_id" => 1
-  #   }
-  # ]
-
   def pre_check(args) when is_list(args) do
     args =
       Enum.map(args, fn %{
@@ -79,7 +68,8 @@ defmodule GodwokenIndexer.Worker.ERC721ERC1155InstanceMetadata do
           "token_id" => t.token_id
         },
         where: t.token_contract_address_hash in ^tx_hashes,
-        where: t.token_id in ^tids
+        where: t.token_id in ^tids,
+        where: not is_nil(t.metadata)
       )
 
     existed = Repo.all(q)
@@ -115,7 +105,7 @@ defmodule GodwokenIndexer.Worker.ERC721ERC1155InstanceMetadata do
         params = %{
           token_id: token_id,
           token_contract_address_hash: token_contract_address_hash,
-          error: error
+          error: "fail with error: #{inspect(error)}"
         }
 
         token_instance_upsert(params)

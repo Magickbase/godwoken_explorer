@@ -70,14 +70,15 @@ config :godwoken_explorer, Oban,
     Oban.Plugins.Pruner,
     {Oban.Plugins.Cron,
      crontab: [
-       {"10 00 * * *", GodwokenIndexer.Worker.DailyStat, args: %{datetime: nil}},
-       {"*/1 * * * *", GodwokenIndexer.Worker.CheckLostAccount},
-       {"*/10 * * * *", GodwokenIndexer.Worker.CheckContractCode},
-       {"*/30 * * * *", GodwokenIndexer.Worker.RefreshBridgedUDTSupply},
-       {"* */1 * * *", GodwokenIndexer.Worker.UDTUpdater},
-       {"*/1 * * * *", GodwokenExplorer.Graphql.Workers.SmartContractRegister},
-       {"*/1 * * * *", GodwokenIndexer.Worker.ERC721UpdaterScheduler},
-       {"*/1 * * * *", GodwokenIndexer.Worker.ERC1155UpdaterScheduler}
+      #  {"10 00 * * *", GodwokenIndexer.Worker.DailyStat, args: %{datetime: nil}},
+      #  {"*/1 * * * *", GodwokenIndexer.Worker.CheckLostAccount},
+      #  {"*/10 * * * *", GodwokenIndexer.Worker.CheckContractCode},
+      #  {"*/30 * * * *", GodwokenIndexer.Worker.RefreshBridgedUDTSupply},
+      #  {"* */1 * * *", GodwokenIndexer.Worker.UDTUpdater},
+      #  {"*/1 * * * *", GodwokenExplorer.Graphql.Workers.SmartContractRegister},
+      #  {"*/1 * * * *", GodwokenIndexer.Worker.ERC721UpdaterScheduler},
+      #  {"*/1 * * * *", GodwokenIndexer.Worker.ERC1155UpdaterScheduler},
+      #  {"* */2 * * *", GodwokenIndexer.Worker.TokenInstanceRetriesWorker}
      ]}
   ],
   queues: [default: 3]
