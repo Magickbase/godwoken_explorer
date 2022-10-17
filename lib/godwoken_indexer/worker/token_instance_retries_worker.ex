@@ -21,9 +21,10 @@ defmodule GodwokenIndexer.Worker.TokenInstanceRetriesWorker do
   end
 
   def get_token_instance_with_nil_metadata do
+    datetime = Timex.now() |> Timex.shift(seconds: -24 * 60 * 60) |> IO.inspect()
+
     from(tt in TokenInstance,
-      where: is_nil(tt.metadata),
-      limit: 200
+      where: is_nil(tt.metadata) and tt.updated_at < ^datetime
     )
     |> Repo.all()
     |> Enum.map(fn tt ->
