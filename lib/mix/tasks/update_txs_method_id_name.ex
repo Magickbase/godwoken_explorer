@@ -5,13 +5,8 @@ defmodule Mix.Tasks.UpdateTxsMethodIdName do
 
   alias GodwokenExplorer.{Transaction, Polyjuice, Account}
   alias GodwokenExplorer.Repo
-  alias GodwokenIndexer.Transform.TokenBalances
-  alias GodwokenExplorer.Account.UDTBalance
   alias GodwokenExplorer.Chain.{Import}
-  alias GodwokenExplorer.UDT
   import Ecto.Query
-
-  import GodwokenIndexer.Block.SyncWorker, only: [filter_udt_balance_params: 1]
 
   import GodwokenRPC.Util,
     only: [
