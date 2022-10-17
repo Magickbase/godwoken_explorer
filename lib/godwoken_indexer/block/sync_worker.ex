@@ -454,6 +454,11 @@ defmodule GodwokenIndexer.Block.SyncWorker do
       not_exist_contract_address = contract_address_hashes -- exist_contract_addresses
 
       if length(not_exist_contract_address) > 0 do
+        not_exist_contract_address
+        |> Enum.each(fn address ->
+          Account.find_or_create_contract_by_eth_address(address)
+        end)
+
         eth_address_to_ids =
           from(a in Account,
             where: a.eth_address in ^not_exist_contract_address,
