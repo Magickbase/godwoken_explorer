@@ -51,8 +51,14 @@ defmodule GodwokenRPC.Block do
        "size" => size,
        "logsBloom" => logs_bloom
      }} =
-      retry with: constant_backoff(5000) |> Stream.take(3) do
-        GodwokenRPC.fetch_eth_block_by_hash(hash)
+      retry with: constant_backoff(5000) |> Stream.take(3), rescue_only: [MatchError] do
+        {:ok,
+         %{
+           "gasLimit" => _gas_limit,
+           "gasUsed" => _gas_used,
+           "size" => _size,
+           "logsBloom" => _logs_bloom
+         }} = GodwokenRPC.fetch_eth_block_by_hash(hash)
       after
         result -> result
       else

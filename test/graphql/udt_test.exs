@@ -1,7 +1,7 @@
 defmodule GodwokenExplorer.Graphql.UDTTest do
   use GodwokenExplorerWeb.ConnCase
 
-  import GodwokenExplorer.Factory, only: [insert!: 1, insert!: 2]
+  import GodwokenExplorer.Factory, only: [insert!: 1, insert!: 2, address_hash: 0]
 
   setup do
     {:ok, script_hash} =
@@ -117,7 +117,7 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
   end
 
   test "graphql: udt ", %{conn: conn, native_udt: native_udt} do
-    contract_address_hash = native_udt.contract_address_hash
+    contract_address_hash = native_udt.contract_address_hash |> to_string()
 
     query = """
     query {
@@ -142,6 +142,36 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
              %{
                "data" => %{
                  "udt" => %{}
+               }
+             },
+             json_response(conn, 200)
+           )
+
+    not_exist_address = address_hash()
+
+    query = """
+    query {
+      udt(
+        input: { contract_address: "#{not_exist_address}" }
+      ) {
+        id
+        name
+        script_hash
+        contract_address_hash
+      }
+    }
+    """
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    assert match?(
+             %{
+               "data" => %{
+                 "udt" => nil
                }
              },
              json_response(conn, 200)
