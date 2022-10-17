@@ -7,6 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       MIX_ENV: test
+      GODWOKEN_CHAIN: "testnet_v1_1"
       GODWOKEN_JSON_RPC_URL: "http://localhost:8024"
       GODWOKEN_MEMPOOL_RPC_URL: "http://localhost:8024"
       CKB_INDEXER_URL: "http://localhost:8116"

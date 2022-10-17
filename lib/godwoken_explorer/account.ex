@@ -20,8 +20,10 @@ defmodule GodwokenExplorer.Account do
   alias GodwokenExplorer.Chain.{Hash, Import, Data}
 
   @polyjuice_creator_args_length 74
-  @yok_mainnet_account_id 12119
+  @yok_mainnet_v1_account_id 133
+  @yok_testnet_v1_1_account_id 930
   @erc20_mainnet_v1_account_id 33
+  @erc20_testnet_v1_1_account_id 375
 
   @derive {Jason.Encoder, except: [:__meta__]}
   @primary_key {:id, :integer, autogenerate: false}
@@ -671,13 +673,30 @@ defmodule GodwokenExplorer.Account do
     )
   end
 
+  def yok_sample_id do
+    case System.get_env("GODWOKEN_CHAIN") do
+      "testnet_v1_1" -> @yok_testnet_v1_1_account_id
+      "mainnet_v1" -> @yok_mainnet_v1_account_id
+      _ -> nil
+    end
+  end
+
+  def erc20_sample_id do
+    case System.get_env("GODWOKEN_CHAIN") do
+      "testnet_v1_1" -> @erc20_testnet_v1_1_account_id
+      "mainnet_v1" -> @erc20_mainnet_v1_account_id
+    end
+  end
+
   def yok_contract_code do
     if FastGlobal.get(:yok_contract_code) do
       FastGlobal.get(:yok_contract_code)
     else
-      account = Repo.get(Account, @yok_mainnet_account_id)
-      FastGlobal.put(:yok_contract_code, account.contract_code)
-      account.contract_code
+      if yok_sample_id() != nil do
+        account = Repo.get(Account, yok_sample_id())
+        FastGlobal.put(:yok_contract_code, account.contract_code)
+        account.contract_code
+      end
     end
   end
 
@@ -685,9 +704,11 @@ defmodule GodwokenExplorer.Account do
     if FastGlobal.get(:erc20_contract_code) do
       FastGlobal.get(:erc20_contract_code)
     else
-      account = Repo.get(Account, @erc20_mainnet_v1_account_id)
-      FastGlobal.put(:erc20_contract_code, account.contract_code)
-      account.contract_code
+      if erc20_sample_id() != nil do
+        account = Repo.get(Account, erc20_sample_id())
+        FastGlobal.put(:erc20_contract_code, account.contract_code)
+        account.contract_code
+      end
     end
   end
 

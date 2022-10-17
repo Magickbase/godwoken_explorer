@@ -31,8 +31,7 @@ defmodule GodwokenIndexer.Worker.ImportContractCode do
   end
 
   defp compare_with_yok_contract(contract_code, account_id) do
-    if System.get_env("GODWOKEN_CHAIN") == "mainnet" &&
-         Account.yok_contract_code() == contract_code do
+    if Account.yok_contract_code() == contract_code do
       %{account_id: account_id}
       |> GodwokenIndexer.Worker.GenerateYokSeriesContract.new()
       |> Oban.insert()
@@ -40,8 +39,7 @@ defmodule GodwokenIndexer.Worker.ImportContractCode do
   end
 
   defp compare_with_erc20_contract(contract_code, account_id) do
-    if System.get_env("GODWOKEN_CHAIN") == "mainnet_v1" &&
-         Account.erc20_contract_code() |> to_string() == contract_code do
+    if Account.erc20_contract_code() |> to_string() == contract_code do
       %{account_id: account_id}
       |> GodwokenIndexer.Worker.GenerateERC20SeriesContract.new()
       |> Oban.insert()
