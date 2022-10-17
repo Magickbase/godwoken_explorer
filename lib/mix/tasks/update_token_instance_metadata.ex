@@ -86,7 +86,9 @@ defmodule Mix.Tasks.UpdateTokenInstanceMetadata do
       end)
 
     if length(with_token_ids) > 0 do
-      Enum.chunk_every(with_token_ids, 100)
+      with_token_ids
+      |> ERC721ERC1155InstanceMetadata.pre_check()
+      |> Enum.chunk_every(100)
       |> Enum.each(fn args ->
         Task.async_stream(
           args,
