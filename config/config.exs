@@ -78,7 +78,8 @@ config :godwoken_explorer, Oban,
        {"*/1 * * * *", GodwokenExplorer.Graphql.Workers.SmartContractRegister},
        {"@daily", GodwokenIndexer.Worker.CheckUpdateTransactionMethodIdName},
        {"*/1 * * * *", GodwokenIndexer.Worker.ERC721UpdaterScheduler},
-       {"*/1 * * * *", GodwokenIndexer.Worker.ERC1155UpdaterScheduler}
+       {"*/1 * * * *", GodwokenIndexer.Worker.ERC1155UpdaterScheduler},
+       {"* */2 * * *", GodwokenIndexer.Worker.TokenInstanceRetriesWorker}
      ]}
   ],
   queues: [default: 3]
