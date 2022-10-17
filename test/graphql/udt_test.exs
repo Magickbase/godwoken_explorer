@@ -33,7 +33,8 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
 
     user = insert!(:user)
 
-    _erc721_cub1 =
+    _erc721_token_instance =
+      _erc721_cub1 =
       insert!(:current_udt_balance,
         address_hash: user.eth_address,
         token_contract_address_hash: erc721_native_udt.contract_address_hash,
@@ -62,6 +63,12 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
         token_type: :erc721
       )
     end
+
+    _erc721_token_instance =
+      insert!(:token_instance,
+        token_id: 5,
+        token_contract_address_hash: erc721_native_udt.contract_address_hash
+      )
 
     _erc1155_cub1 =
       insert!(:current_udt_balance,
@@ -1186,7 +1193,7 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
     query = """
     query {
       erc721_inventory(
-        input: { contract_address: "#{contract_address}"}
+        input: {limit: 1, contract_address: "#{contract_address}"}
       ) {
         entries {
           address_hash
@@ -1194,6 +1201,10 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
           token_id
           token_type
           counts
+          token_instance {
+            token_contract_address_hash
+            metadata
+          }
         }
         metadata {
           total_count
@@ -1213,7 +1224,16 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
     assert match?(
              %{
                "data" => %{
-                 "erc721_inventory" => %{"metadata" => %{"total_count" => 5}}
+                 "erc721_inventory" => %{
+                   "entries" => [
+                     %{
+                       "token_instance" => %{
+                         "token_contract_address_hash" => ^contract_address
+                       }
+                     }
+                   ],
+                   "metadata" => %{"total_count" => 5}
+                 }
                }
              },
              json_response(conn, 200)
@@ -1231,7 +1251,7 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
     query = """
     query {
       erc1155_user_inventory(
-        input: { contract_address: "#{contract_address}"}
+        input: {contract_address: "#{contract_address}"}
       ) {
         entries {
           address_hash
