@@ -11,7 +11,7 @@ defmodule GodwokenIndexer.Worker.TokenInstanceRetriesWorker do
   require Logger
 
   @impl Oban.Worker
-  def perform(%Oban.Job{}) do
+  def perform(_) do
     do_perform()
   end
 
@@ -21,10 +21,13 @@ defmodule GodwokenIndexer.Worker.TokenInstanceRetriesWorker do
   end
 
   def get_token_instance_with_nil_metadata do
-    datetime = Timex.now() |> Timex.shift(seconds: -24 * 60 * 60) |> IO.inspect()
+    datetime = Timex.now() |> Timex.shift(seconds: -24 * 60 * 60)
+    retry_error = ["timeout"]
 
     from(tt in TokenInstance,
-      where: is_nil(tt.metadata) and tt.updated_at < ^datetime
+      where:
+        is_nil(tt.metadata) and tt.updated_at < ^datetime and
+          tt.error in ^retry_error
     )
     |> Repo.all()
     |> Enum.map(fn tt ->
