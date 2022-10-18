@@ -145,7 +145,7 @@ defmodule GodwokenIndexer.Worker.ERC721ERC1155InstanceMetadata do
           fetcher: :token_instances
         )
 
-        {:error, :fail}
+        {:error, "failed to fetch token instance metadata for #{inspect(result)}"}
     end
   end
 
