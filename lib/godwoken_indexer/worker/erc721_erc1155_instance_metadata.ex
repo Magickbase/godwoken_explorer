@@ -119,6 +119,15 @@ defmodule GodwokenIndexer.Worker.ERC721ERC1155InstanceMetadata do
 
         token_instance_upsert(params)
 
+      {:error, :nxdomain} ->
+        params = %{
+          token_id: token_id,
+          token_contract_address_hash: token_contract_address_hash,
+          error: "nxdomain"
+        }
+
+        token_instance_upsert(params)
+
       result ->
         Logger.info(
           [

@@ -57,6 +57,7 @@ defmodule GodwokenExplorer.Token.InstanceMetadataRetriever do
 
   @no_uri_error "no uri"
   @vm_execution_error "VM execution error"
+  @vm_execution_reverted "VM execution reverted"
 
   def fetch_metadata(contract_address_hash, token_id) do
     # c87b56dd =  keccak256(tokenURI(uint256))
@@ -67,7 +68,7 @@ defmodule GodwokenExplorer.Token.InstanceMetadataRetriever do
       |> query_contract(contract_functions, @abi)
       |> fetch_json()
 
-    if res == {:ok, %{error: @vm_execution_error}} do
+    if res in [{:ok, %{error: @vm_execution_error}}, {:ok, %{error: @vm_execution_reverted}}] do
       contract_functions_uri = %{@uri => [token_id]}
 
       contract_address_hash
@@ -92,6 +93,14 @@ defmodule GodwokenExplorer.Token.InstanceMetadataRetriever do
              %{@uri => {:error, "(-32015) VM execution error."}}
            ] do
     {:ok, %{error: @vm_execution_error}}
+  end
+
+  def fetch_json(uri)
+      when uri in [
+            %{@token_uri => {:error, "(-32000) execution reverted"}},
+             %{@uri => {:error, "(-32000) execution reverted"}}
+           ] do
+    {:ok, %{error: @vm_execution_reverted}}
   end
 
   def fetch_json(%{@token_uri => {:error, "(-32015) VM execution error." <> _}}) do
