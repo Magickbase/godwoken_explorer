@@ -29,11 +29,11 @@ defmodule GodwokenIndexer.Worker.ERC721ERC1155InstanceMetadata do
       when is_list(args) do
     args
     |> pre_check()
-    |> Enum.each(fn arg ->
+    |> Enum.map(fn arg ->
       arg
       |> ERC721ERC1155InstanceMetadata.new()
-      |> Oban.insert()
     end)
+    |> Oban.insert_all()
   end
 
   def pre_check(args) when is_list(args) do
