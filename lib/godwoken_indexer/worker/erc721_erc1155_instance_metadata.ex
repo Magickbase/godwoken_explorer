@@ -1,5 +1,9 @@
 defmodule GodwokenIndexer.Worker.ERC721ERC1155InstanceMetadata do
-  use Oban.Worker, queue: :default
+  use Oban.Worker,
+    queue: :token_instance,
+    priority: 0,
+    max_attempts: 3,
+    unique: [period: :infinity]
 
   alias GodwokenExplorer.Repo
   alias GodwokenExplorer.Token.InstanceMetadataRetriever

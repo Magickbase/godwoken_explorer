@@ -1,5 +1,9 @@
 defmodule GodwokenIndexer.Worker.TokenInstanceRetriesWorker do
-  use Oban.Worker, queue: :default
+  use Oban.Worker,
+    queue: :token_instance,
+    priority: 0,
+    max_attempts: 3,
+    unique: [period: :infinity]
 
   alias GodwokenExplorer.Repo
   alias GodowokenExplorer.TokenInstance
@@ -13,6 +17,11 @@ defmodule GodwokenIndexer.Worker.TokenInstanceRetriesWorker do
   @impl Oban.Worker
   def perform(_) do
     do_perform()
+  end
+
+  @impl Oban.Worker
+  def timeout(_job) do
+    :infinity
   end
 
   def do_perform() do
