@@ -2,8 +2,7 @@ defmodule GodwokenIndexer.Worker.TokenInstanceRetriesWorker do
   use Oban.Worker,
     queue: :token_instance,
     priority: 0,
-    max_attempts: 3,
-    unique: [period: :infinity]
+    max_attempts: 3
 
   alias GodwokenExplorer.Repo
   alias GodowokenExplorer.TokenInstance

@@ -3,7 +3,7 @@ defmodule GodwokenIndexer.Worker.ERC721ERC1155InstanceMetadata do
     queue: :token_instance,
     priority: 0,
     max_attempts: 3,
-    unique: [period: :infinity]
+    unique: [period: 3 * 24 * 60 * 60]
 
   alias GodwokenExplorer.Repo
   alias GodwokenExplorer.Token.InstanceMetadataRetriever
