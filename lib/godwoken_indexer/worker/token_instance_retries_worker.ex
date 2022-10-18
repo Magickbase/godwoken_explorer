@@ -25,7 +25,25 @@ defmodule GodwokenIndexer.Worker.TokenInstanceRetriesWorker do
 
   def do_perform() do
     args = get_token_instance_with_nil_metadata()
-    ERC721ERC1155InstanceMetadata.new_job(args)
+
+    return =
+      args
+      |> ERC721ERC1155InstanceMetadata.pre_check()
+      |> Enum.chunk_every(10)
+      |> Enum.map(fn args ->
+        Task.async_stream(
+          args,
+          fn arg ->
+            ERC721ERC1155InstanceMetadata.do_perform(arg)
+          end,
+          timeout: :infinity
+        )
+        |> Enum.to_list()
+      end)
+      |> List.flatten()
+      |> Enum.filter(fn {a, _} -> a != :ok end)
+
+    {:ok, "#{inspect(return)}"}
   end
 
   def get_token_instance_with_nil_metadata do
