@@ -82,7 +82,7 @@ config :godwoken_explorer, Oban,
        {"* */1 * * *", GodwokenIndexer.Worker.TokenInstanceRetriesWorker}
      ]}
   ],
-  queues: [default: 3]
+  queues: [default: 3, token_instance: 3]
 
 gwscan_graphiql =
   if is_nil(System.get_env("GWSCAN_GRAPHIQL")) do
