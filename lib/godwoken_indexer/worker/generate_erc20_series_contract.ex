@@ -5,25 +5,25 @@ defmodule GodwokenIndexer.Worker.GenerateERC20SeriesContract do
 
   alias GodwokenExplorer.{Repo, Account, UDT, SmartContract}
 
-  @erc20_account_id 33
-
   @impl Oban.Worker
   def perform(%Oban.Job{args: %{"account_id" => account_id}}) do
     with account when account != nil <-
            Repo.get(Account, account_id),
          udt when is_nil(udt) <- Repo.get(UDT, account_id),
          smart_contract when is_nil(smart_contract) <- Repo.get(SmartContract, account_id) do
-      Repo.transaction(fn ->
-        erc20_account = Account |> preload(:smart_contract) |> Repo.get(@erc20_account_id)
+      erc20_account = Account |> preload(:smart_contract) |> Repo.get(Account.erc20_sample_id())
 
-        Repo.insert!(%SmartContract{
+      Repo.insert(
+        %SmartContract{
           name: "ERC20",
           account_id: account.id,
           abi: erc20_account.smart_contract.abi,
           contract_source_code: erc20_account.smart_contract.contract_source_code,
           compiler_version: erc20_account.smart_contract.compiler_version
-        })
-      end)
+        },
+        on_conflict: {:replace, [:name, :abi, :contract_source_code, :compiler_version]},
+        conflict_target: :account_id
+      )
     end
 
     :ok
