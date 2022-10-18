@@ -237,19 +237,16 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
     method_id = Map.get(input, :method_id)
     method_name = Map.get(input, :method_name)
 
-    query =
-      if method_id do
+    if method_id do
+      query
+      |> where([t], t.method_id == ^method_id)
+    else
+      if method_name do
         query
-        |> where([t], t.method_id == ^method_id)
+        |> where([t], t.method_name == ^method_name)
       else
         query
       end
-
-    if method_name do
-      query
-      |> where([t], t.method_name == ^method_name)
-    else
-      query
     end
   end
 
