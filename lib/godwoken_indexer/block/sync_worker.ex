@@ -100,6 +100,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
 
         polyjuice_with_eth_hashes_params =
           handle_polyjuice_transactions(polyjuice_without_receipts)
+          |> add_method_id_and_name_to_tx_params()
 
         import_polyjuice_creator(polyjuice_creator_params)
 
@@ -509,14 +510,20 @@ defmodule GodwokenIndexer.Block.SyncWorker do
       end)
       |> Enum.unzip()
 
+    txs_to_account_ids =
+      txs_to_account_ids
+      |> Enum.uniq()
+
     polyjuices = from(p in Polyjuice, where: p.tx_hash in ^txs_hashes) |> Repo.all()
 
-    accounts = from(a in Account, where: a.id in ^txs_to_account_ids) |> Repo.all()
+    accounts =
+      from(a in Account, where: a.id in ^txs_to_account_ids and a.type == :polyjuice_contract)
+      |> Repo.all()
 
     Enum.map(txs_params, fn tx ->
       {method_id, method_name} =
         if Enum.find(accounts, fn a ->
-             a.id == tx.to_account_id and a.type == :polyjuice_contract
+             a.id == tx.to_account_id
            end) do
           p =
             Enum.find(polyjuices, fn p ->
@@ -545,9 +552,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
   end
 
   defp import_transactions(block_params, transactions_params_without_receipts) do
-    inserted_transaction_params =
-      filter_transaction_columns(transactions_params_without_receipts)
-      |> add_method_id_and_name_to_tx_params()
+    inserted_transaction_params = filter_transaction_columns(transactions_params_without_receipts)
 
     {_count, returned_values} =
       Import.insert_changes_list(inserted_transaction_params,
@@ -822,7 +827,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
                      block_number: block_number,
                      block_hash: block_hash,
                      index: index
-                   } ->
+                   } = param ->
       %{
         hash: hash,
         eth_hash: eth_hash,
@@ -833,7 +838,9 @@ defmodule GodwokenIndexer.Block.SyncWorker do
         nonce: nonce,
         block_number: block_number,
         block_hash: block_hash,
-        index: index
+        index: index,
+        method_id: param[:method_id],
+        method_name: param[:method_name]
       }
     end)
   end
