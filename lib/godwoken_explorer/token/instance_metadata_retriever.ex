@@ -209,7 +209,16 @@ defmodule GodwokenExplorer.Token.InstanceMetadataRetriever do
   defp fetch_metadata(uri) do
     case HTTPoison.get(uri) do
       {:ok, %Response{body: body, status_code: 200, headers: headers}} ->
-        if Enum.member?(headers, {"Content-Type", "image/png"}) do
+        check_image =
+          Enum.find(headers, fn {ct, value} ->
+            if ct == "Content-Type" do
+              Regex.match?(~r{image/*}, value)
+            else
+              false
+            end
+          end)
+
+        if check_image do
           json = %{"image" => uri}
 
           check_type(json)
