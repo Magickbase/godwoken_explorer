@@ -180,7 +180,7 @@ defmodule GodwokenExplorer.Token.MetadataRetriever do
         |> Repo.get_by(contract_address_hash: contract_address_hash)
         |> Repo.preload([:account])
 
-      set_skip_metadata(token_to_update)
+      if token_to_update != nil, do: set_skip_metadata(token_to_update)
     end
 
     res
