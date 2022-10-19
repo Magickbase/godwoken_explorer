@@ -46,7 +46,8 @@ defmodule GodwokenExplorer.AccountFactory do
           script_hash: block_hash(),
           type: :polyjuice_contract,
           eth_address: address_hash(),
-          token_transfer_count: 0
+          token_transfer_count: 0,
+          contract_code: data(:contract_code)
         }
       end
 
