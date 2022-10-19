@@ -80,13 +80,18 @@ defmodule Mix.Tasks.UpdateTxsMethodIdName do
     jobs = length(txs_with_params)
     IO.inspect("processing #{jobs} jobs")
 
-    Import.insert_changes_list(txs_with_params,
-      for: Transaction,
-      timestamps: import_timestamps(),
-      on_conflict: {:replace, [:method_id, :method_name]},
-      conflict_target: :hash
-    )
-    |> IO.inspect()
+    txs_with_params
+    |> Enum.chunk_every(10000)
+    |> Enum.reduce(0, fn chunk_list, acc ->
+      Import.insert_changes_list(chunk_list,
+        for: Transaction,
+        timestamps: import_timestamps(),
+        on_conflict: {:replace, [:method_id, :method_name]},
+        conflict_target: :hash
+      )
+
+      (acc + length(chunk_list)) |> IO.inspect(label: "import finished ===>")
+    end)
   end
 
   def get_transaction_with_base(limit, start, walk) do
