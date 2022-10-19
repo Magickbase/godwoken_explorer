@@ -29,6 +29,9 @@ defmodule GodwokenIndexer.Worker.ERC721ERC1155InstanceMetadata do
     do_perform(args)
   end
 
+  @doc """
+  The built-in Basic engine doesn't support unique inserts for insert_all and you must use insert/3 for per-job unique support. Alternatively, the SmartEngine in Oban Pro supports bulk unique jobs and automatic batching.
+  """
   def new_job(args)
       when is_list(args) do
     args
@@ -39,8 +42,8 @@ defmodule GodwokenIndexer.Worker.ERC721ERC1155InstanceMetadata do
       |> Enum.map(fn arg ->
         arg
         |> ERC721ERC1155InstanceMetadata.new()
+        |> Oban.insert()
       end)
-      |> Oban.insert_all()
     end)
   end
 
