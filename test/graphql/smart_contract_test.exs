@@ -20,6 +20,7 @@ defmodule GodwokenExplorer.Graphql.SmartContractTest do
         account {
           eth_address
         }
+        ckb_balance
       }
     }
     """
@@ -33,7 +34,7 @@ defmodule GodwokenExplorer.Graphql.SmartContractTest do
     assert match?(
              %{
                "data" => %{
-                 "smart_contract" => %{}
+                 "smart_contract" => %{"ckb_balance" => "0"}
                }
              },
              json_response(conn, 200)

@@ -1,6 +1,7 @@
 defmodule GodwokenExplorer.Graphql.Resolvers.SmartContract do
   alias GodwokenExplorer.Repo
   alias GodwokenExplorer.{SmartContract, Account}
+  alias GodwokenExplorer.UDT
 
   import Ecto.Query
   import GodwokenExplorer.Graphql.Common, only: [cursor_order_sorter: 3]
@@ -111,6 +112,25 @@ defmodule GodwokenExplorer.Graphql.Resolvers.SmartContract do
       {:ok, return}
     else
       {:ok, nil}
+    end
+  end
+
+  def ckb_balance(%SmartContract{account_id: account_id} = _parent, _args, _resolution) do
+    if account_id do
+      account = Repo.get(Account, account_id)
+
+      return =
+        with udt_id when is_integer(udt_id) <- UDT.ckb_account_id(),
+             {:ok, balance} <-
+               GodwokenRPC.fetch_balance(account.registry_address, udt_id) do
+          balance |> Decimal.div(Integer.pow(10, 8))
+        else
+          _ -> Decimal.new(0)
+        end
+
+      {:ok, return}
+    else
+      {:ok, Decimal.new(0)}
     end
   end
 end

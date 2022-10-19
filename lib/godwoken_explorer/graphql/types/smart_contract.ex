@@ -179,6 +179,10 @@ defmodule GodwokenExplorer.Graphql.Types.SmartContract do
     field :account, :account do
       resolve(&Resolvers.SmartContract.account/3)
     end
+
+    field :ckb_balance, :decimal do
+      resolve(&Resolvers.SmartContract.ckb_balance/3)
+    end
   end
 
   enum :smart_contracts_sorter do
