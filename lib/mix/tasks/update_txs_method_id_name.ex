@@ -58,7 +58,8 @@ defmodule Mix.Tasks.UpdateTxsMethodIdName do
     start = Map.get(args_return, :start, 0)
     walk = Map.get(args_return, :walk, 100)
 
-    SmartContract.cache_abis()
+    _cached = SmartContract.cache_abis()
+    _cached = SmartContract.account_ids()
 
     return = iterate_token_transfer(limit_value, start, walk)
     IO.inspect(return)
@@ -109,6 +110,8 @@ defmodule Mix.Tasks.UpdateTxsMethodIdName do
         where: t.block_number >= ^start and t.block_number < ^unbound_max_range,
         inner_join: a in Account,
         on: a.id == t.to_account_id,
+        inner_join: sc in SmartContract,
+        on: a.id == sc.account_id,
         where: a.type == :polyjuice_contract,
         inner_join: p in Polyjuice,
         on: t.hash == p.tx_hash,
@@ -122,24 +125,48 @@ defmodule Mix.Tasks.UpdateTxsMethodIdName do
         }
       )
 
-    Repo.all(query)
-    |> Enum.map(fn map ->
-      {method_id, method_name} =
-        with input when not is_nil(input) <- map.input,
-             input <- input |> to_string(),
-             mid <- input |> String.slice(0, 10),
-             true <- String.length(mid) >= 10 do
-          method_name = Polyjuice.get_method_name(map.to_account_id, input)
-          {mid, method_name}
-        else
-          _ ->
-            {"0x00", nil}
-        end
+    return = Repo.all(query)
 
-      map
-      |> Map.delete(:input)
-      |> Map.put(:method_id, method_id)
-      |> Map.put(:method_name, method_name)
-    end)
+    IO.inspect(length(return), label: "need update transaction count ===>: ")
+    concurrency = 500
+
+    {return_lst, _} =
+      return
+      |> Enum.chunk_every(concurrency)
+      |> Enum.reduce({[], 0}, fn maps, {acc, cacc} ->
+        return =
+          maps
+          |> Task.async_stream(
+            fn map ->
+              {method_id, method_name} =
+                with input when not is_nil(input) <- map.input,
+                     input <- input |> to_string(),
+                     mid <- input |> String.slice(0, 10),
+                     true <- String.length(mid) >= 10 do
+                  method_name =
+                    Polyjuice.get_method_name_without_account_check(map.to_account_id, input)
+
+                  {mid, method_name}
+                else
+                  _ ->
+                    {"0x00", nil}
+                end
+
+              map
+              |> Map.delete(:input)
+              |> Map.put(:method_id, method_id)
+              |> Map.put(:method_name, method_name)
+            end,
+            timeout: :infinity
+          )
+          |> Enum.map(fn {:ok, r} -> r end)
+
+        IO.inspect(cacc + length(return), label: "data pre processed ==>")
+        {[return | acc], cacc + length(return)}
+      end)
+
+    return_lst
+    |> Enum.reverse()
+    |> List.flatten()
   end
 end

@@ -81,6 +81,16 @@ defmodule GodwokenExplorer.Polyjuice do
     end
   end
 
+  def get_method_name_without_account_check(to_account_id, input, hash \\ "") do
+    case decode_input_without_account_check(to_account_id, input, hash) do
+      {:ok, _, decoded_func, _} ->
+        parse_method_name(decoded_func)
+
+      _ ->
+        nil
+    end
+  end
+
   def decode_transfer_args(to_account_id, input, hash \\ "") do
     case decode_input(to_account_id, input, hash) do
       {:ok, _method_sign, method_desc, args} ->
@@ -97,21 +107,25 @@ defmodule GodwokenExplorer.Polyjuice do
     end
   end
 
+  def decode_input_without_account_check(to_account_id, input, hash) do
+    full_abi = SmartContract.cache_abi(to_account_id)
+
+    case do_decoded_input_data(
+           Base.decode16!(String.slice(input, 2..-1), case: :lower),
+           full_abi,
+           hash
+         ) do
+      {:ok, identifier, text, mapping} ->
+        {:ok, identifier, text, mapping}
+
+      _ ->
+        {:error, :decode_error}
+    end
+  end
+
   def decode_input(to_account_id, input, hash) do
     if to_account_id in SmartContract.account_ids() do
-      full_abi = SmartContract.cache_abi(to_account_id)
-
-      case do_decoded_input_data(
-             Base.decode16!(String.slice(input, 2..-1), case: :lower),
-             full_abi,
-             hash
-           ) do
-        {:ok, identifier, text, mapping} ->
-          {:ok, identifier, text, mapping}
-
-        _ ->
-          {:error, :decode_error}
-      end
+      decode_input_without_account_check(to_account_id, input, hash)
     else
       {:error, :decode_error}
     end
