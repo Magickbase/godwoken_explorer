@@ -6,6 +6,7 @@ defmodule GodwokenIndexer.Worker.ERC721UpdaterScheduler do
   alias GodwokenExplorer.Chain.{Import}
   alias GodwokenExplorer.{Repo, UDT}
   alias GodwokenExplorer.Token.MetadataRetriever
+  alias GodwokenIndexer.Worker.ERC721ERC1155UDTInfoRetryWorker
 
   @impl Oban.Worker
   def perform(%Oban.Job{}) do
@@ -54,8 +55,20 @@ defmodule GodwokenIndexer.Worker.ERC721UpdaterScheduler do
         )
         |> Enum.map(fn {:ok, r} -> r end)
 
+      need_update_fetched_list =
+        need_update_list
+        |> Enum.filter(fn nu -> not is_nil(nu.name) and not is_nil(nu.symbol) end)
+
+      need_retries_list =
+        need_update_list
+        |> Enum.filter(fn nu -> is_nil(nu.name) or is_nil(nu.symbol) end)
+        |> Enum.map(fn nu -> nu.contract_address_hash |> to_string() end)
+
+      ERC721ERC1155UDTInfoRetryWorker.new_jobs(need_retries_list)
+
       Import.insert_changes_list(
-        need_update_list |> Enum.map(fn udt -> Map.delete(udt, :contract_address_hash) end),
+        need_update_fetched_list
+        |> Enum.map(fn udt -> Map.delete(udt, :contract_address_hash) end),
         for: UDT,
         timestamps: import_timestamps(),
         on_conflict: {:replace, [:name, :symbol, :updated_at, :is_fetched]},
