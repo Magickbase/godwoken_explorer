@@ -155,7 +155,10 @@ defmodule GodwokenExplorer.Polyjuice do
     {:ok, result}
   rescue
     _ ->
-      Logger.warn(fn -> ["Could not find_and_decode input data for transaction: ", hash] end)
+      Logger.debug(fn ->
+        "Could not find_and_decode input data for transaction: #{inspect(hash)}"
+      end)
+
       {:error, :could_not_decode}
   end
 

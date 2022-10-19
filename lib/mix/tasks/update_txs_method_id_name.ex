@@ -6,6 +6,9 @@ defmodule Mix.Tasks.UpdateTxsMethodIdName do
   alias GodwokenExplorer.{Transaction, Polyjuice, Account}
   alias GodwokenExplorer.Repo
   alias GodwokenExplorer.Chain.{Import}
+
+  alias GodwokenExplorer.SmartContract
+
   import Ecto.Query
 
   import GodwokenRPC.Util,
@@ -54,6 +57,8 @@ defmodule Mix.Tasks.UpdateTxsMethodIdName do
     limit_value = Map.get(args_return, :limit, 500)
     start = Map.get(args_return, :start, 0)
     walk = Map.get(args_return, :walk, 100)
+
+    SmartContract.cache_abis()
 
     return = iterate_token_transfer(limit_value, start, walk)
     IO.inspect(return)
