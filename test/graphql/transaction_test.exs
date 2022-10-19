@@ -10,8 +10,18 @@ defmodule GodwokenExplorer.Graphql.TransactionTest do
       )
 
     block = insert(:block)
+    from_account = insert(:user)
+    to_account = insert(:polyjuice_contract_account)
 
-    transaction = insert!(:transaction, args: args, block: block, block_number: block.number)
+    transaction =
+      insert!(:transaction,
+        from_account: from_account,
+        to_account: to_account,
+        args: args,
+        block: block,
+        block_number: block.number
+      )
+
     _transaction2 = insert!(:transaction, args: args, block: block, block_number: block.number)
     _transaction3 = insert!(:transaction, args: args)
 
@@ -127,6 +137,86 @@ defmodule GodwokenExplorer.Graphql.TransactionTest do
                    "entries" => _,
                    "metadata" => %{
                      "total_count" => 3
+                   }
+                 }
+               }
+             },
+             json_response(conn, 200)
+           )
+  end
+
+  test "graphql: transactions with eth_address and script hash", %{
+    conn: conn,
+    transaction: transaction
+  } do
+    from_account_eth_address = transaction.from_account.eth_address |> to_string()
+    to_account_script_hash = transaction.to_account.script_hash |> to_string()
+
+    query = """
+    query {
+      transactions(
+        input: {
+          limit: 1
+          from_eth_address: "#{from_account_eth_address}"
+          to_script_hash: "#{to_account_script_hash}"
+          sorter: [
+            { sort_type: ASC, sort_value: BLOCK_NUMBER }
+            { sort_type: ASC, sort_value: HASH }
+            { sort_type: ASC, sort_value: INDEX }
+          ]
+        }
+      ) {
+        entries {
+          hash
+          eth_hash
+          block_hash
+          block_number
+          type
+          from_account_id
+          from_account {
+            script_hash
+            id
+            eth_address
+          }
+          to_account {
+            script_hash
+            id
+            eth_address
+          }
+          to_account_id
+        }
+
+        metadata {
+          total_count
+          before
+          after
+        }
+      }
+    }
+    """
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    assert match?(
+             %{
+               "data" => %{
+                 "transactions" => %{
+                   "entries" => [
+                     %{
+                       "from_account" => %{
+                         "eth_address" => ^from_account_eth_address
+                       },
+                       "to_account" => %{
+                         "script_hash" => ^to_account_script_hash
+                       }
+                     }
+                   ],
+                   "metadata" => %{
+                     "total_count" => 1
                    }
                  }
                }

@@ -99,7 +99,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
           p
 
         {from_address, nil} ->
-          from_account = Repo.get_by(Account, eth_address: from_address)
+          from_account = Account.get_account_by_address(from_address)
 
           if from_account do
             {from_account, nil}
@@ -108,7 +108,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
           end
 
         {nil, to_address} ->
-          to_account = Repo.get_by(Account, eth_address: to_address)
+          to_account = Account.get_account_by_address(to_address)
 
           if to_account do
             {nil, to_account}
@@ -117,8 +117,8 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
           end
 
         {from_address, to_address} ->
-          from_account = Repo.get_by(Account, eth_address: from_address)
-          to_account = Repo.get_by(Account, eth_address: to_address)
+          from_account = Account.get_account_by_address(from_address)
+          to_account = Account.get_account_by_address(to_address)
 
           case {from_account, to_account} do
             {nil, nil} ->
