@@ -3,7 +3,7 @@ defmodule GodwokenIndexer.Worker.ERC721ERC1155UDTInfoRetryWorker do
     queue: :default,
     priority: 3,
     max_attempts: 3,
-    unique: [period: 7 * 24 * 60 * 60]
+    unique: [fields: [:args]]
 
   import GodwokenRPC.Util, only: [import_timestamps: 0]
   alias GodwokenExplorer.Chain.{Import}
