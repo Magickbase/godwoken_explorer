@@ -27,6 +27,8 @@ defmodule GodwokenIndexer.Worker.ERC721ERC1155UDTInfoRetryWorker do
       ERC721ERC1155UDTInfoRetryWorker.new(args)
       |> Oban.insert()
     end)
+
+    :ok
   end
 
   def do_perform(contract_address_hash) when is_bitstring(contract_address_hash) do

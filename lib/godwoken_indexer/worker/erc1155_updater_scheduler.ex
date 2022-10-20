@@ -16,7 +16,7 @@ defmodule GodwokenIndexer.Worker.ERC1155UpdaterScheduler do
   end
 
   def do_perform() do
-    shift_seconds = 2 * 60
+    shift_seconds = 1
     limit_value = 50
 
     unfetched_udts = get_unfetched_udts(shift_seconds, limit_value)
@@ -59,15 +59,18 @@ defmodule GodwokenIndexer.Worker.ERC1155UpdaterScheduler do
       |> Enum.filter(fn nu -> is_nil(nu.name) or is_nil(nu.symbol) end)
       |> Enum.map(fn nu -> nu.contract_address_hash |> to_string() end)
 
-    ERC721ERC1155UDTInfoRetryWorker.new_jobs(need_retries_list)
+    return =
+      Import.insert_changes_list(
+        need_update_fetched_list
+        |> Enum.map(fn udt -> Map.delete(udt, :contract_address_hash) end),
+        for: UDT,
+        timestamps: import_timestamps(),
+        on_conflict: {:replace, [:name, :symbol, :updated_at, :is_fetched]},
+        conflict_target: :id
+      )
 
-    Import.insert_changes_list(
-      need_update_fetched_list |> Enum.map(fn udt -> Map.delete(udt, :contract_address_hash) end),
-      for: UDT,
-      timestamps: import_timestamps(),
-      on_conflict: {:replace, [:name, :symbol, :updated_at, :is_fetched]},
-      conflict_target: :id
-    )
+    ERC721ERC1155UDTInfoRetryWorker.new_jobs(need_retries_list)
+    return
   end
 
   def get_unfetched_udts(shift_seconds, limit_value)
