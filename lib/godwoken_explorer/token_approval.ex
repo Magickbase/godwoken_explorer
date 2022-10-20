@@ -1,8 +1,39 @@
 defmodule GodwokenExplorer.TokenApproval do
+  @moduledoc """
+  Token approved records.
+
+  We can parse these info from logs.
+  """
   use GodwokenExplorer, :schema
 
   alias GodwokenExplorer.Chain.Hash
 
+  @typedoc """
+     * `token_owner_address_hash` - Token owner.
+     * `spender_address_hash` - User approve token to which address.
+     * `token_contract_address_hash` - Which token contract.
+     * `data` - ERC721 token id.
+     * `approved` - Approve operation or Cancel approval.
+     * `type` - Approve or approve_all.
+     * `token_type` - ERC20 ERC721 or ERC1155.
+     * `block_hash` - Layer2 block.
+     * `transaction_hash` - Layer2 transaction.
+  """
+
+  @type t :: %__MODULE__{
+          token_owner_address_hash: Hash.Address.t(),
+          spender_address_hash: binary(),
+          token_contract_address_hash: Hash.Address.t(),
+          data: Decimal.t(),
+          approved: boolean(),
+          type: String.t(),
+          token_type: String.t(),
+          block_number: non_neg_integer(),
+          block_hash: Hash.Full.t(),
+          transaction_hash: Hash.Full.t(),
+          inserted_at: NaiveDateTime.t(),
+          updated_at: NaiveDateTime.t()
+        }
   @derive {Jason.Encoder, except: [:__meta__]}
   schema "token_approvals" do
     field :block_hash, Hash.Full

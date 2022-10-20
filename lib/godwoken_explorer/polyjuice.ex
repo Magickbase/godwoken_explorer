@@ -1,4 +1,11 @@
 defmodule GodwokenExplorer.Polyjuice do
+  @moduledoc """
+  Parse Polyjuice args and belongs to Transaction.
+
+  Polyjuice is an Ethereum EVM-compatible execution environment, which allows Solidity based smart contracts to run on Nervos.
+  The goal of the project is 100% compatibility, allowing all Ethereum contracts to run on Nervos without any modification.
+  Polyjuice args builder: https://github.com/godwokenrises/godwoken-polyjuice/blob/5f146f764067afb103f2ee9c7705e4a77e63beed/polyjuice-tests/src/helper.rs#L339
+  """
   use GodwokenExplorer, :schema
 
   import Ecto.Changeset
@@ -8,15 +15,48 @@ defmodule GodwokenExplorer.Polyjuice do
   alias ABI.FunctionSelector
   alias GodwokenExplorer.Chain.{Data, Hash}
 
+  @typedoc """
+    * `is_create` - This transction deployed contract.
+    * `gas_limit` - Gas limited value.
+    * `gas_price` - How much the sender is willing to pay for `gas`
+    * `gas_used` - the gas used for just `transaction`.  `nil` when transaction is pending or has only been collated into
+     one of the `uncles` in one of the `forks`.
+    * `value` - pCKB transferred from `from_address` to `to_address`
+    * `input`- data sent along with the transaction
+    * `input_size`- data size.
+    * `transaction_index` - index of this transaction in `block`.  `nil` when transaction is pending or has only been collated into
+     one of the `uncles` in one of the `forks`.
+    * `created_contract_address_hash` - This transaction deployed contract address.
+    * `native_transfer_address_hash` - If this transaction is native transfer, to_address is a contract, this column is actual receiver.
+    * `tx_hash` - The transaction foreign key.
+  """
+  @type t :: %__MODULE__{
+          is_create: boolean(),
+          gas_limit: Decimal.t(),
+          gas_price: Decimal.t(),
+          gas_used: Decimal.t(),
+          value: Decimal.t(),
+          input: Data.t(),
+          input_size: non_neg_integer(),
+          transaction_index: non_neg_integer(),
+          created_contract_address_hash: Hash.Address.t(),
+          native_transfer_address_hash: Hash.Address.t(),
+          status: String.t(),
+          tx_hash: Hash.Full.t(),
+          transaction: %Ecto.Association.NotLoaded{} | Transaction.t(),
+          inserted_at: NaiveDateTime.t(),
+          updated_at: NaiveDateTime.t()
+        }
   @derive {Jason.Encoder, except: [:__meta__]}
   schema "polyjuices" do
     field :is_create, :boolean, default: false
     field :gas_limit, :decimal
     field :gas_price, :decimal
+    field :gas_used, :decimal
     field :value, :decimal
     field :input_size, :integer
     field :input, Data
-    field :gas_used, :decimal
+
     field :transaction_index, :integer
     field :created_contract_address_hash, Hash.Address
     field :native_transfer_address_hash, Hash.Address

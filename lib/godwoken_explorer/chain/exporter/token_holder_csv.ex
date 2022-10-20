@@ -1,4 +1,8 @@
 defmodule GodwokenExplorer.Chain.Exporter.TokenHolderCsv do
+  @moduledoc """
+  Export udt's holder list
+  """
+
   alias NimbleCSV.RFC4180
 
   def export(results) do

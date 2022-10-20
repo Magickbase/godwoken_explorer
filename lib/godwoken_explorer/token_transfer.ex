@@ -1,4 +1,9 @@
 defmodule GodwokenExplorer.TokenTransfer do
+  @moduledoc """
+  Token's transfer record by contract.
+
+  Use `GodwokenIndexer.Transform.TokenTransfers` to parse from log.
+  """
   use GodwokenExplorer, :schema
 
   import GodwokenRPC.Util, only: [utc_to_unix: 1, balance_to_view: 2]
@@ -15,6 +20,37 @@ defmodule GodwokenExplorer.TokenTransfer do
   @account_transfer_limit 100_000
   @export_limit 5_000
 
+  @typedoc """
+     * `amount` - Transfer amount.
+     * `log_index` - Transaction's log index.
+     * `token_id` - The erc721's token_id.
+     * `from_address_hash` - Transfer sender.
+     * `to_address_hash` - Transfer receiver.
+     * `token_contract_address_hash` - Which token contract.
+     * `amounts` - Erc1155.
+     * `token_ids` - Erc1155.
+     * `block_number` - Layer2 block.
+     * `block_hash` - Layer2 block.
+     * `transaction_hash` - Layer2 transaction.
+  """
+
+  @type t :: %__MODULE__{
+          amount: Decimal.t(),
+          log_index: non_neg_integer(),
+          token_id: non_neg_integer() | nil,
+          from_address_hash: Hash.Address.t(),
+          to_address_hash: Hash.Address.t(),
+          token_contract_address_hash: Hash.Address.t(),
+          amounts: list(Decimal.t()),
+          token_ids: list(Decimal.t()),
+          block_number: non_neg_integer(),
+          block_hash: Hash.Full.t(),
+          block: %Ecto.Association.NotLoaded{} | Block.t(),
+          transaction_hash: Hash.Full.t(),
+          transaction: %Ecto.Association.NotLoaded{} | Transaction.t(),
+          inserted_at: NaiveDateTime.t(),
+          updated_at: NaiveDateTime.t()
+        }
   @derive {Jason.Encoder, except: [:__meta__]}
   @primary_key false
   schema "token_transfers" do

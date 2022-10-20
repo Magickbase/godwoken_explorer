@@ -1,4 +1,8 @@
 defmodule GodwokenExplorer.Chain.Exporter.HolderCsv do
+  @moduledoc """
+  Export all token held by the address
+  """
+
   alias NimbleCSV.RFC4180
 
   def export(results) do

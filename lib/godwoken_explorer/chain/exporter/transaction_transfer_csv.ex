@@ -1,4 +1,7 @@
 defmodule GodwokenExplorer.Chain.Exporter.TransactionTransferCsv do
+  @moduledoc """
+  Export a transaction's transfer list
+  """
   alias GodwokenExplorer.TokenTransfer
   alias NimbleCSV.RFC4180
 

@@ -1,4 +1,8 @@
 defmodule GodwokenExplorer.Chain do
+  @moduledoc """
+  The Chain context.
+  """
+
   use GodwokenExplorer, :schema
 
   import GodwokenRPC.Util,

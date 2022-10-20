@@ -1,7 +1,35 @@
 defmodule GodwokenExplorer.DailyStat do
+  @moduledoc """
+  Chain data statistics every day.
+  """
+
   use GodwokenExplorer, :schema
 
   require Logger
+
+  @typedoc """
+     * `avg_block_size` - Daily all blocks average size.
+     * `avg_block_time` - Daily all block average timestamp .
+     * `avg_gas_used` - Daily all blocks average used gas.
+     * `avg_gas_limit` - Daily all blocks average limited gas.
+     * `date` - When.
+     * `erc20_transfer_count` - Daily token transfer count.
+     * `total_block_count` - Daily mined block count.
+     * `total_txn` - Daily total transction count.
+  """
+
+  @type t :: %__MODULE__{
+          avg_block_size: non_neg_integer(),
+          avg_block_time: float(),
+          avg_gas_used: Decimal.t(),
+          avg_gas_limit: Decimal.t(),
+          date: DateTime.t(),
+          erc20_transfer_count: non_neg_integer(),
+          total_block_count: non_neg_integer(),
+          total_txn: non_neg_integer(),
+          inserted_at: NaiveDateTime.t(),
+          updated_at: NaiveDateTime.t()
+        }
 
   schema "daily_stats" do
     field :avg_block_size, :integer

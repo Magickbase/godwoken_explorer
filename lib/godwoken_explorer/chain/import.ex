@@ -1,4 +1,8 @@
 defmodule GodwokenExplorer.Chain.Import do
+  @moduledoc """
+  Bulk importing of data into `GodwokenExplorer.Repo`
+  """
+
   alias Ecto.Changeset
   alias GodwokenExplorer.Repo
 

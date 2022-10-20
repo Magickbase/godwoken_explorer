@@ -1,8 +1,39 @@
 defmodule GodwokenExplorer.DepositHistory do
+  @moduledoc """
+  Account deposit from layer1.
+  """
+
   use GodwokenExplorer, :schema
 
   alias GodwokenExplorer.Chain.Hash
 
+  @typedoc """
+     * `script_hash` - Layer2 account script hash.
+     * `amount` - Deposit amount.
+     * `udt_id` - The UDT table foreign key.
+     * `layer1_block_number` - Deposit at which layer1 block.
+     * `layer1_tx_hash` - Deposit at which layer1 transaction.
+     * `layer1_output_index` - Deposit transaction's output index.
+     * `ckb_lock_hash` - Layer1 account's lock hash.
+     * `timestamp` - Layer1 transaction's timestamp.
+     * `capacity` - Layer1 transaction's output's capacity.
+     * `udt_script_hash` - The udt in layer1's script hash.
+  """
+
+  @type t :: %__MODULE__{
+          script_hash: Hash.Full.t(),
+          amount: Decimal.t(),
+          udt_id: non_neg_integer(),
+          layer1_block_number: non_neg_integer(),
+          layer1_tx_hash: Hash.Full.t(),
+          layer1_output_index: non_neg_integer(),
+          ckb_lock_hash: Hash.Full.t(),
+          timestamp: DateTime.t(),
+          capacity: Decimal.t(),
+          udt_script_hash: Hash.Full.t(),
+          inserted_at: NaiveDateTime.t(),
+          updated_at: NaiveDateTime.t()
+        }
   @derive {Jason.Encoder, except: [:__meta__]}
   schema "deposit_histories" do
     field :script_hash, Hash.Full

@@ -1,4 +1,8 @@
 defmodule GodwokenExplorer.Chain.Exporter.DepositWithdrawalCsv do
+  @moduledoc """
+  Export address's deposit and withdrawal history from layer1
+  """
+
   alias NimbleCSV.RFC4180
 
   def export(results) do

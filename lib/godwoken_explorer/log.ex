@@ -1,4 +1,7 @@
 defmodule GodwokenExplorer.Log do
+  @moduledoc """
+  Transaction's log.
+  """
   use GodwokenExplorer, :schema
 
   alias GodwokenExplorer.Chain.{Hash, Data}
@@ -6,6 +9,35 @@ defmodule GodwokenExplorer.Log do
   @required_attrs ~w(address_hash data block_hash index transaction_hash)a
   @optional_attrs ~w(first_topic second_topic third_topic fourth_topic block_number)a
 
+  @typedoc """
+     * `data` - Log data.
+     * `index` - Log index.
+     * `first_topic` - Log first topic.
+     * `second_topic` - Log second topic.
+     * `third_topic` - Log third topic.
+     * `fourth_topic` - Log fourth topic.
+     * `address_hash` - Contract address.
+     * `block_number` - Layer2 block.
+     * `block_hash` - Layer2 block.
+     * `transaction_hash` - Layer2 transaction.
+  """
+
+  @type t :: %__MODULE__{
+          data: Data.t(),
+          first_topic: String.t(),
+          second_topic: String.t(),
+          third_topic: String.t(),
+          fourth_topic: String.t(),
+          index: non_neg_integer(),
+          address_hash: Hash.Address.t(),
+          block_number: non_neg_integer(),
+          block_hash: Hash.Full.t(),
+          block: %Ecto.Association.NotLoaded{} | Block.t(),
+          transaction_hash: Hash.Full.t(),
+          transaction: %Ecto.Association.NotLoaded{} | Transaction.t(),
+          inserted_at: NaiveDateTime.t(),
+          updated_at: NaiveDateTime.t()
+        }
   @derive {Jason.Encoder, except: [:__meta__]}
   @primary_key false
   schema "logs" do
