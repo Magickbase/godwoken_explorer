@@ -21,8 +21,10 @@ defmodule GodwokenIndexer.Worker.ERC721ERC1155UDTInfoRetryWorker do
   """
   def new_jobs(contract_address_hashes) when is_list(contract_address_hashes) do
     contract_address_hashes
-    |> Enum.map(fn arg ->
-      ERC721ERC1155UDTInfoRetryWorker.new(arg)
+    |> Enum.map(fn contract_address_hash ->
+      args = %{"contract_address_hash" => contract_address_hash}
+
+      ERC721ERC1155UDTInfoRetryWorker.new(args)
       |> Oban.insert()
     end)
   end
