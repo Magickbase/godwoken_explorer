@@ -18,6 +18,13 @@ defmodule GodwokenExplorer.MixProject do
         "coveralls.detail": :test,
         "coveralls.post": :test,
         "coveralls.html": :test
+      ],
+      name: "GodwokenExplorer",
+      source_url: "https://github.com/Magickbase/godwoken_explorer",
+      homepage_url: "http://v1.gwscan.com",
+      docs: [
+        main: "GodwokenExplorer",
+        extras: ["README.md"]
       ]
     ]
   end
@@ -111,6 +118,7 @@ defmodule GodwokenExplorer.MixProject do
       {:nimble_csv, "~> 1.1"},
       {:prom_ex, "~> 1.7.1"},
       {:dotenv, "~> 3.0.0", only: [:dev, :test]},
+      {:ex_doc, "~> 0.27", only: :dev, runtime: false},
 
       # cron job
       {:oban, "~> 2.12"},
