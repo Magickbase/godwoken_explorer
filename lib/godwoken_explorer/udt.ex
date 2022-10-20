@@ -323,6 +323,7 @@ defmodule GodwokenExplorer.UDT do
 
     case GodwokenRPC.eth_call(%{
            to: contract_address,
+           gas: "0x7530",
            data: method_sig
          }) do
       {:ok, hex_name} ->
@@ -353,6 +354,48 @@ defmodule GodwokenExplorer.UDT do
 
       _ ->
         ""
+    end
+  end
+
+  def is_erc721?(contract_address) do
+    method_sig = "0x01ffc9a7"
+    erc721_interface_id = "780e9d63"
+
+    case GodwokenRPC.eth_call(%{
+           to: contract_address,
+           # gas: 30000
+           gas: "0x7530",
+           # 36 bytes
+           data:
+             method_sig <>
+               erc721_interface_id <> "00000000000000000000000000000000000000000000000000000000"
+         }) do
+      {:ok, result} ->
+        result == "0x0000000000000000000000000000000000000000000000000000000000000000"
+
+      _ ->
+        false
+    end
+  end
+
+  def is_erc1155?(contract_address) do
+    method_sig = "0x01ffc9a7"
+    erc1155_interface_id = "4e2312e0"
+
+    case GodwokenRPC.eth_call(%{
+           to: contract_address,
+           # gas: 30000
+           gas: "0x7530",
+           # 36 bytes
+           data:
+             method_sig <>
+               erc1155_interface_id <> "00000000000000000000000000000000000000000000000000000000"
+         }) do
+      {:ok, result} ->
+        result == "0x0000000000000000000000000000000000000000000000000000000000000000"
+
+      _ ->
+        false
     end
   end
 

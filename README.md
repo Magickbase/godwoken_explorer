@@ -33,5 +33,8 @@ godwoken-v1-testnet-prod: godwoken v1 testnet
 main: godwoken v0 mainnet
 develop: godwoken v0 testnet
 
+### GraphQL API docs
+[https://magickbase.github.io/gwscan-graphql-doc/](https://magickbase.github.io/gwscan-graphql-doc/)
+
 ### Contribute
 Fork it and submit your PR!
