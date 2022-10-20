@@ -8,7 +8,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
 
   require Logger
 
-  alias GodwokenIndexer.Worker.ImportContractCode
+  alias GodwokenIndexer.Worker.{CheckContractUDT, ImportContractCode}
   alias GodwokenIndexer.Transform.{TokenTransfers, TokenBalances, TokenApprovals}
   alias GodwokenRPC.{Blocks, Receipts}
   alias GodwokenExplorer.Chain.Import
@@ -222,6 +222,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
       import_token_approvals(logs)
       polyjuice_with_receipts = Receipts.put(polyjuice_without_receipts, receipts)
 
+      handle_tx_generated_contract(polyjuice_with_receipts)
       import_polyjuice(polyjuice_with_receipts)
       async_contract_code(polyjuice_with_receipts)
 
@@ -545,6 +546,23 @@ defmodule GodwokenIndexer.Block.SyncWorker do
         timestamp: block_params |> List.first() |> Map.get(:timestamp)
       })
     end)
+  end
+
+  defp handle_tx_generated_contract(polyjuice_with_receipts) do
+    created_contract_address_params =
+      polyjuice_with_receipts
+      |> Enum.filter(fn p -> not is_nil(p.created_contract_address_hash) end)
+
+    if created_contract_address_params != [] do
+      created_contract_address_params
+      |> Enum.each(fn p ->
+        Account.find_or_create_contract_by_eth_address(p.created_contract_address_hash)
+
+        %{address: p.created_contract_address_hash}
+        |> CheckContractUDT.new()
+        |> Oban.insert()
+      end)
+    end
   end
 
   defp import_polyjuice(polyjuice_with_receipts) do
