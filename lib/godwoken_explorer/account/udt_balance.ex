@@ -3,6 +3,7 @@ defmodule GodwokenExplorer.Account.UDTBalance do
 
   alias GodwokenExplorer.Chain.Hash
   alias GodwokenExplorer.Chain
+  alias GodwokenExplorer.GlobalConstants
 
   @derive {Jason.Encoder, except: [:__meta__]}
   schema "account_udt_balances" do
@@ -38,7 +39,8 @@ defmodule GodwokenExplorer.Account.UDTBalance do
   end
 
   {:ok, burn_address_hash} =
-    Chain.string_to_address_hash("0x0000000000000000000000000000000000000000")
+    GlobalConstants.minted_burned_address()
+    |> Chain.string_to_address_hash()
 
   @burn_address_hash burn_address_hash
 

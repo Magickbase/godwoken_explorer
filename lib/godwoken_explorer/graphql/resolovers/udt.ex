@@ -3,6 +3,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
   alias GodwokenExplorer.Repo
   alias GodwokenExplorer.Account.{CurrentBridgedUDTBalance, CurrentUDTBalance, UDTBalance}
   alias GodwokenExplorer.TokenTransfer
+  alias GodowokenExplorer.TokenInstance
   import Ecto.Query
   # import Ecto.Query.API, only: [fragment: 1]
 
@@ -12,6 +13,31 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
   import GodwokenExplorer.Graphql.Resolvers.Common, only: [paginate_query: 3]
 
   @sorter_fields [:name, :supply, :id]
+
+  def token_instance(
+        %{token_contract_address_hash: token_contract_address_hash, token_id: token_id},
+        _args,
+        _resolution
+      ) do
+    return = get_token_instance(token_contract_address_hash, token_id)
+    {:ok, return}
+  end
+
+  def erc1155_inventory_token_instance(
+        %{contract_address_hash: contract_address_hash, token_id: token_id},
+        _args,
+        _resolution
+      ) do
+    return = get_token_instance(contract_address_hash, token_id)
+    {:ok, return}
+  end
+
+  defp get_token_instance(contract_address, token_id) do
+    Repo.get_by(TokenInstance,
+      token_contract_address_hash: contract_address,
+      token_id: token_id
+    )
+  end
 
   def alias_counts(%{value: value}, _args, _resolution) do
     {:ok, value}
