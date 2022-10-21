@@ -8,6 +8,7 @@ defmodule Mix.Tasks.UpdateTxsMethodIdName do
   alias GodwokenExplorer.Chain.{Import}
 
   alias GodwokenExplorer.SmartContract
+  alias GodwokenIndexer.Worker.CheckUpdateTransactionMethodIdName, as: CUTMethodIdName
 
   import Ecto.Query
 
@@ -68,30 +69,12 @@ defmodule Mix.Tasks.UpdateTxsMethodIdName do
   def iterate_token_transfer(limit_value, start, walk) do
     if start + walk <= limit_value do
       return = get_transaction_with_base(limit_value, start, walk)
-      do_update_txs_method_id_name(return)
+      CUTMethodIdName.batch_update_transaction_method_id_name(return)
       start = start + walk
       iterate_token_transfer(limit_value, start, walk)
     else
       :skip
     end
-  end
-
-  def do_update_txs_method_id_name(txs_with_params) do
-    jobs = length(txs_with_params)
-    IO.inspect("processing #{jobs} jobs")
-
-    txs_with_params
-    |> Enum.chunk_every(10000)
-    |> Enum.reduce(0, fn chunk_list, acc ->
-      Import.insert_changes_list(chunk_list,
-        for: Transaction,
-        timestamps: import_timestamps(),
-        on_conflict: {:replace, [:method_id, :method_name]},
-        conflict_target: :hash
-      )
-
-      (acc + length(chunk_list)) |> IO.inspect(label: "import finished ===>")
-    end)
   end
 
   def get_transaction_with_base(limit, start, walk) do
@@ -110,68 +93,8 @@ defmodule Mix.Tasks.UpdateTxsMethodIdName do
         walk + start
       end
 
-    query =
-      from(t in Transaction,
-        where: t.block_number >= ^start and t.block_number < ^unbound_max_range,
-        inner_join: a in Account,
-        on: a.id == t.to_account_id,
-        inner_join: sc in SmartContract,
-        on: a.id == sc.account_id,
-        where: a.type == :polyjuice_contract,
-        inner_join: p in Polyjuice,
-        on: t.hash == p.tx_hash,
-        select: %{
-          hash: t.hash,
-          from_account_id: t.from_account_id,
-          to_account_id: t.to_account_id,
-          nonce: t.nonce,
-          args: t.args,
-          input: p.input
-        }
-      )
-
-    return = Repo.all(query)
-
-    IO.inspect(length(return), label: "need update transaction count ===>: ")
-    concurrency = 500
-
-    {return_lst, _} =
-      return
-      |> Enum.chunk_every(concurrency)
-      |> Enum.reduce({[], 0}, fn maps, {acc, cacc} ->
-        return =
-          maps
-          |> Task.async_stream(
-            fn map ->
-              {method_id, method_name} =
-                with input when not is_nil(input) <- map.input,
-                     input <- input |> to_string(),
-                     mid <- input |> String.slice(0, 10),
-                     true <- String.length(mid) >= 10 do
-                  method_name =
-                    Polyjuice.get_method_name_without_account_check(map.to_account_id, input)
-
-                  {mid, method_name}
-                else
-                  _ ->
-                    {"0x00", nil}
-                end
-
-              map
-              |> Map.delete(:input)
-              |> Map.put(:method_id, method_id)
-              |> Map.put(:method_name, method_name)
-            end,
-            timeout: :infinity
-          )
-          |> Enum.map(fn {:ok, r} -> r end)
-
-        IO.inspect(cacc + length(return), label: "data pre processed ==>")
-        {[return | acc], cacc + length(return)}
-      end)
-
-    return_lst
-    |> Enum.reverse()
-    |> List.flatten()
+    CUTMethodIdName.common_base_query()
+    |> where([t], t.block_number >= ^start and t.block_number < ^unbound_max_range)
+    |> Repo.all()
   end
 end
