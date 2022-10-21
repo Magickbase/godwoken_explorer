@@ -76,6 +76,7 @@ config :godwoken_explorer, Oban,
        {"*/30 * * * *", GodwokenIndexer.Worker.RefreshBridgedUDTSupply},
        {"* */1 * * *", GodwokenIndexer.Worker.UDTUpdater},
        {"*/1 * * * *", GodwokenExplorer.Graphql.Workers.SmartContractRegister},
+       {"@daily", GodwokenIndexer.Worker.CheckUpdateTransactionMethodIdName},
        {"*/1 * * * *", GodwokenIndexer.Worker.ERC721UpdaterScheduler},
        {"*/1 * * * *", GodwokenIndexer.Worker.ERC1155UpdaterScheduler}
      ]}
