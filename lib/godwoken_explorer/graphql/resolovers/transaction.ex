@@ -139,15 +139,15 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
     |> process_from_to_account(input, from_account, to_account)
   end
 
-  defp process_from_to_account({:error, _} = error, _, _, _), do: error
-
   defp process_from_to_account(query, input, from_account, to_account) do
     case {from_account, to_account} do
       {:not_found, _} ->
-        {:error, :not_found}
+        query
+        |> where([t], false)
 
       {_, :not_found} ->
-        {:error, :not_found}
+        query
+        |> where([t], false)
 
       {nil, nil} ->
         query
@@ -190,8 +190,6 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
         end
     end
   end
-
-  defp query_with_block_range({:error, _} = error, _input), do: error
 
   defp query_with_block_range(query, input) do
     start_block_number = Map.get(input, :start_block_number)
