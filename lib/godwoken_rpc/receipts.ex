@@ -136,7 +136,8 @@ defmodule GodwokenRPC.Receipts do
     end
   end
 
-  def put(transactions_params, receipts_params) when is_list(transactions_params) and is_list(receipts_params) do
+  def put(transactions_params, receipts_params)
+      when is_list(transactions_params) and is_list(receipts_params) do
     transaction_hash_to_receipt_params =
       Enum.into(receipts_params, %{}, fn %{transaction_hash: transaction_hash} = receipt_params ->
         {transaction_hash, receipt_params}
@@ -146,8 +147,13 @@ defmodule GodwokenRPC.Receipts do
       receipts_params = Map.fetch!(transaction_hash_to_receipt_params, transaction_hash)
       merged_params = Map.merge(transaction_params, receipts_params)
 
-      if transaction_params[:created_contract_address_hash] && is_nil(receipts_params[:created_contract_address_hash]) do
-        Map.put(merged_params, :created_contract_address_hash, transaction_params[:created_contract_address_hash])
+      if transaction_params[:created_contract_address_hash] &&
+           is_nil(receipts_params[:created_contract_address_hash]) do
+        Map.put(
+          merged_params,
+          :created_contract_address_hash,
+          transaction_params[:created_contract_address_hash]
+        )
       else
         merged_params
       end
@@ -194,5 +200,7 @@ defmodule GodwokenRPC.Receipts do
 
   defp reduce_receipt({:ok, _}, {:error, _} = error), do: error
   defp reduce_receipt({:error, reason}, {:ok, _}), do: {:error, [reason]}
-  defp reduce_receipt({:error, reason}, {:error, reasons}) when is_list(reasons), do: {:error, [reason | reasons]}
+
+  defp reduce_receipt({:error, reason}, {:error, reasons}) when is_list(reasons),
+    do: {:error, [reason | reasons]}
 end

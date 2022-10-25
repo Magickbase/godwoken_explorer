@@ -1,4 +1,7 @@
 defmodule GodwokenRPC do
+  @moduledoc """
+  Context GodwokenRPC.
+  """
   import GodwokenRPC.Util, only: [hex_to_number: 1]
 
   require Logger
