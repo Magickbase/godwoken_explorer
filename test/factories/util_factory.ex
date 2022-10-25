@@ -1,5 +1,6 @@
 defmodule GodwokenExplorer.UtilFactory do
   alias GodwokenExplorer.Chain.{Hash, Data}
+  alias GodwokenExplorer.GlobalConstants
 
   defmacro __using__(_opts) do
     quote do
@@ -9,7 +10,7 @@ defmodule GodwokenExplorer.UtilFactory do
           |> sequence(& &1)
           |> Hash.Address.cast()
 
-        if to_string(address_hash) == "0x0000000000000000000000000000000000000000" do
+        if to_string(address_hash) == GlobalConstants.minted_burned_address() do
           address_hash()
         else
           address_hash

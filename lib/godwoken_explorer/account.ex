@@ -13,7 +13,6 @@ defmodule GodwokenExplorer.Account do
     ]
 
   require Logger
-
   alias GodwokenRPC
   alias GodwokenExplorer.Chain.Events.Publisher
   alias GodwokenExplorer.Counters.{AddressTokenTransfersCounter, AddressTransactionsCounter}
@@ -69,6 +68,16 @@ defmodule GodwokenExplorer.Account do
       :contract_code
     ])
     |> validate_required([:id])
+  end
+
+  def get_account_by_address(address) do
+    case address.byte_count do
+      32 ->
+        Repo.get_by(Account, script_hash: address)
+
+      20 ->
+        Repo.get_by(Account, eth_address: address)
+    end
   end
 
   def create_or_update_account!(attrs) do

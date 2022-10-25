@@ -25,6 +25,7 @@ defmodule GodwokenExplorer.Graphql.Schemas.Graphql do
   import_types(GodwokenExplorer.Graphql.Types.Tracker)
   import_types(GodwokenExplorer.Graphql.Types.Transaction)
   import_types(GodwokenExplorer.Graphql.Types.UDT)
+  import_types(GodwokenExplorer.Graphql.Types.TokenInstance)
 
   def middleware(middleware, _field, _object) do
     middleware
