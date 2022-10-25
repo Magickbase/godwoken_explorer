@@ -24,7 +24,12 @@ defmodule GodwokenExplorer.MixProject do
       homepage_url: "http://v1.gwscan.com",
       docs: [
         main: "GodwokenExplorer",
-        extras: ["README.md"]
+        extras: ["README.md"],
+        groups_for_modules: [
+          Explorer: ~r/GodwokenExplorer.*/,
+          Indexer: ~r/GodwokenIndexer.*/,
+          RPC: ~r/GodwokenRPC.*/
+        ]
       ]
     ]
   end
@@ -59,11 +64,11 @@ defmodule GodwokenExplorer.MixProject do
   defp deps do
     [
       # default phoneix template deps
-      {:phoenix, "~> 1.6.6", override: true},
+      {:phoenix, "~> 1.6.6"},
       {:phoenix_ecto, "~> 4.4"},
       {:ecto_sql, "~> 3.7.2"},
       {:postgrex, ">= 0.0.0"},
-      {:phoenix_html, "~> 3.2.0", override: true},
+      {:phoenix_html, "~> 3.2.0"},
       {:phoenix_live_reload, "~> 1.3.3", only: :dev},
       {:phoenix_live_dashboard, "~> 0.7.0"},
       {:esbuild, "~> 0.5", runtime: Mix.env() == :dev},
@@ -88,7 +93,7 @@ defmodule GodwokenExplorer.MixProject do
       {:poison, "~> 5.0"},
 
       # admin dashboard
-      {:torch, "~> 3.8"},
+      {:torch, "~> 4.0"},
 
       # CORS
       {:cors_plug, "~> 2.0"},
