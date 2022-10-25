@@ -371,6 +371,38 @@ defmodule GodwokenExplorer.Graphql.TransactionTest do
              json_response(conn, 200)
            )
 
+    # input with not exist method id
+    query = """
+    query {
+      transactions(
+        input: {
+           method_id: "0x12345679"
+        }
+      ) {
+        entries {
+          method_id
+        }
+      }
+    }
+    """
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    assert match?(
+             %{
+               "data" => %{
+                 "transactions" => %{
+                   "entries" => []
+                 }
+               }
+             },
+             json_response(conn, 200)
+           )
+
     ## input with "0x00"
     transaction =
       :transaction
