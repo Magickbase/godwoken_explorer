@@ -1,4 +1,8 @@
 defmodule GodwokenIndexer.Worker.UDTUpdater do
+  @moduledoc """
+  Update UDT's metadata in schedule.
+
+  """
   use Oban.Worker, queue: :default
 
   import Ecto.Query, only: [from: 2]

@@ -1,4 +1,8 @@
 defmodule GodwokenIndexer.Worker.GenerateYokSeriesContract do
+  @moduledoc """
+  Import Yokai contract to `GodwokenExplorer.SmartContract`.
+  """
+
   use Oban.Worker, queue: :default, unique: [period: 300, states: Oban.Job.states()]
 
   import Ecto.Query, only: [preload: 2]

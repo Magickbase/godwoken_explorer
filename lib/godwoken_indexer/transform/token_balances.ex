@@ -1,6 +1,6 @@
 defmodule GodwokenIndexer.Transform.TokenBalances do
   @moduledoc """
-  Extracts `Explorer.Address.TokenBalance` params from other schema's params.
+  Extracts `GodwokenExplorer.Account.UDTBalance` params from other schema's params.
   """
 
   @burn_address "0x0000000000000000000000000000000000000000"

@@ -1,4 +1,7 @@
 defmodule GodwokenIndexer.Block.BindL1L2Worker do
+  @moduledoc """
+  Fetch layer1 rollup cell and bind layer2 block to layer1 block.
+  """
   use GenServer
 
   import Godwoken.MoleculeParser, only: [parse_global_state: 1, parse_v0_global_state: 1]

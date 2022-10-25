@@ -1,4 +1,7 @@
 defmodule GodwokenIndexer.Block.PendingTransactionWorker do
+  @moduledoc """
+  Fetch layer2 full node pending transactions.
+  """
   use GenServer
 
   import GodwokenRPC.Util,

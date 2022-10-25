@@ -1,4 +1,10 @@
 defmodule GodwokenIndexer.Worker.ImportContractCode do
+  @moduledoc """
+  Fetch contract's contract_code and update.
+
+  For Yokai series contract and godwoken bridge token contract, these contract code were same.
+  So auto import contract to `GodwokenExplorer.SmartContract`
+  """
   use Oban.Worker, queue: :default, unique: [period: 300, states: Oban.Job.states()]
 
   alias GodwokenExplorer.{Account, Chain, Repo}

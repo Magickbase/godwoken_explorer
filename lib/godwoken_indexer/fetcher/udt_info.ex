@@ -1,4 +1,7 @@
 defmodule GodwokenIndexer.Fetcher.UDTInfo do
+  @moduledoc """
+  Fetch udt's meta and update.0
+  """
   use GenServer
 
   alias GodwokenExplorer.{Repo, UDT}

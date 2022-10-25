@@ -1,4 +1,8 @@
 defmodule GodwokenIndexer.Block.GlobalStateWorker do
+  @moduledoc """
+  Fetch layer1 rollup cell and update current layer2 status to meta account.
+  """
+
   use GenServer
 
   import Godwoken.MoleculeParser, only: [parse_global_state: 1, parse_v0_global_state: 1]

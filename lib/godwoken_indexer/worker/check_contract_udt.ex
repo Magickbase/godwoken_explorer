@@ -1,4 +1,8 @@
 defmodule GodwokenIndexer.Worker.CheckContractUDT do
+  @moduledoc """
+  Check contract is a token and import to `GodwokenExplorer.UDT`.
+
+  """
   use Oban.Worker, queue: :default
 
   import Ecto.Query, only: [from: 2]
