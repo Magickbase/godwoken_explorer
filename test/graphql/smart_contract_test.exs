@@ -3,7 +3,7 @@ defmodule GodwokenExplorer.Graphql.SmartContractTest do
   import GodwokenExplorer.Factory, only: [insert!: 1, insert!: 2, insert: 1, insert: 2]
 
   setup do
-    _ckb_account = insert(:ckb_account)
+    ckb_account = insert(:ckb_account)
     ckb_contract_account = insert(:ckb_contract_account)
     _ = insert(:ckb_udt)
     _ = insert(:ckb_native_udt)
@@ -28,8 +28,8 @@ defmodule GodwokenExplorer.Graphql.SmartContractTest do
 
   test "graphql: smart_contract ", %{
     conn: conn,
-    smart_contract: smart_contract,
-    ckb_account: ckb_account
+    smart_contract: smart_contract
+    # ckb_account: ckb_account
   } do
     account = smart_contract.account
 
