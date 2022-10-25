@@ -16,14 +16,12 @@ defmodule GodwokenRPC.Receipt do
    * `"blockNumber"` - The block number `t:GodwokenRPC.quantity/0`.
    * `"cumulativeGasUsed"` - `t:GodwokenRPC.quantity/0` of gas used when this transaction was executed in the
      block.
-   * `"from"` - The `GodwokenRPC.Transaction.t/0` `"from"` address hash.  **Geth-only.**
    * `"gasUsed"` - `t:GodwokenRPC.quantity/0` of gas used by this specific transaction alone.
    * `"logs"` - `t:list/0` of log objects, which this transaction generated.
    * `"logsBloom"` - `t:GodwokenRPC.data/0` of 256 Bytes for
      [Bloom filter](https://en.wikipedia.org/wiki/Bloom_filter) for light clients to quickly retrieve related logs.
    * `"root"` - `t:GodwokenRPC.hash/0`  of post-transaction stateroot (pre-Byzantium)
    * `"status"` - `t:GodwokenRPC.quantity/0` of either 1 (success) or 0 (failure) (post-Byzantium)
-   * `"to"` - The `GodwokenRPC.Transaction.t/0` `"to"` address hash.  **Geth-only.**
    * `"transactionHash"` - `t:GodwokenRPC.hash/0` the transaction.
    * `"transactionIndex"` - `t:GodwokenRPC.quantity/0` for the transaction index in the block.
   """
@@ -178,7 +176,6 @@ defmodule GodwokenRPC.Receipt do
         "transactionIndex" => 0
       }
 
-  Receipts from Geth also supply the `GodwokenRPC.Transaction.t/0` `"from"` and `"to"` address hashes.
 
       iex> GodwokenRPC.Receipt.to_elixir(
       ...>   %{

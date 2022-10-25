@@ -339,7 +339,7 @@ defmodule GodwokenExplorer.Chain.Data do
       iex> Explorer.Chain.Data.load(<<>>)
       {:ok, %Explorer.Chain.Data{bytes: <<>>}}
 
-  `GodwokenRPC.data/0` that has been converted to an integer cannot be loaded
+  `t:GodwokenRPC.data/0` that has been converted to an integer cannot be loaded
 
       iex> Explorer.Chain.Data.load(0)
       :error

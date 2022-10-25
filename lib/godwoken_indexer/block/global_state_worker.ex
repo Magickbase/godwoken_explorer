@@ -5,7 +5,7 @@ defmodule GodwokenIndexer.Block.GlobalStateWorker do
 
   use GenServer
 
-  import Godwoken.MoleculeParser, only: [parse_global_state: 1, parse_v0_global_state: 1]
+  import GodwokenExplorer.MoleculeParser, only: [parse_global_state: 1, parse_v0_global_state: 1]
 
   alias GodwokenExplorer.{Block, Account, WithdrawalHistory}
 

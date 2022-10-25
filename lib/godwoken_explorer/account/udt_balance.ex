@@ -32,7 +32,7 @@ defmodule GodwokenExplorer.Account.UDTBalance do
           account: %Ecto.Association.NotLoaded{} | Account.t(),
           account_id: non_neg_integer(),
           token_contract_address_hash: Hash.Address,
-          block_number: Block.block_number(),
+          block_number: non_neg_integer(),
           value: Decimal.t() | nil,
           value_fetched_at: DateTime.t(),
           token_id: non_neg_integer() | nil,

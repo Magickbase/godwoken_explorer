@@ -21,7 +21,7 @@ defmodule GodwokenExplorer.Application do
       {Registry, keys: :duplicate, name: Registry.ChainEvents, id: Registry.ChainEvents},
       {RealtimeEventHandler, name: RealtimeEventHandler},
       GodwokenExplorer.Chain.Events.Listener,
-      # GodwokenIndexer.Server,
+      GodwokenIndexer.Server,
       GodwokenExplorer.Counters.AccountsCounter,
       GodwokenExplorer.Counters.AverageBlockTime,
       GodwokenExplorer.Counters.AddressTransactionsCounter,
@@ -33,8 +33,8 @@ defmodule GodwokenExplorer.Application do
       GodwokenExplorer.Chain.Cache.PolyVersion,
       GodwokenExplorer.ETS.SmartContracts,
       GodwokenExplorer.SmartContract.SolcDownloader,
-      GodwokenExplorer.SmartContract.VyperDownloader
-      # {Oban, oban_config()}
+      GodwokenExplorer.SmartContract.VyperDownloader,
+      {Oban, oban_config()}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

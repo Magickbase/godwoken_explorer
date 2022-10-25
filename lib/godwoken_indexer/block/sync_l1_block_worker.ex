@@ -4,7 +4,7 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
   """
   use GenServer
 
-  import Godwoken.MoleculeParser,
+  import GodwokenExplorer.MoleculeParser,
     only: [
       parse_deposition_lock_args: 1,
       parse_withdrawal_lock_args: 1

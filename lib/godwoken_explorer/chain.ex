@@ -318,7 +318,6 @@ defmodule GodwokenExplorer.Chain do
     end
   end
 
-  @spec max_consensus_block_number() :: {:ok, Block.block_number()} | {:error, :not_found}
   def max_consensus_block_number do
     Block
     |> Repo.aggregate(:max, :number)
@@ -363,8 +362,6 @@ defmodule GodwokenExplorer.Chain do
     end
   end
 
-  @spec number_to_block(Block.block_number(), []) ::
-          {:ok, Block.t()} | {:error, :not_found}
   def number_to_block(number, options \\ []) when is_list(options) do
     try do
       Block

@@ -1,6 +1,6 @@
 defmodule GodwokenIndexer.Fetcher.UDTInfo do
   @moduledoc """
-  Fetch udt's meta and update.0
+  Fetch udt's meta and update.
   """
   use GenServer
 

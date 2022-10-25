@@ -4,7 +4,7 @@ defmodule GodwokenIndexer.Block.BindL1L2Worker do
   """
   use GenServer
 
-  import Godwoken.MoleculeParser, only: [parse_global_state: 1, parse_v0_global_state: 1]
+  import GodwokenExplorer.MoleculeParser, only: [parse_global_state: 1, parse_v0_global_state: 1]
   import GodwokenRPC.Util, only: [hex_to_number: 1, number_to_hex: 1]
 
   require Logger

@@ -1,4 +1,4 @@
-defmodule Godwoken.MoleculeParser do
+defmodule GodwokenExplorer.MoleculeParser do
   @moduledoc """
   Rustler module
   """
