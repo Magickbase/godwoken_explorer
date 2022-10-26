@@ -1,13 +1,36 @@
 defmodule GodwokenExplorer.Graphql.SmartContractTest do
   use GodwokenExplorerWeb.ConnCase
-  import GodwokenExplorer.Factory, only: [insert!: 1]
+  import GodwokenExplorer.Factory, only: [insert!: 1, insert!: 2, insert: 1, insert: 2]
 
   setup do
-    smart_contract = insert!(:smart_contract)
-    [smart_contract: smart_contract]
+    ckb_account = insert(:ckb_account)
+    ckb_contract_account = insert(:ckb_contract_account)
+    _ = insert(:ckb_udt)
+    _ = insert(:ckb_native_udt)
+    polyjuice_contract_account = insert!(:polyjuice_contract_account)
+    smart_contract = insert!(:smart_contract, account: polyjuice_contract_account)
+
+    _cub =
+      insert(:current_udt_balance,
+        address_hash: smart_contract.account.eth_address,
+        token_contract_address_hash: ckb_contract_account.eth_address,
+        value: 10000,
+        token_type: :erc20
+      )
+
+    [
+      smart_contract: smart_contract,
+      polyjuice_contract_account: polyjuice_contract_account,
+      ckb_account: ckb_account,
+      ckb_contract_account: ckb_contract_account
+    ]
   end
 
-  test "graphql: smart_contract ", %{conn: conn, smart_contract: smart_contract} do
+  test "graphql: smart_contract ", %{
+    conn: conn,
+    smart_contract: smart_contract
+    # ckb_account: ckb_account
+  } do
     account = smart_contract.account
 
     query = """
@@ -20,6 +43,7 @@ defmodule GodwokenExplorer.Graphql.SmartContractTest do
         account {
           eth_address
         }
+        ckb_balance
       }
     }
     """
@@ -33,7 +57,7 @@ defmodule GodwokenExplorer.Graphql.SmartContractTest do
     assert match?(
              %{
                "data" => %{
-                 "smart_contract" => %{}
+                 "smart_contract" => %{"ckb_balance" => "10000"}
                }
              },
              json_response(conn, 200)
