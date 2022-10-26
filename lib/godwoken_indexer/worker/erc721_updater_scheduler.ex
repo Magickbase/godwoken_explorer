@@ -80,7 +80,7 @@ defmodule GodwokenIndexer.Worker.ERC721UpdaterScheduler do
     from(u in UDT,
       where:
         u.type == :native and u.eth_type == :erc721 and
-          (is_nil(u.name) or is_nil(u.symbol)) and (is_nil(u.is_fetched) or u.is_fetched == false) and
+          (is_nil(u.name) or is_nil(u.symbol)) and
           u.updated_at > ^datetime,
       order_by: [asc: u.updated_at]
     )

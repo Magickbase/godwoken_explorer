@@ -14,7 +14,7 @@ defmodule Mix.Tasks.FetchErc721Meta do
     {shift_seconds, limit_value} =
       case args do
         [] ->
-          {1, nil}
+          {2_592_000, nil}
 
         [shift_seconds] ->
           {shift_seconds |> String.to_integer(), nil}
@@ -34,6 +34,7 @@ defmodule Mix.Tasks.FetchErc721Meta do
     |> Enum.reduce(0, fn e_unfetched_udts, acc ->
       IO.inspect("start to fetch #{acc}")
       ERC721UpdaterScheduler.fetch_and_update(e_unfetched_udts)
+      IO.inspect("finish to update #{acc}")
       acc + length(e_unfetched_udts)
     end)
 

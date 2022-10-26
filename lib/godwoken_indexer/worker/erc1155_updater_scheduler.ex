@@ -76,7 +76,6 @@ defmodule GodwokenIndexer.Worker.ERC1155UpdaterScheduler do
     from(u in UDT,
       where:
         u.type == :native and u.eth_type == :erc1155 and
-          (is_nil(u.is_fetched) or u.is_fetched == false) and
           u.updated_at > ^datetime,
       order_by: [asc: u.updated_at]
     )
