@@ -3,7 +3,7 @@ defmodule Mix.Tasks.FetchErc1155Meta do
   @shortdoc " `mix fetch_erc1155_meta 1 100`"
 
   alias GodwokenIndexer.Worker.ERC1155UpdaterScheduler
-
+  alias GodwokenExplorer.Repo
   use Mix.Task
 
   # require Logger
@@ -26,7 +26,11 @@ defmodule Mix.Tasks.FetchErc1155Meta do
           {shift_seconds |> String.to_integer(), limit |> String.to_integer()}
       end
 
-    unfetched_udts = ERC1155UpdaterScheduler.get_unfetched_udts(shift_seconds, limit_value)
+    unfetched_udts =
+      ERC1155UpdaterScheduler.get_unfetched_udts(shift_seconds)
+      |> ERC1155UpdaterScheduler.process_limit(limit_value)
+      |> Repo.all()
+      |> ERC1155UpdaterScheduler.process_struct()
 
     length(unfetched_udts) |> IO.inspect(label: "unfetched_udts length")
 
