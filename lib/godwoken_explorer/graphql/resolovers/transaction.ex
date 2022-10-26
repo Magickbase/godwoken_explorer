@@ -77,6 +77,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
     |> query_with_account_address(input, from_script_hash, to_script_hash)
     |> query_with_block_range(input)
     |> query_with_block_age_range(input)
+    |> query_with_method_id_name(input)
     |> transactions_order_by(input)
     |> paginate_query(input, %{
       cursor_fields: paginate_cursor(input),
@@ -225,6 +226,25 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
 
       true ->
         query
+    end
+  end
+
+  defp query_with_method_id_name({:error, _} = error, _input), do: error
+
+  defp query_with_method_id_name(query, input) do
+    method_id = Map.get(input, :method_id)
+    method_name = Map.get(input, :method_name)
+
+    if method_id do
+      query
+      |> where([t], t.method_id == ^method_id)
+    else
+      if method_name do
+        query
+        |> where([t], t.method_name == ^method_name)
+      else
+        query
+      end
     end
   end
 

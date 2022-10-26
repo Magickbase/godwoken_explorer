@@ -56,6 +56,22 @@ defmodule GodwokenExplorer.SmartContract do
     end
   end
 
+  def cache_abis() do
+    from(sc in SmartContract)
+    |> Repo.all()
+    |> Enum.chunk_every(10)
+    |> Enum.map(fn sm_cs ->
+      sm_cs
+      |> Task.async_stream(fn sm_c ->
+        ETSSmartContracts.put("contract_abi_#{sm_c.account_id}", sm_c.abi)
+        {"contract_abi_#{sm_c.account_id}", sm_c.abi}
+      end)
+      |> Enum.to_list()
+    end)
+    |> List.flatten()
+    |> Enum.into(%{})
+  end
+
   def cache_abi(account_id) do
     if ETSSmartContracts.get("contract_abi_#{account_id}") do
       ETSSmartContracts.get("contract_abi_#{account_id}")
