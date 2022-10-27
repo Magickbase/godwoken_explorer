@@ -1,4 +1,7 @@
 defmodule GodwokenExplorer.Chain.Exporter.TransferCsv do
+  @moduledoc """
+  Export transfer lists
+  """
   alias NimbleCSV.RFC4180
 
   def export(results) do

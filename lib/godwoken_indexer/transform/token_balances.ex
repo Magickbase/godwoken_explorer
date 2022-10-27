@@ -1,6 +1,6 @@
 defmodule GodwokenIndexer.Transform.TokenBalances do
   @moduledoc """
-  Extracts `Explorer.Address.TokenBalance` params from other schema's params.
+  Extracts `GodwokenExplorer.Account.UDTBalance` params from other schema's params.
   """
   alias GodwokenExplorer.GlobalConstants
   @burn_address GlobalConstants.minted_burned_address()

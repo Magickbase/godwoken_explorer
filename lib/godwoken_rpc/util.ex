@@ -1,4 +1,8 @@
 defmodule GodwokenRPC.Util do
+  @moduledoc """
+  Helper for data parse.
+  """
+
   alias Blake2.Blake2b
 
   @type decimal() :: Decimal.t()

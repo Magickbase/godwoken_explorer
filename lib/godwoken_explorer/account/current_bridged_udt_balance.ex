@@ -1,7 +1,42 @@
 defmodule GodwokenExplorer.Account.CurrentBridgedUDTBalance do
+  @moduledoc """
+  A account's newest balance of layer1 bridge token.
+
+  In this table you want to get account's bridge token that deposit or withdraw from layer1.
+  If you want to get bridge token's proxy layer2 native token, you need to query from `GodwokenExplorer.Account.CurrentUDTBalance`.
+  So to get a account's newest token balance, you need to compare above two table's data and sort by timestamp then get the latest value.
+  [Bridged token list](https://github.com/godwokenrises/godwoken-info/blob/main/mainnet_v1/bridged-token-list.json)
+  """
+
   use GodwokenExplorer, :schema
 
   alias GodwokenExplorer.Chain.Hash
+
+  @typedoc """
+   *  `address_hash` - The `t:GowokenExplorer.Chain.Address.t/0` that is the balance's owner.
+   *  `udt_id` - The udt foreign key.
+   *  `account_id` - The account foreign key.
+   *  `token_contract_address_hash` - The contract address hash foreign key.
+   *  `block_number` - The layer2 block's number that the transfer took place.
+   *  `layer1_block_number` - The layer1 block's number that the transfer took place.
+   *  `value` - The value that's represents the balance.
+   *  `value_fetched_at` - The time that fetch udt balance.
+   *  `uniq_id` - The token's layer2 native token id
+  """
+  @type t :: %__MODULE__{
+          address_hash: Hash.Address.t(),
+          udt: %Ecto.Association.NotLoaded{} | UDT.t(),
+          udt_id: non_neg_integer(),
+          account: %Ecto.Association.NotLoaded{} | Account.t(),
+          account_id: non_neg_integer(),
+          block_number: non_neg_integer(),
+          value: Decimal.t() | nil,
+          value_fetched_at: DateTime.t(),
+          layer1_block_number: non_neg_integer(),
+          uniq_id: non_neg_integer(),
+          inserted_at: DateTime.t(),
+          updated_at: DateTime.t()
+        }
 
   @derive {Jason.Encoder, except: [:__meta__]}
   schema "account_current_bridged_udt_balances" do

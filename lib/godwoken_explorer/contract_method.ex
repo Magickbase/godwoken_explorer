@@ -1,9 +1,26 @@
 defmodule GodwokenExplorer.ContractMethod do
+  @moduledoc """
+  The representation of an individual item from the ABI of a verified smart contract.
+  """
+
   use GodwokenExplorer, :schema
 
   require Logger
 
   alias GodwokenExplorer.Chain.MethodIdentifier
+
+  @typedoc """
+     *  `abi` - Method abi.
+     *  `identifier` - Method 4 byte
+     *  `type` - Contract function view or event
+  """
+  @type t :: %__MODULE__{
+          identifier: MethodIdentifier.t(),
+          abi: map(),
+          type: String.t(),
+          inserted_at: NaiveDateTime.t(),
+          updated_at: NaiveDateTime.t()
+        }
 
   @derive {Jason.Encoder, except: [:__meta__]}
   schema "contract_methods" do
@@ -47,13 +64,17 @@ defmodule GodwokenExplorer.ContractMethod do
     # Enforce ContractMethod ShareLocks order (see docs: sharelocks.md)
     ordered_successes = Enum.sort_by(successes, &{&1.identifier, &1.abi})
 
-    Repo.insert_all(__MODULE__, ordered_successes, on_conflict: :nothing, conflict_target: [:identifier, :abi])
+    Repo.insert_all(__MODULE__, ordered_successes,
+      on_conflict: :nothing,
+      conflict_target: [:identifier, :abi]
+    )
   end
 
   def import_all do
     result =
       Repo.transaction(fn ->
         SmartContract
+        |> where([sc], not is_nil(sc.abi))
         |> Repo.stream()
         |> Task.async_stream(fn contract ->
           upsert_from_abi(contract.abi, contract.account_id)

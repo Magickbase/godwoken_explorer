@@ -1,4 +1,7 @@
 defmodule GodwokenIndexer.Worker.CheckContractCode do
+  @moduledoc """
+  Find polyjuice_contract with nil contract_code then send to `GodwokenIndexer.Worker.ImportContractCode`.
+  """
   use Oban.Worker, queue: :default
 
   import Ecto.Query, only: [from: 2]

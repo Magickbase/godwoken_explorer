@@ -175,7 +175,7 @@ fn parse_eth_address_registry_args(arg: String) -> (String, String, u64) {
     }
 }
 rustler::init!(
-    "Elixir.Godwoken.MoleculeParser",
+    "Elixir.GodwokenExplorer.MoleculeParser",
     [
         parse_meta_contract_args,
         parse_global_state,

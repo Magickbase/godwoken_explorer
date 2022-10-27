@@ -1,4 +1,7 @@
 defmodule GodwokenIndexer.Worker.DailyStat do
+  @moduledoc """
+  Calculate daily chain data.
+  """
   use Oban.Worker, queue: :default
 
   import Ecto.Query, only: [where: 3, select: 3, order_by: 3]

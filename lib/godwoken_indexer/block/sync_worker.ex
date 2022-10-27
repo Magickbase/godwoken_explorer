@@ -1,4 +1,8 @@
 defmodule GodwokenIndexer.Block.SyncWorker do
+  @moduledoc """
+  Sync layer2 block worker and parse polyjuice receipt.
+  """
+
   use GenServer
 
   import GodwokenRPC.Util,

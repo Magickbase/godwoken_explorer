@@ -1,4 +1,10 @@
 defmodule GodwokenExplorer.Account do
+  @moduledoc """
+   A stored representation of godwoken chain account.
+
+  It include godwoken account and polyjuice web3 address.
+  For eth_user and polyjuice_contract type account, they are same with evm account.Other type accounts are godwoken special account.
+  """
   use GodwokenExplorer, :schema
 
   import GodwokenRPC.Util,
@@ -17,6 +23,31 @@ defmodule GodwokenExplorer.Account do
   alias GodwokenExplorer.Chain.Events.Publisher
   alias GodwokenExplorer.Counters.{AddressTokenTransfersCounter, AddressTransactionsCounter}
   alias GodwokenExplorer.Chain.{Hash, Import, Data}
+
+  @typedoc """
+   *  `eth_address` - The polyjuice account's address.
+   *  `script_hash` - Godwoken chain script hash.
+   *  `script` - Godwoken chain scrip.
+   *  `registry_address` - This account's register's address.
+   *  `nonce` - The account invokes contract's times.
+   *  `transaction_count` - The account cached transction count.
+   *  `token_transfer_count` - The account cached token transfer count.
+   *  `contract_code` - The contract's bytecode.
+   *  `type` - Account type.
+  """
+  @type t :: %__MODULE__{
+          eth_address: Address.t(),
+          script_hash: Full.t(),
+          script: map(),
+          registry_address: binary() | nil,
+          nonce: non_neg_integer(),
+          transaction_count: non_neg_integer(),
+          token_transfer_count: non_neg_integer(),
+          contract_code: Data.t() | nil,
+          type: String.t(),
+          inserted_at: NaiveDateTime.t(),
+          updated_at: NaiveDateTime.t()
+        }
 
   @polyjuice_creator_args_length 74
   @yok_mainnet_v1_account_id 133

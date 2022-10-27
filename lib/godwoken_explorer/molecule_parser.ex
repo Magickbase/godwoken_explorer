@@ -1,4 +1,7 @@
-defmodule Godwoken.MoleculeParser do
+defmodule GodwokenExplorer.MoleculeParser do
+  @moduledoc """
+  Rustler module
+  """
   use Rustler, otp_app: :godwoken_explorer, crate: :molecule_parser
 
   def parse_meta_contract_args(_a), do: :erlang.nif_error(:nif_not_loaded)

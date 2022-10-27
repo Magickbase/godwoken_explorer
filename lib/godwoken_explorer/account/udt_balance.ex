@@ -1,9 +1,46 @@
 defmodule GodwokenExplorer.Account.UDTBalance do
+  @moduledoc """
+  Represents a token balance from an address.
+
+  In this table we can see all token balances that a specific addreses had acording to the block
+  numbers. If you want to show only the last balance from an address, consider querying against
+  `Account.CurrentUDTBalance` instead.
+  """
+
   use GodwokenExplorer, :schema
 
   alias GodwokenExplorer.Chain.Hash
   alias GodwokenExplorer.Chain
   alias GodwokenExplorer.GlobalConstants
+
+  @typedoc """
+   *  `address_hash` - The `t:GowokenExplorer.Chain.Address.t/0` that is the balance's owner.
+   *  `udt` - The `t:GodwokenExplorer.UDT.t/0` that is the balance's udt
+   *  `udt_id` - The udt foreign key.
+   *  `account` - The `t:GodwokenExplorer.Account.t/0` that is the balance's account
+   *  `account_id` - The account foreign key.
+   *  `token_contract_address_hash` - The contract address hash foreign key.
+   *  `block_number` - The block's number that the transfer took place.
+   *  `value` - The value that's represents the balance.
+   *  `value_fetched_at` - The time that fetch udt balance.
+   *  `token_id` - The token_id of the transferred token (applicable for ERC-1155 and ERC-721 tokens)
+   *  `token_type` - The type of the token
+  """
+  @type t :: %__MODULE__{
+          address_hash: Hash.Address.t(),
+          udt: %Ecto.Association.NotLoaded{} | UDT.t(),
+          udt_id: non_neg_integer(),
+          account: %Ecto.Association.NotLoaded{} | Account.t(),
+          account_id: non_neg_integer(),
+          token_contract_address_hash: Hash.Address,
+          block_number: non_neg_integer(),
+          value: Decimal.t() | nil,
+          value_fetched_at: DateTime.t(),
+          token_id: non_neg_integer() | nil,
+          token_type: String.t(),
+          inserted_at: DateTime.t(),
+          updated_at: DateTime.t()
+        }
 
   @derive {Jason.Encoder, except: [:__meta__]}
   schema "account_udt_balances" do

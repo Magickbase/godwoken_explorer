@@ -2,7 +2,7 @@ defmodule GodwokenRPC.Transaction do
   import GodwokenRPC.Util,
     only: [hex_to_number: 1, parse_le_number: 1, transform_hash_type: 1, parse_polyjuice_args: 1]
 
-  import Godwoken.MoleculeParser,
+  import GodwokenExplorer.MoleculeParser,
     only: [parse_meta_contract_args: 1]
 
   require Logger

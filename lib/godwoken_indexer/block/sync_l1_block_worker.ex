@@ -1,7 +1,10 @@
 defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
+  @moduledoc """
+  Fetch layer2 deposit and withdrawal in layer1.
+  """
   use GenServer
 
-  import Godwoken.MoleculeParser,
+  import GodwokenExplorer.MoleculeParser,
     only: [
       parse_deposition_lock_args: 1,
       parse_withdrawal_lock_args: 1

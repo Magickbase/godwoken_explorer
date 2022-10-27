@@ -1,12 +1,29 @@
 defmodule GodwokenExplorer.CheckInfo do
+  @moduledoc """
+  Last synced tip block number and current hash for rollback.
+  """
+
   use GodwokenExplorer, :schema
+
+  @typedoc """
+  *  `block_hash` - The current sync block hash.
+  *  `tip_block_number` - Current tip block number.
+  *  `type` - To filter sync worker.
+  """
+
+  @type t :: %__MODULE__{
+          block_hash: String.t(),
+          tip_block_number: non_neg_integer(),
+          type: String.t(),
+          inserted_at: NaiveDateTime.t(),
+          updated_at: NaiveDateTime.t()
+        }
 
   @derive {Jason.Encoder, except: [:__meta__]}
   schema "check_infos" do
     field :block_hash, :string
     field :tip_block_number, :integer
-    field :type, Ecto.Enum,
-      values: [:main_deposit, :fix_history_deposit]
+    field :type, Ecto.Enum, values: [:main_deposit, :fix_history_deposit]
 
     timestamps()
   end
@@ -23,12 +40,12 @@ defmodule GodwokenExplorer.CheckInfo do
       nil ->
         %__MODULE__{}
         |> changeset(attrs)
-        |> Repo.insert
+        |> Repo.insert()
 
       check_info ->
         check_info
         |> changeset(attrs)
-        |> Repo.update
+        |> Repo.update()
     end
   end
 

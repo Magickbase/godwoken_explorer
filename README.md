@@ -18,14 +18,14 @@ For technology infrastructure, this project is inspired by [blockscout](https://
 - Rust
 
 ### Run local development
-1. copy [reference](./docker_compose/envs/.env) to project root and rename `.env.dev` and `.env.test`
+1. copy [reference](https://github.com/Magickbase/godwoken_explorer/blob/godwoken-v1-mainnet-prod/docker_compose/envs/.env) to project root and rename `.env.dev` and `.env.test`
 2. `$ mix ecto.setup`
 3. `$ mix phx.server`
 4. Visit `http://localhost:4001`
 
 ### Docker Compose
 1. [Install Docker Desktop](https://www.docker.com/products/docker-desktop/)
-2. [Docker README](docs/docker-compose.md)
+2. [Docker README](https://github.com/Magickbase/godwoken_explorer/blob/godwoken-v1-mainnet-prod/docs/docker-compose.md)
 
 ### Branch for godwoken version
 godwoken-v1-mainnet-prod: godwoken v1 mainnet

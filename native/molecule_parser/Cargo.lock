@@ -41,9 +41,9 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 
 [[package]]
 name = "ckb-hash"
-version = "0.104.1"
+version = "0.105.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a1ba4f6c1ffe2b03db7b91f5eb3a7894c268c7c0c5b2d340153351f13be4ff37"
+checksum = "66f7537f6536695b285dc179410ebc612a2003828093122294345fc3153464ba"
 dependencies = [
  "blake2b-ref",
  "blake2b-rs",

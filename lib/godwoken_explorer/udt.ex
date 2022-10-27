@@ -1,4 +1,8 @@
 defmodule GodwokenExplorer.UDT do
+  @moduledoc """
+  Layer2 UDT list.
+
+  """
   use GodwokenExplorer, :schema
 
   import GodwokenRPC.Util, only: [hex_to_number: 1, script_to_hash: 1, import_timestamps: 0]
@@ -11,6 +15,47 @@ defmodule GodwokenExplorer.UDT do
   import Ecto.Query
 
   @default_ckb_account_id 1
+
+  @typedoc """
+    * `id` - Udt id is same with account id.
+    * `decimal` - Set in contract.
+    * `symbol` - [UAN](https://github.com/nervosnetwork/rfcs/pull/335).
+    * `name` - [UAN](https://github.com/nervosnetwork/rfcs/pull/335).
+    * `icon` - UDT icon url.
+    * `supply` - Total supply.
+    * `type_script` - Layer1 udt's type script.
+    * `description` - UDT's description.
+    * `official_site` - UDT's official site.
+    * `value` - UDT's price * supply.
+    * `price` - UDT's market price.
+    * `bridge_account_id` - If udt type is bridge, it must have a native proxy account on layer2.
+    * `contract_address_hash` - For type is native, it have contract address hash.
+    * `type` - Bridge means from layer1;Native means layer2 contract.
+    * `eth_type` - EVM token type.
+    * `skip_metadata` - Skip metadata fetch.
+    * `is_fetched` - Fetched metadata or not.
+  """
+  @type t :: %__MODULE__{
+          id: non_neg_integer(),
+          decimal: non_neg_integer(),
+          symbol: String.t(),
+          name: String.t(),
+          icon: String.t(),
+          supply: Hash.Full.t(),
+          type_script: non_neg_integer(),
+          description: non_neg_integer(),
+          official_site: non_neg_integer(),
+          value: Decimal.t(),
+          price: Decimal.t(),
+          bridge_account_id: non_neg_integer(),
+          contract_address_hash: Hash.Address.t(),
+          type: String.t(),
+          eth_type: String.t(),
+          skip_metadata: boolean(),
+          is_fetched: boolean(),
+          inserted_at: NaiveDateTime.t(),
+          updated_at: NaiveDateTime.t()
+        }
 
   @derive {Jason.Encoder, except: [:__meta__]}
   @primary_key {:id, :integer, autogenerate: false}

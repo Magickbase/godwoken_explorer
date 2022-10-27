@@ -1,4 +1,7 @@
 defmodule GodwokenIndexer.Transform.TokenApprovals do
+  @moduledoc """
+  Parse logs to get account's token approval info.
+  """
   import GodwokenRPC.Util,
     only: [
       hex_to_number: 1

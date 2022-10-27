@@ -71,7 +71,6 @@ defmodule GodwokenExplorerWeb.API.BlockControllerTest do
                  "tx_count" => 0,
                  "l1_block" => nil,
                  "l1_tx_hash" => nil,
-                 "logs_bloom" => nil,
                  "parent_hash" => to_string(block.parent_hash),
                  "size" => block.size
                }
