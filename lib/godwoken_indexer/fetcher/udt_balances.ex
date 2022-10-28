@@ -1,4 +1,9 @@
 defmodule GodwokenIndexer.Fetcher.UDTBalances do
+  @moduledoc """
+  Fetch account's udt balance of block and update.
+
+  """
+
   require Logger
 
   alias GodwokenExplorer.Token.BalanceReader

@@ -1,16 +1,53 @@
 defmodule GodwokenExplorer.WithdrawalHistory do
+  @moduledoc """
+  Account withdrawal to layer1.
+  """
   use GodwokenExplorer, :schema
 
   alias GodwokenExplorer.Chain.Hash
+
+  @typedoc """
+     * `block_hash` - Withdraw at which layer2 block.
+     * `block_number` - Withdraw at which layer2 block.
+     * `layer1_block_number` - Deposit at which layer1 block.
+     * `layer1_tx_hash` - Deposit at which layer1 transaction.
+     * `layer1_output_index` - Deposit transaction's output index.
+     * `l2_script_hash` - Layer2 account script hash.
+     * `owner_lock_hash` - Layer1 owner lock hash.
+     * `udt_script_hash` - The udt of layer1's script hash.
+     * `amount` - Withdrawal amount.
+     * `udt_id` - The UDT table foreign key.
+     * `timestamp` - Layer1 transaction's timestamp.
+     * `state` - Pending means just submit withrawal, not on chain;Available means can withrawal after a certain time;Succeed means withdrawal succeefully.
+     * `capacity` - Layer1 transaction's output's capacity or ckb withdrawal amount.
+  """
+
+  @type t :: %__MODULE__{
+          block_hash: Hash.Full.t(),
+          block_number: non_neg_integer(),
+          layer1_block_number: non_neg_integer(),
+          layer1_tx_hash: Hash.Full.t(),
+          layer1_output_index: non_neg_integer(),
+          l2_script_hash: Hash.Full.t(),
+          owner_lock_hash: Hash.Full.t(),
+          udt_script_hash: Hash.Full.t(),
+          udt_id: non_neg_integer(),
+          amount: Decimal.t(),
+          timestamp: DateTime.t(),
+          state: String.t(),
+          capacity: Decimal.t(),
+          inserted_at: NaiveDateTime.t(),
+          updated_at: NaiveDateTime.t()
+        }
 
   @derive {Jason.Encoder, except: [:__meta__]}
   schema "withdrawal_histories" do
     field :block_hash, Hash.Full
     field :block_number, :integer
     field :layer1_block_number, :integer
-    field :l2_script_hash, Hash.Full
     field :layer1_output_index, :integer
     field :layer1_tx_hash, Hash.Full
+    field :l2_script_hash, Hash.Full
     field :owner_lock_hash, Hash.Full
     field :udt_script_hash, Hash.Full
     field :amount, :decimal

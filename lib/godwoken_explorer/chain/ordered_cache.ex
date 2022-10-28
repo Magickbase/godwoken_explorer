@@ -6,7 +6,7 @@ defmodule GodwokenExplorer.Chain.OrderedCache do
   ```
   use GodwokenExplorer.Chain.OrderedCache, name
   ```
-  where `name is an `t:atom/0` identifying the cache.
+  where name is an `t:atom/0` identifying the cache.
 
   All default values can be modified by overriding their respective function or
   by setting an option. For example (showing all of them):

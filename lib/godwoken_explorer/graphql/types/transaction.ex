@@ -467,6 +467,9 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
     field :to_script_hash, :hash_full
     field :status, :status
 
+    field :method_id, :chain_data
+    field :method_name, :string
+
     @desc """
     if combine_from_to is true, then from_address and to_address are combined into query condition like `address = from_address OR address = to_address`
     """

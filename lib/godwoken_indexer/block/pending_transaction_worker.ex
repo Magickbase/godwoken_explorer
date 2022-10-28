@@ -1,4 +1,7 @@
 defmodule GodwokenIndexer.Block.PendingTransactionWorker do
+  @moduledoc """
+  Fetch layer2 full node pending transactions.
+  """
   use GenServer
 
   import GodwokenRPC.Util,
@@ -10,7 +13,7 @@ defmodule GodwokenIndexer.Block.PendingTransactionWorker do
       import_timestamps: 0
     ]
 
-  import Godwoken.MoleculeParser,
+  import GodwokenExplorer.MoleculeParser,
     only: [parse_meta_contract_args: 1]
 
   alias GodwokenExplorer.Chain.Import

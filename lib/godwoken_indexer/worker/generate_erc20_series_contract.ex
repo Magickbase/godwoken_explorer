@@ -1,4 +1,7 @@
 defmodule GodwokenIndexer.Worker.GenerateERC20SeriesContract do
+  @moduledoc """
+  Import godwoken bridge contract to `GodwokenExplorer.SmartContract`.
+  """
   use Oban.Worker, queue: :default, unique: [period: 300, states: Oban.Job.states()]
 
   import Ecto.Query, only: [preload: 2]

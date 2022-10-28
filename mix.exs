@@ -18,6 +18,18 @@ defmodule GodwokenExplorer.MixProject do
         "coveralls.detail": :test,
         "coveralls.post": :test,
         "coveralls.html": :test
+      ],
+      name: "GodwokenExplorer",
+      source_url: "https://github.com/Magickbase/godwoken_explorer",
+      homepage_url: "http://v1.gwscan.com",
+      docs: [
+        main: "GodwokenExplorer",
+        extras: ["README.md"],
+        groups_for_modules: [
+          Explorer: ~r/GodwokenExplorer.*/,
+          Indexer: ~r/GodwokenIndexer.*/,
+          RPC: ~r/GodwokenRPC.*/
+        ]
       ]
     ]
   end
@@ -52,11 +64,11 @@ defmodule GodwokenExplorer.MixProject do
   defp deps do
     [
       # default phoneix template deps
-      {:phoenix, "~> 1.6.6", override: true},
+      {:phoenix, "~> 1.6.6"},
       {:phoenix_ecto, "~> 4.4"},
       {:ecto_sql, "~> 3.7.2"},
       {:postgrex, ">= 0.0.0"},
-      {:phoenix_html, "~> 3.2.0", override: true},
+      {:phoenix_html, "~> 3.2.0"},
       {:phoenix_live_reload, "~> 1.3.3", only: :dev},
       {:phoenix_live_dashboard, "~> 0.7.0"},
       {:esbuild, "~> 0.5", runtime: Mix.env() == :dev},
@@ -81,7 +93,7 @@ defmodule GodwokenExplorer.MixProject do
       {:poison, "~> 5.0"},
 
       # admin dashboard
-      {:torch, "~> 3.8"},
+      {:torch, "~> 4.0"},
 
       # CORS
       {:cors_plug, "~> 2.0"},
@@ -111,6 +123,7 @@ defmodule GodwokenExplorer.MixProject do
       {:nimble_csv, "~> 1.1"},
       {:prom_ex, "~> 1.7.1"},
       {:dotenv, "~> 3.0.0", only: [:dev, :test]},
+      {:ex_doc, "~> 0.27", only: :dev, runtime: false},
 
       # cron job
       {:oban, "~> 2.12"},
@@ -131,7 +144,8 @@ defmodule GodwokenExplorer.MixProject do
       {:plug_heartbeat, "~> 1.0"},
       {:paginator, "~> 1.1.0"},
       {:tesla, "~> 1.4"},
-      {:quarto, "~> 1.0"}
+      {:quarto, "~> 1.0"},
+      {:constants, "~> 0.1.0"}
     ]
   end
 

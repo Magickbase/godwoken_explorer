@@ -1,9 +1,42 @@
 defmodule GodwokenExplorer.SmartContract do
+  @moduledoc """
+  The representation of a verified Smart Contract.
+
+  "A contract in the sense of Solidity is a collection of code (its functions)
+  and data (its state) that resides at a specific address on the Ethereum
+  blockchain."
+  http://solidity.readthedocs.io/en/v0.4.24/introduction-to-smart-contracts.html
+  """
   use GodwokenExplorer, :schema
 
   alias GodwokenExplorer.ETS.SmartContracts, as: ETSSmartContracts
   alias GodwokenExplorer.Chain.Hash
 
+  @typedoc """
+  * `abi` - Contract abi.
+  * `contract_source_code` - Contract code.
+  * `name` - Contract name.
+  * `constructor_arguments` - Contract constructor arguments.
+  * `deployment_tx_hash` - Contract deployment at which transaction.
+  * `compiler_version` - Contract compiler version.
+  * `compiler_file_format` - Solidity or other.
+  * `other_info` - Some info.
+  * `account_id` - The account foreign key.
+  """
+  @type t :: %__MODULE__{
+          abi: list(map()),
+          contract_source_code: String.t(),
+          name: non_neg_integer() | nil,
+          constructor_arguments: Hash.Address.t(),
+          deployment_tx_hash: Hash.Address.t(),
+          compiler_version: Hash.Address.t(),
+          compiler_file_format: String.t(),
+          other_info: String.t(),
+          account_id: Hash.Full.t(),
+          account: %Ecto.Association.NotLoaded{} | Account.t(),
+          inserted_at: NaiveDateTime.t(),
+          updated_at: NaiveDateTime.t()
+        }
   @derive {Jason.Encoder, except: [:__meta__]}
   schema "smart_contracts" do
     field :abi, {:array, :map}
@@ -54,6 +87,22 @@ defmodule GodwokenExplorer.SmartContract do
       ETSSmartContracts.put(:contract_account_ids, account_ids)
       account_ids
     end
+  end
+
+  def cache_abis() do
+    from(sc in SmartContract)
+    |> Repo.all()
+    |> Enum.chunk_every(10)
+    |> Enum.map(fn sm_cs ->
+      sm_cs
+      |> Task.async_stream(fn sm_c ->
+        ETSSmartContracts.put("contract_abi_#{sm_c.account_id}", sm_c.abi)
+        {"contract_abi_#{sm_c.account_id}", sm_c.abi}
+      end)
+      |> Enum.to_list()
+    end)
+    |> List.flatten()
+    |> Enum.into(%{})
   end
 
   def cache_abi(account_id) do

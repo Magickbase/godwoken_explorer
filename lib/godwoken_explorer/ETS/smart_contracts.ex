@@ -1,4 +1,8 @@
 defmodule GodwokenExplorer.ETS.SmartContracts do
+  @moduledoc """
+  Caches smart contract's account ids
+  """
+
   use GenServer
 
   def start_link(_) do
@@ -6,7 +10,13 @@ defmodule GodwokenExplorer.ETS.SmartContracts do
   end
 
   def init(_) do
-    :ets.new(GodwokenExplorer.ETS.SmartContracts, [:set, :public, :named_table, {:read_concurrency, true}])
+    :ets.new(GodwokenExplorer.ETS.SmartContracts, [
+      :set,
+      :public,
+      :named_table,
+      {:read_concurrency, true}
+    ])
+
     {:ok, nil}
   end
 

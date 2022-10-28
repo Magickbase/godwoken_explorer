@@ -77,6 +77,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
     |> query_with_account_address(input, from_script_hash, to_script_hash)
     |> query_with_block_range(input)
     |> query_with_block_age_range(input)
+    |> query_with_method_id_name(input)
     |> transactions_order_by(input)
     |> paginate_query(input, %{
       cursor_fields: paginate_cursor(input),
@@ -99,7 +100,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
           p
 
         {from_address, nil} ->
-          from_account = Repo.get_by(Account, eth_address: from_address)
+          from_account = Account.get_account_by_address(from_address)
 
           if from_account do
             {from_account, nil}
@@ -108,7 +109,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
           end
 
         {nil, to_address} ->
-          to_account = Repo.get_by(Account, eth_address: to_address)
+          to_account = Account.get_account_by_address(to_address)
 
           if to_account do
             {nil, to_account}
@@ -117,8 +118,8 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
           end
 
         {from_address, to_address} ->
-          from_account = Repo.get_by(Account, eth_address: from_address)
-          to_account = Repo.get_by(Account, eth_address: to_address)
+          from_account = Account.get_account_by_address(from_address)
+          to_account = Account.get_account_by_address(to_address)
 
           case {from_account, to_account} do
             {nil, nil} ->
@@ -139,15 +140,15 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
     |> process_from_to_account(input, from_account, to_account)
   end
 
-  defp process_from_to_account({:error, _} = error, _, _, _), do: error
-
   defp process_from_to_account(query, input, from_account, to_account) do
     case {from_account, to_account} do
       {:not_found, _} ->
-        {:error, :not_found}
+        query
+        |> where([t], false)
 
       {_, :not_found} ->
-        {:error, :not_found}
+        query
+        |> where([t], false)
 
       {nil, nil} ->
         query
@@ -191,8 +192,6 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
     end
   end
 
-  defp query_with_block_range({:error, _} = error, _input), do: error
-
   defp query_with_block_range(query, input) do
     start_block_number = Map.get(input, :start_block_number)
     end_block_number = Map.get(input, :end_block_number)
@@ -227,6 +226,25 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
 
       true ->
         query
+    end
+  end
+
+  defp query_with_method_id_name({:error, _} = error, _input), do: error
+
+  defp query_with_method_id_name(query, input) do
+    method_id = Map.get(input, :method_id)
+    method_name = Map.get(input, :method_name)
+
+    if method_id do
+      query
+      |> where([t], t.method_id == ^method_id)
+    else
+      if method_name do
+        query
+        |> where([t], t.method_name == ^method_name)
+      else
+        query
+      end
     end
   end
 

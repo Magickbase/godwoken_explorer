@@ -1,4 +1,7 @@
 defmodule GodwokenRPC do
+  @moduledoc """
+  Context GodwokenRPC.
+  """
   import GodwokenRPC.Util, only: [hex_to_number: 1]
 
   require Logger
@@ -43,8 +46,29 @@ defmodule GodwokenRPC do
   alias GodwokenRPC.Transaction.Receipts, as: GWReceipts
   alias GodwokenExplorer.Chain.Hash
 
+  @typedoc """
+  Truncated 20-byte [KECCAK-256](https://en.wikipedia.org/wiki/SHA-3) hash encoded as a hexadecimal number in a
+  `String.t`.
+  """
+  @type address :: String.t()
+
   @type block_number :: non_neg_integer()
   @type hash :: String.t()
+
+  @typedoc """
+  Binary data encoded as a single hexadecimal number in a `String.t`
+  """
+  @type data :: String.t()
+
+  @typedoc """
+  A number encoded as a hexadecimal number in a `String.t`
+
+  ## Example
+
+      "0x1b4"
+
+  """
+  @type quantity :: String.t()
 
   def request(%{method: method, params: params} = map)
       when is_binary(method) and is_list(params) do

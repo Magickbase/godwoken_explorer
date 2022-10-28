@@ -1,4 +1,7 @@
 defmodule GodwokenIndexer.Fetcher.TotalSupplyOnDemand do
+  @moduledoc """
+  Fetch udt's total supply and update.
+  """
   use GenServer
 
   alias GodwokenExplorer.{Repo, UDT}

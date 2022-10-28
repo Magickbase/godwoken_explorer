@@ -1,4 +1,8 @@
 defmodule GodwokenIndexer.Block.SyncWorker do
+  @moduledoc """
+  Sync layer2 block worker and parse polyjuice receipt.
+  """
+
   use GenServer
 
   import GodwokenRPC.Util,
@@ -14,6 +18,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
   alias GodwokenExplorer.Chain.Import
   alias GodwokenExplorer.GW.Log, as: GWLog
   alias GodwokenExplorer.GW.{SudtPayFee, SudtTransfer}
+  alias GodwokenExplorer.GlobalConstants
 
   alias GodwokenExplorer.{
     Block,
@@ -35,6 +40,9 @@ defmodule GodwokenIndexer.Block.SyncWorker do
   alias GodwokenExplorer.Chain.Events.Publisher
   alias GodwokenExplorer.Chain.Cache.Blocks, as: BlocksCache
   alias GodwokenExplorer.Chain.Cache.Transactions
+
+  alias GodwokenExplorer.Chain.{Hash}
+  alias GodwokenIndexer.Worker.ERC721ERC1155InstanceMetadata
 
   @default_worker_interval 20
 
@@ -98,6 +106,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
 
         polyjuice_with_eth_hashes_params =
           handle_polyjuice_transactions(polyjuice_without_receipts)
+          |> add_method_id_and_name_to_tx_params()
 
         import_polyjuice_creator(polyjuice_creator_params)
 
@@ -434,6 +443,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
       )
 
       update_udt_balance(token_transfers)
+      update_udt_token_instance_metadata(token_transfers)
     end
 
     if length(tokens) > 0 do
@@ -499,6 +509,55 @@ defmodule GodwokenIndexer.Block.SyncWorker do
     end
   end
 
+  def add_method_id_and_name_to_tx_params(txs_params) do
+    {txs_hashes, txs_to_account_ids} =
+      Enum.map(txs_params, fn tx ->
+        {:ok, r} = Hash.Full.cast(tx.hash)
+        {r, tx.to_account_id}
+      end)
+      |> Enum.unzip()
+
+    txs_to_account_ids =
+      txs_to_account_ids
+      |> Enum.uniq()
+
+    polyjuices = from(p in Polyjuice, where: p.tx_hash in ^txs_hashes) |> Repo.all()
+
+    accounts =
+      from(a in Account, where: a.id in ^txs_to_account_ids and a.type == :polyjuice_contract)
+      |> Repo.all()
+
+    Enum.map(txs_params, fn tx ->
+      {method_id, method_name} =
+        if Enum.find(accounts, fn a ->
+             a.id == tx.to_account_id
+           end) do
+          p =
+            Enum.find(polyjuices, fn p ->
+              ptx = p.tx_hash |> to_string
+              tx.hash == ptx
+            end)
+
+          with p when not is_nil(p) <- p,
+               input <- p.input |> to_string(),
+               mid <- input |> to_string() |> String.slice(0, 10),
+               true <- String.length(mid) >= 10 do
+            method_name = Polyjuice.get_method_name(tx.to_account_id, input)
+            {mid, method_name}
+          else
+            _ ->
+              {"0x00", nil}
+          end
+        else
+          {"0x00", nil}
+        end
+
+      tx
+      |> Map.put(:method_id, method_id)
+      |> Map.put(:method_name, method_name)
+    end)
+  end
+
   defp import_transactions(block_params, transactions_params_without_receipts) do
     inserted_transaction_params = filter_transaction_columns(transactions_params_without_receipts)
 
@@ -509,7 +568,16 @@ defmodule GodwokenIndexer.Block.SyncWorker do
         conflict_target: :hash,
         on_conflict:
           {:replace,
-           [:block_hash, :from_account_id, :block_number, :eth_hash, :index, :updated_at]},
+           [
+             :block_hash,
+             :from_account_id,
+             :block_number,
+             :eth_hash,
+             :index,
+             :updated_at,
+             :method_id,
+             :method_name
+           ]},
         returning: [
           :from_account_id,
           :to_account_id,
@@ -766,7 +834,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
                      block_number: block_number,
                      block_hash: block_hash,
                      index: index
-                   } ->
+                   } = param ->
       %{
         hash: hash,
         eth_hash: eth_hash,
@@ -777,7 +845,9 @@ defmodule GodwokenIndexer.Block.SyncWorker do
         nonce: nonce,
         block_number: block_number,
         block_hash: block_hash,
-        index: index
+        index: index,
+        method_id: param[:method_id],
+        method_name: param[:method_name]
       }
     end)
   end
@@ -841,6 +911,34 @@ defmodule GodwokenIndexer.Block.SyncWorker do
     case Repo.one(from(block in Block, order_by: [desc: block.number], limit: 1)) do
       %Block{number: number} -> number + 1
       nil -> 0
+    end
+  end
+
+  defp update_udt_token_instance_metadata(token_transfers) do
+    token_transfers =
+      Enum.filter(token_transfers, fn tt ->
+        if tt.token_type in [:erc721, :erc1155] do
+          tt.from_address_hash == GlobalConstants.minted_burned_address()
+        else
+          false
+        end
+      end)
+
+    {_without_token_ids, with_token_ids} =
+      TokenBalances.params_set(%{token_transfers_params: token_transfers})
+      |> Enum.split_with(fn udt_balance -> is_nil(Map.get(udt_balance, :token_id)) end)
+
+    with_token_ids =
+      with_token_ids
+      |> Enum.map(fn tt ->
+        %{
+          "token_contract_address_hash" => tt.token_contract_address_hash,
+          "token_id" => tt.token_id
+        }
+      end)
+
+    if length(with_token_ids) > 0 do
+      ERC721ERC1155InstanceMetadata.new_job(with_token_ids)
     end
   end
 

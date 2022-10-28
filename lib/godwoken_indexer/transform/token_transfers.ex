@@ -10,8 +10,9 @@ defmodule GodwokenIndexer.Transform.TokenTransfers do
   alias ABI.TypeDecoder
   alias GodwokenExplorer.{TokenApproval, TokenTransfer}
   alias GodwokenExplorer.Token.MetadataRetriever
+  alias GodwokenExplorer.GlobalConstants
 
-  @burn_address "0x0000000000000000000000000000000000000000"
+  @burn_address GlobalConstants.minted_burned_address()
 
   @doc """
   Returns a list of token transfers given a list of logs.
@@ -274,7 +275,7 @@ defmodule GodwokenIndexer.Transform.TokenTransfers do
     {token, token_transfer}
   end
 
-  defp truncate_address_hash(nil), do: "0x0000000000000000000000000000000000000000"
+  defp truncate_address_hash(nil), do: GlobalConstants.minted_burned_address()
 
   defp truncate_address_hash("0x000000000000000000000000" <> truncated_hash) do
     "0x#{truncated_hash}"

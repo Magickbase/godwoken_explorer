@@ -4,12 +4,6 @@ defmodule GodwokenRPC.Account.FetchedBalances do
   defstruct params_list: [],
             errors: []
 
-  @typedoc """
-   * `params_list` - all the balance params from requests that succeeded in the batch.
-   * `errors` - all the errors from requests that failed in the batch.
-  """
-  @type t :: %__MODULE__{params_list: [FetchedBalance.params()], errors: [FetchedBalance.error()]}
-
   def from_responses(responses, id_to_params) do
     responses
     |> Enum.map(&FetchedBalance.from_response(&1, id_to_params))

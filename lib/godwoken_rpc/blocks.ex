@@ -1,4 +1,7 @@
 defmodule GodwokenRPC.Blocks do
+  @moduledoc """
+  Blocks format as returned by `GodwokenRPC.Block.ByNumber` module.
+  """
 
   alias GodwokenRPC.{Block, Transactions, WithdrawalRequests}
 

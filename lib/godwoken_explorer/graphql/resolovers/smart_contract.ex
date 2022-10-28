@@ -1,6 +1,7 @@
 defmodule GodwokenExplorer.Graphql.Resolvers.SmartContract do
   alias GodwokenExplorer.Repo
   alias GodwokenExplorer.{SmartContract, Account}
+  alias GodwokenExplorer.Account.CurrentUDTBalance
 
   import Ecto.Query
   import GodwokenExplorer.Graphql.Common, only: [cursor_order_sorter: 3]
@@ -111,6 +112,24 @@ defmodule GodwokenExplorer.Graphql.Resolvers.SmartContract do
       {:ok, return}
     else
       {:ok, nil}
+    end
+  end
+
+  def ckb_balance(%SmartContract{account_id: account_id} = _parent, _args, _resolution) do
+    if account_id do
+      account = Repo.get(Account, account_id)
+
+      ckb_balance =
+        with %{balance: balance} <-
+               CurrentUDTBalance.get_ckb_balance([account.eth_address]) |> List.first() do
+          balance
+        else
+          _ -> Decimal.new(0)
+        end
+
+      {:ok, ckb_balance}
+    else
+      {:ok, Decimal.new(0)}
     end
   end
 end

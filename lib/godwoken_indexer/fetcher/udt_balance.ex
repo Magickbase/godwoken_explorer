@@ -1,4 +1,8 @@
 defmodule GodwokenIndexer.Fetcher.UDTBalance do
+  @moduledoc """
+  Fetch account's udt balance of block and update.
+
+  """
   use GenServer
 
   import GodwokenRPC.Util,

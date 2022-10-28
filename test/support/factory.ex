@@ -24,6 +24,7 @@ defmodule GodwokenExplorer.Factory do
   use GodwokenExplorer.UDTBalanceFactory
   use GodwokenExplorer.WithdrawalHistoryFactory
   use GodwokenExplorer.WithdrawalRequestFactory
+  use GodwokenExplorer.TokenInstanceFactory
 
   alias GodwokenExplorer.Repo
 

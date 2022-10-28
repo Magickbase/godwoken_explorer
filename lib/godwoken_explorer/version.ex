@@ -1,4 +1,7 @@
 defmodule GodwokenExplorer.Version do
+  @moduledoc """
+  Table's version control.
+  """
   use GodwokenExplorer, :schema
 
   @derive {Jason.Encoder, except: [:__meta__]}

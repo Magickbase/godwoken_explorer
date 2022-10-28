@@ -29,8 +29,7 @@ defmodule GodwokenExplorerWeb.BlockChannel do
           gas_limit: block.gas_limit,
           gas_used: block.gas_used,
           size: block.size,
-          parent_hash: block.parent_hash,
-          logs_bloom: block.logs_bloom
+          parent_hash: block.parent_hash
         })
 
       {:ok, result, assign(socket, :block_number, block_number)}

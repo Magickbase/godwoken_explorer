@@ -1,9 +1,9 @@
 defmodule GodwokenIndexer.Transform.TokenBalances do
   @moduledoc """
-  Extracts `Explorer.Address.TokenBalance` params from other schema's params.
+  Extracts `GodwokenExplorer.Account.UDTBalance` params from other schema's params.
   """
-
-  @burn_address "0x0000000000000000000000000000000000000000"
+  alias GodwokenExplorer.GlobalConstants
+  @burn_address GlobalConstants.minted_burned_address()
 
   def params_set(%{} = import_options) do
     Enum.reduce(import_options, MapSet.new(), &reducer/2)

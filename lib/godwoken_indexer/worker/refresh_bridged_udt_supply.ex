@@ -1,4 +1,7 @@
 defmodule GodwokenIndexer.Worker.RefreshBridgedUDTSupply do
+  @moduledoc """
+  Calculated bridge udt's supply with deposit amount subtract withdrawal amount.
+  """
   use Oban.Worker, queue: :default
 
   import Ecto.Query, only: [from: 2]

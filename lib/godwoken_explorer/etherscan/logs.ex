@@ -1,7 +1,7 @@
 defmodule GodwokenExplorer.Etherscan.Logs do
   @moduledoc """
   This module contains functions for working with logs, as they pertain to the
-  `Explorer.Etherscan` context.
+  `GodwokenExplorer.Etherscan` context.
 
   """
 

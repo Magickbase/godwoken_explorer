@@ -1,4 +1,8 @@
 defmodule GodwokenIndexer.Worker.ERC1155UpdaterScheduler do
+  @moduledoc """
+  Fetch ERC1155 metadata.
+  """
+
   use Oban.Worker, queue: :default
 
   import Ecto.Query

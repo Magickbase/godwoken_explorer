@@ -1,4 +1,11 @@
 defmodule GodwokenExplorer.Polyjuice do
+  @moduledoc """
+  Parse Polyjuice args and belongs to Transaction.
+
+  Polyjuice is an Ethereum EVM-compatible execution environment, which allows Solidity based smart contracts to run on Nervos.
+  The goal of the project is 100% compatibility, allowing all Ethereum contracts to run on Nervos without any modification.
+  Polyjuice args builder: https://github.com/godwokenrises/godwoken-polyjuice/blob/5f146f764067afb103f2ee9c7705e4a77e63beed/polyjuice-tests/src/helper.rs#L339
+  """
   use GodwokenExplorer, :schema
 
   import Ecto.Changeset
@@ -8,15 +15,48 @@ defmodule GodwokenExplorer.Polyjuice do
   alias ABI.FunctionSelector
   alias GodwokenExplorer.Chain.{Data, Hash}
 
+  @typedoc """
+    * `is_create` - This transction deployed contract.
+    * `gas_limit` - Gas limited value.
+    * `gas_price` - How much the sender is willing to pay for `gas`
+    * `gas_used` - the gas used for just `transaction`.  `nil` when transaction is pending or has only been collated into
+     one of the `uncles` in one of the `forks`.
+    * `value` - pCKB transferred from `from_address` to `to_address`
+    * `input`- data sent along with the transaction
+    * `input_size`- data size.
+    * `transaction_index` - index of this transaction in `block`.  `nil` when transaction is pending or has only been collated into
+     one of the `uncles` in one of the `forks`.
+    * `created_contract_address_hash` - This transaction deployed contract address.
+    * `native_transfer_address_hash` - If this transaction is native transfer, to_address is a contract, this column is actual receiver.
+    * `tx_hash` - The transaction foreign key.
+  """
+  @type t :: %__MODULE__{
+          is_create: boolean(),
+          gas_limit: Decimal.t(),
+          gas_price: Decimal.t(),
+          gas_used: Decimal.t(),
+          value: Decimal.t(),
+          input: Data.t(),
+          input_size: non_neg_integer(),
+          transaction_index: non_neg_integer(),
+          created_contract_address_hash: Hash.Address.t(),
+          native_transfer_address_hash: Hash.Address.t(),
+          status: String.t(),
+          tx_hash: Hash.Full.t(),
+          transaction: %Ecto.Association.NotLoaded{} | Transaction.t(),
+          inserted_at: NaiveDateTime.t(),
+          updated_at: NaiveDateTime.t()
+        }
   @derive {Jason.Encoder, except: [:__meta__]}
   schema "polyjuices" do
     field :is_create, :boolean, default: false
     field :gas_limit, :decimal
     field :gas_price, :decimal
+    field :gas_used, :decimal
     field :value, :decimal
     field :input_size, :integer
     field :input, Data
-    field :gas_used, :decimal
+
     field :transaction_index, :integer
     field :created_contract_address_hash, Hash.Address
     field :native_transfer_address_hash, Hash.Address
@@ -81,6 +121,16 @@ defmodule GodwokenExplorer.Polyjuice do
     end
   end
 
+  def get_method_name_without_account_check(to_account_id, input, hash \\ "") do
+    case decode_input_without_account_check(to_account_id, input, hash) do
+      {:ok, _, decoded_func, _} ->
+        parse_method_name(decoded_func)
+
+      _ ->
+        nil
+    end
+  end
+
   def decode_transfer_args(to_account_id, input, hash \\ "") do
     case decode_input(to_account_id, input, hash) do
       {:ok, _method_sign, method_desc, args} ->
@@ -97,21 +147,25 @@ defmodule GodwokenExplorer.Polyjuice do
     end
   end
 
+  def decode_input_without_account_check(to_account_id, input, hash) do
+    full_abi = SmartContract.cache_abi(to_account_id)
+
+    case do_decoded_input_data(
+           Base.decode16!(String.slice(input, 2..-1), case: :lower),
+           full_abi,
+           hash
+         ) do
+      {:ok, identifier, text, mapping} ->
+        {:ok, identifier, text, mapping}
+
+      _ ->
+        {:error, :decode_error}
+    end
+  end
+
   def decode_input(to_account_id, input, hash) do
     if to_account_id in SmartContract.account_ids() do
-      full_abi = SmartContract.cache_abi(to_account_id)
-
-      case do_decoded_input_data(
-             Base.decode16!(String.slice(input, 2..-1), case: :lower),
-             full_abi,
-             hash
-           ) do
-        {:ok, identifier, text, mapping} ->
-          {:ok, identifier, text, mapping}
-
-        _ ->
-          {:error, :decode_error}
-      end
+      decode_input_without_account_check(to_account_id, input, hash)
     else
       {:error, :decode_error}
     end
@@ -155,7 +209,10 @@ defmodule GodwokenExplorer.Polyjuice do
     {:ok, result}
   rescue
     _ ->
-      Logger.warn(fn -> ["Could not find_and_decode input data for transaction: ", hash] end)
+      Logger.debug(fn ->
+        "Could not find_and_decode input data for transaction: #{inspect(hash)}"
+      end)
+
       {:error, :could_not_decode}
   end
 

@@ -1,4 +1,7 @@
 defmodule GodwokenExplorer.Transaction do
+  @moduledoc """
+  Layer2 transactions.
+  """
   use GodwokenExplorer, :schema
 
   import GodwokenRPC.Util, only: [stringify_and_unix_maps: 1]
@@ -11,6 +14,30 @@ defmodule GodwokenExplorer.Transaction do
   @tx_limit 500_000
   @account_tx_limit 100_000
 
+  @typedoc """
+     * `hash` - Godwoken transaction hash.
+     * `eth_hash` - Polyjuice transaction hash.
+     * `block_number` - In Which block.
+     * `nonce` - From account's nonce.
+     * `type` - Polyjuice means polyjuice tx;The other are godwoken tx.
+     * `index` - Order of transaction in block.
+     * `from_account_id` - The foreign key of account and which account invoke contract.
+     * `to_account_id` - Contract account.
+  """
+
+  @type t :: %__MODULE__{
+          hash: Hash.Full.t(),
+          args: Data.t(),
+          nonce: non_neg_integer(),
+          type: String.t(),
+          block_number: non_neg_integer(),
+          eth_hash: Hash.Full.t(),
+          index: non_neg_integer(),
+          from_account_id: non_neg_integer(),
+          to_account_id: non_neg_integer(),
+          inserted_at: NaiveDateTime.t(),
+          updated_at: NaiveDateTime.t()
+        }
   @derive {Jason.Encoder, except: [:__meta__]}
   @primary_key {:hash, Hash.Full, autogenerate: false}
   schema "transactions" do
@@ -41,6 +68,8 @@ defmodule GodwokenExplorer.Transaction do
       type: :integer
     )
 
+    field :method_id, Data
+    field :method_name, :string
     timestamps()
   end
 
@@ -56,7 +85,9 @@ defmodule GodwokenExplorer.Transaction do
       :args,
       :block_number,
       :eth_hash,
-      :index
+      :index,
+      :method_id,
+      :method_name
     ])
     |> validate_required([
       :hash,

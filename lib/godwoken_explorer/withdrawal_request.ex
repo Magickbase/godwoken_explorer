@@ -1,9 +1,50 @@
 defmodule GodwokenExplorer.WithdrawalRequest do
+  @moduledoc """
+  Withdrawal requests fetch from layer2.
+  """
+
   use GodwokenExplorer, :schema
 
   import Ecto.Changeset
 
   alias GodwokenExplorer.Chain.Hash
+
+  @typedoc """
+     * `hash` - Withdrawal hash at layer2.
+     * `nonce` - Withdrawal nonce at layer2.
+     * `capacity` - Layer1 transaction's output's capacity or ckb withdrawal amount.
+     * `amount` - Withdrawal amount.
+     * `sudt_script_hash` - The udt of layer1's script hash.
+     * `account_script_hash` - Layer2 account script hash.
+     * `owner_lock_hash` - Layer1 owner's lock hash.
+     * `fee_amount` - Withdrawal fee.
+     * `layer1_block_number` - Deposit at which layer1 block.
+     * `layer1_tx_hash` - Deposit at which layer1 transaction.
+     * `layer1_output_index` - Deposit transaction's output index.
+     * `block_hash` - Withdraw at which layer2 block.
+     * `block_number` - Withdraw at which layer2 block.
+     * `chain_id` - Which godwoken chain.
+     * `registry_id` - Which godwoken registrer.
+     * `udt_id` - The UDT table foreign key.
+  """
+
+  @type t :: %__MODULE__{
+          hash: Hash.Full.t(),
+          nonce: non_neg_integer(),
+          capacity: Decimal.t(),
+          amount: Decimal.t(),
+          sudt_script_hash: Hash.Full.t(),
+          account_script_hash: Hash.Full.t(),
+          owner_lock_hash: Hash.Full.t(),
+          fee_amount: Decimal.t(),
+          block_hash: Hash.Full.t(),
+          block_number: non_neg_integer(),
+          chain_id: non_neg_integer(),
+          registry_id: non_neg_integer(),
+          udt_id: non_neg_integer(),
+          inserted_at: NaiveDateTime.t(),
+          updated_at: NaiveDateTime.t()
+        }
 
   @derive {Jason.Encoder, except: [:__meta__]}
   schema "withdrawal_requests" do

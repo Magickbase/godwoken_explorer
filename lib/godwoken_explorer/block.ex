@@ -1,4 +1,7 @@
 defmodule GodwokenExplorer.Block do
+  @moduledoc """
+  Block structure with their data.
+  """
   use GodwokenExplorer, :schema
 
   require Logger
@@ -6,6 +9,41 @@ defmodule GodwokenExplorer.Block do
   alias GodwokenExplorer.Chain.Cache.Blocks
   alias GodwokenExplorer.Chain.Events.Publisher
   alias GodwokenExplorer.Chain.Hash
+
+  @typedoc """
+   *  `hash` - The `t:GowokenExplorer.Chain.Hash.Full.t/0` that is current block hash.
+   *  `nubmer` - The block number, start with 0.
+   *  `parent_hash` - The `t:GowokenExplorer.Chain.Hash.Full.t/0` that is parent block hash.
+   *  `timestamp` - When the block was collated.
+   *  `status` - Committed means block submit to layer1(CKB) and can be challenged;Finalized means block can't be challenged.
+   *  `transaction_count` - The block contains transction count.
+   *  `layer1_tx_hash` - Finalized at whic layer1 transaction hash.
+   *  `layer1_block_number` - Finalized at whic layer1 block number.
+   *  `size` - The size of the block in bytes.
+   *  `gas_limit` - Gas limit of this block.
+   *  `gas_used` - Actual used gas.
+   *  `logsBloom` - the [Bloom filter](https://en.wikipedia.org/wiki/Bloom_filter) for the logs of the block.
+   *  `registry_id` - The block producer registers by which account id.
+   *  `producer_address` - The block produced by which account.
+  """
+  @type t :: %__MODULE__{
+          hash: Hash.Full.t(),
+          number: non_neg_integer(),
+          parent_hash: Hash.Full.t(),
+          timestamp: DateTime.t(),
+          status: String.t(),
+          transaction_count: non_neg_integer(),
+          layer1_tx_hash: Hash.Full.t(),
+          layer1_block_number: non_neg_integer(),
+          size: non_neg_integer(),
+          gas_limit: Decimal.t(),
+          gas_used: Decimal.t(),
+          logs_bloom: binary(),
+          registry_id: non_neg_integer(),
+          producer_address: Hash.Address.t(),
+          inserted_at: NaiveDateTime.t(),
+          updated_at: NaiveDateTime.t()
+        }
 
   @fields [
     :hash,
@@ -46,12 +84,6 @@ defmodule GodwokenExplorer.Block do
     field :gas_limit, :decimal
     field :gas_used, :decimal
     field :logs_bloom, :binary
-    field :difficulty, :decimal
-    field :total_difficulty, :decimal
-    field :nonce, :binary
-    field :sha3_uncles, :binary
-    field :state_root, :binary
-    field :extra_data, :binary
     field :registry_id, :integer
     field :producer_address, Hash.Address
 

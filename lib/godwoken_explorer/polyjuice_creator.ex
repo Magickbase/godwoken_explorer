@@ -1,9 +1,34 @@
 defmodule GodwokenExplorer.PolyjuiceCreator do
+  @moduledoc """
+  Parse Polyjuice Creator args and belongs to Transaction.
+
+  This transaction will generate polyjuice creator.
+  """
   use GodwokenExplorer, :schema
 
   import Ecto.Changeset
 
   alias GodwokenExplorer.Chain.Hash
+
+  @typedoc """
+   * `code_hash` - Layer2 account code_hash.
+   * `hash_type` - Layer2 account hash_type.
+   * `script_args` - Layer2 account script_args.
+   * `fee_amount` - The tranasaction used fee.
+   * `fee_registry_id` - The transaction registry by which account.
+   * `tx_hash` - The transaction foreign key.
+  """
+  @type t :: %__MODULE__{
+          code_hash: String.t(),
+          hash_type: String.t(),
+          script_args: String.t(),
+          fee_amount: Decimal.t(),
+          fee_registry_id: non_neg_integer(),
+          tx_hash: Hash.Full.t(),
+          transaction: %Ecto.Association.NotLoaded{} | Transaction.t(),
+          inserted_at: NaiveDateTime.t(),
+          updated_at: NaiveDateTime.t()
+        }
 
   @derive {Jason.Encoder, except: [:__meta__]}
   schema "polyjuice_creators" do
