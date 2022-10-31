@@ -290,26 +290,32 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
   end
 
   object :account do
-    field :id, :integer
-    field :eth_address, :hash_full
-    field :script_hash, :hash_address
-    field :registry_address, :string
-    field :script, :json
-    field :nonce, :integer
-    field :transaction_count, :integer
-    field :token_transfer_count, :integer
-    field :contract_code, :string
-    field :type, :account_type
+    field :id, :integer, description: "ID of account."
+    field :eth_address, :hash_full, description: "The polyjuice account's address"
+    field :script_hash, :hash_address, description: "Godwoken chain script hash."
+    field :registry_address, :string, description: "This account's register's address."
+    field :script, :json, description: "Godwoken chain script."
+    field :nonce, :integer, description: "The account invokes contract's times."
+    field :transaction_count, :integer, description: "The account cached transction count."
+    field :token_transfer_count, :integer, description: "The account cached token transfer count."
+    field :contract_code, :string, description: "The contract's bytecode."
+    field :type, :account_type, description: "Account type."
 
     field :udt, :udt do
+      description(
+        "The mapping udt or bridge udt object of account if account is udt account or bridge udt account."
+      )
+
       resolve(&Resolvers.Account.udt/3)
     end
 
     field :bridged_udt, :udt do
+      description("The bridge udt object of account if account is udt account.")
+
       resolve(&Resolvers.Account.bridged_udt/3)
     end
 
-    @desc "erc20 udts"
+    @desc "The mapping erc20 balance info of account."
     field :account_current_udts, list_of(:account_current_udt) do
       arg(:input, :account_child_udts_input,
         default_value: %{page: 1, page_size: 20, sort_type: :desc}
@@ -319,7 +325,7 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
       resolve(&Resolvers.Account.account_current_udts/3)
     end
 
-    @desc "erc20 udts"
+    @desc "The mapping bridged erc20 balance info of account."
     field :account_current_bridged_udts, list_of(:account_current_bridged_udt) do
       arg(:input, :account_child_udts_input,
         default_value: %{page: 1, page_size: 20, sort_type: :desc}
@@ -329,7 +335,9 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
       resolve(&Resolvers.Account.account_current_bridged_udts/3)
     end
 
+    @desc "The mapping smart_contract info of account."
     field :smart_contract, :smart_contract do
+      description("")
       resolve(&Resolvers.Account.smart_contract/3)
     end
   end
