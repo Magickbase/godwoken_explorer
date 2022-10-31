@@ -165,22 +165,27 @@ defmodule GodwokenExplorer.Graphql.Types.SmartContract do
   end
 
   object :smart_contract do
-    field :id, :integer
-    field :abi, list_of(:json)
-    field :contract_source_code, :string
-    field :name, :string
-    field :account_id, :string
-    field :constructor_arguments, :string
-    field :deployment_tx_hash, :hash_full
-    field :compiler_version, :string
-    field :compiler_file_format, :string
-    field :other_info, :string
+    field :id, :integer, description: "ID of smart_contract table"
+    field :abi, list_of(:json), description: "Contract abi."
+    field :contract_source_code, :string, description: "Contract code."
+    field :name, :string, description: "Contract name."
+    field :account_id, :string, description: "The account foreign key."
+    field :constructor_arguments, :string, description: "Contract constructor arguments."
+
+    field :deployment_tx_hash, :hash_full,
+      description: "Contract deployment at which transaction."
+
+    field :compiler_version, :string, description: "Contract compiler version."
+    field :compiler_file_format, :string, description: "Solidity or other."
+    field :other_info, :string, description: "Some info."
 
     field :account, :account do
+      description("The mapping account of smart contract.")
       resolve(&Resolvers.SmartContract.account/3)
     end
 
     field :ckb_balance, :decimal do
+      description("The ckb-balance of this contract.")
       resolve(&Resolvers.SmartContract.ckb_balance/3)
     end
   end
