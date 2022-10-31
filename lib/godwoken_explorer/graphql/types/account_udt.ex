@@ -363,35 +363,44 @@ defmodule GodwokenExplorer.Graphql.Types.AccountUDT do
   end
 
   object :account_udt do
-    field :value, :bigint
-    field :address_hash, :hash_address
-    field :token_contract_address_hash, :hash_address
-    field :udt_script_hash, :hash_full
+    field :value, :bigint, description: "The value that's represents the balance."
+    field :address_hash, :hash_address, description: "The balance's owner address."
 
-    field :uniq_id, :integer
+    field :token_contract_address_hash, :hash_address,
+      description: "The contract address hash foreign key."
+
+    field :udt_script_hash, :hash_full, description: "The layer2 udt account script hash."
+
+    field :uniq_id, :integer, description: "The token's layer2 native token id"
 
     field :udt, :udt do
+      description("The udt info of balance.")
       resolve(&Resolvers.AccountUDT.udt/3)
     end
 
     field :account, :account do
+      description("The mapping account of balance.")
       resolve(&Resolvers.AccountUDT.account/3)
     end
   end
 
   object :account_current_udt do
-    field :id, :integer
-    field :value, :bigint
-    field :value_fetched_at, :datetime
-    field :block_number, :integer
-    field :address_hash, :hash_address
-    field :token_contract_address_hash, :hash_address
+    field :id, :integer, description: "ID of balance's table"
+    field :value, :bigint, description: "The value that's represents the balance."
+    field :value_fetched_at, :datetime, description: "The time that fetch udt balance."
+    field :block_number, :integer, description: "The block's number that the transfer took place."
+    field :address_hash, :hash_address, description: "The balance's owner."
+
+    field :token_contract_address_hash, :hash_address,
+      description: "The contract address hash foreign key."
 
     field :udt, :udt do
+      description("The udt info of balance.")
       resolve(&Resolvers.AccountUDT.udt/3)
     end
 
     field :account, :account do
+      description("The mapping account of balance.")
       resolve(&Resolvers.AccountUDT.account/3)
     end
 
@@ -399,19 +408,26 @@ defmodule GodwokenExplorer.Graphql.Types.AccountUDT do
   end
 
   object :account_current_bridged_udt do
-    field :id, :integer
-    field :value, :bigint
-    field :value_fetched_at, :datetime
-    field :layer1_block_number, :integer
-    field :block_number, :integer
-    field :address_hash, :hash_address
-    field :udt_script_hash, :hash_full
+    field :id, :integer, description: "ID of balance's table"
+    field :value, :bigint, description: "The value that's represents the balance."
+    field :value_fetched_at, :datetime, description: " The time that fetch udt balance."
+
+    field :layer1_block_number, :integer,
+      description: "The layer1 block's number that the transfer took place."
+
+    field :block_number, :integer,
+      description: " The layer2 block's number that the transfer took place."
+
+    field :address_hash, :hash_address, description: "The balance's owner."
+    field :udt_script_hash, :hash_full, description: "The layer2 udt account script hash."
 
     field :udt, :udt do
+      description("The udt info of balance.")
       resolve(&Resolvers.AccountUDT.udt/3)
     end
 
     field :account, :account do
+      description("The mapping account of balance.")
       resolve(&Resolvers.AccountUDT.account/3)
     end
 
