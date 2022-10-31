@@ -77,13 +77,13 @@ defmodule GodwokenExplorer.Graphql.Types.Sourcify do
   end
 
   object :sourcify_check_by_addresses do
-    field :address, :hash_address
-    field :status, :string
-    field :chain_ids, list_of(:string)
+    field :address, :hash_address, description: "The contract address."
+    field :status, :string, description: "The contract status of sourcify."
+    field :chain_ids, list_of(:string), description: "The contract chain ids of sourcify"
   end
 
   object :verify_and_update_from_sourcify do
-    field :address, :hash_address
+    field :address, :hash_address, description: "The contract address."
   end
 
   input_object :sourcify_check_by_addresses_input do
