@@ -393,42 +393,55 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
   end
 
   object :transaction do
-    field :hash, :hash_full
-    field :args, :chain_data
-    field :from_account_id, :integer
-    field :nonce, :integer
-    field :to_account_id, :integer
-    field :type, :transaction_type
-    field :block_number, :integer
-    field :block_hash, :hash_full
-    field :eth_hash, :hash_full
-    field(:index, :integer)
+    field :hash, :hash_full, description: "Godwoken transaction hash."
+    field :args, :chain_data, description: ""
+
+    field :from_account_id, :integer,
+      description: "The foreign key of account and which account invoke contract."
+
+    field :nonce, :integer, description: "From account's nonce."
+    field :to_account_id, :integer, description: "Contract account."
+
+    field :type, :transaction_type,
+      description: "Polyjuice means polyjuice tx;The other are godwoken tx."
+
+    field :block_number, :integer, description: "In Which block."
+    field :block_hash, :hash_full, description: "The block hash which in."
+    field :eth_hash, :hash_full, description: "Polyjuice transaction hash."
+    field :index, :integer, description: "Order of transaction in block."
 
     field :method_id, :chain_data do
+      description("the method id of transction")
       resolve(&Resolvers.Transaction.method_id/3)
     end
 
     field :method_name, :string do
+      description("the method name of transction")
       resolve(&Resolvers.Transaction.method_name/3)
     end
 
     field :polyjuice, :polyjuice do
+      description("the mapping polujuice info of transction")
       resolve(&Resolvers.Transaction.polyjuice/3)
     end
 
     field :polyjuice_creator, :polyjuice_creator do
+      description("the mapping polujuice creator of transction")
       resolve(&Resolvers.Transaction.polyjuice_creator/3)
     end
 
     field :from_account, :account do
+      description("the mapping account which involve the transaction")
       resolve(&Resolvers.Transaction.from_account/3)
     end
 
     field :to_account, :account do
+      description("the mapping contract account")
       resolve(&Resolvers.Transaction.to_account/3)
     end
 
     field :block, :block do
+      description("the mapping block of transaction")
       resolve(&Resolvers.Transaction.block/3)
     end
   end
