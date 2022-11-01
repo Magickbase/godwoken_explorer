@@ -235,3 +235,23 @@ config :godwoken_explorer, :sourcify,
   # default is godwoken testnet
   chain_id: System.get_env("SOURCIFY_CHAIN_ID") || "71401",
   repo_url: System.get_env("SOURCIFY_REPO_URL") || "https://repo.sourcify.dev/contracts"
+
+config :godwoken_explorer, GodwokenExplorer.ExchangeRates,
+  store: :ets,
+  enabled: System.get_env("DISABLE_EXCHANGE_RATES") != "true",
+  coinmarketcap_api_key: System.get_env("EXCHANGE_RATES_COINMARKETCAP_API_KEY"),
+  fetch_btc_value: System.get_env("EXCHANGE_RATES_FETCH_BTC_VALUE") == "true"
+
+exchange_rates_source =
+  cond do
+    System.get_env("EXCHANGE_RATES_SOURCE") == "coin_gecko" ->
+      GodwokenExplorer.ExchangeRates.Source.CoinGecko
+
+    System.get_env("EXCHANGE_RATES_SOURCE") == "coin_market_cap" ->
+      GodwokenExplorer.ExchangeRates.Source.CoinMarketCap
+
+    true ->
+      GodwokenExplorer.ExchangeRates.Source.CoinMarketCap
+  end
+
+config :godwoken_explorer, GodwokenExplorer.ExchangeRates.Source, source: exchange_rates_source

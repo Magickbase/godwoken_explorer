@@ -19,6 +19,9 @@ defmodule GodwokenExplorer.Application do
       # Start the Endpoint (http/https)
       GodwokenExplorerWeb.Endpoint,
       {Registry, keys: :duplicate, name: Registry.ChainEvents, id: Registry.ChainEvents},
+      Supervisor.child_spec({Task.Supervisor, name: GodwokenExplorer.MarketTaskSupervisor},
+        id: Explorer.MarketTaskSupervisor
+      ),
       {RealtimeEventHandler, name: RealtimeEventHandler},
       GodwokenExplorer.Chain.Events.Listener,
       GodwokenIndexer.Server,
@@ -31,6 +34,7 @@ defmodule GodwokenExplorer.Application do
       GodwokenExplorer.Chain.Cache.Blocks,
       GodwokenExplorer.Chain.Cache.Transactions,
       GodwokenExplorer.Chain.Cache.PolyVersion,
+      GodwokenExplorer.Chain.Cache.TokenExchangeRate,
       GodwokenExplorer.ETS.SmartContracts,
       GodwokenExplorer.SmartContract.SolcDownloader,
       GodwokenExplorer.SmartContract.VyperDownloader,
