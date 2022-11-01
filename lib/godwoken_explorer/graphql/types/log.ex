@@ -57,16 +57,16 @@ defmodule GodwokenExplorer.Graphql.Types.Log do
   end
 
   object :log do
-    field :transaction_hash, :hash_full
-    field :data, :string
-    field :first_topic, :string
-    field :second_topic, :string
-    field :third_topic, :string
-    field :fourth_topic, :string
-    field :index, :integer
-    field :block_number, :integer
-    field :address_hash, :hash_address
-    field :block_hash, :hash_full
+    field :transaction_hash, :hash_full, description: "Layer2 transaction."
+    field :data, :string, description: "Log data."
+    field :first_topic, :string, description: "Log first topic."
+    field :second_topic, :string, description: "Log second topic."
+    field :third_topic, :string, description: "Log third topic."
+    field :fourth_topic, :string, description: "Log fourth topic."
+    field :index, :integer, description: "Log index."
+    field :block_number, :integer, description: "Layer2 block number."
+    field :address_hash, :hash_address, description: "Contract address."
+    field :block_hash, :hash_full, description: " Layer2 block hash."
   end
 
   input_object :log_input do

@@ -2,21 +2,29 @@ defmodule GodwokenExplorer.Graphql.Types.Common do
   use Absinthe.Schema.Notation
 
   object :ecto_datetime do
-    field :inserted_at, :datetime
-    field :updated_at, :datetime
+    field :inserted_at, :datetime, description: "Current record inserted time."
+    field :updated_at, :datetime, description: "Current record last updated time"
   end
 
   object :ecto_naive_datetime do
-    field :inserted_at, :naive_datetime
-    field :updated_at, :naive_datetime
+    field :inserted_at, :naive_datetime, description: "Current record inserted time."
+    field :updated_at, :naive_datetime, description: "Current record last updated time"
   end
 
   object :paginate_metadata do
-    field :after, :string
-    field :before, :string
-    field :limit, :integer
-    field :total_count, :integer
-    field :total_count_cap_exceeded, :boolean
+    field :after, :string,
+      description: "An opaque cursor representing the last row of the current page."
+
+    field :before, :string,
+      description: "An opaque cursor representing the first row of the current page."
+
+    field :limit, :integer,
+      description: "The maximum number of entries that can be contained in this page."
+
+    field :total_count, :integer, description: "The total number of entries matching the query."
+
+    field :total_count_cap_exceeded, :boolean,
+      description: "A boolean indicating whether the :total_count_limit was exceeded."
   end
 
   input_object :paginate_input do

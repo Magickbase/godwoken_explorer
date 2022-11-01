@@ -18,10 +18,9 @@ defmodule GodwokenIndexer.Worker.ERC1155UpdaterScheduler do
   end
 
   def do_perform() do
-    shift_seconds = 2 * 60
-    limit_value = 50
+    shift_seconds = 24 * 60 * 60
 
-    unfetched_udts = get_unfetched_udts(shift_seconds, limit_value)
+    unfetched_udts = get_unfetched_udts(shift_seconds) |> Repo.all() |> process_struct()
     fetch_and_update(unfetched_udts)
   end
 
@@ -52,28 +51,42 @@ defmodule GodwokenIndexer.Worker.ERC1155UpdaterScheduler do
         end
       end)
 
-    Import.insert_changes_list(
-      need_update_list |> Enum.map(fn udt -> Map.delete(udt, :contract_address_hash) end),
-      for: UDT,
-      timestamps: import_timestamps(),
-      on_conflict: {:replace, [:name, :symbol, :updated_at, :is_fetched]},
-      conflict_target: :id
-    )
+    need_update_fetched_list =
+      need_update_list
+      |> Enum.filter(fn nu -> not is_nil(nu.name) and not is_nil(nu.symbol) end)
+
+    _need_retries_list =
+      need_update_list
+      |> Enum.filter(fn nu -> is_nil(nu.name) or is_nil(nu.symbol) end)
+      |> Enum.map(fn nu -> nu.contract_address_hash |> to_string() end)
+
+    return =
+      Import.insert_changes_list(
+        need_update_fetched_list
+        |> Enum.map(fn udt -> Map.delete(udt, :contract_address_hash) end),
+        for: UDT,
+        timestamps: import_timestamps(),
+        on_conflict: {:replace, [:name, :symbol, :updated_at, :is_fetched]},
+        conflict_target: :id
+      )
+
+    return
   end
 
-  def get_unfetched_udts(shift_seconds, limit_value)
+  def get_unfetched_udts(shift_seconds)
       when shift_seconds > 0 and is_integer(shift_seconds) do
     datetime = Timex.now() |> Timex.shift(seconds: -shift_seconds)
 
     from(u in UDT,
       where:
         u.type == :native and u.eth_type == :erc1155 and
-          (is_nil(u.is_fetched) or u.is_fetched == false) and
-          u.updated_at < ^datetime,
-      order_by: [desc: u.id]
+          u.updated_at > ^datetime,
+      order_by: [asc: u.updated_at]
     )
-    |> process_limit(limit_value)
-    |> Repo.all()
+  end
+
+  def process_struct(struct_list) do
+    struct_list
     |> Enum.map(fn chunk_unfetched_udt ->
       chunk_unfetched_udt
       |> Map.from_struct()

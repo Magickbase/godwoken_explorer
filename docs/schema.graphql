@@ -4,23 +4,49 @@ schema {
 }
 
 type Account {
-  """erc20 udts"""
+  """The mapping bridged erc20 balance info of account."""
   account_current_bridged_udts(input: AccountChildUdtsInput = {page: 1, page_size: 20, sort_type: DESC}): [AccountCurrentBridgedUdt]
 
-  """erc20 udts"""
+  """The mapping erc20 balance info of account."""
   account_current_udts(input: AccountChildUdtsInput = {page: 1, page_size: 20, sort_type: DESC}): [AccountCurrentUdt]
+
+  """The bridge udt object of account if account is udt account."""
   bridged_udt: Udt
+
+  """The contract's bytecode."""
   contract_code: String
+
+  """The polyjuice account's address"""
   eth_address: HashFull
+
+  """ID of account."""
   id: Int
+
+  """The account invokes contract's times."""
   nonce: Int
+
+  """This account's register's address."""
   registry_address: String
+
+  """Godwoken chain script."""
   script: Json
+
+  """Godwoken chain script hash."""
   script_hash: HashAddress
   smart_contract: SmartContract
+
+  """The account cached token transfer count."""
   token_transfer_count: Int
+
+  """The account cached transction count."""
   transaction_count: Int
+
+  """Account type."""
   type: AccountType
+
+  """
+  The mapping udt or bridge udt object of account if account is udt account or bridge udt account.
+  """
   udt: Udt
 }
 
@@ -87,16 +113,37 @@ input AccountCkbsInput {
 }
 
 type AccountCurrentBridgedUdt {
+  """The mapping account of balance."""
   account: Account
+
+  """The balance's owner."""
   address_hash: HashAddress
+
+  """The layer2 block's number that the transfer took place."""
   block_number: Int
+
+  """ID of balance's table"""
   id: Int
+
+  """Current record inserted time."""
   inserted_at: DateTime
+
+  """The layer1 block's number that the transfer took place."""
   layer1_block_number: Int
+
+  """The udt info of balance."""
   udt: Udt
+
+  """The layer2 udt account script hash."""
   udt_script_hash: HashFull
+
+  """Current record last updated time"""
   updated_at: DateTime
+
+  """The value that's represents the balance."""
   value: Bigint
+
+  """The time that fetch udt balance."""
   value_fetched_at: DateTime
 }
 
@@ -134,15 +181,34 @@ input AccountCurrentBridgedUdtsInput {
 }
 
 type AccountCurrentUdt {
+  """The mapping account of balance."""
   account: Account
+
+  """The balance's owner."""
   address_hash: HashAddress
+
+  """The block's number that the transfer took place."""
   block_number: Int
+
+  """ID of balance's table"""
   id: Int
+
+  """Current record inserted time."""
   inserted_at: DateTime
+
+  """The contract address hash foreign key."""
   token_contract_address_hash: HashAddress
+
+  """The udt info of balance."""
   udt: Udt
+
+  """Current record last updated time"""
   updated_at: DateTime
+
+  """The value that's represents the balance."""
   value: Bigint
+
+  """The time that fetch udt balance."""
   value_fetched_at: DateTime
 }
 
@@ -209,12 +275,25 @@ enum AccountType {
 }
 
 type AccountUdt {
+  """The mapping account of balance."""
   account: Account
+
+  """The balance's owner address."""
   address_hash: HashAddress
+
+  """The contract address hash foreign key."""
   token_contract_address_hash: HashAddress
+
+  """The udt info of balance."""
   udt: Udt
+
+  """The layer2 udt account script hash."""
   udt_script_hash: HashFull
+
+  """The token's layer2 native token id"""
   uniq_id: Int
+
+  """The value that's represents the balance."""
   value: Bigint
 }
 
@@ -282,27 +361,56 @@ Some numeric strings are:
 scalar Bigint
 
 type Block {
+  """The mapping account info which produced current block."""
   account: Account
-  difficulty: Decimal
-  extra_data: String
+
+  """Gas limit of this block."""
   gas_limit: Decimal
+
+  """Actual used gas."""
   gas_used: Decimal
+
+  """The current block hash."""
   hash: HashFull
+
+  """Finalized at which layer1 block number."""
   layer1_block_number: Int
+
+  """Finalized at which layer1 transaction hash."""
   layer1_tx_hash: HashFull
+
+  """
+  the [Bloom filter](https://en.wikipedia.org/wiki/Bloom_filter) for the logs of the block.
+  """
   logs_bloom: String
-  nonce: String
+
+  """The block number, start with 0."""
   number: Int
+
+  """The parent block hash."""
   parent_hash: HashFull
+
+  """The block produced by which account."""
   producer_address: HashAddress
+
+  """The block producer registers by which account id."""
   registry_id: Int
-  sha3_uncles: String
+
+  """The size of the block in bytes."""
   size: Int
-  state_root: String
+
+  """
+  Committed means block submit to layer1(CKB) and can be challenged;Finalized means block can't be challenged.
+  """
   status: BlockStatus
+
+  """When the block was collated."""
   timestamp: DateTime
-  total_difficulty: Decimal
+
+  """The block contains transaction count."""
   transaction_count: Int
+
+  """The list of transactions in current block"""
   transactions(input: PageAndSizeInput = {page: 1, page_size: 5}): [Transaction]
 }
 
@@ -412,31 +520,74 @@ input Erc1155HoldersInput {
 }
 
 type Erc1155Inventory {
+  """The erc1155 contract address."""
   contract_address_hash: HashAddress
+
+  """Count of erc1155 with the token id."""
   counts: Decimal
+
+  """The erc1155 token id."""
   token_id: Decimal
+
+  """The mapping token instance of erc1155."""
+  token_instance: TokenInstance
 }
 
 type Erc1155Udt {
+  """The mapping account of udt."""
   account: Account
+
+  """For type is native, it have contract address hash."""
   contract_address_hash: HashAddress
+
+  """UDT's description."""
   description: String
+
+  """EVM token type."""
   eth_type: EthType
+
+  """Count holders of udt."""
   holders_count: Int
+
+  """UDT icon url."""
   icon: String
+
+  """UDT ID is same with account id."""
   id: Int
+
+  """Count minted of erc1155 udt."""
   minted_count: Decimal
+
+  """[UAN](https://github.com/nervosnetwork/rfcs/pull/335)."""
   name: String
+
+  """UDT's official site."""
   official_site: String
+
+  """[UAN](https://github.com/nervosnetwork/rfcs/pull/335)."""
   symbol: String
+
+  """Count token type of udt."""
   token_type_count: Int
 }
 
 type Erc1155UserToken {
+  """Owner of token."""
   address_hash: HashAddress
+
+  """Count value of token id"""
   counts: Decimal
+
+  """Contract of token."""
   token_contract_address_hash: HashAddress
+
+  """Token id of erc1155/erc721."""
   token_id: Decimal
+
+  """The token instance info of token id"""
+  token_instance: TokenInstance
+
+  """Token type of erc1155/erc721."""
   token_type: EthType
   udt: Erc7211155CommonUdt
   value: Decimal
@@ -481,22 +632,48 @@ input Erc20TokenTransfersInput {
 }
 
 type Erc7211155CommonUdt {
+  """The mapping account of udt."""
   account: Account
+
+  """For type is native, it have contract address hash."""
   contract_address_hash: HashAddress
+
+  """UDT's description."""
   description: String
+
+  """EVM token type."""
   eth_type: EthType
+
+  """UDT icon url."""
   icon: String
+
+  """UDT ID is same with account id."""
   id: Int
+
+  """[UAN](https://github.com/nervosnetwork/rfcs/pull/335)."""
   name: String
+
+  """UDT's official site."""
   official_site: String
+
+  """[UAN](https://github.com/nervosnetwork/rfcs/pull/335)."""
   symbol: String
 }
 
 type Erc721Erc1155HolderItem {
+  """The mapping owner account."""
   account: Account
+
+  """Owner of token."""
   address_hash: HashAddress
+
+  """The quantity of holder item."""
   quantity: Decimal
+
+  """The rank number of holder list."""
   rank: Int
+
+  """Contract of token."""
   token_contract_address_hash: HashAddress
 }
 
@@ -579,24 +756,57 @@ input Erc721HoldersInput {
 }
 
 type Erc721Udt {
+  """The mapping account of udt."""
   account: Account
+
+  """For type is native, it have contract address hash."""
   contract_address_hash: HashAddress
+
+  """UDT's description."""
   description: String
+
+  """EVM token type."""
   eth_type: EthType
+
+  """Count holders of udt."""
   holders_count: Int
+
+  """UDT icon url."""
   icon: String
+
+  """UDT ID is same with account id."""
   id: Int
+
+  """Count minted of erc721 udt."""
   minted_count: Decimal
+
+  """[UAN](https://github.com/nervosnetwork/rfcs/pull/335)."""
   name: String
+
+  """UDT's official site."""
   official_site: String
+
+  """[UAN](https://github.com/nervosnetwork/rfcs/pull/335)."""
   symbol: String
 }
 
 type Erc721UserToken {
+  """Owner of token."""
   address_hash: HashAddress
+
+  """Count value of token id"""
   counts: Decimal
+
+  """Contract of token."""
   token_contract_address_hash: HashAddress
+
+  """Token id of erc1155/erc721."""
   token_id: Decimal
+
+  """The token instance info of token id"""
+  token_instance: TokenInstance
+
+  """Token type of erc1155/erc721."""
   token_type: EthType
   udt: Erc7211155CommonUdt
   value: Decimal
@@ -627,15 +837,34 @@ human-readable json string.
 scalar Json
 
 type Log {
+  """Contract address."""
   address_hash: HashAddress
+
+  """Layer2 block hash."""
   block_hash: HashFull
+
+  """Layer2 block number."""
   block_number: Int
+
+  """Log data."""
   data: String
+
+  """Log first topic."""
   first_topic: String
+
+  """Log fourth topic."""
   fourth_topic: String
+
+  """Log index."""
   index: Int
+
+  """Log second topic."""
   second_topic: String
+
+  """Log third topic."""
   third_topic: String
+
+  """Layer2 transaction."""
   transaction_hash: HashFull
 }
 
@@ -731,10 +960,19 @@ type PaginateErc721Udts {
 }
 
 type PaginateMetadata {
+  """An opaque cursor representing the last row of the current page."""
   after: String
+
+  """An opaque cursor representing the first row of the current page."""
   before: String
+
+  """The maximum number of entries that can be contained in this page."""
   limit: Int
+
+  """The total number of entries matching the query."""
   total_count: Int
+
+  """A boolean indicating whether the :total_count_limit was exceeded."""
   total_count_cap_exceeded: Boolean
 }
 
@@ -774,29 +1012,77 @@ type PaginateUserErc721Assets {
 }
 
 type Polyjuice {
+  """This transaction deployed contract address."""
   created_contract_address_hash: HashAddress
+
+  """Gas limited value."""
   gas_limit: Bigint
+
+  """How much the sender is willing to pay for `gas`."""
   gas_price: Bigint
+
+  """
+  The gas used for just `transaction`.  `nil` when transaction is pending or has
+  only been collated into one of the `uncles` in one of the `forks`.
+  """
   gas_used: Bigint
+
+  """ID of polyjuice table."""
   id: Int
+
+  """Data sent along with the transaction."""
   input: ChainData
+
+  """Data size."""
   input_size: Int
+
+  """This transaction deployed contract."""
   is_create: Boolean
+
+  """
+  If this transaction is native transfer, to_address is a contract, this column is actual receiver.
+  """
   native_transfer_address_hash: HashAddress
+
+  """Status of deployed."""
   status: PolyjuiceStatus
+
+  """
+  Index of this transaction in `block`.  `nil` when transaction is pending or
+  has only been collated into one of the `uncles` in one of the `forks`.
+  """
   transaction_index: Int
+
+  """The transaction foreign key."""
   tx_hash: HashFull
+
+  """pCKB transferred from `from_address` to `to_address`."""
   value: Bigint
 }
 
 type PolyjuiceCreator {
+  """Layer2 account code_hash."""
   code_hash: String
+
+  """The mapping account which created."""
   created_account: Account
+
+  """The tranasaction used fee."""
   fee_amount: Bigint
+
+  """The transaction registry by which account."""
   fee_udt_id: Int
+
+  """Layer2 account hash_type."""
   hash_type: String
+
+  """ID of polyjuice_creator table."""
   id: Int
+
+  """Layer2 account script_args."""
   script_args: String
+
+  """The transaction foreign key."""
   tx_hash: HashFull
 }
 
@@ -3693,16 +3979,40 @@ type RootQueryType {
 }
 
 type SmartContract {
+  """Contract abi."""
   abi: [Json]
+
+  """The mapping account of smart contract."""
   account: Account
+
+  """The account foreign key."""
   account_id: String
+
+  """The ckb-balance of this contract."""
+  ckb_balance: Decimal
+
+  """Solidity or other."""
   compiler_file_format: String
+
+  """Contract compiler version."""
   compiler_version: String
+
+  """Contract constructor arguments."""
   constructor_arguments: String
+
+  """Contract code."""
   contract_source_code: String
+
+  """Contract deployment at which transaction."""
   deployment_tx_hash: HashFull
+
+  """ID of smart_contract table"""
   id: Int
+
+  """Contract name."""
   name: String
+
+  """Some info."""
   other_info: String
 }
 
@@ -3742,8 +4052,13 @@ enum SortType {
 }
 
 type SourcifyCheckByAddresses {
+  """The contract address."""
   address: HashAddress
+
+  """The contract chain ids of sourcify"""
   chain_ids: [String]
+
+  """The contract status of sourcify."""
   status: String
 }
 
@@ -3757,16 +4072,37 @@ enum Status {
 }
 
 type TokenApproval {
+  """Approve operation or Cancel approval."""
   approved: Boolean
+
+  """The mapping block object of token_approval"""
   block: Block
+
+  """Layer2 block."""
   block_hash: HashFull
+
+  """Layer2 block number"""
   block_number: Int
+
+  """ERC721 token id."""
   data: Decimal
+
+  """User approve token to which address."""
   spender_address_hash: String
+
+  """Which token contract."""
   token_contract_address_hash: HashAddress
+
+  """Token owner."""
   token_owner_address_hash: HashAddress
+
+  """Layer2 transaction."""
   transaction_hash: HashFull
+
+  """Approve or approve_all."""
   type: ApprovalType
+
+  """The mapping udt object of token_approval"""
   udt: Udt
 }
 
@@ -3797,23 +4133,70 @@ input TokenApprovalsSorterInput {
   sort_value: TokenApprovalsSorter
 }
 
-type TokenTransfer {
-  amount: Decimal
-  amounts: [Decimal]
-  block: Block
-  block_hash: HashFull
-  block_number: Int
-  from_account: Account
-  from_address: HashAddress
-  log_index: Int
-  polyjuice: Polyjuice
-  to_account: Account
-  to_address: HashAddress
+type TokenInstance {
+  """Error of fetching token instance."""
+  error: String
+
+  """Token instance metadata."""
+  metadata: Json
+
+  """Address hash foreign key."""
   token_contract_address_hash: HashAddress
+
+  """ID of the token."""
   token_id: Decimal
+}
+
+type TokenTransfer {
+  """The erc721/erc1155's token amount."""
+  amount: Decimal
+
+  """Token amounts of ERC1155."""
+  amounts: [Decimal]
+
+  """The mapping block info."""
+  block: Block
+
+  """Layer2 block."""
+  block_hash: HashFull
+
+  """Layer2 block number."""
+  block_number: Int
+
+  """The mapping sender's account info."""
+  from_account: Account
+
+  """Transfer sender."""
+  from_address: HashAddress
+
+  """Transaction's log index."""
+  log_index: Int
+
+  """The mapping polyjuice info."""
+  polyjuice: Polyjuice
+
+  """The mapping receiver's account info."""
+  to_account: Account
+
+  """Transfer receiver."""
+  to_address: HashAddress
+
+  """Which token contract."""
+  token_contract_address_hash: HashAddress
+
+  """The erc721/erc1155's token id."""
+  token_id: Decimal
+
+  """Token ids of ERC1155."""
   token_ids: [Decimal]
+
+  """The mapping transaction info."""
   transaction: Transaction
+
+  """Layer2 transaction."""
   transaction_hash: HashFull
+
+  """The mapping udt info."""
   udt: Udt
 }
 
@@ -3836,21 +4219,53 @@ enum TokenType {
 
 type Transaction {
   args: ChainData
+
+  """the mapping block of transaction"""
   block: Block
+
+  """The block hash which in."""
   block_hash: HashFull
+
+  """In Which block."""
   block_number: Int
+
+  """Polyjuice transaction hash."""
   eth_hash: HashFull
+
+  """the mapping account which involve the transaction"""
   from_account: Account
+
+  """The foreign key of account and which account invoke contract."""
   from_account_id: Int
+
+  """Godwoken transaction hash."""
   hash: HashFull
+
+  """Order of transaction in block."""
   index: Int
+
+  """the method id of transction"""
   method_id: ChainData
+
+  """the method name of transction"""
   method_name: String
+
+  """From account's nonce."""
   nonce: Int
+
+  """the mapping polujuice info of transction"""
   polyjuice: Polyjuice
+
+  """the mapping polujuice creator of transction"""
   polyjuice_creator: PolyjuiceCreator
+
+  """the mapping contract account"""
   to_account: Account
+
+  """Contract account."""
   to_account_id: Int
+
+  """Polyjuice means polyjuice tx;The other are godwoken tx."""
   type: TransactionType
 }
 
@@ -3883,6 +4298,8 @@ input TransactionsInput {
   Limits the number of records returned per page. Note that this number will be capped by maximum_limit=100. Defaults to 20.
   """
   limit: Int = 20
+  method_id: ChainData
+  method_name: String
   sorter: [TransactionsSorterInput] = [{sort_type: DESC, sort_value: BLOCK_NUMBER}, {sort_type: DESC, sort_value: INDEX}, {sort_type: ASC, sort_value: HASH}]
 
   """argument: the start of block number(inclusive) for search query"""
@@ -3910,24 +4327,61 @@ enum TransactionType {
 }
 
 type Udt {
+  """The mapping account of udt."""
   account: Account
+
+  """If udt type is bridge, it must have a native proxy account on layer2."""
   bridge_account_id: Int
+
+  """For type is native, it have contract address hash."""
   contract_address_hash: HashAddress
+
+  """Set in contract."""
   decimal: Int
+
+  """UDT's description."""
   description: String
+
+  """EVM token type."""
   eth_type: EthType
+
+  """Count holders of udt."""
   holders_count: Int
+
+  """UDT icon url."""
   icon: String
+
+  """UDT ID is same with account id."""
   id: Int
+
+  """Count minted of udt."""
   minted_count: Decimal
+
+  """[UAN](https://github.com/nervosnetwork/rfcs/pull/335)."""
   name: String
+
+  """UDT's official site."""
   official_site: String
+
+  """UDT's market price."""
   price: Decimal
+
+  """Layer1 script hash."""
   script_hash: HashFull
+
+  """Total supply."""
   supply: Decimal
+
+  """[UAN](https://github.com/nervosnetwork/rfcs/pull/335)."""
   symbol: String
+
+  """Bridge means from layer1;Native means layer2 contract."""
   type: UdtType
+
+  """Layer1 udt's type script."""
   type_script: Json
+
+  """UDT's price * supply."""
   value: Decimal
 }
 
