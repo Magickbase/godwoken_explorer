@@ -377,47 +377,55 @@ defmodule GodwokenExplorer.Graphql.Types.TokenTransfer do
   end
 
   object :token_transfer do
-    field :transaction_hash, :hash_full
-    field :amount, :decimal
-    field :block_number, :integer
-    field :block_hash, :hash_full
-    field :log_index, :integer
-    field :token_id, :decimal
+    field :transaction_hash, :hash_full, description: "Layer2 transaction."
+    field :amount, :decimal, description: "The erc721/erc1155's token amount."
+    field :block_number, :integer, description: " Layer2 block number."
+    field :block_hash, :hash_full, description: "Layer2 block."
+    field :log_index, :integer, description: "Transaction's log index."
+    field :token_id, :decimal, description: "The erc721/erc1155's token id."
 
-    field :amounts, list_of(:decimal)
-    field :token_ids, list_of(:decimal)
+    field :amounts, list_of(:decimal), description: "Token amounts of ERC1155."
+    field :token_ids, list_of(:decimal), description: "Token ids of ERC1155."
 
     field :from_address, :hash_address do
+      description("Transfer sender.")
       resolve(&Resolvers.TokenTransfer.from_address/3)
     end
 
     field :to_address, :hash_address do
+      description("Transfer receiver.")
       resolve(&Resolvers.TokenTransfer.to_address/3)
     end
 
-    field :token_contract_address_hash, :hash_address
+    field :token_contract_address_hash, :hash_address, description: "Which token contract."
 
     field :polyjuice, :polyjuice do
+      description("The mapping polyjuice info.")
       resolve(&Resolvers.TokenTransfer.polyjuice/3)
     end
 
     field :from_account, :account do
+      description("The mapping sender's account info.")
       resolve(&Resolvers.TokenTransfer.from_account/3)
     end
 
     field :to_account, :account do
+      description("The mapping receiver's account info.")
       resolve(&Resolvers.TokenTransfer.to_account/3)
     end
 
     field :udt, :udt do
+      description("The mapping udt info.")
       resolve(&Resolvers.TokenTransfer.udt/3)
     end
 
     field :block, :block do
+      description("The mapping block info.")
       resolve(&Resolvers.TokenTransfer.block/3)
     end
 
     field :transaction, :transaction do
+      description("The mapping transaction info.")
       resolve(&Resolvers.TokenTransfer.transaction/3)
     end
   end

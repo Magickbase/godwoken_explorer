@@ -100,32 +100,36 @@ defmodule GodwokenExplorer.Graphql.Types.Block do
   end
 
   object :block do
-    field :hash, :hash_full
-    field :number, :integer
-    field :parent_hash, :hash_full
-    field :timestamp, :datetime
-    field :status, :block_status
-    field :transaction_count, :integer
-    field :layer1_tx_hash, :hash_full
-    field :layer1_block_number, :integer
-    field :size, :integer
-    field :gas_limit, :decimal
-    field :gas_used, :decimal
-    field :logs_bloom, :string
-    field :difficulty, :decimal
-    field :total_difficulty, :decimal
-    field :nonce, :string
-    field :sha3_uncles, :string
-    field :state_root, :string
-    field :extra_data, :string
-    field :registry_id, :integer
-    field :producer_address, :hash_address
+    field :hash, :hash_full, description: "The current block hash."
+    field :number, :integer, description: "The block number, start with 0."
+    field :parent_hash, :hash_full, description: "The parent block hash."
+    field :timestamp, :datetime, description: "When the block was collated."
+
+    field :status, :block_status,
+      description:
+        "Committed means block submit to layer1(CKB) and can be challenged;Finalized means block can't be challenged."
+
+    field :transaction_count, :integer, description: "The block contains transaction count."
+    field :layer1_tx_hash, :hash_full, description: "Finalized at which layer1 transaction hash."
+    field :layer1_block_number, :integer, description: "Finalized at which layer1 block number."
+    field :size, :integer, description: "The size of the block in bytes."
+    field :gas_limit, :decimal, description: "Gas limit of this block."
+    field :gas_used, :decimal, description: "Actual used gas."
+
+    field :logs_bloom, :string,
+      description:
+        "the [Bloom filter](https://en.wikipedia.org/wiki/Bloom_filter) for the logs of the block."
+
+    field :registry_id, :integer, description: "The block producer registers by which account id."
+    field :producer_address, :hash_address, description: "The block produced by which account."
 
     field :account, :account do
+      description("The mapping account info which produced current block.")
       resolve(&Resolvers.Block.account/3)
     end
 
     field :transactions, list_of(:transaction) do
+      description("The list of transactions in current block")
       arg(:input, :page_and_size_input, default_value: %{page: 1, page_size: 5})
       middleware(MTermRange, MTermRange.page_and_size_default_config())
       resolve(&Resolvers.Block.transactions/3)
