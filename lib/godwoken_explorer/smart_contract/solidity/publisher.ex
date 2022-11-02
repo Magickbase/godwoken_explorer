@@ -93,7 +93,7 @@ defmodule GodwokenExplorer.SmartContract.Solidity.Publisher do
     Map.put(attributes(address_hash, params, abi), :file_path, file_path)
   end
 
-  defp attributes(address_hash, params, abi \\ %{}) do
+  defp attributes(address_hash, params, abi) do
     constructor_arguments = params["constructor_arguments"]
 
     clean_constructor_arguments =

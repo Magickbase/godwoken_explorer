@@ -7,7 +7,7 @@ defmodule GodwokenRPC.Transaction do
 
   require Logger
 
-  @eth_addr_reg_id Application.get_env(:godwoken_explorer, :eth_addr_reg_id)
+  @eth_addr_reg_id Application.compile_env(:godwoken_explorer, :eth_addr_reg_id)
 
   def elixir_to_params(
         {%{

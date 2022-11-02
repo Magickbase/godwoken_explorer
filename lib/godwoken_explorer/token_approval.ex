@@ -39,13 +39,13 @@ defmodule GodwokenExplorer.TokenApproval do
     field :block_hash, Hash.Full
     field :block_number, :integer
     field :transaction_hash, Hash.Full
-    field(:token_owner_address_hash, Hash.Address)
-    field(:spender_address_hash, :binary)
-    field(:token_contract_address_hash, Hash.Address)
-    field(:data, :decimal)
-    field(:approved, :boolean)
-    field(:type, Ecto.Enum, values: [:approval, :approval_all])
-    field(:token_type, Ecto.Enum, values: [:erc20, :erc721])
+    field :token_owner_address_hash, Hash.Address
+    field :spender_address_hash, :binary
+    field :token_contract_address_hash, Hash.Address
+    field :data, :decimal
+    field :approved, :boolean
+    field :type, Ecto.Enum, values: [:approval, :approval_all]
+    field :token_type, Ecto.Enum, values: [:erc20, :erc721]
 
     timestamps()
   end

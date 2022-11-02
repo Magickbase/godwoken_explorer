@@ -1,13 +1,14 @@
 defmodule GodwokenExplorer.ReleaseTasks do
- @start_apps [
+  @start_apps [
     :crypto,
     :ssl,
     :postgrex,
     :ecto,
-    :ecto_sql # If using Ecto 3.0 or higher
+    # If using Ecto 3.0 or higher
+    :ecto_sql
   ]
 
-  @repos Application.get_env(:godwoken_explorer, :ecto_repos, [])
+  @repos Application.compile_env(:godwoken_explorer, :ecto_repos, [])
 
   def seed(_argv) do
     start_services()
