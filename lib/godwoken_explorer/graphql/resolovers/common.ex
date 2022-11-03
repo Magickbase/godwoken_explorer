@@ -107,7 +107,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Common do
   def maybe_first_page(first_result, query, input, params) do
     limit = input[:limit]
 
-    if first_result.metadata.total_count < limit do
+    if length(first_result.entries) < limit do
       input = Map.delete(input, :before)
 
       paginate_query(
