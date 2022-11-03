@@ -132,7 +132,7 @@ defmodule GodwokenExplorer.MixProject do
       {:ex_machina, "~> 2.7.0", only: [:test]},
       {:excoveralls, "~> 0.14.4", only: [:test]},
       {:mock, "~> 0.3.7", only: [:test], runtime: false},
-      {:mox, "~> 1.0.1", only: [:test]},
+      {:hammox, "~> 0.7", only: :test},
       {:ex_json_schema, "~> 0.6.2"},
 
       # graphql

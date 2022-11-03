@@ -19,6 +19,7 @@ defmodule GodwokenExplorer.Account do
     ]
 
   require Logger
+  require IEx
   alias GodwokenRPC
   alias GodwokenExplorer.Chain.Events.Publisher
   alias GodwokenExplorer.Counters.{AddressTokenTransfersCounter, AddressTransactionsCounter}
@@ -439,7 +440,7 @@ defmodule GodwokenExplorer.Account do
         }
 
         script_hash = script_to_hash(account_script)
-        {:ok, account_id} = GodwokenRPC.fetch_account_id(script_hash)
+        {:ok, account_id} = rpc().fetch_account_id(script_hash)
         account = Account.manual_create_account!(account_id)
         {:ok, account}
     end
@@ -635,10 +636,12 @@ defmodule GodwokenExplorer.Account do
   end
 
   def batch_import_accounts_with_ids(ids) do
-    params = ids |> Enum.map(&%{account_id: &1})
-    {:ok, %{errors: [], params_list: script_hash_list}} = GodwokenRPC.fetch_script_hashes(params)
-    {:ok, %{errors: [], params_list: account_list}} = GodwokenRPC.fetch_scripts(script_hash_list)
-    import_accounts(account_list)
+    if ids != [] do
+      params = ids |> Enum.map(&%{account_id: &1})
+      {:ok, %{errors: [], params_list: script_hash_list}} = rpc().fetch_script_hashes(params)
+      {:ok, %{errors: [], params_list: account_list}} = rpc().fetch_scripts(script_hash_list)
+      import_accounts(account_list)
+    end
   end
 
   defp import_accounts(account_list) do
@@ -669,9 +672,9 @@ defmodule GodwokenExplorer.Account do
   def manual_create_account!(id) do
     with {:ok, script_hash}
          when script_hash != "0x0000000000000000000000000000000000000000000000000000000000000000" <-
-           GodwokenRPC.fetch_script_hash(%{account_id: id}) do
-      nonce = GodwokenRPC.fetch_nonce(id)
-      {:ok, script} = GodwokenRPC.fetch_script(script_hash)
+           rpc().fetch_script_hash(%{account_id: id}) do
+      nonce = rpc().fetch_nonce(id)
+      {:ok, script} = rpc().fetch_script(script_hash)
       type = switch_account_type(script["code_hash"], script["args"])
 
       eth_address = script_to_eth_adress(type, script["args"])
@@ -766,5 +769,9 @@ defmodule GodwokenExplorer.Account do
     Task.async(fn ->
       AddressTransactionsCounter.fetch(account)
     end)
+  end
+
+  defp rpc() do
+    Application.get_env(:godwoken_explorer, :rpc_module, GodwokenRPC)
   end
 end
