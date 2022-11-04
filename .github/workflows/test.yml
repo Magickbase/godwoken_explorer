@@ -52,7 +52,7 @@ jobs:
     - name: Setup | Rust
       uses: ATiltedTree/setup-rust@v1
       with:
-        rust-version: stable
+        rust-version: 1.64.0
 
     - name: Get deps cache
       uses: actions/cache@v3
