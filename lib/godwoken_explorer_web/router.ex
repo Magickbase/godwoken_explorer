@@ -23,7 +23,7 @@ defmodule GodwokenExplorerWeb.Router do
   scope "/graphql" do
     pipe_through([:graphql_api])
 
-    if Application.get_env(:godwoken_explorer, :graphiql) do
+    if Application.compile_env(:godwoken_explorer, :graphiql) do
       get("/", Absinthe.Plug.GraphiQL,
         schema: GodwokenExplorer.Graphql.Schemas.Graphql,
         interface: :playground,

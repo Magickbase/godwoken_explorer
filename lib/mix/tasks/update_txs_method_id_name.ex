@@ -3,19 +3,12 @@ defmodule Mix.Tasks.UpdateTxsMethodIdName do
 
   @shortdoc "running with limit/start/walk args `mix update_txs_method_id_name 350000 0 500` to updating udt balance and current udt balance with token_id/token_type"
 
-  alias GodwokenExplorer.{Transaction, Polyjuice, Account}
   alias GodwokenExplorer.Repo
-  alias GodwokenExplorer.Chain.{Import}
 
   alias GodwokenExplorer.SmartContract
   alias GodwokenIndexer.Worker.CheckUpdateTransactionMethodIdName, as: CUTMethodIdName
 
   import Ecto.Query
-
-  import GodwokenRPC.Util,
-    only: [
-      import_timestamps: 0
-    ]
 
   use Mix.Task
 

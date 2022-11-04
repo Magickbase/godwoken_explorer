@@ -19,6 +19,7 @@ defmodule GodwokenExplorer.Repo do
     total_count_primary_key_field: :id
   ]
 
+  @impl true
   def init(_, opts) do
     db_url = System.get_env("DATABASE_URL")
     repo_conf = Application.get_env(:godwoken_explorer, GodwokenExplorer.Repo)

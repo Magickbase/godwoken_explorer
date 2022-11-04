@@ -69,7 +69,7 @@ defmodule GodwokenExplorer.MixProject do
       {:ecto_sql, "~> 3.7.2"},
       {:postgrex, ">= 0.0.0"},
       {:phoenix_html, "~> 3.2.0"},
-      {:phoenix_live_reload, "~> 1.3.3", only: :dev},
+      {:phoenix_live_reload, "~> 1.4.0", only: :dev},
       {:phoenix_live_dashboard, "~> 0.7.0"},
       {:esbuild, "~> 0.5", runtime: Mix.env() == :dev},
       {:telemetry_metrics, "~> 0.6.1"},

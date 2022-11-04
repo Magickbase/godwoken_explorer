@@ -51,7 +51,7 @@ defmodule GodwokenExplorer.SmartContract.Reader do
     end)
   end
 
-  def query_contracts(requests, abi, opts \\ []) do
+  def query_contracts(requests, abi, opts) do
     json_rpc_named_arguments =
       Keyword.get(opts, :json_rpc_named_arguments) ||
         Application.get_env(:godwoken_explorer, :json_rpc_named_arguments)

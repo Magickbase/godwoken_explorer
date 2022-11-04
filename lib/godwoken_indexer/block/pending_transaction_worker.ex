@@ -20,7 +20,7 @@ defmodule GodwokenIndexer.Block.PendingTransactionWorker do
   alias GodwokenExplorer.{Polyjuice, PolyjuiceCreator, Transaction}
 
   @default_worker_interval 40
-  @eth_addr_reg_id Application.get_env(:godwoken_explorer, :eth_addr_reg_id)
+  @eth_addr_reg_id Application.compile_env(:godwoken_explorer, :eth_addr_reg_id)
 
   def start_link(state \\ []) do
     GenServer.start_link(__MODULE__, state)
