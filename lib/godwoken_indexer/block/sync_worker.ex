@@ -90,7 +90,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
        transactions_params: transactions_params_without_receipts,
        withdrawal_params: withdrawal_params,
        errors: []
-     }} = GodwokenRPC.fetch_blocks_by_range(range)
+     }} = rpc().fetch_blocks_by_range(range)
 
     if is_nil(multiple_block_once?) do
       {:ok, _} = validate_last_block_fork(blocks_params, next_block_number)
@@ -139,7 +139,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
     gw_hashes = transaction_params |> Enum.map(&Map.take(&1, [:hash]))
 
     {:ok, %{logs: logs, sudt_transfers: sudt_transfers, sudt_pay_fees: sudt_pay_fees}} =
-      GodwokenRPC.fetch_gw_transaction_receipts(gw_hashes)
+      rpc().fetch_gw_transaction_receipts(gw_hashes)
 
     import_gw_logs(logs)
     {_, sudt_transfers} = import_sudt_transfers(sudt_transfers)
@@ -164,7 +164,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
       |> MapSet.to_list()
 
     account_udts = transfer_account_udts ++ pay_fee_account_udts
-    udt_ids = account_udts |> Enum.map(&Map.get(&1, :udt_id))
+    udt_ids = account_udts |> Enum.map(&Map.get(&1, :udt_id)) |> Enum.uniq()
 
     exist_udt_ids = from(a in Account, where: a.id in ^udt_ids, select: a.id) |> Repo.all()
     not_exist_udt_ids = udt_ids -- exist_udt_ids
@@ -187,9 +187,10 @@ defmodule GodwokenIndexer.Block.SyncWorker do
           eth_address: address
         }
       end)
+      |> Enum.uniq()
 
     {:ok, %GodwokenRPC.Account.FetchedBalances{params_list: import_account_udts}} =
-      GodwokenRPC.fetch_balances(params)
+      rpc().fetch_balances(params)
 
     import_account_udts =
       import_account_udts
@@ -211,8 +212,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
         polyjuice_without_receipts
         |> Enum.map(fn polyjuice -> %{gw_tx_hash: polyjuice[:hash]} end)
 
-      {:ok, %{errors: [], params_list: hash_mappings}} =
-        GodwokenRPC.fetch_eth_hash_by_gw_hashes(params)
+      {:ok, %{errors: [], params_list: hash_mappings}} = rpc().fetch_eth_hash_by_gw_hashes(params)
 
       hash_map = hash_mappings |> Enum.into(%{}, fn map -> {map[:gw_tx_hash], map[:eth_hash]} end)
 
@@ -223,7 +223,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
         end)
 
       {:ok, %{logs: logs, receipts: receipts}} =
-        GodwokenRPC.fetch_transaction_receipts(polyjuice_without_receipts)
+        rpc().fetch_transaction_receipts(polyjuice_without_receipts)
 
       logs = logs |> Enum.reject(fn x -> x[:first_topic] == nil end)
       import_logs(logs)
@@ -1079,5 +1079,9 @@ defmodule GodwokenIndexer.Block.SyncWorker do
         @default_worker_interval
 
     Process.send_after(self(), {:work, next_block_number}, second_interval * 1000)
+  end
+
+  defp rpc() do
+    Application.get_env(:godwoken_explorer, :rpc_module, GodwokenRPC)
   end
 end
