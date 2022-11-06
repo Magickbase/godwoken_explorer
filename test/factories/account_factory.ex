@@ -16,8 +16,18 @@ defmodule GodwokenExplorer.AccountFactory do
         %Account{
           id: 1,
           type: :udt,
-          script_hash: block_hash(),
+          script_hash: "0x595cc14e574a708dc70a320d2026f79374246ed4659261131cdda7dd5814b5ca",
           registry_address: "0x9e9c54293c3211259de788e97a31b5b3a66cd535"
+        }
+      end
+
+      def block_producer_factory do
+        %Account{
+          id: 3,
+          type: :eth_user,
+          script_hash: "0x495d9cfb7b6faeaeb0f5a7ed81a830a477f7aeea8d53ef73abdc2ec2f5fed07c",
+          registry_address: "0x0200000014000000715ab282b873b79a7be8b0e8c13c4e8966a52040",
+          eth_address: "0x715ab282b873b79a7be8b0e8c13c4e8966a52040"
         }
       end
 

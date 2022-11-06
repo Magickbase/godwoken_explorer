@@ -78,18 +78,6 @@ defmodule GodwokenExplorer.Graphql.Types.TokenApproval do
     field :metadata, :paginate_metadata
   end
 
-  @typedoc """
-     * `token_owner_address_hash` - Token owner.
-     * `spender_address_hash` - User approve token to which address.
-     * `token_contract_address_hash` - Which token contract.
-     * `data` - ERC721 token id.
-     * `approved` - Approve operation or Cancel approval.
-     * `type` - Approve or approve_all.
-     * `token_type` - ERC20 ERC721 or ERC1155.
-     * `block_hash` - Layer2 block.
-     * `transaction_hash` - Layer2 transaction.
-  """
-
   object :token_approval do
     field :transaction_hash, :hash_full, description: "Layer2 transaction."
     field :block_hash, :hash_full, description: "Layer2 block."

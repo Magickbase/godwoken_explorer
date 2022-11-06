@@ -70,6 +70,33 @@ defmodule GodwokenRPC do
   """
   @type quantity :: String.t()
 
+  @callback fetch_blocks_by_range(Range.t()) :: {:ok, %Blocks{}} | {:error, atom()}
+  @callback fetch_script_hashes(list(map())) ::
+              {:ok, %GodwokenRPC.Account.FetchedScriptHashes{}} | {:error, atom()}
+  @callback fetch_scripts(list(map())) ::
+              {:ok, %GodwokenRPC.Account.FetchedScripts{}} | {:error, atom()}
+  @callback fetch_balances(
+              list(%{
+                registry_address: String.t(),
+                udt_id: integer(),
+                account_id: integer() | nil,
+                udt_script_hash: String.t(),
+                eth_address: Hash.t() | nil
+              })
+            ) :: {:ok, %GodwokenRPC.Account.FetchedBalances{}} | {:error, atom()}
+
+  @callback fetch_eth_hash_by_gw_hashes(list(map())) ::
+              {:ok, %GodwokenRPC.Transaction.FetchedEthHashByGwHashes{}} | {:error, atom()}
+
+  @callback fetch_transaction_receipts(list(map())) :: nil | {:ok, map()}
+  @callback fetch_gw_transaction_receipts(list(map())) :: {:ok, map()}
+  @callback fetch_account_id(String.t()) ::
+              {:error, :account_slow | :network_error} | {:ok, integer}
+  @callback fetch_nonce(integer) :: nil | integer
+  @callback fetch_script(String.t()) :: {:error, :network_error} | {:ok, map()}
+  @callback fetch_script_hash(%{:account_id => integer}) ::
+              {:error, :network_error} | {:ok, String.t()}
+
   def request(%{method: method, params: params} = map)
       when is_binary(method) and is_list(params) do
     Map.put(map, :jsonrpc, "2.0")
@@ -80,6 +107,7 @@ defmodule GodwokenRPC do
     Map.put(map, :jsonrpc, "2.0")
   end
 
+  @spec fetch_blocks_by_range(Range.t()) :: {:ok, %Blocks{}}
   def fetch_blocks_by_range(_first.._last = range) do
     range
     |> Enum.map(fn number -> %{number: number} end)
@@ -221,6 +249,7 @@ defmodule GodwokenRPC do
     end
   end
 
+  @spec fetch_account_id(String.t()) :: {:error, :account_slow | :network_error} | {:ok, integer}
   def fetch_account_id(account_script_hash) do
     options = Application.get_env(:godwoken_explorer, :json_rpc_named_arguments)
 
@@ -240,6 +269,8 @@ defmodule GodwokenRPC do
     end
   end
 
+  @spec fetch_script_hash(%{:account_id => integer}) ::
+          {:error, :network_error} | {:ok, String.t()}
   def fetch_script_hash(%{account_id: account_id}) do
     options = Application.get_env(:godwoken_explorer, :json_rpc_named_arguments)
 
@@ -255,6 +286,7 @@ defmodule GodwokenRPC do
     end
   end
 
+  @spec fetch_script_hashes(list(map())) :: {:ok, %GodwokenRPC.Account.FetchedScriptHashes{}}
   def fetch_script_hashes(params) do
     id_to_params = id_to_params(params)
     options = Application.get_env(:godwoken_explorer, :json_rpc_named_arguments)
@@ -267,6 +299,7 @@ defmodule GodwokenRPC do
     end
   end
 
+  @spec fetch_script(String.t()) :: {:error, :network_error} | {:ok, map()}
   def fetch_script(script_hash) do
     options = Application.get_env(:godwoken_explorer, :json_rpc_named_arguments)
 
@@ -281,6 +314,7 @@ defmodule GodwokenRPC do
     end
   end
 
+  @spec fetch_scripts(list(map())) :: {:ok, %GodwokenRPC.Account.FetchedScripts{}}
   def fetch_scripts(params) do
     id_to_params = id_to_params(params)
     options = Application.get_env(:godwoken_explorer, :json_rpc_named_arguments)
@@ -293,6 +327,7 @@ defmodule GodwokenRPC do
     end
   end
 
+  @spec fetch_nonce(integer) :: nil | integer
   def fetch_nonce(account_id) do
     options = Application.get_env(:godwoken_explorer, :json_rpc_named_arguments)
 
@@ -321,15 +356,15 @@ defmodule GodwokenRPC do
     end
   end
 
-  @spec fetch_balances([
-          %{
+  @spec fetch_balances(
+          list(%{
             registry_address: String.t(),
-            udt_id: integer,
-            account_id: integer | nil,
-            udt_script_hash: Hash.Full | nil,
-            eth_address: Hash.Address | nil
-          }
-        ]) :: any
+            udt_id: integer(),
+            account_id: integer() | nil,
+            udt_script_hash: String.t(),
+            eth_address: Hash.t() | nil
+          })
+        ) :: {:ok, %GodwokenRPC.Account.FetchedBalances{}}
   def fetch_balances(params) do
     id_to_params = id_to_params(params)
     options = Application.get_env(:godwoken_explorer, :json_rpc_named_arguments)
@@ -353,13 +388,14 @@ defmodule GodwokenRPC do
     end
   end
 
-  @spec fetch_transaction_receipts([%{eth_hash: hash()}]) :: nil | {:ok, map()}
+  @spec fetch_transaction_receipts(list(map())) :: nil | {:ok, map()}
   def fetch_transaction_receipts(transactions_params) when is_list(transactions_params) do
     options = Application.get_env(:godwoken_explorer, :json_rpc_named_arguments)
 
     Receipts.fetch(transactions_params, options)
   end
 
+  @spec fetch_gw_transaction_receipts(list(map())) :: {:ok, map()}
   def fetch_gw_transaction_receipts(transactions_params) when is_list(transactions_params) do
     options = Application.get_env(:godwoken_explorer, :json_rpc_named_arguments)
 
@@ -484,6 +520,8 @@ defmodule GodwokenRPC do
     end
   end
 
+  @spec fetch_eth_hash_by_gw_hashes(list(map())) ::
+          {:ok, %GodwokenRPC.Transaction.FetchedEthHashByGwHashes{}}
   def fetch_eth_hash_by_gw_hashes(params) do
     id_to_params = id_to_params(params)
     options = Application.get_env(:godwoken_explorer, :json_rpc_named_arguments)
