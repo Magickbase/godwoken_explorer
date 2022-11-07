@@ -134,6 +134,7 @@ defmodule GodwokenExplorer.MixProject do
       {:mock, "~> 0.3.7", only: [:test], runtime: false},
       {:hammox, "~> 0.7", only: :test},
       {:ex_json_schema, "~> 0.6.2"},
+      {:bypass, "~> 2.1", only: :test},
 
       # graphql
       {:absinthe, "~> 1.7"},
