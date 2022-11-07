@@ -64,6 +64,7 @@ services:
       - SOURCIFY_SERVER_URL
       - SOURCIFY_CHAIN_ID
       - SOURCIFY_REPO_URL
+      - EXCHANGE_RATES_COINMARKETCAP_API_KEY
     ports:
       - 4001:4001
       - 9568:9568
