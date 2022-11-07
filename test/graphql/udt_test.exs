@@ -1,7 +1,7 @@
 defmodule GodwokenExplorer.Graphql.UDTTest do
   use GodwokenExplorerWeb.ConnCase
 
-  import GodwokenExplorer.Factory, only: [insert!: 1, insert!: 2, address_hash: 0]
+  import GodwokenExplorer.Factory, only: [insert!: 1, insert!: 2, address_hash: 0, insert: 2]
 
   setup do
     {:ok, script_hash} =
@@ -91,12 +91,12 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
     _erc1155_cub3 =
       insert!(:current_udt_balance,
         token_contract_address_hash: erc1155_native_udt.contract_address_hash,
-        token_id: 7,
+        token_id: 8,
         token_type: :erc1155,
         value: 100
       )
 
-    for index <- 8..10 do
+    for index <- 9..11 do
       insert!(:current_udt_balance,
         token_contract_address_hash: erc1155_native_udt.contract_address_hash,
         token_id: index,
@@ -1180,6 +1180,149 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
              },
              json_response(conn, 200)
            )
+  end
+
+  test "graphql: user_erc1155_assets with first page check", %{
+    conn: conn,
+    user: user,
+    # erc721_native_udt: erc721_native_udt
+    erc1155_native_udt: erc1155_native_udt
+  } do
+    user_address = user.eth_address |> to_string()
+    erc1155_udt_contract_address_hash = erc1155_native_udt.contract_address_hash |> to_string()
+
+    for index <- 1..3 do
+      _erc1155_cub =
+        insert(:current_udt_balance,
+          address_hash: user_address,
+          token_contract_address_hash: erc1155_udt_contract_address_hash,
+          token_id: 100 + index,
+          token_type: :erc1155,
+          value: 100
+        )
+    end
+
+    query = user_erc1155_assets_first_page_check_query_base(user_address, "")
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    %{
+      "data" => %{
+        "user_erc1155_assets" => %{
+          "metadata" => %{
+            "after" => after_value
+          }
+        }
+      }
+    } = json_response(conn, 200)
+
+    query =
+      user_erc1155_assets_first_page_check_query_base(user_address, "after: \"#{after_value}\"")
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    %{
+      "data" => %{
+        "user_erc1155_assets" => %{
+          "metadata" => %{
+            "before" => before_value
+          }
+        }
+      }
+    } = json_response(conn, 200)
+
+    # add more one
+    %{id: _newest_id} =
+      insert(:current_udt_balance,
+        address_hash: user_address,
+        token_contract_address_hash: erc1155_native_udt.contract_address_hash,
+        token_id: 104,
+        token_type: :erc1155,
+        value: 100
+      )
+
+    query =
+      user_erc1155_assets_first_page_check_query_base(user_address, "before: \"#{before_value}\"")
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    %{
+      "data" => %{
+        "user_erc1155_assets" => %{
+          "metadata" => %{
+            "before" => before_value
+          }
+        }
+      }
+    } = json_response(conn, 200)
+
+    query =
+      user_erc1155_assets_first_page_check_query_base(user_address, "before: \"#{before_value}\"")
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    %{
+      "data" => %{
+        "user_erc1155_assets" => %{
+          "entries" =>
+            [
+              %{
+                "token_id" => "104"
+              }
+              | _
+            ] = entries
+        }
+      }
+    } = json_response(conn, 200)
+
+    assert length(entries) == 2
+  end
+
+  defp user_erc1155_assets_first_page_check_query_base(user_address, before_or_after) do
+    """
+    query {
+      user_erc1155_assets(
+        input: {
+          user_address: "#{user_address}",
+          limit: 2,
+          #{before_or_after}
+        }
+      ) {
+        entries {
+          address_hash
+          token_contract_address_hash
+          token_id
+          token_type
+          counts
+          udt {
+            id
+            name
+          }
+        }
+        metadata {
+          total_count
+          after
+          before
+        }
+      }
+    }
+    """
   end
 
   test "graphql: erc721_inventory", %{
