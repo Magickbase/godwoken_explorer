@@ -515,8 +515,10 @@ defmodule GodwokenExplorer.UDT do
              %Account{id: udt_id} <- Repo.get_by(Account, script_hash: l2_script_hash) do
           %{
             id: udt_id,
-            name: udt_info["displayName"] || name,
-            symbol: udt_info["UAN"] || symbol,
+            name: name,
+            symbol: symbol,
+            uan: udt_info["UAN"],
+            display_name: udt_info["displayName"],
             decimal: decimal,
             bridge_account_id: bridge_account_id,
             script_hash: l1_script_hash,
@@ -535,6 +537,8 @@ defmodule GodwokenExplorer.UDT do
           id: udt.bridge_account_id,
           name: udt.name,
           symbol: udt.symbol,
+          uan: udt.uan,
+          display_name: udt.display_name,
           contract_address_hash: udt.contract_address_hash,
           type: :native,
           eth_type: :erc20
@@ -545,7 +549,9 @@ defmodule GodwokenExplorer.UDT do
       udt_params |> Enum.map(fn udt -> Map.delete(udt, :contract_address_hash) end),
       for: UDT,
       timestamps: import_timestamps(),
-      on_conflict: {:replace, [:name, :symbol, :eth_type, :bridge_account_id, :updated_at]},
+      on_conflict:
+        {:replace,
+         [:name, :symbol, :uan, :display_name, :eth_type, :bridge_account_id, :updated_at]},
       conflict_target: :id
     )
 
@@ -553,7 +559,7 @@ defmodule GodwokenExplorer.UDT do
       native_udt_params,
       for: UDT,
       timestamps: import_timestamps(),
-      on_conflict: {:replace, [:name, :symbol, :eth_type, :updated_at]},
+      on_conflict: {:replace, [:name, :symbol, :uan, :display_name, :eth_type, :updated_at]},
       conflict_target: :id
     )
   end
