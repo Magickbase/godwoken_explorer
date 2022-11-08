@@ -19,8 +19,10 @@ defmodule GodwokenExplorer.UDT do
   @typedoc """
     * `id` - Udt id is same with account id.
     * `decimal` - Set in contract.
-    * `symbol` - [UAN](https://github.com/nervosnetwork/rfcs/pull/335).
-    * `name` - [UAN](https://github.com/nervosnetwork/rfcs/pull/335).
+    * `symbol` - Read from contract.
+    * `name` - Read from contract.
+    * `uan` - [UAN](https://github.com/nervosnetwork/rfcs/pull/335).
+    * `display_name` - [UAN](https://github.com/nervosnetwork/rfcs/pull/335).
     * `icon` - UDT icon url.
     * `supply` - Total supply.
     * `type_script` - Layer1 udt's type script.
@@ -40,6 +42,8 @@ defmodule GodwokenExplorer.UDT do
           decimal: non_neg_integer(),
           symbol: String.t(),
           name: String.t(),
+          uan: String.t(),
+          display_name: String.t(),
           icon: String.t(),
           supply: Hash.Full.t(),
           type_script: non_neg_integer(),
@@ -77,6 +81,8 @@ defmodule GodwokenExplorer.UDT do
     field(:eth_type, Ecto.Enum, values: [:erc20, :erc721, :erc1155])
     field(:skip_metadata, :boolean)
     field(:is_fetched, :boolean)
+    field(:uan, :string)
+    field(:display_name, :string)
 
     belongs_to(:account, Account,
       foreign_key: :bridge_account_id,
@@ -110,7 +116,9 @@ defmodule GodwokenExplorer.UDT do
       :bridge_account_id,
       :eth_type,
       :skip_metadata,
-      :is_fetched
+      :is_fetched,
+      :uan,
+      :display_name
     ])
     |> unique_constraint(:id, name: :udts_pkey)
     |> unique_constraint(:contract_address_hash, name: :udts_contract_address_hash_index)
