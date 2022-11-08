@@ -1164,6 +1164,142 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
            )
   end
 
+  test "graphql: erc721_holders with first page check ", %{
+    conn: conn,
+    erc721_native_udt: erc721_native_udt
+  } do
+    contract_address = erc721_native_udt.contract_address_hash |> to_string()
+    query = erc721_holders_with_first_page_check_base_query(contract_address, "")
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    %{
+      "data" => %{
+        "erc721_holders" => %{
+          "metadata" => %{
+            "after" => after_value
+          }
+        }
+      }
+    } = json_response(conn, 200)
+
+    query =
+      erc721_holders_with_first_page_check_base_query(
+        contract_address,
+        "after: \"#{after_value}\""
+      )
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    %{
+      "data" => %{
+        "erc721_holders" => %{
+          "metadata" => %{
+            "before" => before_value
+          }
+        }
+      }
+    } = json_response(conn, 200)
+
+    %{address_hash: address_hash} =
+      insert(:current_udt_balance,
+        token_contract_address_hash: contract_address,
+        token_id: 100,
+        value: 1,
+        token_type: :erc721
+      )
+
+    for index <- 1..2 do
+      insert(:current_udt_balance,
+        address_hash: address_hash,
+        token_contract_address_hash: contract_address,
+        token_id: 100 + index,
+        # this  value means holder's latest quantify of token
+        value: 1 + index,
+        token_type: :erc721
+      )
+    end
+
+    query =
+      erc721_holders_with_first_page_check_base_query(
+        contract_address,
+        "before: \"#{before_value}\""
+      )
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    %{
+      "data" => %{
+        "erc721_holders" => %{
+          "metadata" => %{
+            "before" => before_value
+          }
+        }
+      }
+    } = json_response(conn, 200)
+
+    query =
+      erc721_holders_with_first_page_check_base_query(
+        contract_address,
+        "before: \"#{before_value}\""
+      )
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    %{
+      "data" => %{
+        "erc721_holders" => %{
+          "entries" => [%{"quantity" => "3"} | _] = entries
+        }
+      }
+    } = json_response(conn, 200)
+
+    assert length(entries) == 2
+  end
+
+  defp erc721_holders_with_first_page_check_base_query(contract_address, before_or_after)
+       when is_bitstring(contract_address) do
+    """
+    query {
+      erc721_holders(
+        input: {
+          limit: 2,
+          contract_address: "#{contract_address}",
+          #{before_or_after}
+        }
+      ) {
+        entries {
+          rank
+          address_hash
+          token_contract_address_hash
+          quantity
+        }
+        metadata {
+          total_count
+          after
+          before
+        }
+      }
+    }
+    """
+  end
+
   test "graphql: erc721_holders with pagination", %{
     conn: conn,
     user: user,
@@ -1226,7 +1362,7 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
     query = """
     query {
       erc721_holders(
-        input: { after: "#{after_value}" limit: 1, contract_address: "#{contract_address}"}
+        input: { after: "#{after_value}", limit: 1, contract_address: "#{contract_address}"}
       ) {
         entries {
           rank
@@ -1323,6 +1459,142 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
              },
              json_response(conn, 200)
            )
+  end
+
+  test "graphql: erc1155_holders with first page check ", %{
+    conn: conn,
+    erc1155_native_udt: erc1155_native_udt
+  } do
+    contract_address = erc1155_native_udt.contract_address_hash |> to_string()
+    query = erc1155_holders_with_first_page_check_base_query(contract_address, "")
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    %{
+      "data" => %{
+        "erc1155_holders" => %{
+          "metadata" => %{
+            "after" => after_value
+          }
+        }
+      }
+    } = json_response(conn, 200)
+
+    query =
+      erc1155_holders_with_first_page_check_base_query(
+        contract_address,
+        "after: \"#{after_value}\""
+      )
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    %{
+      "data" => %{
+        "erc1155_holders" => %{
+          "metadata" => %{
+            "before" => before_value
+          }
+        }
+      }
+    } = json_response(conn, 200)
+
+    %{address_hash: address_hash} =
+      insert(:current_udt_balance,
+        token_contract_address_hash: contract_address,
+        token_id: 100,
+        value: 100,
+        token_type: :erc1155
+      )
+
+    for index <- 1..2 do
+      insert(:current_udt_balance,
+        address_hash: address_hash,
+        token_contract_address_hash: contract_address,
+        token_id: 100 + index,
+        # this  value means holder's latest quantify of token
+        value: 100 + index,
+        token_type: :erc1155
+      )
+    end
+
+    query =
+      erc1155_holders_with_first_page_check_base_query(
+        contract_address,
+        "before: \"#{before_value}\""
+      )
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    %{
+      "data" => %{
+        "erc1155_holders" => %{
+          "metadata" => %{
+            "before" => before_value
+          }
+        }
+      }
+    } = json_response(conn, 200)
+
+    query =
+      erc1155_holders_with_first_page_check_base_query(
+        contract_address,
+        "before: \"#{before_value}\""
+      )
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    %{
+      "data" => %{
+        "erc1155_holders" => %{
+          "entries" => [%{"quantity" => "303"} | _] = entries
+        }
+      }
+    } = json_response(conn, 200)
+
+    assert length(entries) == 2
+  end
+
+  defp erc1155_holders_with_first_page_check_base_query(contract_address, before_or_after)
+       when is_bitstring(contract_address) do
+    """
+    query {
+      erc1155_holders(
+        input: {
+          limit: 2,
+          contract_address: "#{contract_address}",
+          #{before_or_after}
+        }
+      ) {
+        entries {
+          rank
+          address_hash
+          token_contract_address_hash
+          quantity
+        }
+        metadata {
+          total_count
+          after
+          before
+        }
+      }
+    }
+    """
   end
 
   test "graphql: erc1155_holders with token_id", %{
