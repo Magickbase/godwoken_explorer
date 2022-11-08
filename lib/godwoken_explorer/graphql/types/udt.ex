@@ -1329,8 +1329,13 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
   object :udt do
     field :id, :integer, description: "UDT ID is same with account id."
     field :decimal, :integer, description: "Set in contract."
-    field :name, :string, description: "[UAN](https://github.com/nervosnetwork/rfcs/pull/335)."
-    field :symbol, :string, description: "[UAN](https://github.com/nervosnetwork/rfcs/pull/335)."
+    field :name, :string, description: "Read from contract."
+    field :symbol, :string, description: "Read from contract."
+    field :uan, :string, description: "[UAN](https://github.com/nervosnetwork/rfcs/pull/335)."
+
+    field :display_name, :string,
+      description: "[UAN](https://github.com/nervosnetwork/rfcs/pull/335)."
+
     field :icon, :string, description: "UDT icon url."
     field :supply, :decimal, description: "Total supply."
     field :type_script, :json, description: "Layer1 udt's type script."

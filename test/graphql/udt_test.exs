@@ -123,6 +123,39 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
     ]
   end
 
+  test "bridge udt name symbol", %{conn: conn, ckb_udt: ckb_udt} do
+    query = """
+    query {
+      udt(
+        input: { id: #{ckb_udt.id} }
+      ) {
+        name
+        symbol
+        uan
+        display_name
+      }
+    }
+    """
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    assert json_response(conn, 200) ==
+             %{
+               "data" => %{
+                 "udt" => %{
+                   "name" => ckb_udt.name,
+                   "symbol" => ckb_udt.symbol,
+                   "uan" => ckb_udt.uan,
+                   "display_name" => ckb_udt.display_name
+                 }
+               }
+             }
+  end
+
   test "graphql: udt ", %{conn: conn, native_udt: native_udt} do
     contract_address_hash = native_udt.contract_address_hash |> to_string()
 
