@@ -1975,6 +1975,143 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
            )
   end
 
+  test "graphql: erc721_inventory with first page check", %{
+    conn: conn,
+    erc721_native_udt: erc721_native_udt
+  } do
+    contract_address_hash = erc721_native_udt.contract_address_hash |> to_string()
+
+    query = erc721_inventory_first_page_check_query_base(contract_address_hash, "")
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    %{
+      "data" => %{
+        "erc721_inventory" => %{
+          "metadata" => %{
+            "after" => after_value
+          }
+        }
+      }
+    } = json_response(conn, 200)
+
+    query =
+      erc721_inventory_first_page_check_query_base(
+        contract_address_hash,
+        "after: \"#{after_value}\""
+      )
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    %{
+      "data" => %{
+        "erc721_inventory" => %{
+          "metadata" => %{
+            "before" => before_value
+          }
+        }
+      }
+    } = json_response(conn, 200)
+
+    # add more one
+    _ =
+      insert(:current_udt_balance,
+        token_contract_address_hash: contract_address_hash,
+        token_id: 100,
+        value: 1,
+        token_type: :erc721
+      )
+
+    query =
+      erc721_inventory_first_page_check_query_base(
+        contract_address_hash,
+        "before: \"#{before_value}\""
+      )
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    %{
+      "data" => %{
+        "erc721_inventory" => %{
+          "metadata" => %{
+            "before" => before_value
+          }
+        }
+      }
+    } = json_response(conn, 200)
+
+    query =
+      erc721_inventory_first_page_check_query_base(
+        contract_address_hash,
+        "before: \"#{before_value}\""
+      )
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    %{
+      "data" => %{
+        "erc721_inventory" => %{
+          "entries" =>
+            [
+              %{
+                "token_id" => "100"
+              }
+              | _
+            ] = entries
+        }
+      }
+    } = json_response(conn, 200)
+
+    assert length(entries) == 2
+  end
+
+  defp erc721_inventory_first_page_check_query_base(contract_address, before_or_after) do
+    """
+    query {
+      erc721_inventory(
+        input: {
+          limit: 2,
+          contract_address: "#{contract_address}",
+          #{before_or_after}
+        }
+      ) {
+        entries {
+          address_hash
+          token_contract_address_hash
+          token_id
+          token_type
+          counts
+          token_instance {
+            token_contract_address_hash
+            metadata
+          }
+        }
+        metadata {
+          total_count
+          after
+          before
+        }
+      }
+    }
+    """
+  end
+
   test "graphql: erc1155_user_inventory", %{
     conn: conn,
     # user: user
@@ -2061,6 +2198,137 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
              },
              json_response(conn, 200)
            )
+  end
+
+  test "graphql: erc1155_inventory with first page check", %{
+    conn: conn,
+    erc1155_native_udt: erc1155_native_udt
+  } do
+    contract_address_hash = erc1155_native_udt.contract_address_hash |> to_string()
+
+    query = erc1155_inventory_first_page_check_query_base(contract_address_hash, "")
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    %{
+      "data" => %{
+        "erc1155_inventory" => %{
+          "metadata" => %{
+            "after" => after_value
+          }
+        }
+      }
+    } = json_response(conn, 200)
+
+    query =
+      erc1155_inventory_first_page_check_query_base(
+        contract_address_hash,
+        "after: \"#{after_value}\""
+      )
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    %{
+      "data" => %{
+        "erc1155_inventory" => %{
+          "metadata" => %{
+            "before" => before_value
+          }
+        }
+      }
+    } = json_response(conn, 200)
+
+    # add more one
+    _ =
+      insert(:current_udt_balance,
+        token_contract_address_hash: contract_address_hash,
+        token_id: 100,
+        value: 1000,
+        token_type: :erc1155
+      )
+
+    query =
+      erc1155_inventory_first_page_check_query_base(
+        contract_address_hash,
+        "before: \"#{before_value}\""
+      )
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    %{
+      "data" => %{
+        "erc1155_inventory" => %{
+          "metadata" => %{
+            "before" => before_value
+          }
+        }
+      }
+    } = json_response(conn, 200)
+
+    query =
+      erc1155_inventory_first_page_check_query_base(
+        contract_address_hash,
+        "before: \"#{before_value}\""
+      )
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    %{
+      "data" => %{
+        "erc1155_inventory" => %{
+          "entries" =>
+            [
+              %{
+                "counts" => "1000"
+              }
+              | _
+            ] = entries
+        }
+      }
+    } = json_response(conn, 200)
+
+    assert length(entries) == 2
+  end
+
+  defp erc1155_inventory_first_page_check_query_base(contract_address, before_or_after) do
+    """
+    query {
+      erc1155_inventory(
+        input: {
+          contract_address: "#{contract_address}",
+          limit: 2,
+          #{before_or_after}
+        }
+      ) {
+        entries {
+          contract_address_hash
+          token_id
+          counts
+        }
+        metadata {
+          total_count
+          after
+          before
+        }
+      }
+    }
+    """
   end
 
   test "graphql: erc1155_inventory with paginator", %{
