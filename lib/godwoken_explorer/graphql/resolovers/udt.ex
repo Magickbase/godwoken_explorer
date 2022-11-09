@@ -160,6 +160,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
 
     udt =
       if udt do
+        if udt.contract_address_hash, do: UDT.async_fetch_total_supply(udt.contract_address_hash)
         udt |> Map.put(:holders_count, hc)
       else
         nil

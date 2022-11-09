@@ -7,10 +7,7 @@ defmodule GodwokenIndexer.Fetcher.Supervisor do
 
   def init(_) do
     children = [
-      GodwokenIndexer.Fetcher.UDTBalance,
-      {Task.Supervisor, name: GodwokenIndexer.Fetcher.TaskSupervisor},
-      GodwokenIndexer.Fetcher.TotalSupplyOnDemand,
-      GodwokenIndexer.Fetcher.UDTInfo
+      GodwokenIndexer.Fetcher.UDTBalance
     ]
 
     Supervisor.init(children, strategy: :one_for_one)
