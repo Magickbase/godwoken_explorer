@@ -484,6 +484,7 @@ defmodule GodwokenExplorer.UDT do
     l2_udt_code_hash = Application.get_env(:godwoken_explorer, :l2_udt_code_hash)
     rollup_type_hash = Application.get_env(:godwoken_explorer, :rollup_type_hash)
     l1_udt_code_hash = Application.get_env(:godwoken_explorer, :l1_udt_code_hash)
+    ckb_script_hash = Application.get_env(:godwoken_explorer, :ckb_token_script_hash)
 
     udt_params =
       udt_list
@@ -500,7 +501,12 @@ defmodule GodwokenExplorer.UDT do
           "args" => l1_udt_script_args
         }
 
-        l1_script_hash = script_to_hash(l1_udt_script)
+        l1_script_hash =
+          if l1_udt_script_args == ckb_script_hash do
+            ckb_script_hash
+          else
+            script_to_hash(l1_udt_script)
+          end
 
         l2_account_script = %{
           "code_hash" => l2_udt_code_hash,
