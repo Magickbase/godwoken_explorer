@@ -42,10 +42,14 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Common do
 
   def paginate_query({:error, _} = error, _, _), do: error
 
-  def paginate_query(query, input, %{
-        cursor_fields: cursor_fields,
-        total_count_primary_key_field: total_count_primary_key_field
-      }) do
+  def paginate_query(
+        query,
+        input,
+        %{
+          cursor_fields: cursor_fields,
+          total_count_primary_key_field: total_count_primary_key_field
+        } = params
+      ) do
     limit = input[:limit]
 
     case {input[:before], input[:after]} do
@@ -67,13 +71,16 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Common do
         )
 
       {query_before, nil} ->
-        Repo.graphql_paginate(
-          query,
-          before: query_before,
-          cursor_fields: cursor_fields,
-          total_count_primary_key_field: total_count_primary_key_field,
-          limit: limit
-        )
+        result =
+          Repo.graphql_paginate(
+            query,
+            before: query_before,
+            cursor_fields: cursor_fields,
+            total_count_primary_key_field: total_count_primary_key_field,
+            limit: limit
+          )
+
+        maybe_first_page(result, query, input, params)
 
       _ ->
         {:error, "before and after both exist"}
@@ -95,5 +102,21 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Common do
         total_count_primary_key_field: :id
       }
     )
+  end
+
+  def maybe_first_page(first_result, query, input, params) do
+    limit = input[:limit]
+
+    if length(first_result.entries) < limit do
+      input = Map.delete(input, :before)
+
+      paginate_query(
+        query,
+        input,
+        params
+      )
+    else
+      first_result
+    end
   end
 end

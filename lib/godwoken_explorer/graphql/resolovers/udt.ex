@@ -111,9 +111,9 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
       [cu],
       cu.address_hash == ^user_address
     )
-    |> order_by([c], desc: :block_number, desc: :value_fetched_at)
+    |> order_by([c], desc: :block_number, desc: :updated_at, desc: :id)
     |> paginate_query(input, %{
-      cursor_fields: [block_number: :desc, value_fetched_at: :desc],
+      cursor_fields: [block_number: :desc, updated_at: :desc, id: :desc],
       total_count_primary_key_field: :id
     })
   end
