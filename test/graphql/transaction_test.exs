@@ -87,6 +87,162 @@ defmodule GodwokenExplorer.Graphql.TransactionTest do
            )
   end
 
+  test "Graphql: transactions with first page check", %{conn: conn} do
+    query = """
+    query {
+      transactions(
+        input: {
+          limit: 2
+          start_block_number: 1
+          sorter: [{ sort_type: DESC, sort_value: BLOCK_NUMBER }]
+        }
+      ) {
+        entries {
+          hash
+          eth_hash
+          block_hash
+          block_number
+        }
+
+        metadata {
+          total_count
+          before
+          after
+        }
+      }
+    }
+    """
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    %{
+      "data" => %{
+        "transactions" => %{
+          "metadata" => %{
+            "after" => after_value
+          }
+        }
+      }
+    } = json_response(conn, 200)
+
+    query = transaction_with_first_page_check_query(after_value: after_value)
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    %{
+      "data" => %{
+        "transactions" => %{
+          "metadata" => %{
+            "before" => before_value
+          }
+        }
+      }
+    } = json_response(conn, 200)
+
+    query = transaction_with_first_page_check_query(before_value: before_value)
+
+    # add more one
+    insert(:transaction)
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    %{
+      "data" => %{
+        "transactions" => %{
+          "metadata" => %{
+            "before" => before_value
+          }
+        }
+      }
+    } = json_response(conn, 200)
+
+    query = transaction_with_first_page_check_query(before_value: before_value)
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    %{
+      "data" => %{
+        "transactions" => %{
+          "entries" => entries
+        }
+      }
+    } = json_response(conn, 200)
+
+    assert length(entries) == 2
+  end
+
+  defp transaction_with_first_page_check_query(after_value: after_value) do
+    """
+    query {
+      transactions(
+        input: {
+          limit: 2
+          after: "#{after_value}"
+          start_block_number: 1
+          sorter: [{ sort_type: DESC, sort_value: BLOCK_NUMBER }]
+        }
+      ) {
+        entries {
+          hash
+          eth_hash
+          block_hash
+          block_number
+        }
+
+        metadata {
+          total_count
+          before
+          after
+        }
+      }
+    }
+    """
+  end
+
+  defp transaction_with_first_page_check_query(before_value: before_value) do
+    """
+    query {
+      transactions(
+        input: {
+          limit: 2
+          before: "#{before_value}"
+          start_block_number: 1
+          sorter: [{ sort_type: DESC, sort_value: BLOCK_NUMBER }]
+        }
+      ) {
+        entries {
+          hash
+          eth_hash
+          block_hash
+          block_number
+        }
+
+        metadata {
+          total_count
+          before
+          after
+        }
+      }
+    }
+    """
+  end
+
   test "graphql: transactions ", %{conn: conn, transaction: _transaction} do
     query = """
     query {

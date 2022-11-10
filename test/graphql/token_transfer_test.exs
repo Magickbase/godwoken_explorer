@@ -1,6 +1,6 @@
 defmodule GodwokenExplorer.Graphql.TokenTransferTest do
   use GodwokenExplorerWeb.ConnCase
-  import GodwokenExplorer.Factory, only: [insert!: 1, insert!: 2]
+  import GodwokenExplorer.Factory, only: [insert!: 1, insert!: 2, insert: 2]
 
   setup do
     {:ok, args} =
@@ -84,7 +84,14 @@ defmodule GodwokenExplorer.Graphql.TokenTransferTest do
         log_index: 2
       )
 
-    [token_transfer: token_transfer, erc721_token_transfer: erc721_token_transfer, block: block]
+    [
+      token_transfer: token_transfer,
+      erc721_token_transfer: erc721_token_transfer,
+      block: block,
+      erc1155_token_contract_address_hash: erc1155_token_contract_address_hash,
+      erc721_token_contract_address_hash: erc721_token_contract_address_hash,
+      erc20_token_contract_address_hash: token_contract_address_hash
+    ]
   end
 
   test "graphql: erc1155 token_transfers ", %{conn: conn, token_transfer: _token_transfer} do
@@ -144,6 +151,144 @@ defmodule GodwokenExplorer.Graphql.TokenTransferTest do
              },
              json_response(conn, 200)
            )
+  end
+
+  test "graphql: erc1155 token_transfers with first page check", %{
+    conn: conn,
+    erc1155_token_contract_address_hash: erc1155_token_contract_address_hash
+  } do
+    _erc1155_token_transfer =
+      insert(:token_transfer_erc1155_inserted,
+        token_contract_address_hash: erc1155_token_contract_address_hash
+      )
+
+    query = erc1155_token_transfers_with_first_check_query_base("")
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    %{
+      "data" => %{
+        "erc1155_token_transfers" => %{
+          "metadata" => %{
+            "after" => after_value
+          }
+        }
+      }
+    } = json_response(conn, 200)
+
+    query = erc1155_token_transfers_with_first_check_query(after_value: after_value)
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    %{
+      "data" => %{
+        "erc1155_token_transfers" => %{
+          "metadata" => %{
+            "before" => before_value
+          }
+        }
+      }
+    } = json_response(conn, 200)
+
+    %{block_number: newest_block_number} =
+      insert(:token_transfer_erc1155_inserted,
+        token_contract_address_hash: erc1155_token_contract_address_hash
+      )
+
+    # add more record
+    query = erc1155_token_transfers_with_first_check_query(before_value: before_value)
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    %{
+      "data" => %{
+        "erc1155_token_transfers" => %{
+          "metadata" => %{
+            "before" => before_value
+          }
+        }
+      }
+    } = json_response(conn, 200)
+
+    query = erc1155_token_transfers_with_first_check_query(before_value: before_value)
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    %{
+      "data" => %{
+        "erc1155_token_transfers" => %{
+          "entries" => [%{"block_number" => ^newest_block_number} | _] = entries
+        }
+      }
+    } = json_response(conn, 200)
+
+    assert length(entries) == 2
+  end
+
+  defp erc1155_token_transfers_with_first_check_query(before_value: before_value) do
+    before_or_after = "before: \"#{before_value}\""
+
+    erc1155_token_transfers_with_first_check_query_base(before_or_after)
+  end
+
+  defp erc1155_token_transfers_with_first_check_query(after_value: after_value) do
+    before_or_after = "after: \"#{after_value}\""
+
+    erc1155_token_transfers_with_first_check_query_base(before_or_after)
+  end
+
+  defp erc1155_token_transfers_with_first_check_query_base(before_or_after) do
+    """
+    query {
+      erc1155_token_transfers(
+        input: {
+          limit: 2,
+          sorter: [
+            { sort_type: DESC, sort_value: BLOCK_NUMBER }
+            { sort_type: ASC, sort_value: TRANSACTION_HASH }
+            { sort_type: ASC, sort_value: LOG_INDEX }
+          ],
+          #{before_or_after}
+        }
+      ) {
+        entries {
+          transaction_hash
+          token_id
+          token_ids
+          block_number
+          to_account {
+            eth_address
+          }
+          to_address
+          from_account {
+            eth_address
+          }
+        }
+
+        metadata {
+          total_count
+          before
+          after
+        }
+      }
+    }
+    """
   end
 
   test "graphql: erc1155 token_transfers with token id", %{
@@ -307,6 +452,146 @@ defmodule GodwokenExplorer.Graphql.TokenTransferTest do
            )
   end
 
+  test "graphql: erc721 token_transfers with first page check", %{
+    conn: conn,
+    erc721_token_contract_address_hash: erc721_token_contract_address_hash
+  } do
+    for _ <- 1..2 do
+      _erc721_token_transfer =
+        insert(:token_transfer_erc721_inserted,
+          token_contract_address_hash: erc721_token_contract_address_hash
+        )
+    end
+
+    query = erc721_token_transfers_with_first_check_query_base("")
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    %{
+      "data" => %{
+        "erc721_token_transfers" => %{
+          "metadata" => %{
+            "after" => after_value
+          }
+        }
+      }
+    } = json_response(conn, 200)
+
+    query = erc721_token_transfers_with_first_check_query(after_value: after_value)
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    %{
+      "data" => %{
+        "erc721_token_transfers" => %{
+          "metadata" => %{
+            "before" => before_value
+          }
+        }
+      }
+    } = json_response(conn, 200)
+
+    # add more record
+    %{block_number: newest_block_number} =
+      insert(:token_transfer_erc721_inserted,
+        token_contract_address_hash: erc721_token_contract_address_hash
+      )
+
+    query = erc721_token_transfers_with_first_check_query(before_value: before_value)
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    %{
+      "data" => %{
+        "erc721_token_transfers" => %{
+          "metadata" => %{
+            "before" => before_value
+          }
+        }
+      }
+    } = json_response(conn, 200)
+
+    query = erc721_token_transfers_with_first_check_query(before_value: before_value)
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    %{
+      "data" => %{
+        "erc721_token_transfers" => %{
+          "entries" => [%{"block_number" => ^newest_block_number} | _] = entries
+        }
+      }
+    } = json_response(conn, 200)
+
+    assert length(entries) == 2
+  end
+
+  defp erc721_token_transfers_with_first_check_query(before_value: before_value) do
+    before_or_after = "before: \"#{before_value}\""
+
+    erc721_token_transfers_with_first_check_query_base(before_or_after)
+  end
+
+  defp erc721_token_transfers_with_first_check_query(after_value: after_value) do
+    before_or_after = "after: \"#{after_value}\""
+
+    erc721_token_transfers_with_first_check_query_base(before_or_after)
+  end
+
+  defp erc721_token_transfers_with_first_check_query_base(before_or_after) do
+    """
+    query {
+      erc721_token_transfers(
+        input: {
+          limit: 2,
+          sorter: [
+            { sort_type: DESC, sort_value: BLOCK_NUMBER }
+            { sort_type: ASC, sort_value: TRANSACTION_HASH }
+            { sort_type: ASC, sort_value: LOG_INDEX }
+          ],
+          #{before_or_after}
+        }
+      ) {
+        entries {
+          transaction_hash
+          token_id
+          token_ids
+          block_number
+          to_account {
+            eth_address
+          }
+          to_address
+          from_account {
+            eth_address
+          }
+        }
+
+        metadata {
+          total_count
+          before
+          after
+        }
+      }
+    }
+    """
+  end
+
   test "graphql: erc721 token_transfers with token id ", %{
     conn: conn,
     token_transfer: _token_transfer
@@ -425,6 +710,153 @@ defmodule GodwokenExplorer.Graphql.TokenTransferTest do
              },
              json_response(conn, 200)
            )
+  end
+
+  test "graphql: erc20 token_transfers with first page check", %{
+    conn: conn,
+    erc20_token_contract_address_hash: erc20_token_contract_address_hash
+  } do
+    for _ <- 1..2 do
+      _erc20_token_transfer =
+        insert(:token_transfer_erc20_inserted,
+          token_contract_address_hash: erc20_token_contract_address_hash
+        )
+    end
+
+    query = erc20_token_transfers_with_first_check_query_base("")
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    %{
+      "data" => %{
+        "token_transfers" => %{
+          "metadata" => %{
+            "after" => after_value
+          }
+        }
+      }
+    } = json_response(conn, 200)
+
+    query = erc20_token_transfers_with_first_check_query(after_value: after_value)
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    %{
+      "data" => %{
+        "token_transfers" => %{
+          "metadata" => %{
+            "before" => before_value
+          }
+        }
+      }
+    } = json_response(conn, 200)
+
+    # add more record
+    %{block_number: newest_block_number} =
+      insert(:token_transfer_erc20_inserted,
+        token_contract_address_hash: erc20_token_contract_address_hash
+      )
+
+    query = erc20_token_transfers_with_first_check_query(before_value: before_value)
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    %{
+      "data" => %{
+        "token_transfers" => %{
+          "metadata" => %{
+            "before" => before_value
+          }
+        }
+      }
+    } = json_response(conn, 200)
+
+    query = erc20_token_transfers_with_first_check_query(before_value: before_value)
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    %{
+      "data" => %{
+        "token_transfers" => %{
+          "entries" => [%{"block_number" => ^newest_block_number} | _] = entries
+        }
+      }
+    } = json_response(conn, 200)
+
+    assert length(entries) == 2
+  end
+
+  defp erc20_token_transfers_with_first_check_query(before_value: before_value) do
+    before_or_after = "before: \"#{before_value}\""
+
+    erc20_token_transfers_with_first_check_query_base(before_or_after)
+  end
+
+  defp erc20_token_transfers_with_first_check_query(after_value: after_value) do
+    before_or_after = "after: \"#{after_value}\""
+
+    erc20_token_transfers_with_first_check_query_base(before_or_after)
+  end
+
+  defp erc20_token_transfers_with_first_check_query_base(before_or_after) do
+    """
+    query {
+      token_transfers(
+        input: {
+          limit: 2,
+          sorter: [
+            { sort_type: DESC, sort_value: BLOCK_NUMBER }
+            { sort_type: ASC, sort_value: TRANSACTION_HASH }
+            { sort_type: ASC, sort_value: LOG_INDEX }
+          ],
+          #{before_or_after}
+        }
+      ) {
+        entries {
+          amount
+          transaction_hash
+          log_index
+          block_number
+          polyjuice {
+            status
+          }
+          from_address
+          to_address
+          block {
+            number
+            timestamp
+            status
+          }
+          udt {
+            id
+            decimal
+            symbol
+          }
+        }
+        metadata {
+          total_count
+          before
+          after
+        }
+      }
+    }
+    """
   end
 
   test "graphql: token_transfers with null input field ", %{

@@ -10,6 +10,10 @@ defmodule GodwokenExplorer.Graphql.SmartContractTest do
     polyjuice_contract_account = insert!(:polyjuice_contract_account)
     smart_contract = insert!(:smart_contract, account: polyjuice_contract_account)
 
+    for _ <- 1..3 do
+      _smart_contract = insert(:smart_contract)
+    end
+
     _cub =
       insert(:current_udt_balance,
         address_hash: smart_contract.account.eth_address,
@@ -96,12 +100,119 @@ defmodule GodwokenExplorer.Graphql.SmartContractTest do
                  "smart_contracts" => %{
                    "entries" => _,
                    "metadata" => %{
-                     "total_count" => 1
+                     "total_count" => 4
                    }
                  }
                }
              },
              json_response(conn, 200)
            )
+  end
+
+  test "graphql: smart_contracts with first page check ", %{conn: conn} do
+    query = """
+    query {
+      smart_contracts(
+        input: { limit: 2, sorter: [{ sort_type: DESC, sort_value: ID }] }
+      ) {
+        entries {
+          id
+        }
+        metadata {
+          total_count
+          after
+          before
+        }
+      }
+    }
+    """
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    %{
+      "data" => %{
+        "smart_contracts" => %{
+          "metadata" => %{
+            "after" => after_value
+          }
+        }
+      }
+    } = json_response(conn, 200)
+
+    query = smart_contract_with_first_page_check_query(after_value: after_value)
+
+    _smart_contract = insert(:smart_contract)
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    %{
+      "data" => %{
+        "smart_contracts" => %{
+          "metadata" => %{
+            "before" => before_value
+          }
+        }
+      }
+    } = json_response(conn, 200)
+
+    query = smart_contract_with_first_page_check_query(before_value: before_value)
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    %{
+      "data" => %{
+        "smart_contracts" => %{
+          "entries" => entries
+        }
+      }
+    } = json_response(conn, 200)
+
+    assert length(entries) == 2
+  end
+
+  defp smart_contract_with_first_page_check_query(before_value: before_value) do
+    """
+    query {
+      smart_contracts(input: {limit: 2, before: "#{before_value}" sorter: [{ sort_type: DESC, sort_value: ID }] }) {
+        entries {
+          id
+        }
+        metadata {
+          total_count
+          after
+          before
+        }
+      }
+    }
+    """
+  end
+
+  defp smart_contract_with_first_page_check_query(after_value: after_value) do
+    """
+    query {
+      smart_contracts(input: {limit: 2, after: "#{after_value}" sorter: [{ sort_type: DESC, sort_value: ID }] }) {
+        entries {
+          id
+        }
+        metadata {
+          total_count
+          after
+          before
+        }
+      }
+    }
+    """
   end
 end
