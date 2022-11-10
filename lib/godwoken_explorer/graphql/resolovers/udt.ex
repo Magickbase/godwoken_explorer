@@ -687,6 +687,14 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
     {:ok, return}
   end
 
+  def name(%{name: name, display_name: display_name}, _args, _resolution) do
+    {:ok, display_name || name}
+  end
+
+  def symbol(%{symbol: symbol, uan: uan}, _args, _resolution) do
+    {:ok, uan || symbol}
+  end
+
   defp base_udts_order_by(holders_count_query, input) do
     sorter = Map.get(input, :sorter)
 

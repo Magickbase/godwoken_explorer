@@ -131,8 +131,6 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
       ) {
         name
         symbol
-        uan
-        display_name
       }
     }
     """
@@ -147,10 +145,8 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
              %{
                "data" => %{
                  "udt" => %{
-                   "name" => ckb_udt.name,
-                   "symbol" => ckb_udt.symbol,
-                   "uan" => ckb_udt.uan,
-                   "display_name" => ckb_udt.display_name
+                   "name" => ckb_udt.display_name,
+                   "symbol" => ckb_udt.uan
                  }
                }
              }
