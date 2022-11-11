@@ -1329,8 +1329,23 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
   object :udt do
     field :id, :integer, description: "UDT ID is same with account id."
     field :decimal, :integer, description: "Set in contract."
-    field :name, :string, description: "[UAN](https://github.com/nervosnetwork/rfcs/pull/335)."
-    field :symbol, :string, description: "[UAN](https://github.com/nervosnetwork/rfcs/pull/335)."
+
+    field :name, :string do
+      description(
+        "For bridge token, read from [UAN](https://github.com/nervosnetwork/rfcs/pull/335);For native token, read from contract."
+      )
+
+      resolve(&Resolvers.UDT.name/3)
+    end
+
+    field :symbol, :string do
+      description(
+        "For bridge token, read from [UAN](https://github.com/nervosnetwork/rfcs/pull/335);For native token, read from contract."
+      )
+
+      resolve(&Resolvers.UDT.symbol/3)
+    end
+
     field :icon, :string, description: "UDT icon url."
     field :supply, :decimal, description: "Total supply."
     field :type_script, :json, description: "Layer1 udt's type script."
