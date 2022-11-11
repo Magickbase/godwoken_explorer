@@ -38,7 +38,7 @@ defmodule GodwokenIndexer.Worker.CheckContractUDT do
   end
 
   defp check_is_erc20(address) do
-    with %{name: _name, symbol: _symbol, supply: _supply, decimal: _decimal} <-
+    with %{name: name, symbol: symbol, supply: supply, decimal: decimal} <-
            MetadataRetriever.get_functions_of(address),
          %Account{id: id, contract_code: contract_code} <-
            Repo.get_by(Account, eth_address: address),
@@ -48,7 +48,11 @@ defmodule GodwokenIndexer.Worker.CheckContractUDT do
         id: id,
         type: :native,
         eth_type: :erc20,
-        contract_address_hash: address
+        contract_address_hash: address,
+        name: name,
+        symbol: symbol,
+        supply: supply,
+        decimal: decimal
       })
       |> Repo.insert()
 

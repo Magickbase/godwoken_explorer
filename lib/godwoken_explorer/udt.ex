@@ -569,4 +569,10 @@ defmodule GodwokenExplorer.UDT do
       conflict_target: :id
     )
   end
+
+  def async_fetch_total_supply(contract_address_hash) do
+    %{address_hash: contract_address_hash}
+    |> GodwokenIndexer.Worker.UpdateUDTInfo.new()
+    |> Oban.insert()
+  end
 end
