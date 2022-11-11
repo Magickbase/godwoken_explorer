@@ -503,7 +503,9 @@ defmodule GodwokenIndexer.Block.SyncWorker do
 
         udts
         |> Enum.each(fn %{contract_address_hash: contract_address_hash} ->
-          GodwokenIndexer.Fetcher.UDTInfo.fetch(to_string(contract_address_hash))
+          %{address_hash: contract_address_hash}
+          |> GodwokenIndexer.Worker.UpdateUDTInfo.new()
+          |> Oban.insert()
         end)
       end
     end

@@ -19,8 +19,10 @@ defmodule GodwokenExplorer.UDT do
   @typedoc """
     * `id` - Udt id is same with account id.
     * `decimal` - Set in contract.
-    * `symbol` - [UAN](https://github.com/nervosnetwork/rfcs/pull/335).
-    * `name` - [UAN](https://github.com/nervosnetwork/rfcs/pull/335).
+    * `symbol` - Read from contract.
+    * `name` - Read from contract.
+    * `uan` - [UAN](https://github.com/nervosnetwork/rfcs/pull/335).
+    * `display_name` - [UAN](https://github.com/nervosnetwork/rfcs/pull/335).
     * `icon` - UDT icon url.
     * `supply` - Total supply.
     * `type_script` - Layer1 udt's type script.
@@ -40,6 +42,8 @@ defmodule GodwokenExplorer.UDT do
           decimal: non_neg_integer(),
           symbol: String.t(),
           name: String.t(),
+          uan: String.t(),
+          display_name: String.t(),
           icon: String.t(),
           supply: Hash.Full.t(),
           type_script: non_neg_integer(),
@@ -77,6 +81,8 @@ defmodule GodwokenExplorer.UDT do
     field(:eth_type, Ecto.Enum, values: [:erc20, :erc721, :erc1155])
     field(:skip_metadata, :boolean)
     field(:is_fetched, :boolean)
+    field(:uan, :string)
+    field(:display_name, :string)
 
     belongs_to(:account, Account,
       foreign_key: :bridge_account_id,
@@ -110,7 +116,9 @@ defmodule GodwokenExplorer.UDT do
       :bridge_account_id,
       :eth_type,
       :skip_metadata,
-      :is_fetched
+      :is_fetched,
+      :uan,
+      :display_name
     ])
     |> unique_constraint(:id, name: :udts_pkey)
     |> unique_constraint(:contract_address_hash, name: :udts_contract_address_hash_index)
@@ -476,6 +484,7 @@ defmodule GodwokenExplorer.UDT do
     l2_udt_code_hash = Application.get_env(:godwoken_explorer, :l2_udt_code_hash)
     rollup_type_hash = Application.get_env(:godwoken_explorer, :rollup_type_hash)
     l1_udt_code_hash = Application.get_env(:godwoken_explorer, :l1_udt_code_hash)
+    ckb_script_hash = Application.get_env(:godwoken_explorer, :ckb_token_script_hash)
 
     udt_params =
       udt_list
@@ -492,7 +501,12 @@ defmodule GodwokenExplorer.UDT do
           "args" => l1_udt_script_args
         }
 
-        l1_script_hash = script_to_hash(l1_udt_script)
+        l1_script_hash =
+          if l1_udt_script_args == ckb_script_hash do
+            ckb_script_hash
+          else
+            script_to_hash(l1_udt_script)
+          end
 
         l2_account_script = %{
           "code_hash" => l2_udt_code_hash,
@@ -507,8 +521,10 @@ defmodule GodwokenExplorer.UDT do
              %Account{id: udt_id} <- Repo.get_by(Account, script_hash: l2_script_hash) do
           %{
             id: udt_id,
-            name: udt_info["displayName"] || name,
-            symbol: udt_info["UAN"] || symbol,
+            name: name,
+            symbol: symbol,
+            uan: udt_info["UAN"],
+            display_name: udt_info["displayName"],
             decimal: decimal,
             bridge_account_id: bridge_account_id,
             script_hash: l1_script_hash,
@@ -527,6 +543,8 @@ defmodule GodwokenExplorer.UDT do
           id: udt.bridge_account_id,
           name: udt.name,
           symbol: udt.symbol,
+          uan: udt.uan,
+          display_name: udt.display_name,
           contract_address_hash: udt.contract_address_hash,
           type: :native,
           eth_type: :erc20
@@ -537,7 +555,9 @@ defmodule GodwokenExplorer.UDT do
       udt_params |> Enum.map(fn udt -> Map.delete(udt, :contract_address_hash) end),
       for: UDT,
       timestamps: import_timestamps(),
-      on_conflict: {:replace, [:name, :symbol, :eth_type, :bridge_account_id, :updated_at]},
+      on_conflict:
+        {:replace,
+         [:name, :symbol, :uan, :display_name, :eth_type, :bridge_account_id, :updated_at]},
       conflict_target: :id
     )
 
@@ -545,8 +565,14 @@ defmodule GodwokenExplorer.UDT do
       native_udt_params,
       for: UDT,
       timestamps: import_timestamps(),
-      on_conflict: {:replace, [:name, :symbol, :eth_type, :updated_at]},
+      on_conflict: {:replace, [:name, :symbol, :uan, :display_name, :eth_type, :updated_at]},
       conflict_target: :id
     )
+  end
+
+  def async_fetch_total_supply(contract_address_hash) do
+    %{address_hash: contract_address_hash}
+    |> GodwokenIndexer.Worker.UpdateUDTInfo.new()
+    |> Oban.insert()
   end
 end

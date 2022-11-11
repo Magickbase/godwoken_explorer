@@ -7,6 +7,9 @@ defmodule GodwokenExplorer.UDTFactory do
         %UDT{
           id: 1,
           name: "pCKB",
+          symbol: "pCKB",
+          uan: "pCKB.gw|gb.ckb",
+          display_name: "pCKB (via Godwoken Bridge from CKB)",
           decimal: 18,
           script_hash: "0x0000000000000000000000000000000000000000000000000000000000000000",
           type: :bridge,

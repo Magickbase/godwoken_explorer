@@ -65,9 +65,5 @@ defmodule GodwokenExplorerWeb.API.UDTController do
     Task.async(fn ->
       AddressTransactionsCounter.fetch(account)
     end)
-
-    Task.async(fn ->
-      account.eth_address |> to_string() |> GodwokenIndexer.Fetcher.TotalSupplyOnDemand.fetch()
-    end)
   end
 end

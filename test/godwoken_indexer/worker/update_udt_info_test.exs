@@ -1,5 +1,5 @@
-defmodule GodwokenIndexer.Fetcher.UDTInfoTest do
-  use GodwokenExplorerWeb.ConnCase
+defmodule GodwokenIndexer.Worker.UpdateUDTInfoTest do
+  use GodwokenExplorer.DataCase
 
   import Mock
   import GodwokenExplorer.Factory
@@ -18,8 +18,10 @@ defmodule GodwokenIndexer.Fetcher.UDTInfoTest do
       get_functions_of: fn _address ->
         %{decimal: 18, name: "pCKB", supply: 100, symbol: "pCKB"}
       end do
-      GodwokenIndexer.Fetcher.UDTInfo.fetch(to_string(udt.contract_address_hash))
-      Process.sleep(1000)
+      GodwokenIndexer.Worker.UpdateUDTInfo.perform(%Oban.Job{
+        args: %{"address_hash" => udt.contract_address_hash}
+      })
+
       new_udt = Repo.reload!(udt)
 
       assert D.compare(new_udt.supply, D.new(10))

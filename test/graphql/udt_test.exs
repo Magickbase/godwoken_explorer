@@ -3,6 +3,8 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
 
   import GodwokenExplorer.Factory, only: [insert!: 1, insert!: 2, address_hash: 0, insert: 2]
 
+  alias GodwokenExplorer.{Repo, UDT}
+
   setup do
     {:ok, script_hash} =
       GodwokenExplorer.Chain.Hash.cast(
@@ -121,6 +123,66 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
       erc721_native_udt: erc721_native_udt,
       erc1155_native_udt: erc1155_native_udt
     ]
+  end
+
+  test "show bridge udt's uan as name symbol", %{conn: conn, ckb_udt: ckb_udt} do
+    query = """
+    query {
+      udt(
+        input: { id: #{ckb_udt.id} }
+      ) {
+        name
+        symbol
+      }
+    }
+    """
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    assert json_response(conn, 200) ==
+             %{
+               "data" => %{
+                 "udt" => %{
+                   "name" => ckb_udt.display_name,
+                   "symbol" => ckb_udt.uan
+                 }
+               }
+             }
+  end
+
+  test "show bridge udt's name symbol", %{conn: conn, ckb_udt: ckb_udt} do
+    query = """
+    query {
+      udt(
+        input: { id: #{ckb_udt.id} }
+      ) {
+        name
+        symbol
+      }
+    }
+    """
+
+    UDT.changeset(ckb_udt, %{display_name: nil, uan: nil}) |> Repo.update()
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    assert json_response(conn, 200) ==
+             %{
+               "data" => %{
+                 "udt" => %{
+                   "name" => ckb_udt.name,
+                   "symbol" => ckb_udt.symbol
+                 }
+               }
+             }
   end
 
   test "graphql: udt ", %{conn: conn, native_udt: native_udt} do

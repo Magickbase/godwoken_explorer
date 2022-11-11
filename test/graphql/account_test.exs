@@ -12,8 +12,7 @@ defmodule GodwokenExplorer.Graphql.AccountTest do
 
     native_udt = insert!(:native_udt)
 
-    ckb_udt =
-      insert!(:ckb_udt, script_hash: script_hash, bridge_account_id: native_udt.id)
+    ckb_udt = insert!(:ckb_udt, script_hash: script_hash, bridge_account_id: native_udt.id)
 
     ckb_account = insert!(:ckb_account, script_hash: script_hash)
     [native_udt: native_udt, ckb_udt: ckb_udt, ckb_account: ckb_account]
@@ -129,7 +128,7 @@ defmodule GodwokenExplorer.Graphql.AccountTest do
                  "type" => "UDT",
                  "bridged_udt" => %{
                    "id" => ckb_udt.id,
-                   "name" => ckb_udt.name
+                   "name" => ckb_udt.display_name
                  }
                }
              }
