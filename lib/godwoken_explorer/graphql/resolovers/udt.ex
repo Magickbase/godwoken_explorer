@@ -132,41 +132,48 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
         %{input: input},
         _resolution
       ) do
-    conditions =
-      Enum.reduce(input, true, fn arg, acc ->
-        case arg do
-          {:contract_address, value} ->
-            dynamic([u], ^acc and u.contract_address_hash == ^value)
+    with false <- %{} == input or is_nil(input) do
+      conditions =
+        Enum.reduce(input, true, fn arg, acc ->
+          case arg do
+            {:contract_address, value} ->
+              dynamic([u], ^acc and u.contract_address_hash == ^value)
 
-          {:id, value} ->
-            dynamic([u], ^acc and u.id == ^value)
+            {:id, value} ->
+              dynamic([u], ^acc and u.id == ^value)
 
-          {:bridge_account_id, value} ->
-            dynamic([u], ^acc and u.bridge_account_id == ^value)
+            {:bridge_account_id, value} ->
+              dynamic([u], ^acc and u.bridge_account_id == ^value)
 
-          _ ->
-            acc
+            _ ->
+              acc
+          end
+        end)
+
+      query =
+        from(u in UDT)
+        |> where(^conditions)
+
+      udt = Repo.one(query)
+      mapping_udt = UDT.find_mapping_udt(udt)
+      udt = merge_bridge_info_to_udt(udt, mapping_udt)
+      hc = UDT.count_holder(udt)
+
+      udt =
+        if udt do
+          if udt.contract_address_hash,
+            do: UDT.async_fetch_total_supply(udt.contract_address_hash)
+
+          udt |> Map.put(:holders_count, hc)
+        else
+          nil
         end
-      end)
 
-    query =
-      from(u in UDT)
-      |> where(^conditions)
-
-    udt = Repo.one(query)
-    mapping_udt = UDT.find_mapping_udt(udt)
-    udt = merge_bridge_info_to_udt(udt, mapping_udt)
-    hc = UDT.count_holder(udt)
-
-    udt =
-      if udt do
-        if udt.contract_address_hash, do: UDT.async_fetch_total_supply(udt.contract_address_hash)
-        udt |> Map.put(:holders_count, hc)
-      else
-        nil
-      end
-
-    {:ok, udt}
+      {:ok, udt}
+    else
+      _ ->
+        {:ok, nil}
+    end
   end
 
   defp merge_bridge_info_to_udt(udt, mapping_udt) do
