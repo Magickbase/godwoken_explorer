@@ -60,9 +60,19 @@ defmodule GodwokenExplorer.Graphql.Resolvers.TokenTransfer do
     query =
       from(t in Transaction, where: t.eth_hash == ^transaction_hash)
       |> join(:inner, [t], p in Polyjuice, on: p.tx_hash == t.hash)
-      |> select([_, p], p)
+      |> select([tx, p], %{p: p, tx: tx})
 
     return = Repo.one(query)
+
+    if return do
+      %{p: p, tx: tx} = return
+      eth_hash = Map.get(tx, :eth_hash)
+      result = p |> Map.from_struct() |> Map.put(:eth_hash, eth_hash)
+      {:ok, result}
+    else
+      {:ok, nil}
+    end
+
     {:ok, return}
   end
 
