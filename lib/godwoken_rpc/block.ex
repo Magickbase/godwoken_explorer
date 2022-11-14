@@ -62,14 +62,7 @@ defmodule GodwokenRPC.Block do
       after
         result -> result
       else
-        _error ->
-          {:ok,
-           %{
-             "gasLimit" => nil,
-             "gasUsed" => nil,
-             "size" => nil,
-             "logsBloom" => nil
-           }}
+        _error -> {:ok, nil}
       end
 
     %{
