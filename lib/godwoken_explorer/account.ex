@@ -440,9 +440,15 @@ defmodule GodwokenExplorer.Account do
         }
 
         script_hash = script_to_hash(account_script)
-        {:ok, account_id} = rpc().fetch_account_id(script_hash)
-        account = Account.manual_create_account!(account_id)
-        {:ok, account}
+
+        case rpc().fetch_account_id(script_hash) do
+          {:ok, account_id} ->
+            account = Account.manual_create_account!(account_id)
+            {:ok, account}
+
+          _ ->
+            {:error, nil}
+        end
     end
   end
 
