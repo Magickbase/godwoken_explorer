@@ -625,6 +625,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
 
     if created_contract_address_params != [] do
       created_contract_address_params
+      |> Enum.filter(fn p -> p.status == :succeed end)
       |> Enum.each(fn p ->
         Account.find_or_create_contract_by_eth_address(p.created_contract_address_hash)
 
