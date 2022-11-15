@@ -26,6 +26,7 @@ defmodule GodwokenExplorer.Graphql.Schemas.Graphql do
   import_types(GodwokenExplorer.Graphql.Types.Transaction)
   import_types(GodwokenExplorer.Graphql.Types.UDT)
   import_types(GodwokenExplorer.Graphql.Types.TokenInstance)
+  import_types(GodwokenExplorer.Graphql.Types.TokenExchangeRate)
 
   def middleware(middleware, _field, _object) do
     middleware
@@ -50,6 +51,7 @@ defmodule GodwokenExplorer.Graphql.Schemas.Graphql do
 
   mutation do
     import_fields(:sourcify_mutations)
+    import_fields(:token_exchange_rate_mutations)
   end
 
   # subscription do
