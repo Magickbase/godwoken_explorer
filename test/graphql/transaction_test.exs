@@ -31,6 +31,8 @@ defmodule GodwokenExplorer.Graphql.TransactionTest do
   test "graphql: transaction ", %{conn: conn, transaction: transaction} do
     eth_hash = transaction.eth_hash |> to_string()
 
+    _ = transaction |> GodwokenExplorer.Factory.with_polyjuice()
+
     query = """
     query {
         transaction(
@@ -51,6 +53,8 @@ defmodule GodwokenExplorer.Graphql.TransactionTest do
             type
           }
           polyjuice {
+            tx_hash
+            eth_hash
             is_create
             value
             status
@@ -80,7 +84,7 @@ defmodule GodwokenExplorer.Graphql.TransactionTest do
     assert match?(
              %{
                "data" => %{
-                 "transaction" => %{}
+                 "transaction" => %{"polyjuice" => %{"eth_hash" => ^eth_hash}}
                }
              },
              json_response(conn, 200)
