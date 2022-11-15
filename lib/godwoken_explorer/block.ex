@@ -182,7 +182,7 @@ defmodule GodwokenExplorer.Block do
         where: b.number <= ^latest_finalized_block_number and b.status == :committed
       )
 
-    updated_blocks = block_query |> Repo.all()
+    updated_blocks = block_query |> Repo.all(timeout: :infinity)
 
     {updated_blocks_number, nil} =
       block_query
