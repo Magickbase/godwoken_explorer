@@ -1,6 +1,6 @@
 defmodule GodwokenExplorer.Graphql.TokenTransferTest do
   use GodwokenExplorerWeb.ConnCase
-  import GodwokenExplorer.Factory, only: [insert!: 1, insert!: 2, insert: 2]
+  import GodwokenExplorer.Factory, only: [insert!: 1, insert!: 2, insert: 2, with_polyjuice: 1]
 
   setup do
     {:ok, args} =
@@ -9,7 +9,7 @@ defmodule GodwokenExplorer.Graphql.TokenTransferTest do
       )
 
     block = insert!(:block)
-    transaction = insert!(:transaction, args: args)
+    transaction = insert!(:transaction, args: args) |> with_polyjuice()
     transaction721 = insert!(:transaction, args: args)
     transaction1155 = insert!(:transaction, args: args)
 
@@ -655,7 +655,9 @@ defmodule GodwokenExplorer.Graphql.TokenTransferTest do
            )
   end
 
-  test "graphql: token_transfers ", %{conn: conn, token_transfer: _token_transfer} do
+  test "graphql: token_transfers ", %{conn: conn, token_transfer: token_transfer} do
+    eth_hash = token_transfer.transaction_hash |> to_string()
+
     query = """
     query {
       token_transfers(
@@ -680,6 +682,10 @@ defmodule GodwokenExplorer.Graphql.TokenTransferTest do
           from_account {
             eth_address
           }
+          polyjuice {
+            eth_hash
+            tx_hash
+          }
         }
 
         metadata {
@@ -701,7 +707,13 @@ defmodule GodwokenExplorer.Graphql.TokenTransferTest do
              %{
                "data" => %{
                  "token_transfers" => %{
-                   "entries" => _,
+                   "entries" => [
+                     %{
+                       "polyjuice" => %{
+                         "eth_hash" => ^eth_hash
+                       }
+                     }
+                   ],
                    "metadata" => %{
                      "total_count" => 1
                    }
