@@ -341,6 +341,12 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
 
       script_hashes = Enum.map(parsed_deposit_histories, &Map.fetch!(&1, :script_hash))
       udt_ids = Enum.map(parsed_deposit_histories, &Map.fetch!(&1, :udt_id))
+
+      udt_ids
+      |> Enum.each(fn udt_id ->
+        %{udt_id: udt_id} |> GodwokenIndexer.Worker.RefreshBridgedUDTSupply.new() |> Oban.insert()
+      end)
+
       Account.batch_import_accounts_with_script_hashes(script_hashes)
 
       script_hash_with_account_infos =
