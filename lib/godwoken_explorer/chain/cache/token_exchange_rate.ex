@@ -118,13 +118,7 @@ defmodule GodwokenExplorer.Chain.Cache.TokenExchangeRate do
   end
 
   defp fetch_from_cache(key) do
-    result = Helper.fetch_from_cache(key, @cache_name)
-
-    if result == 0 do
-      0
-    else
-      result
-    end
+    Helper.fetch_from_cache(key, @cache_name)
   end
 
   def put_into_cache(key, value) do
