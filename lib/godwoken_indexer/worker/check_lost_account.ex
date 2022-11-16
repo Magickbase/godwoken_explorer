@@ -8,6 +8,8 @@ defmodule GodwokenIndexer.Worker.CheckLostAccount do
 
   import Ecto.Query, only: [from: 2]
 
+  require Logger
+
   alias GodwokenExplorer.{Repo, KeyValue, Account}
 
   @check_batch_size 100
@@ -53,6 +55,8 @@ defmodule GodwokenIndexer.Worker.CheckLostAccount do
         less_ids =
           ((last_count..current_count |> Enum.to_list()) -- database_ids)
           |> Enum.sort()
+
+        Logger.info("Lost Account ids: #{less_ids |> Enum.join(",")}")
 
         Account.batch_import_accounts_with_ids(less_ids)
 
