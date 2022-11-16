@@ -13,7 +13,7 @@ defmodule GodwokenIndexer.Worker.RefreshBridgedUDTSupply do
     with %UDT{bridge_account_id: bridge_account_id} = u when not is_nil(bridge_account_id) <-
            Repo.get(UDT, udt_id),
          %UDT{contract_address_hash: contract_address_hash} = udt
-         when not is_nil(contract_address_hash) <- Repo.get_by(UDT, bridge_account_id) do
+         when not is_nil(contract_address_hash) <- Repo.get(UDT, bridge_account_id) do
       %{supply: supply} =
         contract_address_hash |> to_string() |> MetadataRetriever.get_total_supply_of()
 
