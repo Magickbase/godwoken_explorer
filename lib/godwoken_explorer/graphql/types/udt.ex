@@ -1364,6 +1364,11 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
     field :type, :udt_type, description: " Bridge means from layer1;Native means layer2 contract."
     field :eth_type, :eth_type, description: "EVM token type."
 
+    field :uan, :string, description: "[UAN](https://github.com/nervosnetwork/rfcs/pull/335)."
+
+    field :display_name, :string,
+      description: "[UAN](https://github.com/nervosnetwork/rfcs/pull/335)."
+
     field :account, :account do
       description("The mapping account of udt.")
       resolve(&Resolvers.UDT.account/3)
@@ -1374,6 +1379,11 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
     field :minted_count, :decimal do
       description("Count minted of udt.")
       resolve(&Resolvers.UDT.minted_count/3)
+    end
+
+    field :token_exchange_rate, :token_exchange_rate do
+      description("Token exchange rate of udt.")
+      resolve(&Resolvers.UDT.token_exchange_rate/3)
     end
   end
 

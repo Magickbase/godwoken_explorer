@@ -43,6 +43,20 @@ defmodule GodwokenExplorer.Chain.Cache.TokenExchangeRate do
     "token_symbol_exchange_rate_#{symbol_or_address_hash_str}"
   end
 
+  def sync_fetch_by_symbol(symbol) do
+    if cache_expired?(symbol) || value_is_empty?(symbol) do
+      update_cache_by_symbol(symbol)
+    end
+
+    cached_value =
+      symbol
+      |> cache_key()
+      |> fetch_from_cache()
+
+    updated_at = fetch_from_cache("#{cache_key(symbol)}_#{@last_update_key}")
+    {cached_value, updated_at}
+  end
+
   # fetching by symbol is not recommended to use because of possible collisions
   # fetch() should be used instead
   def fetch_by_symbol(symbol) do
@@ -107,7 +121,7 @@ defmodule GodwokenExplorer.Chain.Cache.TokenExchangeRate do
     result = Helper.fetch_from_cache(key, @cache_name)
 
     if result == 0 do
-      Decimal.new(0)
+      0
     else
       result
     end
