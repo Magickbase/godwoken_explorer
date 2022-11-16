@@ -1,73 +1,33 @@
 defmodule GodwokenIndexer.Worker.RefreshBridgedUDTSupply do
   @moduledoc """
-  Calculated bridge udt's supply with deposit amount subtract withdrawal amount.
+  Calculated bridge udt's supply when deposit and withdrawal request.
   """
   use Oban.Worker, queue: :default
 
-  import Ecto.Query, only: [from: 2]
-
-  alias GodwokenExplorer.{Account, Repo, KeyValue, DepositHistory, WithdrawalHistory, UDT}
+  alias GodwokenExplorer.{Repo, UDT}
   alias GodwokenExplorer.Token.MetadataRetriever
   alias Ecto.Multi
 
   @impl Oban.Worker
-  def perform(%Oban.Job{}) do
-    {key_value, start_time} =
-      case Repo.get_by(KeyValue, key: :last_udt_supply_at) do
-        nil ->
-          {:ok, key_value} =
-            %KeyValue{} |> KeyValue.changeset(%{key: :last_udt_supply_at}) |> Repo.insert()
+  def perform(%Oban.Job{args: %{"udt_id" => udt_id}}) do
+    with %UDT{bridge_account_id: bridge_account_id} = u when not is_nil(bridge_account_id) <-
+           Repo.get(UDT, udt_id),
+         %UDT{contract_address_hash: contract_address_hash} = udt
+         when not is_nil(contract_address_hash) <- Repo.get(UDT, bridge_account_id) do
+      %{supply: supply} =
+        contract_address_hash |> to_string() |> MetadataRetriever.get_total_supply_of()
 
-          {key_value, nil}
-
-        %KeyValue{value: value} = key_value when is_nil(value) ->
-          {key_value, nil}
-
-        %KeyValue{value: value} = key_value ->
-          {key_value, value |> Timex.parse!("{ISO:Extended}")}
-      end
-
-    end_time = Timex.now()
-
-    if start_time != end_time do
-      deposit_udt_ids = DepositHistory.distinct_udt(start_time, end_time)
-      withdrawal_udt_ids = WithdrawalHistory.distinct_udt(start_time, end_time)
-      udt_ids = deposit_udt_ids ++ withdrawal_udt_ids
-
-      Repo.transaction(fn ->
-        from(u in UDT,
-          join: a in Account,
-          on: a.id == u.bridge_account_id,
-          where: u.id in ^udt_ids,
-          select: {u, a.eth_address}
-        )
-        |> Repo.all()
-        |> Enum.each(fn {u, eth_address} ->
-          %{supply: supply} =
-            eth_address |> to_string() |> MetadataRetriever.get_total_supply_of()
-
-          Multi.new()
-          |> Multi.run(
-            :bridged_udt,
-            fn repo, _ ->
-              {:ok, u |> UDT.changeset(%{supply: supply}) |> repo.update()}
-            end
-          )
-          |> Multi.run(:native_udt, fn repo, _ ->
-            udt = repo.get(UDT, u.bridge_account_id)
-
-            if udt != nil do
-              {:ok, udt |> UDT.changeset(%{supply: supply}) |> repo.update()}
-            else
-              {:ok, nil}
-            end
-          end)
-          |> Repo.transaction()
-
-          KeyValue.changeset(key_value, %{value: end_time |> Timex.format!("{ISO:Extended}")})
-          |> Repo.update!()
-        end)
+      Multi.new()
+      |> Multi.run(
+        :bridged_udt,
+        fn repo, _ ->
+          {:ok, u |> UDT.changeset(%{supply: supply}) |> repo.update()}
+        end
+      )
+      |> Multi.run(:native_udt, fn repo, _ ->
+        {:ok, udt |> UDT.changeset(%{supply: supply}) |> repo.update()}
       end)
+      |> Repo.transaction()
     end
 
     :ok
