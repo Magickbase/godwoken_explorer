@@ -4,6 +4,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
   alias GodwokenExplorer.Account.{CurrentBridgedUDTBalance, CurrentUDTBalance, UDTBalance}
   alias GodwokenExplorer.TokenTransfer
   alias GodowokenExplorer.TokenInstance
+  alias GodwokenExplorer.Chain.Cache.TokenExchangeRate, as: CacheTokenExchangeRate
   import Ecto.Query
   # import Ecto.Query.API, only: [fragment: 1]
 
@@ -51,6 +52,25 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
   def minted_count(%{contract_address_hash: _contract_address_hash} = udt, _args, _resolution) do
     return = UDT.minted_count(udt) |> Decimal.new()
     {:ok, return}
+  end
+
+  def token_exchange_rate(%UDT{} = udt, _args, _resolution) do
+    symbol = udt.symbol
+
+    if symbol do
+      {exchange_rate, timestamp} = CacheTokenExchangeRate.sync_fetch_by_symbol(symbol)
+
+      exchange_rate =
+        if exchange_rate == 0 do
+          Decimal.new(0)
+        else
+          exchange_rate
+        end
+
+      {:ok, %{symbol: symbol, exchange_rate: exchange_rate, timestamp: timestamp}}
+    else
+      {:ok, nil}
+    end
   end
 
   def erc1155_minted_count(
