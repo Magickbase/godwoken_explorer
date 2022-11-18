@@ -15,8 +15,6 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
 
   @sorter_fields [:name, :supply, :id]
 
-  @valid_fetch_symbol ["CKB", "ETH", "BTC", "USDT", "BUSD"]
-
   def token_instance(
         %{token_contract_address_hash: token_contract_address_hash, token_id: token_id},
         _args,
@@ -60,20 +58,16 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
     symbol = udt.symbol
 
     if symbol do
-      if String.upcase(symbol) in @valid_fetch_symbol do
-        {exchange_rate, timestamp} = CacheTokenExchangeRate.sync_fetch_by_symbol(symbol)
+      {exchange_rate, timestamp} = CacheTokenExchangeRate.sync_fetch_by_symbol(symbol)
 
-        exchange_rate =
-          if exchange_rate == 0 do
-            Decimal.new(0)
-          else
-            exchange_rate
-          end
+      exchange_rate =
+        if exchange_rate == 0 do
+          Decimal.new(0)
+        else
+          exchange_rate
+        end
 
-        {:ok, %{symbol: symbol, exchange_rate: exchange_rate, timestamp: timestamp}}
-      else
-        {:ok, nil}
-      end
+      {:ok, %{symbol: symbol, exchange_rate: exchange_rate, timestamp: timestamp}}
     else
       {:ok, nil}
     end
