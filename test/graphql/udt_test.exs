@@ -14,16 +14,17 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
         "0x0000000000000000000000000000000000000000000000000000000000000000"
       )
 
-    symbol = "CKB"
-    native_udt = insert!(:native_udt, symbol: "CKB")
+    symbol = "CKB.ETH"
+    native_udt = insert!(:native_udt, symbol: symbol, uan: symbol)
+    fetch_symbol = hd(String.split(symbol, "."))
 
     TokenExchangeRate.put_into_cache(
-      "#{TokenExchangeRate.cache_key(symbol)}_last_update",
+      "#{TokenExchangeRate.cache_key(fetch_symbol)}_last_update",
       Helper.current_time()
     )
 
     exchange_rate = Decimal.new(10086)
-    TokenExchangeRate.put_into_cache(TokenExchangeRate.cache_key(symbol), exchange_rate)
+    TokenExchangeRate.put_into_cache(TokenExchangeRate.cache_key(fetch_symbol), exchange_rate)
 
     ckb_udt =
       insert!(:ckb_udt,
@@ -230,7 +231,7 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
                  "udt" => %{
                    "token_exchange_rate" => %{
                      "exchange_rate" => _,
-                     "symbol" => "CKB",
+                     "symbol" => "CKB.ETH",
                      "timestamp" => _
                    }
                  }
