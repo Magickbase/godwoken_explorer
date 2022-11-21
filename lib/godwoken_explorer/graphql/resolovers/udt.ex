@@ -56,9 +56,11 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
 
   def token_exchange_rate(%UDT{} = udt, _args, _resolution) do
     symbol = udt.symbol
+    uan = udt.uan
 
-    if symbol do
-      {exchange_rate, timestamp} = CacheTokenExchangeRate.sync_fetch_by_symbol(symbol)
+    if not is_nil(symbol) and not is_nil(uan) do
+      fetch_symbol = hd(String.split(symbol, "."))
+      {exchange_rate, timestamp} = CacheTokenExchangeRate.sync_fetch_by_symbol(fetch_symbol)
 
       exchange_rate =
         if exchange_rate == 0 do
