@@ -1,4 +1,5 @@
 defmodule GodwokenExplorer.Graphql.Schemas.Graphql do
+  alias GodwokenExplorer.Graphql.Middleware.NullFilter
   use Absinthe.Schema
   import_types(GodwokenExplorer.Graphql.Types.Custom)
   import_types(GodwokenExplorer.Graphql.Types.Custom.JSON)
@@ -28,7 +29,7 @@ defmodule GodwokenExplorer.Graphql.Schemas.Graphql do
   import_types(GodwokenExplorer.Graphql.Types.TokenInstance)
 
   def middleware(middleware, _field, _object) do
-    middleware
+    [NullFilter] ++ middleware
   end
 
   query do
