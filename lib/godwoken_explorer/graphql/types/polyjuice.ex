@@ -11,7 +11,12 @@ defmodule GodwokenExplorer.Graphql.Types.Polyjuice do
     field :value, :bigint, description: " pCKB transferred from `from_address` to `to_address`."
     field :input_size, :integer, description: "Data size."
     field :input, :chain_data, description: "Data sent along with the transaction."
-    field :tx_hash, :hash_full, description: "The transaction foreign key."
+    field :tx_hash, :hash_full, description: "The godwoken transaction hash."
+
+    field :eth_hash, :hash_full do
+      description("The polyjuce eth transaction hash.")
+      resolve(&Resolvers.Polyjuice.eth_hash/3)
+    end
 
     field :gas_used, :bigint,
       description:

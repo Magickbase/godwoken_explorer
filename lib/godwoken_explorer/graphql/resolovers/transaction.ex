@@ -275,13 +275,19 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
     end
   end
 
-  def polyjuice(%Transaction{hash: hash}, _args, _resolution) do
+  def polyjuice(%Transaction{hash: hash} = tx, _args, _resolution) do
     return =
       from(p in Polyjuice)
       |> where([p], p.tx_hash == ^hash)
       |> Repo.one()
 
-    {:ok, return}
+    if return do
+      eth_hash = Map.get(tx, :eth_hash)
+      result = return |> Map.from_struct() |> Map.put(:eth_hash, eth_hash)
+      {:ok, result}
+    else
+      {:ok, nil}
+    end
   end
 
   def polyjuice_creator(%Transaction{hash: hash}, _args, _resolution) do

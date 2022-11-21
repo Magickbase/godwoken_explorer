@@ -1015,6 +1015,9 @@ type Polyjuice {
   """This transaction deployed contract address."""
   created_contract_address_hash: HashAddress
 
+  """The polyjuce eth transaction hash."""
+  eth_hash: HashFull
+
   """Gas limited value."""
   gas_limit: Bigint
 
@@ -1053,7 +1056,7 @@ type Polyjuice {
   """
   transaction_index: Int
 
-  """The transaction foreign key."""
+  """The godwoken transaction hash."""
   tx_hash: HashFull
 
   """pCKB transferred from `from_address` to `to_address`."""
@@ -4357,7 +4360,9 @@ type Udt {
   """Count minted of udt."""
   minted_count: Decimal
 
-  """[UAN](https://github.com/nervosnetwork/rfcs/pull/335)."""
+  """
+  For bridge token, read from [UAN](https://github.com/nervosnetwork/rfcs/pull/335);For native token, read from contract.
+  """
   name: String
 
   """UDT's official site."""
@@ -4372,7 +4377,9 @@ type Udt {
   """Total supply."""
   supply: Decimal
 
-  """[UAN](https://github.com/nervosnetwork/rfcs/pull/335)."""
+  """
+  For bridge token, read from [UAN](https://github.com/nervosnetwork/rfcs/pull/335);For native token, read from contract.
+  """
   symbol: String
 
   """Bridge means from layer1;Native means layer2 contract."""
