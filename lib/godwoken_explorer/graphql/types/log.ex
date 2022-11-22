@@ -67,6 +67,10 @@ defmodule GodwokenExplorer.Graphql.Types.Log do
     field :block_number, :integer, description: "Layer2 block number."
     field :address_hash, :hash_address, description: "Contract address."
     field :block_hash, :hash_full, description: " Layer2 block hash."
+
+    field :udt, :udt do
+      resolve(&Resolvers.Log.udt/3)
+    end
   end
 
   input_object :log_input do

@@ -1,6 +1,7 @@
 defmodule GodwokenExplorer.Graphql.Resolvers.Log do
   alias GodwokenExplorer.Log
   alias GodwokenExplorer.Repo
+  alias GodwokenExplorer.UDT
 
   import Ecto.Query
   import GodwokenExplorer.Graphql.Common, only: [page_and_size: 2, sort_type: 3]
@@ -10,6 +11,11 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Log do
       query_logs(input)
       |> Repo.all()
 
+    {:ok, return}
+  end
+
+  def udt(%Log{address_hash: address_hash}, _, _resolution) do
+    return = Repo.get_by(UDT, contract_address_hash: address_hash)
     {:ok, return}
   end
 
