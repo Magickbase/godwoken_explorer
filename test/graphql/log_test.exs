@@ -11,11 +11,13 @@ defmodule GodwokenExplorer.Graphql.LogTest do
 
     transaction = build(:transaction, args: args)
     log = insert!(:log, transaction_hash: transaction.eth_hash)
-    [log: log]
+    udt = insert!(:native_udt, contract_address_hash: log.address_hash)
+    [log: log, udt: udt]
   end
 
   test "graphql: logs ", %{conn: conn, log: log} do
     block_number = log.block_number
+    contract_address_hash = log.address_hash |> to_string()
 
     query = """
     query {
@@ -28,6 +30,9 @@ defmodule GodwokenExplorer.Graphql.LogTest do
         second_topic
         third_topic
         fourth_topic
+        udt {
+          contract_address_hash
+        }
       }
     }
     """
@@ -43,7 +48,10 @@ defmodule GodwokenExplorer.Graphql.LogTest do
                "data" => %{
                  "logs" => [
                    %{
-                     "block_number" => ^block_number
+                     "block_number" => ^block_number,
+                     "udt" => %{
+                       "contract_address_hash" => ^contract_address_hash
+                     }
                    }
                  ]
                }
