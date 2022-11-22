@@ -2,7 +2,6 @@ defmodule GodwokenExplorer.Graphql.Types.Log do
   use Absinthe.Schema.Notation
   alias GodwokenExplorer.Graphql.Resolvers, as: Resolvers
   alias GodwokenExplorer.Graphql.Middleware.Downcase, as: MDowncase
-  alias GodwokenExplorer.Graphql.Middleware.TermRange, as: MTermRange
 
   object :log_querys do
     @desc """
@@ -41,7 +40,7 @@ defmodule GodwokenExplorer.Graphql.Types.Log do
     }
     ```
     """
-    field :logs, list_of(:log) do
+    field :logs, :paginate_logs do
       arg(:input, non_null(:log_input))
 
       middleware(MDowncase, [
@@ -51,9 +50,13 @@ defmodule GodwokenExplorer.Graphql.Types.Log do
         :fourth_topic
       ])
 
-      middleware(MTermRange, MTermRange.page_and_size_default_config())
       resolve(&Resolvers.Log.logs/3)
     end
+  end
+
+  object :paginate_logs do
+    field :entries, list_of(:log)
+    field :metadata, :paginate_metadata
   end
 
   object :log do
@@ -73,6 +76,17 @@ defmodule GodwokenExplorer.Graphql.Types.Log do
     end
   end
 
+  enum :logs_sorter do
+    value(:block_number)
+    value(:transaction_hash)
+    value(:index)
+  end
+
+  input_object :logs_sorter_input do
+    field :sort_type, :sort_type
+    field :sort_value, :logs_sorter
+  end
+
   input_object :log_input do
     field :transaction_hash, :hash_full
     field :first_topic, :string
@@ -80,8 +94,15 @@ defmodule GodwokenExplorer.Graphql.Types.Log do
     field :third_topic, :string
     field :fourth_topic, :string
     field :address_hash, :hash_address
+
+    field :sorter, list_of(:logs_sorter_input),
+      default_value: [
+        %{sort_type: :desc, sort_value: :block_number},
+        %{sort_type: :asc, sort_value: :transaction_hash},
+        %{sort_type: :asc, sort_value: :index}
+      ]
+
     import_fields(:block_range_input)
-    import_fields(:page_and_size_input)
-    import_fields(:sort_type_input)
+    import_fields(:paginate_input)
   end
 end

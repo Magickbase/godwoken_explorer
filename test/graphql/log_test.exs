@@ -21,17 +21,21 @@ defmodule GodwokenExplorer.Graphql.LogTest do
 
     query = """
     query {
-      logs(input: {}) {
-        transaction_hash
-        block_number
-        address_hash
-        data
-        first_topic
-        second_topic
-        third_topic
-        fourth_topic
-        udt {
-          contract_address_hash
+      logs(
+        input: { limit: 2, sorter: { sort_type: ASC, sort_value: BLOCK_NUMBER } }
+      ) {
+        entries {
+          transaction_hash
+          block_number
+          address_hash
+          data
+          first_topic
+          second_topic
+          third_topic
+          fourth_topic
+          udt {
+            contract_address_hash
+          }
         }
       }
     }
@@ -46,14 +50,16 @@ defmodule GodwokenExplorer.Graphql.LogTest do
     assert match?(
              %{
                "data" => %{
-                 "logs" => [
-                   %{
-                     "block_number" => ^block_number,
-                     "udt" => %{
-                       "contract_address_hash" => ^contract_address_hash
+                 "logs" => %{
+                   "entries" => [
+                     %{
+                       "block_number" => ^block_number,
+                       "udt" => %{
+                         "contract_address_hash" => ^contract_address_hash
+                       }
                      }
-                   }
-                 ]
+                   ]
+                 }
                }
              },
              json_response(conn, 200)
