@@ -2,6 +2,8 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Log do
   alias GodwokenExplorer.Log
   alias GodwokenExplorer.Repo
   alias GodwokenExplorer.UDT
+  alias GodwokenExplorer.SmartContract
+  alias GodwokenExplorer.Account
 
   import Ecto.Query
   import GodwokenExplorer.Graphql.Common, only: [cursor_order_sorter: 3]
@@ -25,6 +27,19 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Log do
 
   def udt(%Log{address_hash: address_hash}, _, _resolution) do
     return = Repo.get_by(UDT, contract_address_hash: address_hash)
+    {:ok, return}
+  end
+
+  def smart_contract(%Log{address_hash: address_hash}, _, _resolution) do
+    query =
+      from(a in Account,
+        where: a.eth_address == ^address_hash,
+        join: s in SmartContract,
+        on: s.account_id == a.id,
+        select: s
+      )
+
+    return = Repo.one(query)
     {:ok, return}
   end
 

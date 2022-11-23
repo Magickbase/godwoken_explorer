@@ -32,7 +32,7 @@ defmodule GodwokenExplorer.SmartContract do
           compiler_version: Hash.Address.t(),
           compiler_file_format: String.t(),
           other_info: String.t(),
-          account_id: Hash.Full.t(),
+          account_id: Integer.t(),
           account: %Ecto.Association.NotLoaded{} | Account.t(),
           inserted_at: NaiveDateTime.t(),
           updated_at: NaiveDateTime.t()
