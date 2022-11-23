@@ -60,9 +60,10 @@ defmodule GodwokenExplorer.Graphql.Resolvers.TokenTransfer do
     query =
       from(t in Transaction, where: t.eth_hash == ^transaction_hash)
       |> join(:inner, [t], p in Polyjuice, on: p.tx_hash == t.hash)
-      |> select([_, p], p)
+      |> select([t, p], p)
 
     return = Repo.one(query)
+
     {:ok, return}
   end
 

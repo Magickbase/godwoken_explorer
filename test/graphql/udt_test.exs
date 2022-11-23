@@ -245,6 +245,35 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
              },
              json_response(conn, 200)
            )
+
+    # id with null
+    query = """
+    query {
+      udt(
+        input: { id: null }
+      ) {
+        id
+        name
+        script_hash
+        contract_address_hash
+      }
+    }
+    """
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    assert match?(
+             %{
+               "data" => %{
+                 "udt" => nil
+               }
+             },
+             json_response(conn, 200)
+           )
   end
 
   test "graphql: erc20 udts ", %{conn: conn, native_udt: native_udt} do

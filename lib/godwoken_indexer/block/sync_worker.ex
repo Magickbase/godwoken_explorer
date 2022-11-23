@@ -671,6 +671,12 @@ defmodule GodwokenIndexer.Block.SyncWorker do
       udt_ids =
         withdrawal_params
         |> Enum.map(fn %{udt_id: udt_id} -> udt_id end)
+        |> Enum.uniq()
+
+      udt_ids
+      |> Enum.each(fn udt_id ->
+        %{udt_id: udt_id} |> GodwokenIndexer.Worker.RefreshBridgedUDTSupply.new() |> Oban.insert()
+      end)
 
       script_hash_to_eth_addresses =
         from(a in Account,
