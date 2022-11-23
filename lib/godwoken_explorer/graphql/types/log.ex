@@ -74,6 +74,10 @@ defmodule GodwokenExplorer.Graphql.Types.Log do
     field :udt, :udt do
       resolve(&Resolvers.Log.udt/3)
     end
+
+    field :smart_contract, :smart_contract do
+      resolve(&Resolvers.Log.smart_contract/3)
+    end
   end
 
   enum :logs_sorter do
