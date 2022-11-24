@@ -25,7 +25,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
+    environment: ${{ inputs.environment }}
     steps:
       - name: Update image on K8S
         uses: fjogeleit/http-request-action@v1
