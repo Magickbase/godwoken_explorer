@@ -9,7 +9,9 @@ jobs:
     uses: ./.github/workflows/build.yml 
     secrets: inherit
     with:
-      environment: prod_mainnet_v1    
+      environment: prod_mainnet_v1   
+      chain: mainnet_v1
+      graphiql: true
   deploy-update:
     needs: build
     uses: ./.github/workflows/deploy.yml 
