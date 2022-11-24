@@ -3,12 +3,13 @@ on:
   push:
     branches:
       - "godwoken-v1-testnet-prod"
-
 jobs:
   build:
     uses: ./.github/workflows/build.yml 
     with:
       environment: prod_testnet_v1_1
+      chain: testnet_v1_1
+      graphiql: true
     secrets: inherit
   deploy-update:
     needs: build
