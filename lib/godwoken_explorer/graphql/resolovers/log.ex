@@ -11,8 +11,8 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Log do
 
   import GodwokenExplorer.Graphql.Resolvers.Common, only: [paginate_query: 3]
 
-  @sorter_fields [:block_number, :transaction_hash, :index]
-  @default_sorter @sorter_fields
+  @sorter_fields [:transaction_hash, :index, :block_number]
+  @default_sorter [:transaction_hash, :index]
 
   def logs(_parent, %{input: input} = _args, _resolution) do
     input
@@ -89,12 +89,12 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Log do
     if sorter do
       order_params =
         sorter
-        |> cursor_order_sorter(:order, @sorter_fields)
+        |> cursor_order_sorter(:order, use_index_with_sorter_fields(input))
         |> default_uniq_cursor_order_fields(:order, [:transaction_hash, :index])
 
-      order_by(query, [u], ^order_params)
+      order_by(query, [l], ^order_params)
     else
-      order_by(query, [u], @default_sorter)
+      order_by(query, [l], @default_sorter)
     end
   end
 
@@ -103,10 +103,19 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Log do
 
     if sorter do
       sorter
-      |> cursor_order_sorter(:cursor, @sorter_fields)
-      |> default_uniq_cursor_order_fields(:cursor, [:hash])
+      |> cursor_order_sorter(:cursor, use_index_with_sorter_fields(input))
+      |> default_uniq_cursor_order_fields(:cursor, [:transaction_hash, :index])
     else
       @default_sorter
+    end
+  end
+
+  defp use_index_with_sorter_fields(input) do
+    ## if transaction hash condition exist, change searching strategy to use index without block_number
+    if input[:transaction_hash] do
+      @sorter_fields -- [:block_number]
+    else
+      @sorter_fields
     end
   end
 end

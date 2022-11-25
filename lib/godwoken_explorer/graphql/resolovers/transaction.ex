@@ -13,7 +13,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
   import GodwokenExplorer.Graphql.Utils, only: [default_uniq_cursor_order_fields: 3]
 
   @sorter_fields [:block_number, :index, :hash]
-  @default_sorter [:block_number, :index, :hash]
+  @default_sorter @sorter_fields
   @account_tx_limit 100_000
 
   def transaction(_parent, %{input: input} = _args, _resolution) do

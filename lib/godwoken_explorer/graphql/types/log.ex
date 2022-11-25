@@ -81,9 +81,9 @@ defmodule GodwokenExplorer.Graphql.Types.Log do
   end
 
   enum :logs_sorter do
-    value(:block_number)
     value(:transaction_hash)
     value(:index)
+    value(:block_number)
   end
 
   input_object :logs_sorter_input do
@@ -101,7 +101,6 @@ defmodule GodwokenExplorer.Graphql.Types.Log do
 
     field :sorter, list_of(:logs_sorter_input),
       default_value: [
-        %{sort_type: :desc, sort_value: :block_number},
         %{sort_type: :asc, sort_value: :transaction_hash},
         %{sort_type: :asc, sort_value: :index}
       ]
