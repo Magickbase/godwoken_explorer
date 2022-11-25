@@ -97,7 +97,7 @@ defmodule GodwokenExplorer.Graphql.SourcifyTest do
     }
     """
 
-    udt_account_id = udt_account.id |> to_string()
+    udt_account_id = udt_account.id
 
     conn =
       post(conn, "/graphql", %{
@@ -123,7 +123,7 @@ defmodule GodwokenExplorer.Graphql.SourcifyTest do
     transaction: transaction
   } do
     address = unregistered_udt_account.eth_address |> to_string()
-    unregistered_udt_account_id = unregistered_udt_account.id |> to_string()
+    unregistered_udt_account_id = unregistered_udt_account.id
     deployment_tx_hash = transaction.eth_hash |> to_string()
 
     query = """
