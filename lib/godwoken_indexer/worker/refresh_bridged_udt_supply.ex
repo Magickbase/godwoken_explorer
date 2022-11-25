@@ -2,7 +2,7 @@ defmodule GodwokenIndexer.Worker.RefreshBridgedUDTSupply do
   @moduledoc """
   Calculated bridge udt's supply when deposit and withdrawal request.
   """
-  use Oban.Worker, queue: :default
+  use Oban.Worker, queue: :default, unique: [period: 60]
 
   alias GodwokenExplorer.{Repo, UDT}
   alias GodwokenExplorer.Token.MetadataRetriever
