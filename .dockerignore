@@ -16,3 +16,10 @@ erl_crash.dump
 
 # Static artifacts
 node_modules
+.git
+.github
+docker
+docker_compose
+docs
+README.md
+.gitignore

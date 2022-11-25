@@ -1,0 +1,53 @@
+name: Pull, build docker image and push to repository
+on: 
+  workflow_call:
+    inputs:
+      environment:
+        required: false
+        type: string
+        default: staging
+      chain:
+        type: string 
+        required: true
+      graphiql:
+        type: boolean
+        required: false
+        default: true
+    secrets:
+      GHCR_USERNAME:
+        required: true
+      GHCR_TOKEN:
+        required: true
+      GRAFANA_HOST:
+        required: true
+      GRAFANA_AUTH_TOKEN:
+        required: true
+      GRAFANA_FOLDER_NAME:
+        required: true
+    outputs:
+      image:
+        description: URL for docker image with tag
+        value: ${{ jobs.build.outputs.image }}
+jobs:        
+  build:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    outputs:
+      image: '${{ steps.docker_build.outputs.imageFullName }}:${{ steps.docker_build.outputs.tags }}'
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: satackey/action-docker-layer-caching@v0.0.11
+        # Ignore the failure of a step and avoid terminating the job.
+        continue-on-error: true
+      - name: Build and push
+        id: docker_build
+        uses: mr-smithers-excellent/docker-build-push@v5
+        with:
+          image: gwscan-api
+          registry: ghcr.io
+          githubOrg: magickbase # optional
+          buildArgs: "GODWOKEN_CHAIN=${{ inputs.chain }},GWSCAN_GRAPHIQL=${{ inputs.graphiql }},GRAFANA_HOST=${{ secrets.GRAFANA_HOST }},GRAFANA_AUTH_TOKEN=${{ secrets.GRAFANA_AUTH_TOKEN }},GRAFANA_FOLDER_NAME=${{ secrets.GRAFANA_FOLDER_NAME }} "
+          dockerfile: docker/Dockerfile
+          username: ${{ secrets.GHCR_USERNAME }}
+          password: ${{ secrets.GHCR_TOKEN }}
