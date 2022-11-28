@@ -1,4 +1,4 @@
-name: gwscan build and run
+name: Deploy to mainnet v0
 on:
   push:
     tags:
