@@ -120,7 +120,7 @@ defmodule GodwokenExplorer.Transaction do
   # TODO: from and to may can refactor to be a single method
   def latest_10_records do
     case Transactions.all() do
-      txs when is_list(txs) and length(txs) == 10 ->
+      txs when is_list(txs) and txs != [] ->
         txs
         |> Enum.map(fn t ->
           t
