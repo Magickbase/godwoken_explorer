@@ -15,7 +15,7 @@ jobs:
     needs: build
     uses: ./.github/workflows/deploy.yml 
     with:
-      k8s-namespace: staging
+      k8s-namespace: testnet
       k8s-workload: gwscan-api
       image: ${{ needs.build.outputs.image }}
       environment: prod_testnet_v1_1
