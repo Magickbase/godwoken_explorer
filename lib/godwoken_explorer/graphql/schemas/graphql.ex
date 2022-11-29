@@ -1,5 +1,7 @@
 defmodule GodwokenExplorer.Graphql.Schemas.Graphql do
   alias GodwokenExplorer.Graphql.Middleware.NullFilter
+  alias GodwokenExplorer.Graphql.Dataloader.GraphqlEcto
+
   use Absinthe.Schema
   import_types(GodwokenExplorer.Graphql.Types.Custom)
   import_types(GodwokenExplorer.Graphql.Types.Custom.JSON)
@@ -30,6 +32,18 @@ defmodule GodwokenExplorer.Graphql.Schemas.Graphql do
 
   def middleware(middleware, _field, _object) do
     [NullFilter] ++ middleware
+  end
+
+  def context(ctx) do
+    loader =
+      Dataloader.new()
+      |> Dataloader.add_source(:graphql, GraphqlEcto.data())
+
+    Map.put(ctx, :loader, loader)
+  end
+
+  def plugins do
+    [Absinthe.Middleware.Dataloader] ++ Absinthe.Plugin.defaults()
   end
 
   query do

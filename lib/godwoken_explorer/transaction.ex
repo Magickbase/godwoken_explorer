@@ -68,6 +68,16 @@ defmodule GodwokenExplorer.Transaction do
       type: :integer
     )
 
+    has_one(:polyjuice, Polyjuice,
+      foreign_key: :tx_hash,
+      references: :hash
+    )
+
+    has_one(:polyjuice_creator, PolyjuiceCreator,
+      foreign_key: :tx_hash,
+      references: :hash
+    )
+
     field :method_id, Data
     field :method_name, :string
     timestamps()
