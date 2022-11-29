@@ -93,12 +93,16 @@ gwscan_block_sync_l1_block_woker_on_off =
 gwscan_block_pending_transaction_woker_on_off =
   System.get_env("GWSCAN_BLOCK_PENDING_TRANSACTION_WORKER_ON_OFF", "false") |> String.to_atom()
 
+gwscan_udt_fetcher_on_off =
+  System.get_env("GWSCAN_UDT_FETCHER_ON_OFF", "false") |> String.to_atom()
+
 config :godwoken_explorer, :on_off,
   sync_worker: gwscan_block_sync_woker_on_off,
   global_state_worker: gwscan_block_global_state_worker_on_off,
   bind_l1_l2_worker: gwscan_block_bind_l1_l2_woker_on_off,
   sync_l1_block_worker: gwscan_block_sync_l1_block_woker_on_off,
-  pending_transaction_worker: gwscan_block_pending_transaction_woker_on_off
+  pending_transaction_worker: gwscan_block_pending_transaction_woker_on_off,
+  udt_fetcher: gwscan_udt_fetcher_on_off
 
 gwscan_dashboard_username = System.get_env("GWSCAN_DASHBOARD_USERNAME", "admin")
 gwscan_dashboard_password = System.get_env("GWSCAN_DASHBOARD_PASSWORD", "password")
