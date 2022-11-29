@@ -60,6 +60,14 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
 
     if not is_nil(symbol) and not is_nil(uan) do
       fetch_symbol = hd(String.split(symbol, "."))
+
+      fetch_symbol =
+        if fetch_symbol == "pCKB" do
+          "CKB"
+        else
+          fetch_symbol
+        end
+
       {exchange_rate, timestamp} = CacheTokenExchangeRate.sync_fetch_by_symbol(fetch_symbol)
 
       exchange_rate =
