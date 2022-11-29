@@ -1,24 +1,22 @@
-name: gwscan build and run
+name: Deploy to testnet v1.1
 on:
   push:
     branches:
       - "godwoken-v1-testnet-prod"
-
 jobs:
-  prod-testnet-v1-build-run:
-    runs-on: [self-hosted, godwoken-v1-testnet-prod]
-    environment: prod_testnet_v1_1
-    env:
-      ENV_FILE_PATH: ${{secrets.ENV_FILE_PATH}}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Docker Compose build
-        run: docker-compose -f ./docker_compose/gwscan_compose.yml --env-file ${{secrets.ENV_FILE_PATH}} build gwscan
-
-      - name: Docker Compose run
-        run: docker-compose -f ./docker_compose/gwscan_compose.yml --env-file ${{secrets.ENV_FILE_PATH}} up -d --force-recreate gwscan
-
-      - name: Clean up unused images
-        run: docker image prune -f
+  build:
+    uses: ./.github/workflows/build.yml 
+    with:
+      environment: prod_testnet_v1_1
+      chain: testnet_v1_1
+      graphiql: true
+    secrets: inherit
+  deploy-update:
+    needs: build
+    uses: ./.github/workflows/deploy.yml 
+    with:
+      k8s-namespace: testnet
+      k8s-workload: gwscan-api
+      image: ${{ needs.build.outputs.image }}
+      environment: prod_testnet_v1_1
+    secrets: inherit  

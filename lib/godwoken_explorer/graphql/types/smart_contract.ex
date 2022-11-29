@@ -169,7 +169,7 @@ defmodule GodwokenExplorer.Graphql.Types.SmartContract do
     field :abi, list_of(:json), description: "Contract abi."
     field :contract_source_code, :string, description: "Contract code."
     field :name, :string, description: "Contract name."
-    field :account_id, :string, description: "The account foreign key."
+    field :account_id, :integer, description: "The account foreign key."
     field :constructor_arguments, :string, description: "Contract constructor arguments."
 
     field :deployment_tx_hash, :hash_full,
