@@ -1,4 +1,3 @@
-# defmodule GodwokenExplorer.Graphql.Workers.Sourcify do
 defmodule GodwokenIndexer.Workers.Sourcify do
   alias GodwokenExplorer.Graphql.Sourcify
 

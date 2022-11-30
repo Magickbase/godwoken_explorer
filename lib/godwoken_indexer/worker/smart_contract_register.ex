@@ -1,4 +1,3 @@
-# defmodule GodwokenExplorer.Graphql.Workers.SmartContractRegister do
 defmodule GodwokenIndexer.Workers.SmartContractRegister do
   alias GodwokenIndexer.Workers.Sourcify, as: ObanSourcify
 
