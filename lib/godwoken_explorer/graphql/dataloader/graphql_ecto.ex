@@ -4,7 +4,6 @@ defmodule GodwokenExplorer.Graphql.Dataloader.GraphqlEcto do
   end
 
   def query(queryable, _params) do
-    IO.inspect(queryable, label: :ggggg)
     queryable
   end
 end
