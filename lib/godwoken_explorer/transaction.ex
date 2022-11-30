@@ -130,7 +130,7 @@ defmodule GodwokenExplorer.Transaction do
   # TODO: from and to may can refactor to be a single method
   def latest_10_records do
     case Transactions.all() do
-      txs when is_list(txs) and length(txs) == 10 ->
+      txs when is_list(txs) and txs != [] ->
         txs
         |> Enum.map(fn t ->
           t
@@ -138,18 +138,12 @@ defmodule GodwokenExplorer.Transaction do
         end)
 
       _ ->
-        case from(b in Block,
-               where: b.transaction_count >= 10,
-               order_by: [desc: b.number],
-               limit: 1
-             )
-             |> Repo.one() do
-          %Block{number: number} ->
-            list_tx_hash_by_transaction_query(dynamic([t], t.block_number >= ^number))
-
-          nil ->
-            list_tx_hash_by_transaction_query(true)
-        end
+        from(t in Transaction,
+          where: not is_nil(t.index),
+          select:
+            fragment("CASE WHEN ? IS NOT NULL THEN ? ELSE ? END", t.eth_hash, t.eth_hash, t.hash),
+          order_by: [desc: t.block_number]
+        )
         |> limit(10)
         |> Repo.all()
         |> list_home_transaction_by_tx_hash()
