@@ -1,4 +1,4 @@
-defmodule GodwokenIndexer.Workers.Sourcify do
+defmodule GodwokenIndexer.Worker.Sourcify do
   alias GodwokenExplorer.Graphql.Sourcify
 
   use Oban.Worker, queue: :default, unique: [period: :infinity, states: Oban.Job.states()]

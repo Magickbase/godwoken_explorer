@@ -1,5 +1,5 @@
-defmodule GodwokenIndexer.Workers.SmartContractRegister do
-  alias GodwokenIndexer.Workers.Sourcify, as: ObanSourcify
+defmodule GodwokenIndexer.Worker.SmartContractRegister do
+  alias GodwokenIndexer.Worker.Sourcify, as: ObanSourcify
 
   alias GodwokenExplorer.Repo
   alias GodwokenExplorer.{Account, SmartContract}
