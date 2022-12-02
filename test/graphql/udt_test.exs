@@ -4,6 +4,8 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
   import GodwokenExplorer.Factory, only: [insert!: 1, insert!: 2, address_hash: 0, insert: 2]
 
   alias GodwokenExplorer.{Repo, UDT}
+  alias GodwokenExplorer.Chain.Cache.TokenExchangeRate
+  alias GodwokenExplorer.Counters.Helper
 
   setup do
     {:ok, script_hash} =
@@ -12,7 +14,17 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
         "0x0000000000000000000000000000000000000000000000000000000000000000"
       )
 
-    native_udt = insert!(:native_udt)
+    symbol = "CKB.ETH"
+    native_udt = insert!(:native_udt, symbol: symbol, uan: symbol)
+    fetch_symbol = hd(String.split(symbol, "."))
+
+    TokenExchangeRate.put_into_cache(
+      "#{TokenExchangeRate.cache_key(fetch_symbol)}_last_update",
+      Helper.current_time()
+    )
+
+    exchange_rate = Decimal.new(10086)
+    TokenExchangeRate.put_into_cache(TokenExchangeRate.cache_key(fetch_symbol), exchange_rate)
 
     ckb_udt =
       insert!(:ckb_udt,
@@ -194,6 +206,12 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
         input: { contract_address: "#{contract_address_hash}" }
       ) {
         id
+        symbol
+        token_exchange_rate {
+          symbol
+          exchange_rate
+          timestamp
+        }
         name
         script_hash
         contract_address_hash
@@ -210,7 +228,13 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
     assert match?(
              %{
                "data" => %{
-                 "udt" => %{}
+                 "udt" => %{
+                   "token_exchange_rate" => %{
+                     "exchange_rate" => _,
+                     "symbol" => "CKB.ETH",
+                     "timestamp" => _
+                   }
+                 }
                }
              },
              json_response(conn, 200)
