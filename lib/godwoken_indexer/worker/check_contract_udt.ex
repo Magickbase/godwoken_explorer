@@ -30,7 +30,7 @@ defmodule GodwokenIndexer.Worker.CheckContractUDT do
           from(u in UDT, where: u.eth_type == :erc721)
 
         :erc1155 ->
-          from(u in UDT, where: u.eth_type == :erc721)
+          from(u in UDT, where: u.eth_type == :erc1155)
       end
 
     st = Repo.stream(q)
