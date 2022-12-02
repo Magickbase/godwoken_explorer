@@ -453,6 +453,23 @@ defmodule GodwokenRPC do
     end
   end
 
+  @spec fetch_mempool_transaction(String.t()) ::
+          {:error, :node_error}
+          | {:ok,
+             %{
+               status: String.t(),
+               transaction: %{
+                 hash: String.t(),
+                 raw: %{
+                   args: String.t(),
+                   chain_id: String.t(),
+                   from_id: String.t(),
+                   nonce: String.t(),
+                   to_id: String.t()
+                 },
+                 signature: String.t()
+               }
+             }}
   def fetch_mempool_transaction(tx_hash) do
     options = Application.get_env(:godwoken_explorer, :mempool_rpc_named_arguments)
 
