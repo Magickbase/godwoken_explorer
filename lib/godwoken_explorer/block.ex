@@ -187,7 +187,7 @@ defmodule GodwokenExplorer.Block do
     {updated_blocks_number, nil} =
       block_query
       |> Repo.update_all(
-        set: [status: "finalized", updated_at: DateTime.now!("Etc/UTC")],
+        [set: [status: "finalized", updated_at: DateTime.now!("Etc/UTC")]],
         timeout: :infinity
       )
 
