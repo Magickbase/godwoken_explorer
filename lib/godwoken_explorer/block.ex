@@ -177,9 +177,22 @@ defmodule GodwokenExplorer.Block do
   end
 
   def update_blocks_finalized(latest_finalized_block_number) do
+    last_finalized_block_number =
+      case from(b in Block,
+             where: b.status == :finalized,
+             select: b.number,
+             order_by: [desc: b.number],
+             limit: 1
+           )
+           |> Repo.one() do
+        nil -> 0
+        number -> number
+      end
+
     block_query =
       from(b in Block,
-        where: b.number <= ^latest_finalized_block_number and b.status == :committed
+        where:
+          b.number > ^last_finalized_block_number and b.number <= ^latest_finalized_block_number
       )
 
     updated_blocks = block_query |> Repo.all(timeout: :infinity)
