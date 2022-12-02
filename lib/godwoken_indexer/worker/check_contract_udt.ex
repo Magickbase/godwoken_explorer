@@ -9,14 +9,41 @@ defmodule GodwokenIndexer.Worker.CheckContractUDT do
 
   alias GodwokenExplorer.{Account, Repo, SmartContract, UDT}
   alias GodwokenExplorer.Token.MetadataRetriever
+  alias GodwokenIndexer.Worker.CheckContractUDT
 
   @impl Oban.Worker
   def perform(%Oban.Job{args: %{"address" => address}}) do
+    do_perform(address)
+    :ok
+  end
+
+  def do_perform(address) do
     check_is_erc721(address)
     check_is_erc1155(address)
     check_is_erc20(address)
+  end
 
-    :ok
+  def recheck_contract_udt(type) when type in [:erc1155, :erc721] do
+    q =
+      case type do
+        :erc721 ->
+          from(u in UDT, where: u.eth_type == :erc721)
+
+        :erc1155 ->
+          from(u in UDT, where: u.eth_type == :erc721)
+      end
+
+    st = Repo.stream(q)
+
+    Repo.transaction(fn ->
+      Enum.each(st, fn u ->
+        address = u.contract_address_hash |> to_string()
+
+        %{address: address}
+        |> CheckContractUDT.new()
+        |> Oban.insert()
+      end)
+    end)
   end
 
   defp check_is_erc1155(address) do

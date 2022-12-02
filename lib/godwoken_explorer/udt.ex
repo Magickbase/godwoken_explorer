@@ -412,7 +412,8 @@ defmodule GodwokenExplorer.UDT do
 
   def is_erc721?(contract_address) do
     method_sig = "0x01ffc9a7"
-    erc721_interface_id = "780e9d63"
+    # https://eips.ethereum.org/EIPS/eip-721#specification
+    erc721_interface_id = "80ac58cd"
 
     case GodwokenRPC.eth_call(%{
            to: contract_address,
@@ -424,7 +425,7 @@ defmodule GodwokenExplorer.UDT do
                erc721_interface_id <> "00000000000000000000000000000000000000000000000000000000"
          }) do
       {:ok, result} ->
-        result == "0x0000000000000000000000000000000000000000000000000000000000000000"
+        result == "0x0000000000000000000000000000000000000000000000000000000000000001"
 
       _ ->
         false
@@ -433,7 +434,8 @@ defmodule GodwokenExplorer.UDT do
 
   def is_erc1155?(contract_address) do
     method_sig = "0x01ffc9a7"
-    erc1155_interface_id = "4e2312e0"
+    # https://eips.ethereum.org/EIPS/eip-1155#specification
+    erc1155_interface_id = "d9b67a26"
 
     case GodwokenRPC.eth_call(%{
            to: contract_address,
@@ -445,7 +447,7 @@ defmodule GodwokenExplorer.UDT do
                erc1155_interface_id <> "00000000000000000000000000000000000000000000000000000000"
          }) do
       {:ok, result} ->
-        result == "0x0000000000000000000000000000000000000000000000000000000000000000"
+        result == "0x0000000000000000000000000000000000000000000000000000000000000001"
 
       _ ->
         false
