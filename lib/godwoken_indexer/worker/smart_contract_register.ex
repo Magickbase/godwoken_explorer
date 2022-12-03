@@ -1,5 +1,5 @@
-defmodule GodwokenExplorer.Graphql.Workers.SmartContractRegister do
-  alias GodwokenExplorer.Graphql.Workers.Sourcify, as: ObanSourcify
+defmodule GodwokenIndexer.Worker.SmartContractRegister do
+  alias GodwokenIndexer.Worker.Sourcify, as: ObanSourcify
 
   alias GodwokenExplorer.Repo
   alias GodwokenExplorer.{Account, SmartContract}
@@ -9,14 +9,26 @@ defmodule GodwokenExplorer.Graphql.Workers.SmartContractRegister do
   use Oban.Worker, queue: :default
   @impl Oban.Worker
   def perform(%Oban.Job{}) do
+    do_perform()
+    :ok
+  end
+
+  def do_perform() do
     last_100_unregistered_polyjuice_contracts = get_unregistered_eth_addresses() |> Repo.all()
 
-    Enum.each(last_100_unregistered_polyjuice_contracts, fn account ->
-      account
-      |> ObanSourcify.new()
-      |> Oban.insert()
-    end)
-    :ok
+    # oban open community version, need insert one by one to avoid duplicate job
+    Enum.chunk_every(last_100_unregistered_polyjuice_contracts, 10)
+    |> Task.async_stream(
+      fn accounts ->
+        Enum.each(accounts, fn account ->
+          account
+          |> ObanSourcify.new()
+          |> Oban.insert()
+        end)
+      end,
+      timeout: :infinity
+    )
+    |> Enum.to_list()
   end
 
   def get_unregistered_eth_addresses() do
