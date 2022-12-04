@@ -58,18 +58,35 @@ defmodule GodwokenIndexer.Block.PendingTransactionWorker do
         params
         |> Enum.map(fn transaction ->
           tx = transaction["transaction"]
-          tx["raw"] |> parse_raw() |> Map.put(:hash, tx["hash"])
+          tx["raw"] |> parse_raw() |> Map.merge(%{hash: tx["hash"], eth_hash: nil})
         end)
 
-      {polyjuice_params, polyjuice_creator_params, _eth_addr_reg_params} =
-        group_transaction_params(pending_transaction_attrs)
-
-      import_polyjuice(polyjuice_params)
-
-      import_polyjuice_creator(polyjuice_creator_params)
-
-      import_transaction(pending_transaction_attrs)
+      import_attrs(pending_transaction_attrs)
     end
+  end
+
+  def parse_and_import(eth_hash) do
+    with {:ok, transaction} <- GodwokenRPC.fetch_mempool_transaction(eth_hash) do
+      tx = transaction["transaction"]
+
+      pending_transaction_attr =
+        tx["raw"] |> parse_raw() |> Map.merge(%{hash: tx["hash"], eth_hash: eth_hash})
+
+      import_attrs([pending_transaction_attr])
+    else
+      _ -> {0, nil}
+    end
+  end
+
+  defp import_attrs(pending_transaction_attrs) do
+    {polyjuice_params, polyjuice_creator_params, _eth_addr_reg_params} =
+      group_transaction_params(pending_transaction_attrs)
+
+    import_polyjuice(polyjuice_params)
+
+    import_polyjuice_creator(polyjuice_creator_params)
+
+    import_transaction(pending_transaction_attrs)
   end
 
   defp import_polyjuice(polyjuice_with_receipts) do
@@ -157,6 +174,7 @@ defmodule GodwokenIndexer.Block.PendingTransactionWorker do
     params
     |> Enum.map(fn %{
                      hash: hash,
+                     eth_hash: eth_hash,
                      from_account_id: from_account_id,
                      to_account_id: to_account_id,
                      args: args,
@@ -165,6 +183,7 @@ defmodule GodwokenIndexer.Block.PendingTransactionWorker do
                    } ->
       %{
         hash: hash,
+        eth_hash: eth_hash,
         from_account_id: from_account_id,
         to_account_id: to_account_id,
         args: args,
@@ -181,13 +200,13 @@ defmodule GodwokenIndexer.Block.PendingTransactionWorker do
      grouped[:eth_address_registry] || []}
   end
 
-  defp parse_raw(%{
-         "from_id" => from_account_id,
-         "to_id" => to_account_id,
-         "nonce" => nonce,
-         "args" => "0x" <> args
-       })
-       when to_account_id == "0x0" do
+  def parse_raw(%{
+        "from_id" => from_account_id,
+        "to_id" => to_account_id,
+        "nonce" => nonce,
+        "args" => "0x" <> args
+      })
+      when to_account_id == "0x0" do
     {{code_hash, hash_type, script_args}, {registry_id, fee_amount_hex_string}} =
       parse_meta_contract_args(args)
 
@@ -208,12 +227,12 @@ defmodule GodwokenIndexer.Block.PendingTransactionWorker do
     }
   end
 
-  defp parse_raw(%{
-         "from_id" => from_account_id,
-         "to_id" => to_id,
-         "nonce" => nonce,
-         "args" => "0x" <> args
-       }) do
+  def parse_raw(%{
+        "from_id" => from_account_id,
+        "to_id" => to_id,
+        "nonce" => nonce,
+        "args" => "0x" <> args
+      }) do
     cond do
       String.starts_with?(args, "ffffff504f4c59") ->
         [is_create, gas_limit, gas_price, value, input_size, input, native_transfer_address_hash] =

@@ -5,6 +5,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
   import GodwokenExplorer.Graphql.Common, only: [cursor_order_sorter: 3]
   import Ecto.Query
   import GodwokenRPC.Util, only: [script_to_hash: 1]
+  import GodwokenIndexer.Block.PendingTransactionWorker, only: [parse_and_import: 1]
 
   alias GodwokenExplorer.Repo
   alias GodwokenExplorer.{Account, Transaction, Block, Polyjuice, PolyjuiceCreator}
@@ -17,8 +18,17 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
 
   def transaction(_parent, %{input: input} = _args, _resolution) do
     query = query_with_eth_hash_or_tx_hash(input)
-    return = Repo.one(query)
-    {:ok, return}
+
+    case Repo.one(query) do
+      nil ->
+        case parse_and_import(input[:eth_hash]) do
+          {0, nil} -> {:ok, nil}
+          _ -> {:ok, query_with_eth_hash_or_tx_hash(input) |> Repo.one()}
+        end
+
+      return ->
+        {:ok, return}
+    end
   end
 
   defp query_with_eth_hash_or_tx_hash(input) do
