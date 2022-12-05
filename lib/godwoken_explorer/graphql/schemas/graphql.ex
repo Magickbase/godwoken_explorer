@@ -62,6 +62,7 @@ defmodule GodwokenExplorer.Graphql.Schemas.Graphql do
     # import_fields(:tracker_querys)
     import_fields(:transaction_querys)
     import_fields(:udt_querys)
+    import_fields(:search_querys)
   end
 
   mutation do
