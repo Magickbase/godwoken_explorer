@@ -9,7 +9,6 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
 
   alias GodwokenExplorer.Repo
   alias GodwokenExplorer.{Account, Transaction, Block, Polyjuice, PolyjuiceCreator}
-  alias GodwokenExplorer.Chain.Data
 
   import GodwokenExplorer.Graphql.Utils, only: [default_uniq_cursor_order_fields: 3]
 
@@ -48,29 +47,6 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
       end)
 
     from(t in Transaction, where: ^conditions)
-  end
-
-  def method_id(%Transaction{hash: hash, to_account_id: to_account_id}, _args, _resolution) do
-    with %Account{type: :polyjuice_contract} <- Repo.get(Account, to_account_id),
-         p when not is_nil(p) <- Repo.get_by(Polyjuice, tx_hash: hash),
-         mid <- p.input |> to_string() |> String.slice(0, 10),
-         true <- String.length(mid) >= 10 do
-      Data.cast(mid)
-    else
-      _ ->
-        {:ok, nil}
-    end
-  end
-
-  def method_name(%Transaction{hash: hash, to_account_id: to_account_id}, _args, _resolution) do
-    p = Repo.get_by(Polyjuice, tx_hash: hash)
-
-    if p do
-      input = to_string(p.input)
-      {:ok, Polyjuice.get_method_name(to_account_id, input)}
-    else
-      {:ok, nil}
-    end
   end
 
   def transactions(_parent, %{input: input} = _args, _resolution) do
@@ -300,12 +276,6 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
     end
   end
 
-  def polyjuice_creator(%Transaction{hash: hash}, _args, _resolution) do
-    creator = Repo.get_by(PolyjuiceCreator, tx_hash: hash)
-
-    {:ok, creator}
-  end
-
   def created_account(%PolyjuiceCreator{} = creator, _args, _resolution) do
     account_script = %{
       "code_hash" => creator.code_hash,
@@ -316,21 +286,5 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
     l2_script_hash = script_to_hash(account_script)
 
     {:ok, Repo.get_by(Account, script_hash: l2_script_hash)}
-  end
-
-  def block(%Transaction{block_hash: nil}, _args, _resolution) do
-    {:ok, nil}
-  end
-
-  def block(%Transaction{block_hash: block_hash}, _args, _resolution) do
-    {:ok, Repo.get(Block, block_hash)}
-  end
-
-  def from_account(%Transaction{from_account_id: from_account_id}, _args, _resolution) do
-    {:ok, Repo.get(Account, from_account_id)}
-  end
-
-  def to_account(%Transaction{to_account_id: to_account_id}, _args, _resolution) do
-    {:ok, Repo.get(Account, to_account_id)}
   end
 end

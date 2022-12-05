@@ -1,5 +1,7 @@
 defmodule GodwokenExplorer.Graphql.Schemas.Graphql do
   alias GodwokenExplorer.Graphql.Middleware.NullFilter
+  alias GodwokenExplorer.Graphql.Dataloader.GraphqlEcto
+
   use Absinthe.Schema
   import_types(GodwokenExplorer.Graphql.Types.Custom)
   import_types(GodwokenExplorer.Graphql.Types.Custom.JSON)
@@ -27,9 +29,22 @@ defmodule GodwokenExplorer.Graphql.Schemas.Graphql do
   import_types(GodwokenExplorer.Graphql.Types.Transaction)
   import_types(GodwokenExplorer.Graphql.Types.UDT)
   import_types(GodwokenExplorer.Graphql.Types.TokenInstance)
+  import_types(GodwokenExplorer.Graphql.Types.TokenExchangeRate)
 
   def middleware(middleware, _field, _object) do
     [NullFilter] ++ middleware
+  end
+
+  def context(ctx) do
+    loader =
+      Dataloader.new()
+      |> Dataloader.add_source(:graphql, GraphqlEcto.data())
+
+    Map.put(ctx, :loader, loader)
+  end
+
+  def plugins do
+    [Absinthe.Middleware.Dataloader] ++ Absinthe.Plugin.defaults()
   end
 
   query do
@@ -51,6 +66,7 @@ defmodule GodwokenExplorer.Graphql.Schemas.Graphql do
 
   mutation do
     import_fields(:sourcify_mutations)
+    import_fields(:token_exchange_rate_mutations)
   end
 
   # subscription do

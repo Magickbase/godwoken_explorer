@@ -43,6 +43,20 @@ defmodule GodwokenExplorer.Chain.Cache.TokenExchangeRate do
     "token_symbol_exchange_rate_#{symbol_or_address_hash_str}"
   end
 
+  def sync_fetch_by_symbol(symbol) do
+    if cache_expired?(symbol) do
+      update_cache_by_symbol(symbol)
+    end
+
+    cached_value =
+      symbol
+      |> cache_key()
+      |> fetch_from_cache()
+
+    updated_at = fetch_from_cache("#{cache_key(symbol)}_#{@last_update_key}")
+    {cached_value, updated_at}
+  end
+
   # fetching by symbol is not recommended to use because of possible collisions
   # fetch() should be used instead
   def fetch_by_symbol(symbol) do
@@ -91,15 +105,19 @@ defmodule GodwokenExplorer.Chain.Cache.TokenExchangeRate do
   end
 
   def fetch_token_exchange_rate(symbol, internal_call? \\ false) do
-    case Source.fetch_exchange_rates_for_token(symbol) do
-      {:ok, [rates]} ->
-        rates.usd_value
+    try do
+      case Source.fetch_exchange_rates_for_token(symbol) do
+        {:ok, [rates]} ->
+          rates.usd_value
 
-      {:error, "Could not find coin with the given id"} ->
-        if internal_call?, do: :not_found_coingecko, else: nil
+        {:error, "Could not find coin with the given id"} ->
+          if internal_call?, do: :not_found_coingecko, else: nil
 
-      _ ->
-        nil
+        _ ->
+          nil
+      end
+    rescue
+      _ -> nil
     end
   end
 
@@ -123,7 +141,7 @@ defmodule GodwokenExplorer.Chain.Cache.TokenExchangeRate do
 
   def enable_consolidation?, do: @enable_consolidation
 
-  defp token_exchange_rate_cache_period do
+  def token_exchange_rate_cache_period do
     Helper.cache_period("CACHE_TOKEN_EXCHANGE_RATE_PERIOD", 1)
   end
 end

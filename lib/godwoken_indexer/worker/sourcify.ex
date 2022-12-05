@@ -1,7 +1,7 @@
-defmodule GodwokenExplorer.Graphql.Workers.Sourcify do
+defmodule GodwokenIndexer.Worker.Sourcify do
   alias GodwokenExplorer.Graphql.Sourcify
 
-  use Oban.Worker, queue: :default
+  use Oban.Worker, queue: :default, unique: [period: :infinity, states: Oban.Job.states()]
   @impl Oban.Worker
   def perform(%Oban.Job{args: %{"eth_address" => eth_address}}) do
     Sourcify.verify_and_update_from_sourcify(eth_address)

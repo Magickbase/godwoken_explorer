@@ -2,6 +2,8 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
   use Absinthe.Schema.Notation
   alias GodwokenExplorer.Graphql.Resolvers, as: Resolvers
 
+  import Absinthe.Resolution.Helpers, only: [dataloader: 1]
+
   object :transaction_querys do
     @desc """
     function: get transaction by transaction_hash
@@ -410,40 +412,19 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
     field :eth_hash, :hash_full, description: "Polyjuice transaction hash."
     field :index, :integer, description: "Order of transaction in block."
 
-    field :method_id, :chain_data do
-      description("the method id of transction")
-      resolve(&Resolvers.Transaction.method_id/3)
-    end
+    field :method_id, :chain_data
 
-    field :method_name, :string do
-      description("the method name of transction")
-      resolve(&Resolvers.Transaction.method_name/3)
-    end
+    field :method_name, :string
 
-    field :polyjuice, :polyjuice do
-      description("the mapping polujuice info of transction")
-      resolve(&Resolvers.Transaction.polyjuice/3)
-    end
+    field :polyjuice, :polyjuice, resolve: dataloader(:graphql)
 
-    field :polyjuice_creator, :polyjuice_creator do
-      description("the mapping polujuice creator of transction")
-      resolve(&Resolvers.Transaction.polyjuice_creator/3)
-    end
+    field :polyjuice_creator, :polyjuice_creator, resolve: dataloader(:graphql)
 
-    field :from_account, :account do
-      description("the mapping account which involve the transaction")
-      resolve(&Resolvers.Transaction.from_account/3)
-    end
+    field :from_account, :account, resolve: dataloader(:graphql)
 
-    field :to_account, :account do
-      description("the mapping contract account")
-      resolve(&Resolvers.Transaction.to_account/3)
-    end
+    field :to_account, :account, resolve: dataloader(:graphql)
 
-    field :block, :block do
-      description("the mapping block of transaction")
-      resolve(&Resolvers.Transaction.block/3)
-    end
+    field :block, :block, resolve: dataloader(:graphql)
   end
 
   object :paginate_trasactions do
