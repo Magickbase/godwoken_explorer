@@ -6,6 +6,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Account do
 
   import Ecto.Query
   import GodwokenExplorer.Graphql.Common, only: [page_and_size: 2, sort_type: 3]
+  import Absinthe.Resolution.Helpers, only: [batch: 3]
 
   def account(_parent, %{input: input} = _args, _resolution) do
     address = Map.get(input, :address)
@@ -30,16 +31,12 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Account do
   end
 
   def udt(%Account{id: id}, _args, _resolution) do
-    import Absinthe.Resolution.Helpers, only: [batch: 3]
-
     batch({BatchAccount, :udt, UDT}, id, fn batch_results ->
       {:ok, Map.get(batch_results, id)}
     end)
   end
 
   def bridged_udt(%Account{id: id}, _args, _resolution) do
-    import Absinthe.Resolution.Helpers, only: [batch: 3]
-
     batch({BatchAccount, :bridge_udt, UDT}, id, fn batch_results ->
       {:ok, Map.get(batch_results, id)}
     end)
