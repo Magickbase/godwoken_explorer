@@ -15,7 +15,15 @@ defmodule GodwokenExplorer.Graphql.AccountTest do
     ckb_udt = insert!(:ckb_udt, script_hash: script_hash, bridge_account_id: native_udt.id)
 
     ckb_account = insert!(:ckb_account, script_hash: script_hash)
-    [native_udt: native_udt, ckb_udt: ckb_udt, ckb_account: ckb_account]
+    polyjuice_contract_account = insert!(:polyjuice_contract_account)
+    _smart_contract = insert!(:smart_contract, account: polyjuice_contract_account)
+
+    [
+      native_udt: native_udt,
+      ckb_udt: ckb_udt,
+      ckb_account: ckb_account,
+      polyjuice_contract_account: polyjuice_contract_account
+    ]
   end
 
   test "graphql: account api with subfield udt and bridged_udt ", %{
@@ -133,5 +141,43 @@ defmodule GodwokenExplorer.Graphql.AccountTest do
                }
              }
            }
+  end
+
+  test "graphql: account with smart_contract", %{
+    conn: conn,
+    polyjuice_contract_account: polyjuice_contract_account
+  } do
+    account_id = polyjuice_contract_account.id
+
+    query = """
+      query {
+        account(input: {address: "#{polyjuice_contract_account.eth_address}"}) {
+          type
+          eth_address
+          smart_contract {
+            id
+            account_id
+          }
+        }
+      }
+    """
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    assert match?(
+             %{
+               "data" => %{
+                 "account" => %{
+                   "smart_contract" => %{"account_id" => ^account_id},
+                   "type" => "POLYJUICE_CONTRACT"
+                 }
+               }
+             },
+             json_response(conn, 200)
+           )
   end
 end
