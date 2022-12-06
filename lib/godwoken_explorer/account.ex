@@ -77,7 +77,10 @@ defmodule GodwokenExplorer.Account do
       ]
     )
 
-    has_one(:smart_contract, SmartContract)
+    has_one(:smart_contract, SmartContract,
+      foreign_key: :account_id,
+      references: :id
+    )
 
     timestamps()
   end
