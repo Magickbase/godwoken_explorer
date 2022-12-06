@@ -214,8 +214,6 @@ config :sentry,
   },
   included_environments: [gwscan_sentry_included_environment]
 
-gwscan_scheduler_job = System.get_env("GWSCAN_SCHEDULER_JOB", "true") |> String.to_atom()
-
 gwscan_multiple_block_once =
   System.get_env("GWSCAN_MULTIPLE_BLOCK_ONCE", "false") |> String.to_atom()
 
@@ -228,7 +226,6 @@ gwscan_l1_block_batch_size =
   System.get_env("GWSCAN_L1_BLOCK_BATCH_SIZE", "1") |> String.to_integer()
 
 config :godwoken_explorer,
-  job: gwscan_scheduler_job,
   multiple_block_once: gwscan_multiple_block_once,
   block_batch_size: gwscan_block_batch_size,
   multiple_l1_block_once: gwscan_multiple_l1_block_once,
@@ -259,3 +256,7 @@ exchange_rates_source =
   end
 
 config :godwoken_explorer, GodwokenExplorer.ExchangeRates.Source, source: exchange_rates_source
+
+config :godwoken_explorer, Indexer, enabled: System.get_env("DISABLE_INDEXER") != "true"
+config :godwoken_explorer, Web, enabled: System.get_env("DISABLE_WEB") != "true"
+config :godwoken_explorer, Oban.Crontab, enabled: System.get_env("DISABLE_OBAN_CRONTAB") != "true"
