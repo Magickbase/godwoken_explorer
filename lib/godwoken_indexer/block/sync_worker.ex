@@ -126,8 +126,6 @@ defmodule GodwokenIndexer.Block.SyncWorker do
     inserted_blocks = import_block(blocks_params)
     update_block_cache(inserted_blocks)
 
-    broadcast_block_and_tx(inserted_blocks, inserted_transactions)
-
     if multiple_block_once? do
       {:ok, next_block_number + block_batch_size + 1}
     else
@@ -753,35 +751,6 @@ defmodule GodwokenIndexer.Block.SyncWorker do
         on_conflict: :nothing
       )
     end
-  end
-
-  defp broadcast_block_and_tx(inserted_blocks, inserted_transactions) do
-    home_blocks =
-      Enum.map(inserted_blocks, fn block ->
-        Map.take(block, [:hash, :number, :timestamp, :transaction_count])
-      end)
-
-    home_transactions =
-      Enum.map(inserted_transactions, fn tx ->
-        tx
-        |> Map.take([:hash, :type, :from, :to, :to_alias])
-        |> Map.merge(%{
-          timestamp: home_blocks |> List.first() |> Map.get(:timestamp)
-        })
-      end)
-
-    data = Chain.home_api_data(home_blocks, home_transactions)
-    Publisher.broadcast([{:home, data}], :realtime)
-
-    Enum.each(data[:tx_list], fn tx ->
-      result = %{
-        page: "1",
-        total_count: "1",
-        txs: [Map.merge(tx, %{block_number: home_blocks |> List.first() |> Map.get(:number)})]
-      }
-
-      Publisher.broadcast([{:account_transactions, result}], :realtime)
-    end)
   end
 
   defp import_account(transactions_params) do
