@@ -79,6 +79,8 @@ defmodule GodwokenExplorer.Graphql.Types.Search do
     end
 
     field(:type, :udt_type, description: " Bridge means from layer1;Native means layer2 contract.")
+
+    field :eth_type, :eth_type, description: "EVM token type."
   end
 
   input_object :search_udt_input do

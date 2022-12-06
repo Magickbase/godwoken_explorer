@@ -24,6 +24,7 @@ defmodule GodwokenExplorer.Graphql.SearchTest do
           name
           symbol
           type
+          eth_type
           contract_address_hash
         }
         metadata {
