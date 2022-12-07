@@ -6,9 +6,10 @@ defmodule GodwokenIndexer.Fetcher.Supervisor do
   end
 
   def init(_) do
-    children = [
-      GodwokenIndexer.Fetcher.UDTBalance
-    ]
+    children =
+      if Application.get_env(:godwoken_explorer, :on_off)[:udt_fetcher],
+        do: [GodwokenIndexer.Fetcher.UDTBalance],
+        else: []
 
     Supervisor.init(children, strategy: :one_for_one)
   end
