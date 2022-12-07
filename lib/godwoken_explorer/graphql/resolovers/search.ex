@@ -10,7 +10,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Search do
       |> search_udt_condition(input)
       |> serach_udt_order(input)
       |> paginate_query(input, %{
-        cursor_fields: [desc: :id],
+        cursor_fields: [id: :desc],
         total_count_primary_key_field: :id
       })
 
