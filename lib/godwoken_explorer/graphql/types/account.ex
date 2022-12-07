@@ -338,10 +338,6 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
 
     @desc "The mapping smart_contract info of account."
     field :smart_contract, :smart_contract, resolve: dataloader(:graphql)
-
-    # field :smart_contract, :smart_contract do
-    #   resolve(&Resolvers.Account.smart_contract/3)
-    # end
   end
 
   enum :account_type do
