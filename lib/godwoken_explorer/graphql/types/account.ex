@@ -2,6 +2,7 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
   use Absinthe.Schema.Notation
   alias GodwokenExplorer.Graphql.Resolvers, as: Resolvers
   alias GodwokenExplorer.Graphql.Middleware.TermRange, as: MTermRange
+  import Absinthe.Resolution.Helpers, only: [dataloader: 1]
 
   object :account_querys do
     @desc """
@@ -336,10 +337,11 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
     end
 
     @desc "The mapping smart_contract info of account."
-    field :smart_contract, :smart_contract do
-      description("")
-      resolve(&Resolvers.Account.smart_contract/3)
-    end
+    field :smart_contract, :smart_contract, resolve: dataloader(:graphql)
+
+    # field :smart_contract, :smart_contract do
+    #   resolve(&Resolvers.Account.smart_contract/3)
+    # end
   end
 
   enum :account_type do
