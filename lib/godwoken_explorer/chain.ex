@@ -11,7 +11,7 @@ defmodule GodwokenExplorer.Chain do
     ]
 
   alias GodwokenExplorer.Counters.{AccountsCounter, AverageBlockTime}
-  alias GodwokenExplorer.Chain.Cache.{BlockCount, TransactionCount}
+  alias GodwokenExplorer.Chain.Cache.TransactionCount
   alias GodwokenExplorer.Chain.{Hash, Data}
   alias GodwokenExplorer.Repo
 
@@ -117,20 +117,6 @@ defmodule GodwokenExplorer.Chain do
         Repo.query!("SELECT reltuples FROM pg_class WHERE relname = 'accounts';")
 
       count
-    else
-      cached_value
-    end
-  end
-
-  @spec block_estimated_count() :: non_neg_integer()
-  def block_estimated_count do
-    cached_value = BlockCount.get_count()
-
-    if is_nil(cached_value) do
-      %Postgrex.Result{rows: [[count]]} =
-        Repo.query!("SELECT reltuples FROM pg_class WHERE relname = 'blocks';")
-
-      trunc(count)
     else
       cached_value
     end
