@@ -776,6 +776,16 @@ defmodule GodwokenExplorer.Account do
     end)
   end
 
+  # zero nonce eoa user can transfer to contract account, so clear eoa user eth_address to keep uniq eth_address
+  def handle_eoa_to_contract(eth_address) do
+    accounts = from(a in Account, where: a.eth_address == ^eth_address) |> Repo.all()
+
+    if length(accounts) == 2 do
+      eoa = accounts |> Enum.filter(fn a -> a.type == :eth_user end) |> List.first()
+      Account.changeset(eoa, %{eth_address: nil, registry_address: nil}) |> Repo.update()
+    end
+  end
+
   defp rpc() do
     Application.get_env(:godwoken_explorer, :rpc_module, GodwokenRPC)
   end
