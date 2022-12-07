@@ -124,8 +124,6 @@ defmodule GodwokenExplorer.Account do
     |> Repo.insert_or_update!()
     |> case do
       account = %Account{} ->
-        account_api_data = account.id |> find_by_id() |> account_to_view()
-        Publisher.broadcast([{:accounts, account_api_data}], :realtime)
         {:ok, account}
 
       {:error, error_msg} ->
@@ -154,8 +152,6 @@ defmodule GodwokenExplorer.Account do
              |> Account.changeset(%{script: new_script})
              |> Repo.update() do
           {:ok, account} ->
-            account_api_data = 0 |> find_by_id() |> account_to_view()
-            Publisher.broadcast([{:accounts, account_api_data}], :realtime)
             {:ok, account}
 
           {:error, schema} ->

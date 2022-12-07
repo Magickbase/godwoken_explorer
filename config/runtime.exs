@@ -93,12 +93,16 @@ gwscan_block_sync_l1_block_woker_on_off =
 gwscan_block_pending_transaction_woker_on_off =
   System.get_env("GWSCAN_BLOCK_PENDING_TRANSACTION_WORKER_ON_OFF", "false") |> String.to_atom()
 
+gwscan_udt_fetcher_on_off =
+  System.get_env("GWSCAN_UDT_FETCHER_ON_OFF", "false") |> String.to_atom()
+
 config :godwoken_explorer, :on_off,
   sync_worker: gwscan_block_sync_woker_on_off,
   global_state_worker: gwscan_block_global_state_worker_on_off,
   bind_l1_l2_worker: gwscan_block_bind_l1_l2_woker_on_off,
   sync_l1_block_worker: gwscan_block_sync_l1_block_woker_on_off,
-  pending_transaction_worker: gwscan_block_pending_transaction_woker_on_off
+  pending_transaction_worker: gwscan_block_pending_transaction_woker_on_off,
+  udt_fetcher: gwscan_udt_fetcher_on_off
 
 gwscan_dashboard_username = System.get_env("GWSCAN_DASHBOARD_USERNAME", "admin")
 gwscan_dashboard_password = System.get_env("GWSCAN_DASHBOARD_PASSWORD", "password")
@@ -210,8 +214,6 @@ config :sentry,
   },
   included_environments: [gwscan_sentry_included_environment]
 
-gwscan_scheduler_job = System.get_env("GWSCAN_SCHEDULER_JOB", "true") |> String.to_atom()
-
 gwscan_multiple_block_once =
   System.get_env("GWSCAN_MULTIPLE_BLOCK_ONCE", "false") |> String.to_atom()
 
@@ -224,7 +226,6 @@ gwscan_l1_block_batch_size =
   System.get_env("GWSCAN_L1_BLOCK_BATCH_SIZE", "1") |> String.to_integer()
 
 config :godwoken_explorer,
-  job: gwscan_scheduler_job,
   multiple_block_once: gwscan_multiple_block_once,
   block_batch_size: gwscan_block_batch_size,
   multiple_l1_block_once: gwscan_multiple_l1_block_once,
@@ -255,3 +256,7 @@ exchange_rates_source =
   end
 
 config :godwoken_explorer, GodwokenExplorer.ExchangeRates.Source, source: exchange_rates_source
+
+config :godwoken_explorer, Indexer, enabled: System.get_env("DISABLE_INDEXER") != "true"
+config :godwoken_explorer, Web, enabled: System.get_env("DISABLE_WEB") != "true"
+config :godwoken_explorer, Oban.Crontab, enabled: System.get_env("DISABLE_OBAN_CRONTAB") != "true"
