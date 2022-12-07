@@ -195,34 +195,11 @@ defmodule GodwokenExplorer.Block do
           b.number > ^last_finalized_block_number and b.number <= ^latest_finalized_block_number
       )
 
-    updated_blocks = block_query |> Repo.all(timeout: :infinity)
-
-    {updated_blocks_number, nil} =
-      block_query
-      |> Repo.update_all(
-        [set: [status: "finalized", updated_at: DateTime.now!("Etc/UTC")]],
-        timeout: :infinity
-      )
-
-    if updated_blocks_number > 0 do
-      updated_blocks
-      |> Enum.each(fn b ->
-        Publisher.broadcast(
-          [
-            {:blocks,
-             %{
-               number: b.number,
-               l1_block_number: b.layer1_block_number,
-               l1_tx_hash: b.layer1_tx_hash,
-               status: "finalized"
-             }}
-          ],
-          :realtime
-        )
-
-        broadcast_tx_of_block(b.hash, b.layer1_block_number)
-      end)
-    end
+    block_query
+    |> Repo.update_all(
+      [set: [status: "finalized", updated_at: DateTime.now!("Etc/UTC")]],
+      timeout: :infinity
+    )
   end
 
   def bind_l1_l2_block(l2_block_number, l1_block_number, l1_tx_hash) do
@@ -231,44 +208,8 @@ defmodule GodwokenExplorer.Block do
       |> __MODULE__.changeset(%{layer1_block_number: l1_block_number, layer1_tx_hash: l1_tx_hash})
       |> Repo.update!()
 
-      Publisher.broadcast(
-        [
-          {:blocks,
-           %{
-             number: l2_block_number,
-             l1_block_number: l1_block_number,
-             l1_tx_hash: l1_tx_hash,
-             status: block.status
-           }}
-        ],
-        :realtime
-      )
-
-      broadcast_tx_of_block(hash, l1_block_number)
-
       l1_block_number
     end
-  end
-
-  defp broadcast_tx_of_block(l2_block_hash, l1_block_number) do
-    query =
-      from(t in Transaction,
-        join: b in Block,
-        on: b.number == t.block_number,
-        where: t.block_hash == ^l2_block_hash,
-        select: %{hash: t.hash, status: b.status}
-      )
-
-    Repo.all(query)
-    |> Enum.each(fn tx ->
-      Publisher.broadcast(
-        [
-          {:transactions,
-           %{tx_hash: tx.hash, l1_block_number: l1_block_number, status: tx.status}}
-        ],
-        :realtime
-      )
-    end)
   end
 
   def find_last_bind_l1_block() do

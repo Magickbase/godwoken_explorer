@@ -9,7 +9,6 @@ defmodule GodwokenExplorer.ExchangeRates do
 
   require Logger
 
-  alias GodwokenExplorer.Chain.Events.Publisher
   alias GodwokenExplorer.Counters.Helper
   alias GodwokenExplorer.ExchangeRates.{Source, Token}
 
@@ -32,8 +31,6 @@ defmodule GodwokenExplorer.ExchangeRates do
       records = Enum.map(tokens, &Token.to_tuple/1)
       :ets.insert(table_name(), records)
     end
-
-    broadcast_event(:exchange_rate)
 
     {:noreply, state}
   end
@@ -107,11 +104,6 @@ defmodule GodwokenExplorer.ExchangeRates do
   @spec table_name() :: atom()
   def table_name do
     config(:table_name) || @table_name
-  end
-
-  @spec broadcast_event(atom()) :: :ok
-  defp broadcast_event(event_type) do
-    Publisher.broadcast(event_type)
   end
 
   @spec config(atom()) :: term
