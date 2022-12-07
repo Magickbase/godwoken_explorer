@@ -19,6 +19,7 @@ defmodule GodwokenExplorer.Application do
         [
           GodwokenExplorerWeb.Telemetry,
           GodwokenExplorerWeb.Endpoint,
+          {Phoenix.PubSub, name: GodwokenExplorer.PubSub},
           Supervisor.child_spec({Task.Supervisor, name: GodwokenExplorer.MarketTaskSupervisor},
             id: Explorer.MarketTaskSupervisor
           ),
