@@ -203,7 +203,7 @@ defmodule GodwokenExplorer.Block do
   end
 
   def bind_l1_l2_block(l2_block_number, l1_block_number, l1_tx_hash) do
-    with %Block{hash: hash} = block <- Repo.get_by(Block, number: l2_block_number) do
+    with %Block{} = block <- Repo.get_by(Block, number: l2_block_number) do
       block
       |> __MODULE__.changeset(%{layer1_block_number: l1_block_number, layer1_tx_hash: l1_tx_hash})
       |> Repo.update!()

@@ -19,9 +19,7 @@ defmodule GodwokenExplorer.Account do
     ]
 
   require Logger
-  require IEx
   alias GodwokenRPC
-  alias GodwokenExplorer.Chain.Events.Publisher
   alias GodwokenExplorer.Counters.{AddressTokenTransfersCounter, AddressTransactionsCounter}
   alias GodwokenExplorer.Chain.{Hash, Import, Data}
 
