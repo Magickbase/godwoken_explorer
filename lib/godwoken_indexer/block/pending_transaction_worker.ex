@@ -46,22 +46,22 @@ defmodule GodwokenIndexer.Block.PendingTransactionWorker do
   end
 
   def fetch_and_update do
-    {:ok, tx_hashes} = GodwokenRPC.fetch_pending_tx_hashes()
+    with {:ok, tx_hashes} when tx_hashes != [] <- GodwokenRPC.fetch_pending_tx_hashes(),
+         tx_hashes_params <- tx_hashes |> Enum.map(&%{gw_tx_hash: &1}),
+         {:ok, %{errors: [], params_list: params}} <-
+           GodwokenRPC.fetch_pending_transactions(tx_hashes_params) do
+      if params != [] do
+        pending_transaction_attrs =
+          params
+          |> Enum.map(fn transaction ->
+            tx = transaction["transaction"]
+            tx["raw"] |> parse_raw() |> Map.merge(%{hash: tx["hash"], eth_hash: nil})
+          end)
 
-    tx_hashes_params = tx_hashes |> Enum.map(&%{gw_tx_hash: &1})
-
-    {:ok, %{errors: [], params_list: params}} =
-      GodwokenRPC.fetch_pending_transactions(tx_hashes_params)
-
-    if params != [] do
-      pending_transaction_attrs =
-        params
-        |> Enum.map(fn transaction ->
-          tx = transaction["transaction"]
-          tx["raw"] |> parse_raw() |> Map.merge(%{hash: tx["hash"], eth_hash: nil})
-        end)
-
-      import_attrs(pending_transaction_attrs)
+        import_attrs(pending_transaction_attrs)
+      end
+    else
+      _ -> nil
     end
   end
 
