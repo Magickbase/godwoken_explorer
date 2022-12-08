@@ -11,6 +11,8 @@ defmodule GodwokenIndexer.Worker.ImportContractCode do
 
   @impl Oban.Worker
   def perform(%Oban.Job{args: %{"block_number" => block_number, "address" => address}}) do
+    Account.handle_eoa_to_contract(address)
+
     {:ok,
      %{
        errors: [],
