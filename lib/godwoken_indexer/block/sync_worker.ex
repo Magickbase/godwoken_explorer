@@ -96,31 +96,27 @@ defmodule GodwokenIndexer.Block.SyncWorker do
       {:ok, _} = validate_last_block_fork(blocks_params, next_block_number)
     end
 
-    {:ok, inserted_transactions} =
-      if transactions_params_without_receipts != [] do
-        import_account(transactions_params_without_receipts)
-        handle_gw_transaction_receipts(transactions_params_without_receipts, next_block_number)
+    if transactions_params_without_receipts != [] do
+      import_account(transactions_params_without_receipts)
+      handle_gw_transaction_receipts(transactions_params_without_receipts, next_block_number)
 
-        {polyjuice_without_receipts, polyjuice_creator_params, eth_addr_reg_params} =
-          group_transaction_params(transactions_params_without_receipts)
+      {polyjuice_without_receipts, polyjuice_creator_params, eth_addr_reg_params} =
+        group_transaction_params(transactions_params_without_receipts)
 
-        polyjuice_with_eth_hashes_params =
-          handle_polyjuice_transactions(polyjuice_without_receipts)
-          |> add_method_id_and_name_to_tx_params()
+      polyjuice_with_eth_hashes_params =
+        handle_polyjuice_transactions(polyjuice_without_receipts)
+        |> add_method_id_and_name_to_tx_params()
 
-        import_polyjuice_creator(polyjuice_creator_params)
+      import_polyjuice_creator(polyjuice_creator_params)
 
-        inserted_transactions =
-          import_transactions(
-            blocks_params,
-            polyjuice_creator_params ++ eth_addr_reg_params ++ polyjuice_with_eth_hashes_params
-          )
+      inserted_transactions =
+        import_transactions(
+          blocks_params,
+          polyjuice_creator_params ++ eth_addr_reg_params ++ polyjuice_with_eth_hashes_params
+        )
 
-        update_transactions_cache(inserted_transactions)
-        {:ok, inserted_transactions}
-      else
-        {:ok, []}
-      end
+      update_transactions_cache(inserted_transactions)
+    end
 
     import_withdrawal_requests(withdrawal_params, next_block_number)
     inserted_blocks = import_block(blocks_params)
