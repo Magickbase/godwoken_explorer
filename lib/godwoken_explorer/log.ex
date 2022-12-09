@@ -48,7 +48,12 @@ defmodule GodwokenExplorer.Log do
     field(:fourth_topic, :string)
     field(:index, :integer, primary_key: true)
     field(:block_number, :integer)
-    field(:address_hash, Hash.Address)
+
+    belongs_to(:udt, UDT,
+      foreign_key: :address_hash,
+      references: :contract_address_hash,
+      type: Hash.Address
+    )
 
     belongs_to(:transaction, Transaction,
       foreign_key: :transaction_hash,

@@ -3,13 +3,14 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Log do
   alias GodwokenExplorer.Repo
   alias GodwokenExplorer.UDT
   alias GodwokenExplorer.SmartContract
-  alias GodwokenExplorer.Account
+  alias GodwokenExplorer.Graphql.Dataloader.BatchLog
 
   import Ecto.Query
   import GodwokenExplorer.Graphql.Common, only: [cursor_order_sorter: 3]
   import GodwokenExplorer.Graphql.Utils, only: [default_uniq_cursor_order_fields: 3]
 
   import GodwokenExplorer.Graphql.Resolvers.Common, only: [paginate_query: 3]
+  import Absinthe.Resolution.Helpers, only: [batch: 3]
 
   @sorter_fields [:transaction_hash, :index, :block_number]
   @default_sorter [:transaction_hash, :index]
@@ -31,16 +32,9 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Log do
   end
 
   def smart_contract(%Log{address_hash: address_hash}, _, _resolution) do
-    query =
-      from(a in Account,
-        where: a.eth_address == ^address_hash,
-        join: s in SmartContract,
-        on: s.account_id == a.id,
-        select: s
-      )
-
-    return = Repo.one(query)
-    {:ok, return}
+    batch({BatchLog, :smart_contract, SmartContract}, address_hash, fn batch_results ->
+      {:ok, Map.get(batch_results, address_hash)}
+    end)
   end
 
   defp query_logs(input) do
