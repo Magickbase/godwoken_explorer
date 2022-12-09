@@ -205,6 +205,7 @@ gwscan_sentry_tags_environment = System.get_env("GWSCAN_SENTRY_TAGS_ENVIRONMENT"
 gwscan_sentry_included_environment = System.get_env("GWSCAN_SENTRY_INCLUDED_ENVIRONMENT", "")
 
 config :sentry,
+  filter: GodwokenExplorerWeb.SentryFilter,
   dsn: gwscan_sentry_dsn,
   environment_name: gwscan_sentry_environment_name,
   enable_source_code_context: gwscan_sentry_enable_source_code_context,
