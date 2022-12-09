@@ -2,9 +2,11 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Account do
   alias GodwokenExplorer.Repo
   alias GodwokenExplorer.{Account, SmartContract, UDT}
   alias GodwokenExplorer.Account.{CurrentUDTBalance, CurrentBridgedUDTBalance}
+  alias GodwokenExplorer.Graphql.Dataloader.BatchAccount
 
   import Ecto.Query
   import GodwokenExplorer.Graphql.Common, only: [page_and_size: 2, sort_type: 3]
+  import Absinthe.Resolution.Helpers, only: [batch: 3]
 
   def account(_parent, %{input: input} = _args, _resolution) do
     address = Map.get(input, :address)
@@ -29,30 +31,15 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Account do
   end
 
   def udt(%Account{id: id}, _args, _resolution) do
-    u_u2 =
-      from(u in UDT)
-      |> where([u], u.id == ^id)
-      |> join(:left, [u], u2 in UDT, on: u.bridge_account_id == u2.id)
-      |> select([u, u2], %{u: u, u2: u2})
-      |> Repo.one()
-
-    if u_u2[:u2] do
-      {:ok, u_u2[:u2]}
-    else
-      {:ok, u_u2[:u]}
-    end
+    batch({BatchAccount, :udt, UDT}, id, fn batch_results ->
+      {:ok, Map.get(batch_results, id)}
+    end)
   end
 
   def bridged_udt(%Account{id: id}, _args, _resolution) do
-    udt =
-      from(u in UDT)
-      |> where(
-        [u],
-        u.id == ^id and u.type == :bridge
-      )
-      |> Repo.one()
-
-    {:ok, udt}
+    batch({BatchAccount, :bridge_udt, UDT}, id, fn batch_results ->
+      {:ok, Map.get(batch_results, id)}
+    end)
   end
 
   def account_current_udts(
