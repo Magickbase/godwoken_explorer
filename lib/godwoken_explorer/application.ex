@@ -5,46 +5,54 @@ defmodule GodwokenExplorer.Application do
 
   use Application
 
-  alias GodwokenExplorerWeb.RealtimeEventHandler
-
   def start(_type, _args) do
-    children = [
-      GodwokenExplorer.PromEx,
-      # Start the Ecto repository
+    base_children = [
       GodwokenExplorer.Repo,
-      # Start the Telemetry supervisor
-      GodwokenExplorerWeb.Telemetry,
-      # Start the PubSub system
-      {Phoenix.PubSub, name: GodwokenExplorer.PubSub},
-      # Start the Endpoint (http/https)
-      GodwokenExplorerWeb.Endpoint,
-      {Registry, keys: :duplicate, name: Registry.ChainEvents, id: Registry.ChainEvents},
-      Supervisor.child_spec({Task.Supervisor, name: GodwokenExplorer.MarketTaskSupervisor},
-        id: Explorer.MarketTaskSupervisor
-      ),
-      {RealtimeEventHandler, name: RealtimeEventHandler},
-      GodwokenExplorer.Chain.Events.Listener,
-      GodwokenIndexer.Server,
-      GodwokenExplorer.Counters.AccountsCounter,
-      GodwokenExplorer.Counters.AverageBlockTime,
-      GodwokenExplorer.Counters.AddressTransactionsCounter,
-      GodwokenExplorer.Counters.AddressTokenTransfersCounter,
-      GodwokenExplorer.Chain.Cache.BlockCount,
-      GodwokenExplorer.Chain.Cache.TransactionCount,
       GodwokenExplorer.Chain.Cache.Blocks,
       GodwokenExplorer.Chain.Cache.Transactions,
-      GodwokenExplorer.Chain.Cache.PolyVersion,
-      GodwokenExplorer.Chain.Cache.TokenExchangeRate,
       GodwokenExplorer.ETS.SmartContracts,
-      GodwokenExplorer.SmartContract.SolcDownloader,
-      GodwokenExplorer.SmartContract.VyperDownloader,
       {Oban, oban_config()}
     ]
+
+    web_children =
+      if should_start?(Web) do
+        [
+          GodwokenExplorerWeb.Telemetry,
+          GodwokenExplorerWeb.Endpoint,
+          {Phoenix.PubSub, name: GodwokenExplorer.PubSub},
+          Supervisor.child_spec({Task.Supervisor, name: GodwokenExplorer.MarketTaskSupervisor},
+            id: Explorer.MarketTaskSupervisor
+          ),
+          # graphql api
+          GodwokenExplorer.Counters.AddressTransactionsCounter,
+          GodwokenExplorer.Counters.AddressTokenTransfersCounter,
+          GodwokenExplorer.Chain.Cache.TokenExchangeRate,
+          # web home api
+          GodwokenExplorer.Counters.AccountsCounter,
+          GodwokenExplorer.Counters.AverageBlockTime,
+          GodwokenExplorer.Chain.Cache.TransactionCount,
+          # api
+          GodwokenExplorer.Chain.Cache.PolyVersion,
+          # admin
+          GodwokenExplorer.SmartContract.SolcDownloader,
+          GodwokenExplorer.SmartContract.VyperDownloader
+        ]
+      else
+        []
+      end
+
+    indexer_children = if should_start?(Indexer), do: [GodwokenIndexer.Server], else: []
+
+    children = base_children ++ web_children ++ indexer_children
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
     opts = [strategy: :one_for_one, name: GodwokenExplorer.Supervisor]
     Supervisor.start_link(children, opts)
+  end
+
+  defp should_start?(process) do
+    Application.get_env(:godwoken_explorer, process, [])[:enabled] == true
   end
 
   # Tell Phoenix to update the endpoint configuration
@@ -55,6 +63,11 @@ defmodule GodwokenExplorer.Application do
   end
 
   defp oban_config do
-    Application.fetch_env!(:godwoken_explorer, Oban)
+    if should_start?(Oban.Crontab) do
+      Application.fetch_env!(:godwoken_explorer, Oban)
+    else
+      [repo, _plugins, queues] = Application.fetch_env!(:godwoken_explorer, Oban)
+      [repo, queues]
+    end
   end
 end

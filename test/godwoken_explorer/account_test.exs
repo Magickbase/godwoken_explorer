@@ -106,4 +106,21 @@ defmodule GodwokenExplorer.AccountTest do
              ) == {:ok, Repo.get(Account, 48250)}
     end
   end
+
+  test "handle eoa to contract" do
+    eoa =
+      insert(:user, registry_address: "0x0200000014000000c3dc7b0ea12a45830e89326dde9f2dadce0dbc5d")
+
+    contract =
+      insert(:polyjuice_contract_account,
+        eth_address: eoa.eth_address,
+        registry_address: "0x0200000014000000c3dc7b0ea12a45830e89326dde9f2dadce0dbc5d"
+      )
+
+    Account.handle_eoa_to_contract(eoa.eth_address)
+    assert eoa |> Repo.reload!() |> Map.get(:eth_address) == nil
+    assert eoa |> Repo.reload!() |> Map.get(:registry_address) == nil
+    assert contract |> Repo.reload!() |> Map.get(:eth_address) != nil
+    assert contract |> Repo.reload!() |> Map.get(:registry_address) != nil
+  end
 end

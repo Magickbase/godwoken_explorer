@@ -58,4 +58,24 @@ defmodule GodwokenIndexer.Block.PendingTransactionWorkerTest do
                "0xd1667cbf1cc60da94c1cf6c9cfb261e71b6047f7"
     end
   end
+
+  test "when rpc connect failed" do
+    with_mocks([
+      {GodwokenRPC, [],
+       [
+         fetch_pending_tx_hashes: fn ->
+           {:error, :node_error}
+         end
+       ]},
+      {GodwokenRPC, [],
+       [
+         fetch_pending_transactions: fn _tx_hashes ->
+           {:error, :node_error}
+         end
+       ]}
+    ]) do
+      GodwokenIndexer.Block.PendingTransactionWorker.fetch_and_update()
+      assert Transaction |> Repo.aggregate(:count) == 0
+    end
+  end
 end

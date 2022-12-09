@@ -327,7 +327,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
 
     if fuzzy_name do
       query
-      |> where([u], ilike(u.name, ^fuzzy_name))
+      |> where([u], ilike(u.name, ^fuzzy_name) or ilike(u.display_name, ^fuzzy_name))
     else
       query
     end

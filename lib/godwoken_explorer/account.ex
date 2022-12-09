@@ -19,9 +19,7 @@ defmodule GodwokenExplorer.Account do
     ]
 
   require Logger
-  require IEx
   alias GodwokenRPC
-  alias GodwokenExplorer.Chain.Events.Publisher
   alias GodwokenExplorer.Counters.{AddressTokenTransfersCounter, AddressTransactionsCounter}
   alias GodwokenExplorer.Chain.{Hash, Import, Data}
 
@@ -124,8 +122,6 @@ defmodule GodwokenExplorer.Account do
     |> Repo.insert_or_update!()
     |> case do
       account = %Account{} ->
-        account_api_data = account.id |> find_by_id() |> account_to_view()
-        Publisher.broadcast([{:accounts, account_api_data}], :realtime)
         {:ok, account}
 
       {:error, error_msg} ->
@@ -154,8 +150,6 @@ defmodule GodwokenExplorer.Account do
              |> Account.changeset(%{script: new_script})
              |> Repo.update() do
           {:ok, account} ->
-            account_api_data = 0 |> find_by_id() |> account_to_view()
-            Publisher.broadcast([{:accounts, account_api_data}], :realtime)
             {:ok, account}
 
           {:error, schema} ->
@@ -778,6 +772,16 @@ defmodule GodwokenExplorer.Account do
     Task.async(fn ->
       AddressTransactionsCounter.fetch(account)
     end)
+  end
+
+  # zero nonce eoa user can transfer to contract account, so clear eoa user eth_address to keep uniq eth_address
+  def handle_eoa_to_contract(eth_address) do
+    accounts = from(a in Account, where: a.eth_address == ^eth_address) |> Repo.all()
+
+    if length(accounts) == 2 do
+      eoa = accounts |> Enum.filter(fn a -> a.type == :eth_user end) |> List.first()
+      Account.changeset(eoa, %{eth_address: nil, registry_address: nil}) |> Repo.update()
+    end
   end
 
   defp rpc() do
