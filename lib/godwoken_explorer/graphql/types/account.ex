@@ -336,7 +336,7 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
       resolve(&Resolvers.Account.account_current_bridged_udts/3)
     end
 
-    @desc "The   smart_contract info of account."
+    @desc "The mapping smart_contract info of account."
     field :smart_contract, :smart_contract, resolve: dataloader(:graphql)
   end
 
