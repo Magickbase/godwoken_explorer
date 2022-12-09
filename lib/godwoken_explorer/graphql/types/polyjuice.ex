@@ -50,7 +50,7 @@ defmodule GodwokenExplorer.Graphql.Types.Polyjuice do
 
     field :created_account, :account do
       description("The mapping account which created.")
-      resolve(&Resolvers.Transaction.created_account/3)
+      resolve(&Resolvers.Polyjuice.created_account/3)
     end
   end
 
