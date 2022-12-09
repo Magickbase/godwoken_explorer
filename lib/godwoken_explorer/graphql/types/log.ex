@@ -73,10 +73,6 @@ defmodule GodwokenExplorer.Graphql.Types.Log do
     field :address_hash, :hash_address, description: "Contract address."
     field :block_hash, :hash_full, description: " Layer2 block hash."
 
-    # field :udt, :udt do
-    #   resolve(&Resolvers.Log.udt/3)
-    # end
-
     field :udt, :udt, resolve: dataloader(:graphql)
     field :transaction, :transaction, resolve: dataloader(:graphql)
 
