@@ -69,9 +69,68 @@ defmodule GodwokenExplorer.Graphql.SmartContractTest do
   end
 
   test "graphql: smart_contracts ", %{conn: conn} do
+    # paginator with null value of name
+    for _ <- 1..3 do
+      _smart_contract = insert(:smart_contract, name: nil)
+    end
+
     query = """
     query {
-      smart_contracts(input: { sorter: [{ sort_type: ASC, sort_value: ID }] }) {
+      smart_contracts(
+        input: {
+          limit: 5
+          sorter: [
+            { sort_type: ASC, sort_value: ID }
+            { sort_type: ASC, sort_value: NAME }
+          ]
+        }
+      ) {
+        entries {
+          name
+          account_id
+          account {
+            eth_address
+          }
+        }
+        metadata {
+          total_count
+          after
+          before
+        }
+      }
+    }
+    """
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    %{
+      "data" => %{
+        "smart_contracts" => %{
+          "entries" => _,
+          "metadata" => %{
+            "total_count" => 7,
+            "after" => after_value
+          }
+        }
+      }
+    } = json_response(conn, 200)
+
+    query = """
+    query {
+      smart_contracts(
+        input: {
+          limit: 5
+          after: "#{after_value}"
+          sorter: [
+            { sort_type: ASC, sort_value: ID }
+            { sort_type: ASC, sort_value: NAME }
+          ]
+        }
+      ) {
         entries {
           name
           account_id
@@ -98,9 +157,9 @@ defmodule GodwokenExplorer.Graphql.SmartContractTest do
              %{
                "data" => %{
                  "smart_contracts" => %{
-                   "entries" => _,
+                   "entries" => [%{"name" => ""} | _],
                    "metadata" => %{
-                     "total_count" => 4
+                     "total_count" => 7
                    }
                  }
                }
