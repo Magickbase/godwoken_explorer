@@ -321,6 +321,7 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
             script_hash
           }
           holders_count
+          rank
         }
         metadata {
           total_count
@@ -451,6 +452,7 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
             script_hash
           }
           holders_count
+          rank
         }
         metadata {
           total_count
@@ -744,6 +746,7 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
           eth_type
           holders_count
           minted_count
+          rank
         }
         metadata {
           total_count
@@ -1074,6 +1077,7 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
           holders_count
           token_type_count
           minted_count
+          rank
         }
         metadata {
           total_count
