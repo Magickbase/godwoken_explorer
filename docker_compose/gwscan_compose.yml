@@ -69,6 +69,7 @@ services:
       - DISABLE_INDEXER
       - DISABLE_OBAN_CRONTAB
       - DISABLE_WEB
+      - DID_INDEXER_URL
     ports:
       - 4001:4001
       - 9568:9568
