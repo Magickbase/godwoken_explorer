@@ -7,7 +7,7 @@ defmodule GodwokenIndexer.Worker.ERC721ERC1155InstanceMetadata do
 
   alias GodwokenExplorer.Repo
   alias GodwokenExplorer.Token.InstanceMetadataRetriever
-  alias GodowokenExplorer.TokenInstance
+  alias GodwokenExplorer.TokenInstance
 
   alias GodwokenExplorer.Chain.Hash.Address
 

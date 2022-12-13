@@ -1,4 +1,5 @@
 defmodule GodwokenExplorer.Graphql.Resolvers.SmartContract do
+  alias GodwokenExplorer.Graphql.Dataloader.BatchSmartContract
   alias GodwokenExplorer.Repo
   alias GodwokenExplorer.{SmartContract, Account}
   alias GodwokenExplorer.Account.CurrentUDTBalance
@@ -6,6 +7,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.SmartContract do
   import Ecto.Query
   import GodwokenExplorer.Graphql.Common, only: [cursor_order_sorter: 3]
   import GodwokenExplorer.Graphql.Resolvers.Common, only: [paginate_query: 3]
+  import Absinthe.Resolution.Helpers
 
   @sorter_fields [:id, :name]
   # @ex_sorter_fields [:ex_balance, :ex_tx_count]
@@ -106,13 +108,11 @@ defmodule GodwokenExplorer.Graphql.Resolvers.SmartContract do
   end
 
   def account(%SmartContract{account_id: account_id} = _parent, _args, _resolution) do
-    if account_id do
-      return = Repo.get(Account, account_id)
-
+    batch({BatchSmartContract, :account, Account}, account_id, fn batch_results ->
+      return = Map.get(batch_results, account_id)
+      Account.async_fetch_transfer_and_transaction_count(return)
       {:ok, return}
-    else
-      {:ok, nil}
-    end
+    end)
   end
 
   def ckb_balance(%SmartContract{account_id: account_id} = _parent, _args, _resolution) do
