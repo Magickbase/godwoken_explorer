@@ -3,7 +3,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
   alias GodwokenExplorer.Repo
   alias GodwokenExplorer.Account.{CurrentBridgedUDTBalance, CurrentUDTBalance, UDTBalance}
   alias GodwokenExplorer.TokenTransfer
-  alias GodowokenExplorer.TokenInstance
+  alias GodwokenExplorer.TokenInstance
   alias GodwokenExplorer.Chain.Cache.TokenExchangeRate, as: CacheTokenExchangeRate
   import Ecto.Query
   # import Ecto.Query.API, only: [fragment: 1]

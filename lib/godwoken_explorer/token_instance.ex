@@ -1,4 +1,4 @@
-defmodule GodowokenExplorer.TokenInstance do
+defmodule GodwokenExplorer.TokenInstance do
   @moduledoc """
   Represents an ERC 721 token instance and stores metadata defined in https://github.com/ethereum/EIPs/blob/master/EIPS/eip-721.md.
   """
@@ -7,7 +7,7 @@ defmodule GodowokenExplorer.TokenInstance do
 
   alias GodwokenExplorer.Chain.{Hash}
   alias GodwokenExplorer.UDT
-  alias GodowokenExplorer.TokenInstance
+  alias GodwokenExplorer.TokenInstance
 
   @typedoc """
   * `token_id` - ID of the token
