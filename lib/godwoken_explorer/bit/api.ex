@@ -1,4 +1,4 @@
-defmodule GodwokenExplorer.Did.API do
+defmodule GodwokenExplorer.Bit.API do
   require Logger
 
   def fetch_reverse_record_info(address) do
@@ -39,6 +39,6 @@ defmodule GodwokenExplorer.Did.API do
   end
 
   defp base_url do
-    Application.fetch_env!(:godwoken_explorer, :did)[:indexer_url]
+    Application.fetch_env!(:godwoken_explorer, :bit)[:indexer_url]
   end
 end

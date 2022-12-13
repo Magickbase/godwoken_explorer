@@ -1,4 +1,4 @@
-defmodule GodwokenExplorer.Did.APITest do
+defmodule GodwokenExplorer.Bit.APITest do
   use GodwokenExplorer.DataCase
   use ExUnit.Case, async: false
 
@@ -20,7 +20,7 @@ defmodule GodwokenExplorer.Did.APITest do
              "{\"errno\":0,\"errmsg\":\"\",\"data\":{\"account\":\"zmcnotafraid.bit\",\"account_alias\":\"test.bit\"}}"
          }}
       end do
-      assert GodwokenExplorer.Did.API.fetch_reverse_record_info(user.eth_address) ==
+      assert GodwokenExplorer.Bit.API.fetch_reverse_record_info(user.eth_address) ==
                {:ok, "test.bit"}
     end
   end
@@ -34,7 +34,7 @@ defmodule GodwokenExplorer.Did.APITest do
            body: "{\"errno\":20008,\"errmsg\":\"account on lock\",\"data\":null}"
          }}
       end do
-      assert GodwokenExplorer.Did.API.fetch_reverse_record_info(user.eth_address) ==
+      assert GodwokenExplorer.Bit.API.fetch_reverse_record_info(user.eth_address) ==
                {:error, nil}
     end
   end
