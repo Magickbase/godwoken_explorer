@@ -2,6 +2,7 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
   use Absinthe.Schema.Notation
   alias GodwokenExplorer.Graphql.Resolvers, as: Resolvers
   alias GodwokenExplorer.Graphql.Middleware.NullFilter
+  import Absinthe.Resolution.Helpers, only: [dataloader: 1]
 
   object :udt_querys do
     @desc """
@@ -1244,7 +1245,7 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
 
     field(:account, :account) do
       description("The mapping owner account.")
-      resolve(&Resolvers.UDT.account/3)
+      resolve(&Resolvers.UDT.account_of_address/3)
     end
   end
 
@@ -1294,6 +1295,7 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
 
     field :eth_type, :eth_type, description: "EVM token type."
 
+    # use dataloader
     field :account, :account do
       description("The mapping account of udt.")
       resolve(&Resolvers.UDT.account/3)
@@ -1369,6 +1371,7 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
     field :display_name, :string,
       description: "[UAN](https://github.com/nervosnetwork/rfcs/pull/335)."
 
+    # use dataloader
     field :account, :account do
       description("The mapping account of udt.")
       resolve(&Resolvers.UDT.account/3)
