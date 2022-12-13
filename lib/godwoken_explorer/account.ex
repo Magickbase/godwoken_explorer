@@ -768,6 +768,15 @@ defmodule GodwokenExplorer.Account do
       Task.async(fn ->
         AddressTokenTransfersCounter.fetch(account)
       end)
+
+      Task.async(fn ->
+        with {:ok, account_alias} <-
+               account.eth_address
+               |> to_string()
+               |> GodwokenExplorer.Did.API.fetch_reverse_record_info() do
+          Account.changeset(account, %{bit_alias: account_alias}) |> Repo.update()
+        end
+      end)
     end
 
     Task.async(fn ->
