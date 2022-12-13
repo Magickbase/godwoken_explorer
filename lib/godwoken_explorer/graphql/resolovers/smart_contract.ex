@@ -116,20 +116,14 @@ defmodule GodwokenExplorer.Graphql.Resolvers.SmartContract do
   end
 
   def ckb_balance(%SmartContract{account_id: account_id} = _parent, _args, _resolution) do
-    if account_id do
-      account = Repo.get(Account, account_id)
+    batch({BatchSmartContract, :ckb_balance, CurrentUDTBalance}, account_id, fn batch_results ->
+      return = Map.get(batch_results, account_id)
 
-      ckb_balance =
-        with %{balance: balance} <-
-               CurrentUDTBalance.get_ckb_balance([account.eth_address]) |> List.first() do
-          balance
-        else
-          _ -> Decimal.new(0)
-        end
-
-      {:ok, ckb_balance}
-    else
-      {:ok, Decimal.new(0)}
-    end
+      if return do
+        {:ok, return}
+      else
+        {:ok, Decimal.new(0)}
+      end
+    end)
   end
 end
