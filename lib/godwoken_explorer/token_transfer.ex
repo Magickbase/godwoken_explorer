@@ -10,6 +10,7 @@ defmodule GodwokenExplorer.TokenTransfer do
 
   alias GodwokenExplorer.Chain
   alias GodwokenExplorer.Chain.Hash
+  alias GodwokenExplorer.Account
 
   @constant "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
   @erc1155_single_transfer_signature "0xc3d58168c5ae7397731d063d5bbf3d657854427343f4c083240f7aacaa2d0f62"
@@ -58,11 +59,26 @@ defmodule GodwokenExplorer.TokenTransfer do
     field(:block_number, :integer)
     field(:log_index, :integer, primary_key: true)
     field(:token_id, :decimal)
-    field(:from_address_hash, Hash.Address)
-    field(:to_address_hash, Hash.Address)
-    field(:token_contract_address_hash, Hash.Address)
     field(:amounts, {:array, :decimal})
     field(:token_ids, {:array, :decimal})
+
+    belongs_to(:from_account, Account,
+      foreign_key: :from_address_hash,
+      references: :eth_address,
+      type: Hash.Address
+    )
+
+    belongs_to(:to_account, Account,
+      foreign_key: :to_address_hash,
+      references: :eth_address,
+      type: Hash.Address
+    )
+
+    belongs_to(:udt, UDT,
+      foreign_key: :token_contract_address_hash,
+      references: :contract_address_hash,
+      type: Hash.Address
+    )
 
     belongs_to(:block, Block, foreign_key: :block_hash, references: :hash, type: Hash.Full)
 
