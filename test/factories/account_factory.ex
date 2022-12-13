@@ -46,7 +46,8 @@ defmodule GodwokenExplorer.AccountFactory do
           eth_address: address_hash(),
           script_hash: block_hash(),
           type: :eth_user,
-          nonce: sequence(:nonce, & &1, start_at: 0)
+          nonce: sequence(:nonce, & &1, start_at: 0),
+          bit_alias: "user.bit"
         }
       end
 
