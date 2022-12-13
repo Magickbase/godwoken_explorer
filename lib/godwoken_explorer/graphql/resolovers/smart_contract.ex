@@ -44,24 +44,21 @@ defmodule GodwokenExplorer.Graphql.Resolvers.SmartContract do
   end
 
   def smart_contracts(_parent, %{input: input} = _args, _resolution) do
-    sbq =
-      from(sc in SmartContract,
-        select_merge: %{
+    return =
+      from(sc in SmartContract, as: :smart_contract)
+      |> join(:inner, [sc], a in Account, on: sc.account_id == a.id, as: :account)
+      |> smart_contracts_order_by(input)
+      |> select(
+        [smart_contract: sc],
+        merge(sc, %{
           name:
             fragment(
               "CASE WHEN ? IS NULL THEN '' ELSE ? END",
               sc.name,
               sc.name
             )
-        }
+        })
       )
-
-    return =
-      from(sc in SmartContract)
-      |> join(:inner, [sc], sq in subquery(sbq), on: sc.id == sq.id, as: :smart_contract)
-      |> join(:inner, [sc], a in Account, on: sc.account_id == a.id, as: :account)
-      |> smart_contracts_order_by(input)
-      |> select([smart_contract: s], s)
       |> paginate_query(input, %{
         cursor_fields: paginate_cursor(input),
         total_count_primary_key_field: :id
