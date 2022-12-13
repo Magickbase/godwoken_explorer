@@ -2,6 +2,7 @@ defmodule GodwokenExplorer.Graphql.Types.TokenApproval do
   use Absinthe.Schema.Notation
   alias GodwokenExplorer.Graphql.Resolvers, as: Resolvers
   alias GodwokenExplorer.Graphql.Middleware.NullFilter
+  import Absinthe.Resolution.Helpers, only: [dataloader: 1]
 
   object :token_approval_querys do
     @desc """
@@ -89,10 +90,8 @@ defmodule GodwokenExplorer.Graphql.Types.TokenApproval do
     field :approved, :boolean, description: "Approve operation or Cancel approval."
     field :type, :approval_type, description: "Approve or approve_all."
 
-    field :block, :block do
-      description("The mapping block object of token_approval")
-      resolve(&Resolvers.TokenApproval.block/3)
-    end
+    @desc "The mapping block object of token_approval"
+    field :block, :block, resolve: dataloader(:graphql)
 
     field :udt, :udt do
       description("The mapping udt object of token_approval")
