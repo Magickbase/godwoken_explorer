@@ -33,6 +33,7 @@ defmodule GodwokenExplorer.Account do
    *  `token_transfer_count` - The account cached token transfer count.
    *  `contract_code` - The contract's bytecode.
    *  `type` - Account type.
+   *  `bit_alias` - .bit alias.
   """
   @type t :: %__MODULE__{
           eth_address: Address.t(),
@@ -44,6 +45,7 @@ defmodule GodwokenExplorer.Account do
           token_transfer_count: non_neg_integer(),
           contract_code: Data.t() | nil,
           type: String.t(),
+          bit_alias: String.t(),
           inserted_at: NaiveDateTime.t(),
           updated_at: NaiveDateTime.t()
         }
@@ -65,6 +67,7 @@ defmodule GodwokenExplorer.Account do
     field(:transaction_count, :integer)
     field(:token_transfer_count, :integer)
     field(:contract_code, Data)
+    field(:bit_alias, :string)
 
     field(:type, Ecto.Enum,
       values: [
@@ -95,7 +98,8 @@ defmodule GodwokenExplorer.Account do
       :registry_address,
       :transaction_count,
       :token_transfer_count,
-      :contract_code
+      :contract_code,
+      :bit_alias
     ])
     |> validate_required([:id])
   end
