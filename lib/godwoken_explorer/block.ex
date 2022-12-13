@@ -9,6 +9,7 @@ defmodule GodwokenExplorer.Block do
   alias GodwokenExplorer.Chain.Cache.Blocks
   alias GodwokenExplorer.Chain.Events.Publisher
   alias GodwokenExplorer.Chain.Hash
+  alias GodwokenExplorer.Account
 
   @typedoc """
    *  `hash` - The `t:GowokenExplorer.Chain.Hash.Full.t/0` that is current block hash.
@@ -85,9 +86,13 @@ defmodule GodwokenExplorer.Block do
     field :gas_used, :decimal
     field :logs_bloom, :binary
     field :registry_id, :integer
-    field :producer_address, Hash.Address
 
     has_many :transactions, GodwokenExplorer.Transaction, foreign_key: :block_hash
+
+    belongs_to :account, Account,
+      foreign_key: :producer_address,
+      references: :eth_address,
+      type: Hash.Address
 
     timestamps()
   end
