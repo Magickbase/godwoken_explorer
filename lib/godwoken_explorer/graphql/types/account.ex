@@ -300,6 +300,7 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
     field :token_transfer_count, :integer, description: "The account cached token transfer count."
     field :contract_code, :string, description: "The contract's bytecode."
     field :type, :account_type, description: "Account type."
+    field :bit_alias, :string, description: ".bit alias."
 
     field :udt, :udt do
       description(
