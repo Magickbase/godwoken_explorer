@@ -8,6 +8,9 @@ defmodule GodwokenExplorer.TokenApproval do
 
   alias GodwokenExplorer.Chain.Hash
 
+  alias GodwokenExplorer.Block
+  alias GodwokenExplorer.UDT
+
   @typedoc """
      * `token_owner_address_hash` - Token owner.
      * `spender_address_hash` - User approve token to which address.
@@ -36,16 +39,26 @@ defmodule GodwokenExplorer.TokenApproval do
         }
   @derive {Jason.Encoder, except: [:__meta__]}
   schema "token_approvals" do
-    field :block_hash, Hash.Full
     field :block_number, :integer
     field :transaction_hash, Hash.Full
     field :token_owner_address_hash, Hash.Address
     field :spender_address_hash, :binary
-    field :token_contract_address_hash, Hash.Address
     field :data, :decimal
     field :approved, :boolean
     field :type, Ecto.Enum, values: [:approval, :approval_all]
     field :token_type, Ecto.Enum, values: [:erc20, :erc721]
+
+    belongs_to(:block, Block,
+      foreign_key: :block_hash,
+      references: :hash,
+      type: Hash.Full
+    )
+
+    belongs_to(:udt, UDT,
+      foreign_key: :token_contract_address_hash,
+      references: :contract_address_hash,
+      type: Hash.Address
+    )
 
     timestamps()
   end

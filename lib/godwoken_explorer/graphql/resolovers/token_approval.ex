@@ -8,6 +8,8 @@ defmodule GodwokenExplorer.Graphql.Resolvers.TokenApproval do
   alias GodwokenExplorer.{Block, TokenApproval, UDT}
   alias GodwokenExplorer.Repo
 
+  import Absinthe.Resolution.Helpers
+
   @sorter_fields [:block_number, :id]
 
   def token_approvals(_parent, %{input: input}, _resolution) do
@@ -36,12 +38,28 @@ defmodule GodwokenExplorer.Graphql.Resolvers.TokenApproval do
   end
 
   def udt(
-        %TokenApproval{token_contract_address_hash: token_contract_address_hash},
+        token_approval = %TokenApproval{},
         _args,
-        _resolution
+        %{context: %{loader: loader}}
       ) do
-    udt = UDT.get_by_contract_address(token_contract_address_hash)
-    {:ok, udt}
+    loader
+    |> Dataloader.load(:graphql, :udt, token_approval)
+    |> on_load(fn loader ->
+      udt =
+        loader
+        |> Dataloader.get(:graphql, :udt, token_approval)
+
+      return =
+        case udt do
+          %UDT{} = udt ->
+            udt
+
+          nil ->
+            %{id: nil, name: "", decimal: 0, symbol: ""}
+        end
+
+      {:ok, return}
+    end)
   end
 
   defp token_approvals_order_by(query, input) do
