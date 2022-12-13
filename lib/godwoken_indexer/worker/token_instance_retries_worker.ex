@@ -5,7 +5,7 @@ defmodule GodwokenIndexer.Worker.TokenInstanceRetriesWorker do
     max_attempts: 3
 
   alias GodwokenExplorer.Repo
-  alias GodowokenExplorer.TokenInstance
+  alias GodwokenExplorer.TokenInstance
 
   alias GodwokenIndexer.Worker.ERC721ERC1155InstanceMetadata
 
