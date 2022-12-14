@@ -21,9 +21,9 @@ defmodule GodwokenIndexer.Block.SyncWorker do
   alias GodwokenExplorer.GlobalConstants
 
   alias GodwokenExplorer.{
+    Address,
     Block,
     Transaction,
-    Chain,
     Repo,
     Account,
     WithdrawalRequest,
@@ -37,11 +37,10 @@ defmodule GodwokenIndexer.Block.SyncWorker do
 
   alias GodwokenExplorer.Account.{UDTBalance, CurrentBridgedUDTBalance}
 
-  alias GodwokenExplorer.Chain.Events.Publisher
   alias GodwokenExplorer.Chain.Cache.Blocks, as: BlocksCache
   alias GodwokenExplorer.Chain.Cache.Transactions
 
-  alias GodwokenExplorer.Chain.{Hash}
+  alias GodwokenExplorer.Chain.Hash
   alias GodwokenIndexer.Worker.ERC721ERC1155InstanceMetadata
 
   @default_worker_interval 20
@@ -438,6 +437,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
 
       update_udt_balance(token_transfers)
       update_udt_token_instance_metadata(token_transfers)
+      import_addresses(token_transfers)
     end
 
     if length(tokens) > 0 do
@@ -503,6 +503,27 @@ defmodule GodwokenIndexer.Block.SyncWorker do
         end)
       end
     end
+  end
+
+  defp import_addresses(token_transfers) do
+    to_addresses =
+      token_transfers |> Enum.map(fn %{to_address_hash: to_address} -> to_address end)
+
+    exist_addresses =
+      from(a in Account,
+        where: a.eth_address in ^to_addresses,
+        select: fragment("'0x' || encode(?, 'hex')", a.eth_address)
+      )
+      |> Repo.all()
+
+    address_params =
+      (to_addresses -- exist_addresses) |> Enum.map(fn address -> %{eth_address: address} end)
+
+    Import.insert_changes_list(address_params,
+      for: Address,
+      timestamps: import_timestamps(),
+      on_conflict: :nothing
+    )
   end
 
   def add_method_id_and_name_to_tx_params(txs_params) do
