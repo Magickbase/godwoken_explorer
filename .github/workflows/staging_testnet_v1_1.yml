@@ -10,7 +10,7 @@ jobs:
     with:
       environment: stg_testnet_v1
       chain: testnet_v1_1
-      graphiql: false
+      graphiql: true
     secrets: inherit
   deploy-update:
     needs: build
