@@ -2,6 +2,7 @@ defmodule GodwokenExplorer.Graphql.Types.Block do
   use Absinthe.Schema.Notation
   alias GodwokenExplorer.Graphql.Resolvers, as: Resolvers
   alias GodwokenExplorer.Graphql.Middleware.TermRange, as: MTermRange
+  import Absinthe.Resolution.Helpers, only: [dataloader: 1]
 
   object :block_querys do
     @desc """
@@ -123,17 +124,7 @@ defmodule GodwokenExplorer.Graphql.Types.Block do
     field :registry_id, :integer, description: "The block producer registers by which account id."
     field :producer_address, :hash_address, description: "The block produced by which account."
 
-    field :account, :account do
-      description("The mapping account info which produced current block.")
-      resolve(&Resolvers.Block.account/3)
-    end
-
-    field :transactions, list_of(:transaction) do
-      description("The list of transactions in current block")
-      arg(:input, :page_and_size_input, default_value: %{page: 1, page_size: 5})
-      middleware(MTermRange, MTermRange.page_and_size_default_config())
-      resolve(&Resolvers.Block.transactions/3)
-    end
+    field :account, :account, resolve: dataloader(:graphql)
   end
 
   enum :block_status do

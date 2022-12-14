@@ -574,7 +574,9 @@ defmodule GodwokenExplorer.Chain do
   end
 
   def update_udt(%UDT{} = udt, params \\ %{}) do
-    udt_changeset = UDT.changeset(udt, params)
+    udt_changeset =
+      udt
+      |> UDT.changeset(params)
 
     udt_opts = [
       on_conflict: {:replace, [:name, :symbol, :eth_type, :decimal, :supply, :updated_at]},

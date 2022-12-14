@@ -1,5 +1,5 @@
 defmodule GodwokenExplorer.TokenInstanceFactory do
-  alias GodowokenExplorer.TokenInstance
+  alias GodwokenExplorer.TokenInstance
 
   defmacro __using__(_opts) do
     quote do
