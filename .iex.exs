@@ -3,6 +3,7 @@ alias Ecto.Multi
 
 alias GodwokenExplorer.{
   Account,
+  Address,
   Block,
   CheckInfo,
   ContractMethod,
