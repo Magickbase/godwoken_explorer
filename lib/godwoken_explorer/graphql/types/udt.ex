@@ -1301,6 +1301,7 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
 
     field :description, :string, description: "UDT's description."
     field :official_site, :string, description: "UDT's official site."
+    field :rank, :integer, description: "rank number of current returns"
   end
 
   object :erc1155_udt do
@@ -1385,6 +1386,8 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
       description("Token exchange rate of udt.")
       resolve(&Resolvers.UDT.token_exchange_rate/3)
     end
+
+    field :rank, :integer, description: "rank number of current returns"
   end
 
   enum :eth_type do

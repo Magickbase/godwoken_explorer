@@ -3,6 +3,8 @@ defmodule GodwokenExplorer.Graphql.Types.Log do
   alias GodwokenExplorer.Graphql.Resolvers, as: Resolvers
   alias GodwokenExplorer.Graphql.Middleware.Downcase, as: MDowncase
 
+  import Absinthe.Resolution.Helpers, only: [dataloader: 1]
+
   object :log_querys do
     @desc """
     function: get list of logs by filter or conditions
@@ -71,9 +73,8 @@ defmodule GodwokenExplorer.Graphql.Types.Log do
     field :address_hash, :hash_address, description: "Contract address."
     field :block_hash, :hash_full, description: " Layer2 block hash."
 
-    field :udt, :udt do
-      resolve(&Resolvers.Log.udt/3)
-    end
+    field :udt, :udt, resolve: dataloader(:graphql)
+    field :transaction, :transaction, resolve: dataloader(:graphql)
 
     field :smart_contract, :smart_contract do
       resolve(&Resolvers.Log.smart_contract/3)

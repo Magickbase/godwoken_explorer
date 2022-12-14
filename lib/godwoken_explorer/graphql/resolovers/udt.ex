@@ -264,6 +264,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
       |> where(^conditions)
       |> udts_where_fuzzy_name(input)
       |> udts_order_by(input)
+      |> udts_rank()
       |> paginate_query(input, %{
         cursor_fields: paginate_cursor(input),
         total_count_primary_key_field: :id
@@ -272,13 +273,21 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
     {:ok, return}
   end
 
+  defp udts_rank(query) do
+    from(u in UDT,
+      right_join: uh in subquery(query),
+      as: :u_holders,
+      on: u.id == uh.id,
+      select: merge(uh, %{rank: row_number() |> over()})
+    )
+  end
+
   defp udts_order_by(query, input) do
     s2 =
       from(c in CurrentUDTBalance,
         where: c.value > 0 and c.token_type == :erc20,
         join: u in UDT,
         on: u.contract_address_hash == c.token_contract_address_hash,
-        # select: %{native_udt_id: u.id, address_hash: c.address_hash}
         select: %{udt_id: u.id, address_hash: c.address_hash}
       )
 
@@ -305,7 +314,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
           (u.id == h.udt_id and is_nil(u.bridge_account_id)) or
             u.bridge_account_id == h.udt_id
       )
-      |> select_merge([_u, u_holders], %{
+      |> select_merge([u, u_holders], %{
         holders_count:
           fragment(
             "CASE WHEN ? IS NULL THEN 0 ELSE ? END",
@@ -317,7 +326,10 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
     holders_count_query =
       query
       |> join(:inner, [u], uh in subquery(s2), on: u.id == uh.id, as: :u_holders)
-      |> select([u, u_holders], u_holders)
+      |> select(
+        [u, uh],
+        uh
+      )
 
     base_udts_order_by(holders_count_query, input)
   end
@@ -383,6 +395,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
       |> udts_condition_query(input)
       |> udts_where_fuzzy_name(input)
       |> erc721_erc1155_udts_order_by(input, :erc721)
+      |> udts_rank()
       |> paginate_query(input, %{
         cursor_fields: paginate_cursor(input),
         total_count_primary_key_field: :id
@@ -398,6 +411,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
       |> udts_condition_query(input)
       |> udts_where_fuzzy_name(input)
       |> erc721_erc1155_udts_order_by(input, :erc1155)
+      |> udts_rank()
       |> paginate_query(input, %{
         cursor_fields: paginate_cursor(input),
         total_count_primary_key_field: :id
@@ -733,7 +747,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
     {:ok, uan || symbol}
   end
 
-  defp base_udts_order_by(holders_count_query, input) do
+  defp base_udts_order_by(holders_count_query, input, only_condition \\ false) do
     sorter = Map.get(input, :sorter)
 
     holders_count_sorter_cond =
@@ -759,7 +773,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
                   :asc -> :asc_nulls_first
                 end
 
-              {st, dynamic([u, u_holders: uh], field(uh, :holders_count))}
+              {st, dynamic([u_holders: uh], field(uh, :holders_count))}
 
             _ ->
               cursor_order_sorter(e, :order, @sorter_fields)
@@ -776,6 +790,10 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
         order_params ++ [{:asc, :id}]
       end
 
-    order_by(holders_count_query, [u, uh], ^order_params)
+    if only_condition do
+      order_params
+    else
+      order_by(holders_count_query, [], ^order_params)
+    end
   end
 end

@@ -2,6 +2,7 @@ defmodule GodwokenExplorer.Graphql.Types.Polyjuice do
   use Absinthe.Schema.Notation
 
   alias GodwokenExplorer.Graphql.Resolvers, as: Resolvers
+  import Absinthe.Resolution.Helpers, only: [dataloader: 1]
 
   object :polyjuice do
     field :id, :integer, description: "ID of polyjuice table."
@@ -17,6 +18,8 @@ defmodule GodwokenExplorer.Graphql.Types.Polyjuice do
       description("The polyjuce eth transaction hash.")
       resolve(&Resolvers.Polyjuice.eth_hash/3)
     end
+
+    field :transaction, :transaction, resolve: dataloader(:graphql)
 
     field :gas_used, :bigint,
       description:
