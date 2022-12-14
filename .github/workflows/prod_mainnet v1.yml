@@ -11,7 +11,7 @@ jobs:
     with:
       environment: prod_mainnet_v1   
       chain: mainnet_v1
-      graphiql: true
+      graphiql: false 
   deploy-update:
     needs: build
     uses: ./.github/workflows/deploy.yml 
