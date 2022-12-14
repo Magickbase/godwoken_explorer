@@ -48,6 +48,17 @@ defmodule GodwokenExplorer.Graphql.Resolvers.SmartContract do
       from(sc in SmartContract, as: :smart_contract)
       |> join(:inner, [sc], a in Account, on: sc.account_id == a.id, as: :account)
       |> smart_contracts_order_by(input)
+      |> select(
+        [smart_contract: sc],
+        merge(sc, %{
+          name:
+            fragment(
+              "CASE WHEN ? IS NULL THEN '' ELSE ? END",
+              sc.name,
+              sc.name
+            )
+        })
+      )
       |> paginate_query(input, %{
         cursor_fields: paginate_cursor(input),
         total_count_primary_key_field: :id
@@ -65,7 +76,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.SmartContract do
         |> Enum.map(fn e ->
           case e do
             %{sort_type: st, sort_value: :ex_tx_count} ->
-              {st, dynamic([_s, a], a.transaction_count)}
+              {st, dynamic([account: a], a.transaction_count)}
 
             _ ->
               case cursor_order_sorter([e], :order, @sorter_fields) do
