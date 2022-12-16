@@ -1,11 +1,11 @@
-defmodule GodwokenExplorer.Cache.AddressBitAlias do
+defmodule GodwokenExplorer.Chain.Cache.AddressBitAlias do
   @moduledoc """
   Caches Address bit alias.
   """
   use GenServer
 
   alias Ecto.Changeset
-  alias GodwokenExplorer.{Chain, Repo}
+  alias GodwokenExplorer.Repo
 
   @cache_name :address_bit_alias
   @last_update_key "last_update"
@@ -74,7 +74,7 @@ defmodule GodwokenExplorer.Cache.AddressBitAlias do
     put_into_cache("hash_#{address_hash_string}_#{@last_update_key}", current_time())
 
     with {:ok, new_data} <-
-           GodwokenExplorer.Bit.API.fetch_reverse_record_info(account.eth_address) do
+           GodwokenExplorer.Bit.API.fetch_reverse_record_info(address.eth_address) do
       put_into_cache("hash_#{address_hash_string}", new_data)
       put_into_db(address, new_data)
     end

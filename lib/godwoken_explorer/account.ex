@@ -22,7 +22,7 @@ defmodule GodwokenExplorer.Account do
   alias GodwokenRPC
   alias GodwokenExplorer.Counters.{AddressTokenTransfersCounter, AddressTransactionsCounter}
   alias GodwokenExplorer.Chain.{Hash, Import, Data}
-  alias GodwokenExplorer.Cache.AddressBitAlias
+  alias GodwokenExplorer.Chain.Cache.AddressBitAlias
 
   @typedoc """
    *  `eth_address` - The polyjuice account's address.
