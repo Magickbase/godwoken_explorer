@@ -33,7 +33,7 @@ defmodule GodwokenExplorerWeb.API.SearchController do
   end
 
   defp render_search_results(conn, %Address{} = item) do
-    json(conn, %{type: "address", id: item.hash})
+    json(conn, %{type: "address", id: item.eth_address})
   end
 
   defp render_search_results(conn, %Block{} = item) do

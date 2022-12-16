@@ -9,7 +9,7 @@ defmodule GodwokenExplorer.Address do
   alias GodwokenExplorer.Chain.Hash
   alias GodwokenExplorer.Repo
   alias GodwokenExplorer.Counters.AddressTokenTransfersCounter
-  alias GodwokenExplorer.Cache.AddressBitAlias
+  alias GodwokenExplorer.Chain.Cache.AddressBitAlias
 
   @typedoc """
   *  `eth_address` - The address hash.
@@ -57,7 +57,7 @@ defmodule GodwokenExplorer.Address do
     end)
 
     Task.async(fn ->
-      AddressBitAlias.fetch(account)
+      AddressBitAlias.fetch(address)
     end)
   end
 end

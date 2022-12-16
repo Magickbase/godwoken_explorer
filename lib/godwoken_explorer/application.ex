@@ -27,6 +27,8 @@ defmodule GodwokenExplorer.Application do
           GodwokenExplorer.Counters.AddressTransactionsCounter,
           GodwokenExplorer.Counters.AddressTokenTransfersCounter,
           GodwokenExplorer.Chain.Cache.TokenExchangeRate,
+          GodwokenExplorer.Chain.Cache.AddressBitAlias,
+
           # web home api
           GodwokenExplorer.Counters.AccountsCounter,
           GodwokenExplorer.Counters.AverageBlockTime,

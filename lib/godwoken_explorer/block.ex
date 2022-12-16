@@ -7,7 +7,6 @@ defmodule GodwokenExplorer.Block do
   require Logger
 
   alias GodwokenExplorer.Chain.Cache.Blocks
-  alias GodwokenExplorer.Chain.Events.Publisher
   alias GodwokenExplorer.Chain.Hash
 
   @typedoc """
