@@ -13,7 +13,7 @@ defmodule GodwokenExplorer.Chain do
   alias GodwokenExplorer.Counters.{AccountsCounter, AverageBlockTime}
   alias GodwokenExplorer.Chain.Cache.TransactionCount
   alias GodwokenExplorer.Chain.{Hash, Data}
-  alias GodwokenExplorer.Repo
+  alias GodwokenExplorer.{Address, Repo}
 
   @address_hash_len 40
   @tx_block_hash_len 64
@@ -374,7 +374,7 @@ defmodule GodwokenExplorer.Chain do
       {:ok, hash} ->
         case Repo.get_by(Account, eth_address: hash) do
           nil ->
-            {:error, :not_found}
+            Address.find_or_insert_from_hash(hash)
 
           account ->
             {:ok, account}
