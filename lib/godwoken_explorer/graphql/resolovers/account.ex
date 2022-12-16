@@ -1,6 +1,5 @@
 defmodule GodwokenExplorer.Graphql.Resolvers.Account do
-  alias GodwokenExplorer.Repo
-  alias GodwokenExplorer.{Account, SmartContract, UDT}
+  alias GodwokenExplorer.{Account, Address, Chain, Repo, SmartContract, UDT}
   alias GodwokenExplorer.Account.{CurrentUDTBalance, CurrentBridgedUDTBalance}
   alias GodwokenExplorer.Graphql.Dataloader.BatchAccount
 
@@ -24,9 +23,15 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Account do
         {:ok, return}
 
       {_, _} ->
-        return = Repo.get_by(Account, eth_address: address)
-        Account.async_fetch_transfer_and_transaction_count(return)
-        {:ok, return}
+        case Repo.get_by(Account, eth_address: address_hash) do
+          %Account{} = account ->
+            Account.async_fetch_transfer_and_transaction_count(account)
+            {:ok, account}
+
+          nil ->
+            address = Address.find_or_insert_from_hash(address_hash)
+            {:ok, address}
+        end
     end
   end
 

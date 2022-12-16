@@ -9,6 +9,7 @@ defmodule GodwokenExplorer.Address do
   alias GodwokenExplorer.Chain.Hash
   alias GodwokenExplorer.Repo
   alias GodwokenExplorer.Counters.AddressTokenTransfersCounter
+  alias GodwokenExplorer.Cache.AddressBitAlias
 
   @typedoc """
   *  `eth_address` - The address hash.
@@ -56,11 +57,7 @@ defmodule GodwokenExplorer.Address do
     end)
 
     Task.async(fn ->
-      with {:ok, account_alias} <-
-             address.hash
-             |> GodwokenExplorer.Bit.API.fetch_reverse_record_info() do
-        __MODULE__.changeset(address, %{bit_alias: account_alias}) |> Repo.update()
-      end
+      AddressBitAlias.fetch(account)
     end)
   end
 end

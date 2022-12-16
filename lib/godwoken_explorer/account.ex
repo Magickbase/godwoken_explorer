@@ -22,6 +22,7 @@ defmodule GodwokenExplorer.Account do
   alias GodwokenRPC
   alias GodwokenExplorer.Counters.{AddressTokenTransfersCounter, AddressTransactionsCounter}
   alias GodwokenExplorer.Chain.{Hash, Import, Data}
+  alias GodwokenExplorer.Cache.AddressBitAlias
 
   @typedoc """
    *  `eth_address` - The polyjuice account's address.
@@ -773,12 +774,7 @@ defmodule GodwokenExplorer.Account do
       end)
 
       Task.async(fn ->
-        with {:ok, account_alias} <-
-               account.eth_address
-               |> to_string()
-               |> GodwokenExplorer.Bit.API.fetch_reverse_record_info() do
-          Account.changeset(account, %{bit_alias: account_alias}) |> Repo.update()
-        end
+        AddressBitAlias.fetch(account)
       end)
     end
 
