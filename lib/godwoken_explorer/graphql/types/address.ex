@@ -1,7 +1,6 @@
 defmodule GodwokenExplorer.Graphql.Types.Address do
   use Absinthe.Schema.Notation
   alias GodwokenExplorer.Graphql.Resolvers, as: Resolvers
-  alias GodwokenExplorer.Graphql.Middleware.TermRange, as: MTermRange
 
   object :address_querys do
     @desc """
@@ -48,10 +47,5 @@ defmodule GodwokenExplorer.Graphql.Types.Address do
     ```
     """
     field :address, :hash_address
-  end
-
-  input_object :address_child_udts_input do
-    import_fields(:page_and_size_input)
-    import_fields(:sort_type_input)
   end
 end

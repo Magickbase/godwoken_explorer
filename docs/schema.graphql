@@ -48,6 +48,9 @@ type Account {
   The mapping udt or bridge udt object of account if account is udt account or bridge udt account.
   """
   udt: Udt
+
+   """.bit alias."""
+  bit_alias: String
 }
 
 input AccountBridgedUdtsByScriptHashInput {
@@ -412,6 +415,16 @@ type Block {
 
   """The list of transactions in current block"""
   transactions(input: PageAndSizeInput = {page: 1, page_size: 5}): [Transaction]
+}
+type Address {
+  """ETH address hash"""
+  eth_address: HashFull
+
+  """The address cached token transfer count."""
+  token_transfer_count: Int
+
+  """.bit alias."""
+  bit_alias: String
 }
 
 input BlockInput {
@@ -1636,7 +1649,7 @@ type RootQueryType {
     account_udts(
       input: {
         address_hashes: ["0x715AB282B873B79A7BE8B0E8C13C4E8966A52040"],
-  
+
         udt_script_hash: "0x595cc14e574a708dc70a320d2026f79374246ed4659261131cdda7dd5814b5ca"
       }
     ) {
@@ -4449,4 +4462,3 @@ input UserErc721Erc1155AssetsInput {
 input VerifyAndUpdateFromSourcifyInput {
   address: HashAddress!
 }
-
