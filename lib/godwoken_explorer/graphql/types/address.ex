@@ -38,16 +38,6 @@ defmodule GodwokenExplorer.Graphql.Types.Address do
     field :eth_address, :hash_full, description: "The address that not exist in godwoken chain."
     field :token_transfer_count, :integer, description: "The address cached token transfer count."
     field :bit_alias, :string, description: ".bit alias."
-
-    @desc "The mapping erc20 balance info of account."
-    field :address_current_udts, list_of(:account_current_udt) do
-      arg(:input, :address_child_udts_input,
-        default_value: %{page: 1, page_size: 20, sort_type: :desc}
-      )
-
-      middleware(MTermRange, MTermRange.page_and_size_default_config())
-      resolve(&Resolvers.Address.address_current_udts/3)
-    end
   end
 
   input_object :address_input do
