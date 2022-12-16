@@ -261,3 +261,6 @@ config :godwoken_explorer, GodwokenExplorer.ExchangeRates.Source, source: exchan
 config :godwoken_explorer, Indexer, enabled: System.get_env("DISABLE_INDEXER") != "true"
 config :godwoken_explorer, Web, enabled: System.get_env("DISABLE_WEB") != "true"
 config :godwoken_explorer, Oban.Crontab, enabled: System.get_env("DISABLE_OBAN_CRONTAB") != "true"
+
+config :godwoken_explorer, :bit,
+  indexer_url: System.get_env("BIT_INDEXER_URL") || "https://indexer-v1.did.id"

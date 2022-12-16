@@ -87,6 +87,7 @@ defmodule GodwokenExplorer.Graphql.AccountTest do
       account(input: {address: "#{user.eth_address}"}) {
         type
         eth_address
+        bit_alias
       }
     }
     """
@@ -101,7 +102,8 @@ defmodule GodwokenExplorer.Graphql.AccountTest do
              "data" => %{
                "account" => %{
                  "eth_address" => user.eth_address |> to_string(),
-                 "type" => "ETH_USER"
+                 "type" => "ETH_USER",
+                 "bit_alias" => user.bit_alias
                }
              }
            }
