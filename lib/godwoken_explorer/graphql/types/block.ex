@@ -20,11 +20,6 @@ defmodule GodwokenExplorer.Graphql.Types.Block do
           id
           eth_address
         }
-        transactions (input: {page: 1, page_size: 2}) {
-          type
-          from_account_id
-          to_account_id
-        }
       }
     }
     ```
@@ -37,8 +32,7 @@ defmodule GodwokenExplorer.Graphql.Types.Block do
           "gas_used": "0",
           "hash": "0x4ac339b063e52dac1b845d935788f379ebcdb0e33ecce077519f39929dbc8829",
           "number": 1,
-          "parent_hash": "0x61bcff6f20e8be09bbe8e36092a9cc05dd3fa67e3841e206e8c30ae0dd7032df",
-          "transactions": []
+          "parent_hash": "0x61bcff6f20e8be09bbe8e36092a9cc05dd3fa67e3841e206e8c30ae0dd7032df"
         }
       }
     }
@@ -64,11 +58,6 @@ defmodule GodwokenExplorer.Graphql.Types.Block do
         account{
           eth_address
         }
-        transactions (input: {page: 1, page_size: 2}) {
-          type
-          from_account_id
-          to_account_id
-        }
       }
     }
     ```
@@ -83,8 +72,7 @@ defmodule GodwokenExplorer.Graphql.Types.Block do
           "hash": "0x089f36f4f1eb1060e12ade101e4a6326423fa6cd11915d9bf1ef4bacafdbe663",
           "number": 14938,
           "parent_hash": "0xa552df86bad0233d0acb183056b095ac50abfa93161ff6b62ebe52bac2e53776",
-          "producer_address": "715ab282b873b79a7be8b0e8c13c4e8966a52040",
-          "transactions": []
+          "producer_address": "715ab282b873b79a7be8b0e8c13c4e8966a52040"
         }
       }
     }
