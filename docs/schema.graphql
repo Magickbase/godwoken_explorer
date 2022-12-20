@@ -10,6 +10,9 @@ type Account {
   """The mapping erc20 balance info of account."""
   account_current_udts(input: AccountChildUdtsInput = {page: 1, page_size: 20, sort_type: DESC}): [AccountCurrentUdt]
 
+  """.bit alias."""
+  bit_alias: String
+
   """The bridge udt object of account if account is udt account."""
   bridged_udt: Udt
 
@@ -33,6 +36,8 @@ type Account {
 
   """Godwoken chain script hash."""
   script_hash: HashAddress
+
+  """The mapping smart_contract info of account."""
   smart_contract: SmartContract
 
   """The account cached token transfer count."""
@@ -564,6 +569,9 @@ type Erc1155Udt {
   """UDT's official site."""
   official_site: String
 
+  """rank number of current returns"""
+  rank: Int
+
   """[UAN](https://github.com/nervosnetwork/rfcs/pull/335)."""
   symbol: String
 
@@ -655,6 +663,9 @@ type Erc7211155CommonUdt {
 
   """UDT's official site."""
   official_site: String
+
+  """rank number of current returns"""
+  rank: Int
 
   """[UAN](https://github.com/nervosnetwork/rfcs/pull/335)."""
   symbol: String
@@ -786,6 +797,9 @@ type Erc721Udt {
   """UDT's official site."""
   official_site: String
 
+  """rank number of current returns"""
+  rank: Int
+
   """[UAN](https://github.com/nervosnetwork/rfcs/pull/335)."""
   symbol: String
 }
@@ -860,16 +874,25 @@ type Log {
 
   """Log second topic."""
   second_topic: String
+  smart_contract: SmartContract
 
   """Log third topic."""
   third_topic: String
+  transaction: Transaction
 
   """Layer2 transaction."""
   transaction_hash: HashFull
+  udt: Udt
 }
 
 input LogInput {
   address_hash: HashAddress
+
+  """Fetch the records after this cursor."""
+  after: String
+
+  """Fetch the records before this cursor."""
+  before: String
 
   """argument: the end of block number(inclusive) for search query"""
   end_block_number: Int
@@ -877,36 +900,27 @@ input LogInput {
   fourth_topic: String
 
   """
-  ```
-  argument: the page of query result, the relations of postgres offset: offset = (page - 1) * page_size
-  default: 1
-  limit: > 0
-  ```
+  Limits the number of records returned per page. Note that this number will be capped by maximum_limit=100. Defaults to 20.
   """
-  page: Int = 1
-
-  """
-  ```
-  argument: the page_size of query result, it's the same of postgres limit
-  default: 20
-  limit: > 0
-  ```
-  """
-  page_size: Int = 20
+  limit: Int = 20
   second_topic: String
-
-  """
-  ```
-  argument: the sort of type by custom condition
-  default: desc
-  ```
-  """
-  sort_type: SortType = DESC
+  sorter: [LogsSorterInput] = [{sort_type: ASC, sort_value: TRANSACTION_HASH}, {sort_type: ASC, sort_value: INDEX}]
 
   """argument: the start of block number(inclusive) for search query"""
   start_block_number: Int
   third_topic: String
   transaction_hash: HashFull
+}
+
+enum LogsSorter {
+  BLOCK_NUMBER
+  INDEX
+  TRANSACTION_HASH
+}
+
+input LogsSorterInput {
+  sort_type: SortType
+  sort_value: LogsSorter
 }
 
 input PageAndSizeInput {
@@ -959,6 +973,11 @@ type PaginateErc721Udts {
   metadata: PaginateMetadata
 }
 
+type PaginateLogs {
+  entries: [Log]
+  metadata: PaginateMetadata
+}
+
 type PaginateMetadata {
   """An opaque cursor representing the last row of the current page."""
   after: String
@@ -974,6 +993,11 @@ type PaginateMetadata {
 
   """A boolean indicating whether the :total_count_limit was exceeded."""
   total_count_cap_exceeded: Boolean
+}
+
+type PaginateSearchUdts {
+  entries: [SearchUdtResult]
+  metadata: PaginateMetadata
 }
 
 type PaginateSmartContracts {
@@ -1049,6 +1073,7 @@ type Polyjuice {
 
   """Status of deployed."""
   status: PolyjuiceStatus
+  transaction: Transaction
 
   """
   Index of this transaction in `block`.  `nil` when transaction is pending or
@@ -2741,7 +2766,52 @@ type RootQueryType {
   }
   ```
   """
-  logs(input: LogInput!): [Log]
+  logs(input: LogInput!): PaginateLogs
+
+  """
+  ```graphql
+  search_udt example:
+  query {
+    search_udt(input: { fuzzy_name: "%ERC%", limit: 1 }) {
+      entries {
+        id
+        name
+        symbol
+        type
+        contract_address_hash
+      }
+      metadata {
+        total_count
+        before
+        after
+      }
+    }
+  }
+  ```
+  ```json
+  {
+    "data": {
+      "search_udt": {
+        "entries": [
+          {
+            "contract_address_hash": "0x8e82245c50864754654d2fae31367444e10b990e",
+            "id": 89001,
+            "name": "testERC20",
+            "symbol": "testERC20",
+            "type": "NATIVE"
+          }
+        ],
+        "metadata": {
+          "after": "g3QAAAABaAJkAARkZXNjZAACaWRiAAFbqQ==",
+          "before": null,
+          "total_count": 715
+        }
+      }
+    }
+  }
+  ```
+  """
+  search_udt(input: SearchUdtInput! = {limit: 20}): PaginateSearchUdts
 
   """
   function: get smart contract by address
@@ -3981,6 +4051,48 @@ type RootQueryType {
   user_erc721_assets(input: UserErc721Erc1155AssetsInput!): PaginateUserErc721Assets
 }
 
+input SearchUdtInput {
+  """Fetch the records after this cursor."""
+  after: String
+
+  """Fetch the records before this cursor."""
+  before: String
+  contract_address: HashAddress
+  fuzzy_name: String
+
+  """
+  Limits the number of records returned per page. Note that this number will be capped by maximum_limit=100. Defaults to 20.
+  """
+  limit: Int = 20
+}
+
+type SearchUdtResult {
+  """The udt contract address."""
+  contract_address_hash: HashAddress
+
+  """EVM token type."""
+  eth_type: EthType
+
+  """UDT icon url."""
+  icon: String
+
+  """UDT primary key"""
+  id: Int
+
+  """
+  For bridge token, read from [UAN](https://github.com/nervosnetwork/rfcs/pull/335);For native token, read from contract.
+  """
+  name: String
+
+  """
+  For bridge token, read from [UAN](https://github.com/nervosnetwork/rfcs/pull/335);For native token, read from contract.
+  """
+  symbol: String
+
+  """Bridge means from layer1;Native means layer2 contract."""
+  type: UdtType
+}
+
 type SmartContract {
   """Contract abi."""
   abi: [Json]
@@ -3989,7 +4101,7 @@ type SmartContract {
   account: Account
 
   """The account foreign key."""
-  account_id: String
+  account_id: Int
 
   """The ckb-balance of this contract."""
   ckb_balance: Decimal
@@ -4136,6 +4248,22 @@ input TokenApprovalsSorterInput {
   sort_value: TokenApprovalsSorter
 }
 
+"""
+Trigger token exchange rate update by symbol name like `ckb`, `btc` or `eth` etc.
+And returning the previous exchange rate value.
+The first time trigger will return `0`.
+"""
+type TokenExchangeRate {
+  """Token exchange rate."""
+  exchange_rate: Decimal
+
+  """Token symbol name."""
+  symbol: String
+
+  """Token last fetch timestamp(millisecond)."""
+  timestamp: Int
+}
+
 type TokenInstance {
   """Error of fetching token instance."""
   error: String
@@ -4222,8 +4350,6 @@ enum TokenType {
 
 type Transaction {
   args: ChainData
-
-  """the mapping block of transaction"""
   block: Block
 
   """The block hash which in."""
@@ -4234,8 +4360,6 @@ type Transaction {
 
   """Polyjuice transaction hash."""
   eth_hash: HashFull
-
-  """the mapping account which involve the transaction"""
   from_account: Account
 
   """The foreign key of account and which account invoke contract."""
@@ -4246,23 +4370,13 @@ type Transaction {
 
   """Order of transaction in block."""
   index: Int
-
-  """the method id of transction"""
   method_id: ChainData
-
-  """the method name of transction"""
   method_name: String
 
   """From account's nonce."""
   nonce: Int
-
-  """the mapping polujuice info of transction"""
   polyjuice: Polyjuice
-
-  """the mapping polujuice creator of transction"""
   polyjuice_creator: PolyjuiceCreator
-
-  """the mapping contract account"""
   to_account: Account
 
   """Contract account."""
@@ -4345,6 +4459,9 @@ type Udt {
   """UDT's description."""
   description: String
 
+  """[UAN](https://github.com/nervosnetwork/rfcs/pull/335)."""
+  display_name: String
+
   """EVM token type."""
   eth_type: EthType
 
@@ -4371,6 +4488,9 @@ type Udt {
   """UDT's market price."""
   price: Decimal
 
+  """rank number of current returns"""
+  rank: Int
+
   """Layer1 script hash."""
   script_hash: HashFull
 
@@ -4382,11 +4502,17 @@ type Udt {
   """
   symbol: String
 
+  """Token exchange rate of udt."""
+  token_exchange_rate: TokenExchangeRate
+
   """Bridge means from layer1;Native means layer2 contract."""
   type: UdtType
 
   """Layer1 udt's type script."""
   type_script: Json
+
+  """[UAN](https://github.com/nervosnetwork/rfcs/pull/335)."""
+  uan: String
 
   """UDT's price * supply."""
   value: Decimal

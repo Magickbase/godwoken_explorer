@@ -48,7 +48,7 @@ defmodule GodwokenExplorer.WithdrawalRequest do
 
   @derive {Jason.Encoder, except: [:__meta__]}
   schema "withdrawal_requests" do
-    field :hash, :binary
+    field :hash, Hash.Full
     field :nonce, :integer
     field :capacity, :decimal
     field :amount, :decimal
