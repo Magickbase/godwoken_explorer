@@ -4,6 +4,21 @@ defmodule GodwokenExplorer.Graphql.Types.Search do
 
   object :search_querys do
     @desc """
+    keyword can be: udt name| account eth_address | address | transaction hash | block number
+    ```graphql
+    query {
+      search_keyword(input: { keyword: "UDT"}){
+        type
+        id
+      }
+    }
+    """
+    field :search_keyword, :search_result do
+      arg(:input, non_null(:search_keyword_input))
+      resolve(&Resolvers.Search.search_keyword/3)
+    end
+
+    @desc """
     ```graphql
     search_udt example:
     query {
@@ -52,6 +67,11 @@ defmodule GodwokenExplorer.Graphql.Types.Search do
     end
   end
 
+  object :search_result do
+    field(:type, :search_type)
+    field(:id, :string)
+  end
+
   object :paginate_search_udts do
     field(:entries, list_of(:search_udt_result))
     field(:metadata, :paginate_metadata)
@@ -80,7 +100,19 @@ defmodule GodwokenExplorer.Graphql.Types.Search do
 
     field(:type, :udt_type, description: " Bridge means from layer1;Native means layer2 contract.")
 
-    field :eth_type, :eth_type, description: "EVM token type."
+    field(:eth_type, :eth_type, description: "EVM token type.")
+  end
+
+  enum :search_type do
+    value(:address)
+    value(:block)
+    value(:transaction)
+    value(:udt)
+    value(:account)
+  end
+
+  input_object :search_keyword_input do
+    field(:keyword, non_null(:string))
   end
 
   input_object :search_udt_input do
