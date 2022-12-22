@@ -46,7 +46,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.SmartContract do
   end
 
   def smart_contracts(_parent, %{input: input} = _args, _resolution) do
-    return =
+    subq =
       from(sc in SmartContract, as: :smart_contract)
       |> join(:inner, [sc], a in Account, on: sc.account_id == a.id, as: :account)
       |> smart_contracts_order_by(input)
@@ -61,6 +61,23 @@ defmodule GodwokenExplorer.Graphql.Resolvers.SmartContract do
             )
         })
       )
+
+    query =
+      from(s in SmartContract,
+        right_join: sq in subquery(subq),
+        select:
+          merge(sq, %{
+            ckb_balance:
+              fragment(
+                "CASE WHEN ? IS NULL THEN 0 ELSE ? END",
+                sq.ckb_balance,
+                sq.ckb_balance
+              )
+          })
+      )
+
+    return =
+      query
       |> paginate_query(input, %{
         cursor_fields: paginate_cursor(input),
         total_count_primary_key_field: :id

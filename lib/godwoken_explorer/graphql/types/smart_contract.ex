@@ -184,15 +184,18 @@ defmodule GodwokenExplorer.Graphql.Types.SmartContract do
       resolve(&Resolvers.SmartContract.account/3)
     end
 
-    field :ckb_balance, :decimal do
-      description("The ckb-balance of this contract.")
-      resolve(&Resolvers.SmartContract.ckb_balance/3)
-    end
+    field :ckb_balance, :decimal, description: "The ckb-balance of this contract."
+
+    # field :ckb_balance, :decimal do
+    #   description("The ckb-balance of this contract.")
+    #   resolve(&Resolvers.SmartContract.ckb_balance/3)
+    # end
   end
 
   enum :smart_contracts_sorter do
     value(:id)
     value(:name)
+    value(:ckb_balance)
     # value(:ex_balance)
     value(:ex_tx_count)
   end
