@@ -324,7 +324,8 @@ defmodule GodwokenExplorer.Chain do
   end
 
   @spec from_param(String.t()) ::
-          {:ok, Address.t() | Block.t() | Transaction.t()} | {:error, :not_found}
+          {:ok, Address.t() | Block.t() | Transaction.t() | Account.t() | UDT.t()}
+          | {:error, :not_found}
   def from_param(param)
 
   def from_param("0x" <> number_string = param)
