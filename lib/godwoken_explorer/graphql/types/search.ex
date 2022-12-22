@@ -12,6 +12,7 @@ defmodule GodwokenExplorer.Graphql.Types.Search do
         id
       }
     }
+    ```
     """
     field :search_keyword, :search_result do
       arg(:input, non_null(:search_keyword_input))
