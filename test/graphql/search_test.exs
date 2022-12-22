@@ -1,7 +1,7 @@
 defmodule GodwokenExplorer.Graphql.SearchTest do
   use GodwokenExplorerWeb.ConnCase
 
-  import GodwokenExplorer.Factory, only: [insert: 2]
+  import GodwokenExplorer.Factory, only: [insert: 1, insert: 2, insert!: 1]
 
   setup do
     for _ <- 1..10 do
@@ -13,6 +13,138 @@ defmodule GodwokenExplorer.Graphql.SearchTest do
     last_udt = insert(:native_udt, eth_type: :erc1155)
 
     [second_last_udt: second_last_udt, last_udt: last_udt]
+  end
+
+  test "graphql: search_keyword with udt", %{conn: conn} do
+    name = "SSS_UDT"
+    insert(:native_udt, eth_type: :erc721, name: name)
+
+    query = search_keyword(name)
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    assert match?(
+             %{
+               "data" => %{
+                 "search_keyword" => %{
+                   "type" => "UDT"
+                 }
+               }
+             },
+             json_response(conn, 200)
+           )
+
+    ## polyjuice contract account
+    account = insert!(:polyjuice_contract_account)
+    keyword = to_string(account.eth_address)
+    query = search_keyword(keyword)
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    assert match?(
+             %{
+               "data" => %{
+                 "search_keyword" => %{
+                   "type" => "ACCOUNT"
+                 }
+               }
+             },
+             json_response(conn, 200)
+           )
+
+    ## not exist address
+    keyword = "0xbFbE23681D99A158f632e64A31288946770c7A9e"
+    query = search_keyword(keyword)
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    assert match?(
+             %{
+               "data" => %{
+                 "search_keyword" => %{
+                   "type" => "ADDRESS"
+                 }
+               }
+             },
+             json_response(conn, 200)
+           )
+
+    block = insert(:block)
+    from_account = insert!(:user)
+    to_account = insert!(:polyjuice_contract_account)
+
+    transaction =
+      insert(:transaction,
+        from_account: from_account,
+        to_account: to_account,
+        block: block,
+        block_number: block.number
+      )
+
+    ## test block keyword
+    keyword = block.number |> to_string()
+    query = search_keyword(keyword)
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    assert match?(
+             %{
+               "data" => %{
+                 "search_keyword" => %{
+                   "type" => "BLOCK"
+                 }
+               }
+             },
+             json_response(conn, 200)
+           )
+
+    ## test transaction keyword
+    keyword = transaction.hash |> to_string()
+    query = search_keyword(keyword)
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    assert match?(
+             %{
+               "data" => %{
+                 "search_keyword" => %{
+                   "type" => "TRANSACTION"
+                 }
+               }
+             },
+             json_response(conn, 200)
+           )
+  end
+
+  defp search_keyword(keyword) do
+    """
+    query {
+      search_keyword(input: { keyword: "#{keyword}"}){
+        type
+        id
+      }
+    }
+    """
   end
 
   test "graphql: search_udt ", %{conn: conn} do
