@@ -16,8 +16,11 @@ defmodule GodwokenExplorer.Graphql.SearchTest do
   end
 
   test "graphql: search_keyword with udt", %{conn: conn} do
+    # exact matching
     name = "SSS_UDT"
+    fuzzy_name = "%UDT%"
     insert(:native_udt, eth_type: :erc721, name: name)
+    insert(:native_udt, eth_type: :erc1155)
 
     query = search_keyword(name)
 
@@ -34,6 +37,25 @@ defmodule GodwokenExplorer.Graphql.SearchTest do
                    "type" => "UDT"
                  }
                }
+             },
+             json_response(conn, 200)
+           )
+
+    # more than one matching
+    query = search_keyword(fuzzy_name)
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    assert match?(
+             %{
+               "data" => %{
+                 "search_keyword" => nil
+               },
+               "errors" => _
              },
              json_response(conn, 200)
            )
