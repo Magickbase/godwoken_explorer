@@ -229,7 +229,7 @@ defmodule GodwokenExplorer.UDT do
   # minted count by token transfer from "0x0000000000000000000000000000000000000000"
   # TODO: add cache, materialize view?
   def minted_count(udt) do
-    if udt do
+    if udt && udt.eth_type in [:erc721, :erc1155] do
       contract_address_hash = udt.contract_address_hash
       minted_burn_address_hash = UDTBalance.minted_burn_address_hash()
 
