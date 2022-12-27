@@ -46,42 +46,6 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Account do
     end)
   end
 
-  def account_current_udts(
-        %Account{eth_address: eth_address},
-        %{input: input} = _args,
-        _resolution
-      ) do
-    return =
-      from(cu in CurrentUDTBalance)
-      |> where([cu], cu.address_hash == ^eth_address and cu.token_type == :erc20)
-      |> order_by([cu], desc: cu.updated_at)
-      |> join(:inner, [cu], a in Account, on: a.eth_address == cu.token_contract_address_hash)
-      |> join(:inner, [cu, a], u in UDT, on: a.id == u.bridge_account_id)
-      |> page_and_size(input)
-      |> sort_type(input, :value)
-      |> Repo.all()
-
-    {:ok, return}
-  end
-
-  def account_current_bridged_udts(
-        %Account{eth_address: eth_address},
-        %{input: input} = _args,
-        _resolution
-      ) do
-    return =
-      from(cbu in CurrentBridgedUDTBalance)
-      |> where([cbu], cbu.address_hash == ^eth_address)
-      |> order_by([cbu], desc: cbu.updated_at)
-      |> join(:inner, [cbu], a in Account, on: a.script_hash == cbu.udt_script_hash)
-      |> join(:inner, [cbu, a], u in UDT, on: a.id == u.id)
-      |> page_and_size(input)
-      |> sort_type(input, :value)
-      |> Repo.all()
-
-    {:ok, return}
-  end
-
   def smart_contract(%Account{id: id}, _args, _resolution) do
     return =
       from(sm in SmartContract)

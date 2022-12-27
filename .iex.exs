@@ -32,7 +32,7 @@ alias GodwokenIndexer.Fetcher.UDTBalances
 
 alias GodwokenExplorer.Token.MetadataRetriever
 alias GodwokenExplorer.Token.InstanceMetadataRetriever
-alias GodowokenExplorer.TokenInstance
+alias GodwokenExplorer.TokenInstance
 alias GodwokenExplorer.Chain.Cache.TokenExchangeRate
 
 import Ecto.{Query, Queryable, Changeset}
