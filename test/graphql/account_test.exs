@@ -40,18 +40,20 @@ defmodule GodwokenExplorer.Graphql.AccountTest do
         input: {
           script_hash: "#{script_hash}"
         }
-      ) {
-        udt {
-          id
-          name
-          bridge_account_id
-          type
-        }
-        bridged_udt {
-          id
-          name
-          bridge_account_id
-          type
+      ){
+        ... on Account {
+          udt {
+            id
+            name
+            bridge_account_id
+            type
+          }
+          bridged_udt {
+            id
+            name
+            bridge_account_id
+            type
+          }
         }
       }
     }
@@ -84,10 +86,12 @@ defmodule GodwokenExplorer.Graphql.AccountTest do
 
     query = """
     query {
-      account(input: {address: "#{user.eth_address}"}) {
-        type
-        eth_address
-        bit_alias
+       account(input: {address: "#{user.eth_address}"}){
+        ... on Account {
+          type
+          eth_address
+          bit_alias
+        }
       }
     }
     """
@@ -109,6 +113,40 @@ defmodule GodwokenExplorer.Graphql.AccountTest do
            }
   end
 
+  test "graphql: account address", %{conn: conn} do
+    ## not exist address
+    keyword = "0xbFbE23681D99A158f632e64A31288946770c7A9e"
+    keyword = keyword |> String.downcase()
+
+    query = """
+    query {
+       account(input: {address: "#{keyword}"}){
+        ... on Address {
+          eth_address
+          bit_alias
+        }
+      }
+    }
+    """
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    assert match?(
+             %{
+               "data" => %{
+                 "account" => %{
+                   "eth_address" => ^keyword
+                 }
+               }
+             },
+             json_response(conn, 200)
+           )
+  end
+
   test "graphql: account with udt subfield", %{
     conn: conn,
     ckb_udt: ckb_udt,
@@ -116,11 +154,13 @@ defmodule GodwokenExplorer.Graphql.AccountTest do
   } do
     query = """
     query {
-      account(input: {script_hash: "#{ckb_account.script_hash}"}) {
-        type
-        bridged_udt {
-          id
-          name
+      account(input: {script_hash: "#{ckb_account.script_hash}"}){
+        ... on Account{
+          type
+          bridged_udt {
+            id
+            name
+          }
         }
       }
     }
@@ -153,12 +193,14 @@ defmodule GodwokenExplorer.Graphql.AccountTest do
 
     query = """
       query {
-        account(input: {address: "#{polyjuice_contract_account.eth_address}"}) {
-          type
-          eth_address
-          smart_contract {
-            id
-            account_id
+        account(input: {address: "#{polyjuice_contract_account.eth_address}"}){
+          ... on Account{
+            type
+            eth_address
+            smart_contract {
+              id
+              account_id
+            }
           }
         }
       }
