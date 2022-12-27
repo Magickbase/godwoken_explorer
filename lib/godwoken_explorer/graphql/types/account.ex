@@ -3,6 +3,7 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
   alias GodwokenExplorer.Graphql.Resolvers, as: Resolvers
   alias GodwokenExplorer.Graphql.Middleware.TermRange, as: MTermRange
   import Absinthe.Resolution.Helpers, only: [dataloader: 1]
+  alias GodwokenExplorer.{Account, Address}
 
   object :account_querys do
     @desc """
@@ -281,10 +282,26 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
     }
     ```
     """
-    field :account, :account do
+    field :account, :account_or_address do
       arg(:input, non_null(:account_input))
-      resolve(&Resolvers.Account.account/3)
+      resolve(&Resolvers.Account.account_or_address/3)
     end
+  end
+
+  union :account_or_address do
+    description("account api result")
+    types([:account, :address])
+
+    resolve_type(fn
+      %Account{}, _ ->
+        :account
+
+      %Address{}, _ ->
+        :address
+
+      _, _ ->
+        nil
+    end)
   end
 
   object :account_mutations do
