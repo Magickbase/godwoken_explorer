@@ -2,6 +2,7 @@ defmodule GodwokenExplorer.Graphql.Types.Block do
   use Absinthe.Schema.Notation
   alias GodwokenExplorer.Graphql.Resolvers, as: Resolvers
   alias GodwokenExplorer.Graphql.Middleware.TermRange, as: MTermRange
+  import Absinthe.Resolution.Helpers, only: [dataloader: 1]
 
   object :block_querys do
     @desc """
@@ -19,11 +20,6 @@ defmodule GodwokenExplorer.Graphql.Types.Block do
           id
           eth_address
         }
-        transactions (input: {page: 1, page_size: 2}) {
-          type
-          from_account_id
-          to_account_id
-        }
       }
     }
     ```
@@ -36,8 +32,7 @@ defmodule GodwokenExplorer.Graphql.Types.Block do
           "gas_used": "0",
           "hash": "0x4ac339b063e52dac1b845d935788f379ebcdb0e33ecce077519f39929dbc8829",
           "number": 1,
-          "parent_hash": "0x61bcff6f20e8be09bbe8e36092a9cc05dd3fa67e3841e206e8c30ae0dd7032df",
-          "transactions": []
+          "parent_hash": "0x61bcff6f20e8be09bbe8e36092a9cc05dd3fa67e3841e206e8c30ae0dd7032df"
         }
       }
     }
@@ -63,11 +58,6 @@ defmodule GodwokenExplorer.Graphql.Types.Block do
         account{
           eth_address
         }
-        transactions (input: {page: 1, page_size: 2}) {
-          type
-          from_account_id
-          to_account_id
-        }
       }
     }
     ```
@@ -82,8 +72,7 @@ defmodule GodwokenExplorer.Graphql.Types.Block do
           "hash": "0x089f36f4f1eb1060e12ade101e4a6326423fa6cd11915d9bf1ef4bacafdbe663",
           "number": 14938,
           "parent_hash": "0xa552df86bad0233d0acb183056b095ac50abfa93161ff6b62ebe52bac2e53776",
-          "producer_address": "715ab282b873b79a7be8b0e8c13c4e8966a52040",
-          "transactions": []
+          "producer_address": "715ab282b873b79a7be8b0e8c13c4e8966a52040"
         }
       }
     }
@@ -123,17 +112,7 @@ defmodule GodwokenExplorer.Graphql.Types.Block do
     field :registry_id, :integer, description: "The block producer registers by which account id."
     field :producer_address, :hash_address, description: "The block produced by which account."
 
-    field :account, :account do
-      description("The mapping account info which produced current block.")
-      resolve(&Resolvers.Block.account/3)
-    end
-
-    field :transactions, list_of(:transaction) do
-      description("The list of transactions in current block")
-      arg(:input, :page_and_size_input, default_value: %{page: 1, page_size: 5})
-      middleware(MTermRange, MTermRange.page_and_size_default_config())
-      resolve(&Resolvers.Block.transactions/3)
-    end
+    field :account, :account, resolve: dataloader(:graphql)
   end
 
   enum :block_status do
