@@ -424,6 +424,16 @@ type Address {
   """.bit alias."""
   bit_alias: String
 }
+type Address {
+  """ETH address hash"""
+  eth_address: HashFull
+
+  """The address cached token transfer count."""
+  token_transfer_count: Int
+
+  """.bit alias."""
+  bit_alias: String
+}
 
 input BlockInput {
   hash: HashFull
