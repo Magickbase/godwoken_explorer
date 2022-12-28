@@ -29,8 +29,8 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Account do
             {:ok, account}
 
           nil ->
-            address = Address.find_or_insert_from_hash(address)
-            {:ok, address}
+            Address.find_or_insert_from_hash(address)
+            # {:ok, address}
         end
     end
   end
