@@ -75,9 +75,17 @@ defmodule GodwokenExplorer.AccountUDT do
     )
     |> Repo.all()
     |> unique_account_udts()
-    |> Enum.map(fn record ->
-      record
-      |> Map.merge(%{balance: balance_to_view(record[:balance], record[:udt_decimal] || 0)})
+    |> Enum.reduce([], fn record, acc ->
+      if D.cmp(record[:balance], 0) == :eq do
+        acc
+      else
+        [
+          Map.merge(record, %{
+            balance: balance_to_view(record[:balance], record[:udt_decimal] || 0)
+          })
+          | acc
+        ]
+      end
     end)
   end
 
