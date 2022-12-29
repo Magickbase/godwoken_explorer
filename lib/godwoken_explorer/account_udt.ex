@@ -60,7 +60,7 @@ defmodule GodwokenExplorer.AccountUDT do
       on: u1.bridge_account_id == a.id,
       left_join: u2 in UDT,
       on: u2.id == a.id,
-      where: au.address_hash == ^eth_address and au.balance != 0,
+      where: au.address_hash == ^eth_address,
       select: %{
         id: fragment("CASE WHEN ? IS NULL THEN ? ELSE ? END", u1, u2.id, u1.id),
         type: fragment("CASE WHEN ? IS NULL THEN ? ELSE ? END", u1, u2.type, u1.type),
