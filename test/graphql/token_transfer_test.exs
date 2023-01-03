@@ -22,6 +22,8 @@ defmodule GodwokenExplorer.Graphql.TokenTransferTest do
     {:ok, token_contract_address_hash} =
       GodwokenExplorer.Chain.Hash.Address.cast("0xb02c930c2825a960a50ba4ab005e8264498b64a0")
 
+    insert!(:address, eth_address: to_address_hash, bit_alias: "receiver.bit")
+
     insert!(:native_udt,
       eth_type: :erc20,
       contract_address_hash: token_contract_address_hash
@@ -923,6 +925,53 @@ defmodule GodwokenExplorer.Graphql.TokenTransferTest do
                "data" => %{
                  "token_transfers" => %{
                    "entries" => _,
+                   "metadata" => %{
+                     "total_count" => 1
+                   }
+                 }
+               }
+             },
+             json_response(conn, 200)
+           )
+  end
+
+  test "graphql: token_transfers with not exist reciever", %{
+    conn: conn,
+    token_transfer: token_transfer
+  } do
+    query = """
+    query {
+      token_transfers(
+        input: {
+          token_contract_address_hash: "#{token_transfer.token_contract_address_hash}"
+          limit: 1
+        }
+      ) {
+        entries {
+          receiver_address {
+            bit_alias
+          }
+        }
+        metadata {
+          total_count
+        }
+      }
+    }
+    """
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    assert match?(
+             %{
+               "data" => %{
+                 "token_transfers" => %{
+                   "entries" => [
+                     %{"receiver_address" => %{"bit_alias" => "receiver.bit"}}
+                   ],
                    "metadata" => %{
                      "total_count" => 1
                    }
