@@ -1,8 +1,9 @@
 defmodule GodwokenExplorer.Graphql.Types.Polyjuice do
   use Absinthe.Schema.Notation
 
-  alias GodwokenExplorer.Graphql.Resolvers, as: Resolvers
   import Absinthe.Resolution.Helpers, only: [dataloader: 1]
+
+  alias GodwokenExplorer.Graphql.Resolvers, as: Resolvers
 
   object :polyjuice do
     field :id, :integer, description: "ID of polyjuice table."
@@ -37,6 +38,8 @@ defmodule GodwokenExplorer.Graphql.Types.Polyjuice do
         "If this transaction is native transfer, to_address is a contract, this column is actual receiver."
 
     field :status, :polyjuice_status, description: "Status of deployed."
+
+    field :native_transfer_account, :account, resolve: dataloader(:graphql)
   end
 
   object :polyjuice_creator do
