@@ -837,7 +837,7 @@ defmodule GodwokenExplorer.Graphql.TransactionTest do
     block = insert(:block)
     eth_user = insert(:user)
     polyjuice_creator_account = insert(:polyjuice_creator_account)
-    receiver_user = insert(:user)
+    receiver_user = insert(:user, bit_alias: "receiver.bit")
 
     native_transfer_tx =
       insert(:transaction,
@@ -865,6 +865,11 @@ defmodule GodwokenExplorer.Graphql.TransactionTest do
       ) {
         entries {
           hash
+          polyjuice {
+            native_transfer_account {
+              bit_alias
+            }
+          }
         }
       }
     }
@@ -880,7 +885,14 @@ defmodule GodwokenExplorer.Graphql.TransactionTest do
              %{
                "data" => %{
                  "transactions" => %{
-                   "entries" => [%{"hash" => native_transfer_tx.hash |> to_string()}]
+                   "entries" => [
+                     %{
+                       "hash" => native_transfer_tx.hash |> to_string(),
+                       "polyjuice" => %{
+                         "native_transfer_account" => %{"bit_alias" => "receiver.bit"}
+                       }
+                     }
+                   ]
                  }
                }
              }
