@@ -3,8 +3,9 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
   alias GodwokenExplorer.Repo
   alias GodwokenExplorer.Account.{CurrentBridgedUDTBalance, CurrentUDTBalance, UDTBalance}
   alias GodwokenExplorer.TokenTransfer
-  alias GodowokenExplorer.TokenInstance
+  alias GodwokenExplorer.TokenInstance
   alias GodwokenExplorer.Chain.Cache.TokenExchangeRate, as: CacheTokenExchangeRate
+  alias GodwokenExplorer.Graphql.Dataloader.BatchUDT
   import Ecto.Query
   # import Ecto.Query.API, only: [fragment: 1]
 
@@ -12,6 +13,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
     only: [cursor_order_sorter: 3]
 
   import GodwokenExplorer.Graphql.Resolvers.Common, only: [paginate_query: 3]
+  import Absinthe.Resolution.Helpers
 
   @sorter_fields [:name, :supply, :id]
 
@@ -20,8 +22,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
         _args,
         _resolution
       ) do
-    return = get_token_instance(token_contract_address_hash, token_id)
-    {:ok, return}
+    get_token_instance({token_contract_address_hash, token_id})
   end
 
   def erc1155_inventory_token_instance(
@@ -29,15 +30,22 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
         _args,
         _resolution
       ) do
-    return = get_token_instance(contract_address_hash, token_id)
-    {:ok, return}
+    get_token_instance({contract_address_hash, token_id})
   end
 
-  defp get_token_instance(contract_address, token_id) do
-    Repo.get_by(TokenInstance,
-      token_contract_address_hash: contract_address,
-      token_id: token_id
+  defp get_token_instance({contract_address, token_id} = compose_key) do
+    batch(
+      {BatchUDT, :token_instance, TokenInstance},
+      {contract_address, token_id},
+      fn batch_results ->
+        {:ok, Map.get(batch_results, compose_key)}
+      end
     )
+
+    # Repo.get_by(TokenInstance,
+    #   token_contract_address_hash: contract_address,
+    #   token_id: token_id
+    # )
   end
 
   def alias_counts(%{value: value}, _args, _resolution) do
@@ -149,12 +157,19 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
   end
 
   def erc721_erc1155_udt(
-        %CurrentUDTBalance{token_contract_address_hash: token_contract_address_hash},
+        parent = %CurrentUDTBalance{},
         _,
-        _
+        %{context: %{loader: loader}}
       ) do
-    return = Repo.get_by(UDT, contract_address_hash: token_contract_address_hash)
-    {:ok, return}
+    loader
+    |> Dataloader.load(:graphql, :udt_of_address, parent)
+    |> on_load(fn loader ->
+      udt =
+        loader
+        |> Dataloader.get(:graphql, :udt_of_address, parent)
+
+      {:ok, udt}
+    end)
   end
 
   def udt(
@@ -370,22 +385,16 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
     end
   end
 
-  def account(%{id: id} = _parent, _args, _resolution) do
-    return =
-      from(a in Account)
-      |> where([a], a.id == ^id)
-      |> Repo.one()
-
-    {:ok, return}
+  def account(%UDT{id: id} = _parent, _args, _resolution) do
+    batch({BatchUDT, :account, Account}, id, fn batch_results ->
+      {:ok, Map.get(batch_results, id)}
+    end)
   end
 
-  def account(%{address_hash: address_hash} = _parent, _args, _resolution) do
-    return =
-      from(a in Account)
-      |> where([a], a.eth_address == ^address_hash)
-      |> Repo.one()
-
-    {:ok, return}
+  def account_of_address(%{address_hash: address_hash} = _parent, _args, _resolution) do
+    batch({BatchUDT, :account_of_address, Account}, address_hash, fn batch_results ->
+      {:ok, Map.get(batch_results, address_hash)}
+    end)
   end
 
   def erc721_udts(_parent, %{input: input} = _args, _resolution) do

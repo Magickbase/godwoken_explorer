@@ -13,7 +13,7 @@ defmodule GodwokenExplorer.Chain do
   alias GodwokenExplorer.Counters.{AccountsCounter, AverageBlockTime}
   alias GodwokenExplorer.Chain.Cache.TransactionCount
   alias GodwokenExplorer.Chain.{Hash, Data}
-  alias GodwokenExplorer.Repo
+  alias GodwokenExplorer.{Address, Repo}
 
   @address_hash_len 40
   @tx_block_hash_len 64
@@ -324,7 +324,8 @@ defmodule GodwokenExplorer.Chain do
   end
 
   @spec from_param(String.t()) ::
-          {:ok, Address.t() | Block.t() | Transaction.t()} | {:error, :not_found}
+          {:ok, Address.t() | Block.t() | Transaction.t() | Account.t() | UDT.t()}
+          | {:error, :not_found}
   def from_param(param)
 
   def from_param("0x" <> number_string = param)
@@ -374,7 +375,7 @@ defmodule GodwokenExplorer.Chain do
       {:ok, hash} ->
         case Repo.get_by(Account, eth_address: hash) do
           nil ->
-            {:error, :not_found}
+            Address.find_or_insert_from_hash(hash)
 
           account ->
             {:ok, account}
@@ -574,7 +575,9 @@ defmodule GodwokenExplorer.Chain do
   end
 
   def update_udt(%UDT{} = udt, params \\ %{}) do
-    udt_changeset = UDT.changeset(udt, params)
+    udt_changeset =
+      udt
+      |> UDT.changeset(params)
 
     udt_opts = [
       on_conflict: {:replace, [:name, :symbol, :eth_type, :decimal, :supply, :updated_at]},

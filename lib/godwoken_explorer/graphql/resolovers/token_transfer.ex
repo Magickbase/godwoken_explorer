@@ -1,5 +1,5 @@
 defmodule GodwokenExplorer.Graphql.Resolvers.TokenTransfer do
-  alias GodwokenExplorer.{TokenTransfer, Polyjuice, Account, UDT, Block, Transaction}
+  alias GodwokenExplorer.{TokenTransfer, Polyjuice, UDT, Block, Transaction}
 
   alias GodwokenExplorer.Repo
 
@@ -8,6 +8,8 @@ defmodule GodwokenExplorer.Graphql.Resolvers.TokenTransfer do
 
   import GodwokenExplorer.Graphql.Resolvers.Common,
     only: [paginate_query: 3, query_with_block_age_range: 2]
+
+  import Absinthe.Resolution.Helpers
 
   @sorter_fields [:transaction_hash, :log_index, :block_number]
 
@@ -84,36 +86,29 @@ defmodule GodwokenExplorer.Graphql.Resolvers.TokenTransfer do
     {:ok, to_address_hash}
   end
 
-  def from_account(%TokenTransfer{from_address_hash: from_address_hash}, _args, _resolution) do
-    if from_address_hash do
-      return = Repo.get_by(Account, eth_address: from_address_hash)
-      {:ok, return}
-    else
-      {:ok, nil}
-    end
-  end
-
-  def to_account(%TokenTransfer{to_address_hash: to_address_hash}, _args, _resolution) do
-    if to_address_hash do
-      return = Repo.get_by(Account, eth_address: to_address_hash)
-      {:ok, return}
-    else
-      {:ok, nil}
-    end
-  end
-
   def udt(
-        %TokenTransfer{token_contract_address_hash: token_contract_address_hash},
+        token_transfer = %TokenTransfer{},
         _args,
-        _resolution
+        %{context: %{loader: loader}}
       ) do
-    udt = UDT.get_by_contract_address(token_contract_address_hash)
-    {:ok, udt}
-  end
+    loader
+    |> Dataloader.load(:graphql, :udt, token_transfer)
+    |> on_load(fn loader ->
+      udt =
+        loader
+        |> Dataloader.get(:graphql, :udt, token_transfer)
 
-  def transaction(%TokenTransfer{transaction_hash: transaction_hash}, _args, _resolution) do
-    return = Repo.one(from t in Transaction, where: t.eth_hash == ^transaction_hash)
-    {:ok, return}
+      return =
+        case udt do
+          %UDT{} = udt ->
+            udt
+
+          nil ->
+            %{id: nil, name: "", decimal: 0, symbol: ""}
+        end
+
+      {:ok, return}
+    end)
   end
 
   defp query_token_transfers(query, input, token_type) do
