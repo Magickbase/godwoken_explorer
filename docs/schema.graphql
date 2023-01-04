@@ -37,7 +37,7 @@ type Account {
   """Godwoken chain script hash."""
   script_hash: HashAddress
 
-  """The mapping smart_contract info of account."""
+  """The mapping smart_contract of account."""
   smart_contract: SmartContract
 
   """The account cached token transfer count."""
@@ -53,6 +53,9 @@ type Account {
   The mapping udt or bridge udt object of account if account is udt account or bridge udt account.
   """
   udt: Udt
+
+   """.bit alias."""
+  bit_alias: String
 }
 
 input AccountBridgedUdtsByScriptHashInput {
@@ -366,7 +369,6 @@ Some numeric strings are:
 scalar Bigint
 
 type Block {
-  """The mapping account info which produced current block."""
   account: Account
 
   """Gas limit of this block."""
@@ -414,9 +416,26 @@ type Block {
 
   """The block contains transaction count."""
   transaction_count: Int
+}
+type Address {
+  """ETH address hash"""
+  eth_address: HashFull
 
-  """The list of transactions in current block"""
-  transactions(input: PageAndSizeInput = {page: 1, page_size: 5}): [Transaction]
+  """The address cached token transfer count."""
+  token_transfer_count: Int
+
+  """.bit alias."""
+  bit_alias: String
+}
+type Address {
+  """ETH address hash"""
+  eth_address: HashFull
+
+  """The address cached token transfer count."""
+  token_transfer_count: Int
+
+  """.bit alias."""
+  bit_alias: String
 }
 
 input BlockInput {
@@ -933,14 +952,9 @@ input PageAndSizeInput {
   """
   page: Int = 1
 
-  """
-  ```
-  argument: the page_size of query result, it's the same of postgres limit
-  default: 20
-  limit: > 0
-  ```
-  """
-  page_size: Int = 20
+input LogsSorterInput {
+  sort_type: SortType
+  sort_value: LogsSorter
 }
 
 type PaginateErc1155Inventory {
@@ -1661,7 +1675,7 @@ type RootQueryType {
     account_udts(
       input: {
         address_hashes: ["0x715AB282B873B79A7BE8B0E8C13C4E8966A52040"],
-  
+
         udt_script_hash: "0x595cc14e574a708dc70a320d2026f79374246ed4659261131cdda7dd5814b5ca"
       }
     ) {
@@ -1783,11 +1797,6 @@ type RootQueryType {
         id
         eth_address
       }
-      transactions (input: {page: 1, page_size: 2}) {
-        type
-        from_account_id
-        to_account_id
-      }
     }
   }
   ```
@@ -1800,8 +1809,7 @@ type RootQueryType {
         "gas_used": "0",
         "hash": "0x4ac339b063e52dac1b845d935788f379ebcdb0e33ecce077519f39929dbc8829",
         "number": 1,
-        "parent_hash": "0x61bcff6f20e8be09bbe8e36092a9cc05dd3fa67e3841e206e8c30ae0dd7032df",
-        "transactions": []
+        "parent_hash": "0x61bcff6f20e8be09bbe8e36092a9cc05dd3fa67e3841e206e8c30ae0dd7032df"
       }
     }
   }
@@ -1824,11 +1832,6 @@ type RootQueryType {
       account{
         eth_address
       }
-      transactions (input: {page: 1, page_size: 2}) {
-        type
-        from_account_id
-        to_account_id
-      }
     }
   }
   ```
@@ -1843,8 +1846,7 @@ type RootQueryType {
         "hash": "0x089f36f4f1eb1060e12ade101e4a6326423fa6cd11915d9bf1ef4bacafdbe663",
         "number": 14938,
         "parent_hash": "0xa552df86bad0233d0acb183056b095ac50abfa93161ff6b62ebe52bac2e53776",
-        "producer_address": "715ab282b873b79a7be8b0e8c13c4e8966a52040",
-        "transactions": []
+        "producer_address": "715ab282b873b79a7be8b0e8c13c4e8966a52040"
       }
     }
   }
@@ -4575,4 +4577,3 @@ input UserErc721Erc1155AssetsInput {
 input VerifyAndUpdateFromSourcifyInput {
   address: HashAddress!
 }
-

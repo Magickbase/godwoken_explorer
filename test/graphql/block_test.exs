@@ -24,11 +24,6 @@ defmodule GodwokenExplorer.Graphql.BlockTest do
           id
           eth_address
         }
-        transactions (input: {page: 1, page_size: 2}) {
-          type
-          from_account_id
-          to_account_id
-        }
       }
     }
     """
@@ -65,11 +60,6 @@ defmodule GodwokenExplorer.Graphql.BlockTest do
         producer_address
         account{
           eth_address
-        }
-        transactions (input: {page: 1, page_size: 2}) {
-          type
-          from_account_id
-          to_account_id
         }
       }
     }

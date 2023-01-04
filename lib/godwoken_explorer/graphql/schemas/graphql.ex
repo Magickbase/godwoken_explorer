@@ -15,6 +15,7 @@ defmodule GodwokenExplorer.Graphql.Schemas.Graphql do
   import_types(GodwokenExplorer.Graphql.Types.Common)
   import_types(GodwokenExplorer.Graphql.Types.AccountUDT)
   import_types(GodwokenExplorer.Graphql.Types.Account)
+  import_types(GodwokenExplorer.Graphql.Types.Address)
   import_types(GodwokenExplorer.Graphql.Types.Block)
   import_types(GodwokenExplorer.Graphql.Types.History)
   import_types(GodwokenExplorer.Graphql.Types.Log)
@@ -50,6 +51,7 @@ defmodule GodwokenExplorer.Graphql.Schemas.Graphql do
   query do
     import_fields(:account_udt_querys)
     import_fields(:account_querys)
+    import_fields(:address_querys)
     import_fields(:block_querys)
     # import_fields(:history_querys)
     import_fields(:log_querys)

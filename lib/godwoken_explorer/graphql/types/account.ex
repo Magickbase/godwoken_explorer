@@ -1,7 +1,6 @@
 defmodule GodwokenExplorer.Graphql.Types.Account do
   use Absinthe.Schema.Notation
   alias GodwokenExplorer.Graphql.Resolvers, as: Resolvers
-  alias GodwokenExplorer.Graphql.Middleware.TermRange, as: MTermRange
   import Absinthe.Resolution.Helpers, only: [dataloader: 1]
 
   object :account_querys do
@@ -202,28 +201,12 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
           account_id
           name
         }
-        account_current_udts {
-          id
-          value
-        }
-        account_current_bridged_udts{
-          id
-          value
-        }
       }
     }
     ```
     ```
     {
       "data": {
-        "account": {
-          "account_current_bridged_udts": [
-            {
-              "id": 1,
-              "value": "1165507481400061309833"
-            }
-          ],
-          "account_current_udts": [],
           "eth_address": "0x715ab282b873b79a7be8b0e8c13c4e8966a52040",
           "script": {
             "args": "0x702359ea7f073558921eb50d8c1c77e92f760c8f8656bde4995f26b8963e2dd8715ab282b873b79a7be8b0e8c13c4e8966a52040",
@@ -317,27 +300,7 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
       resolve(&Resolvers.Account.bridged_udt/3)
     end
 
-    @desc "The mapping erc20 balance info of account."
-    field :account_current_udts, list_of(:account_current_udt) do
-      arg(:input, :account_child_udts_input,
-        default_value: %{page: 1, page_size: 20, sort_type: :desc}
-      )
-
-      middleware(MTermRange, MTermRange.page_and_size_default_config())
-      resolve(&Resolvers.Account.account_current_udts/3)
-    end
-
-    @desc "The mapping bridged erc20 balance info of account."
-    field :account_current_bridged_udts, list_of(:account_current_bridged_udt) do
-      arg(:input, :account_child_udts_input,
-        default_value: %{page: 1, page_size: 20, sort_type: :desc}
-      )
-
-      middleware(MTermRange, MTermRange.page_and_size_default_config())
-      resolve(&Resolvers.Account.account_current_bridged_udts/3)
-    end
-
-    @desc "The mapping smart_contract info of account."
+    @desc "The mapping smart_contract of account."
     field :smart_contract, :smart_contract, resolve: dataloader(:graphql)
   end
 

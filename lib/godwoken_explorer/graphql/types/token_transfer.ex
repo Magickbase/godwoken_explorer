@@ -2,6 +2,7 @@ defmodule GodwokenExplorer.Graphql.Types.TokenTransfer do
   use Absinthe.Schema.Notation
   alias GodwokenExplorer.Graphql.Resolvers, as: Resolvers
   alias GodwokenExplorer.Graphql.Middleware.NullFilter
+  import Absinthe.Resolution.Helpers, only: [dataloader: 1]
 
   object :token_transfer_querys do
     @desc """
@@ -404,30 +405,22 @@ defmodule GodwokenExplorer.Graphql.Types.TokenTransfer do
       resolve(&Resolvers.TokenTransfer.polyjuice/3)
     end
 
-    field :from_account, :account do
-      description("The mapping sender's account info.")
-      resolve(&Resolvers.TokenTransfer.from_account/3)
-    end
+    @desc "The mapping sender's account info."
+    field :from_account, :account, resolve: dataloader(:graphql)
 
-    field :to_account, :account do
-      description("The mapping receiver's account info.")
-      resolve(&Resolvers.TokenTransfer.to_account/3)
-    end
+    @desc "The mapping receiver's account info."
+    field :to_account, :account, resolve: dataloader(:graphql)
 
     field :udt, :udt do
       description("The mapping udt info.")
       resolve(&Resolvers.TokenTransfer.udt/3)
     end
 
-    field :block, :block do
-      description("The mapping block info.")
-      resolve(&Resolvers.TokenTransfer.block/3)
-    end
+    @desc "The mapping block info."
+    field :block, :block, resolve: dataloader(:graphql)
 
-    field :transaction, :transaction do
-      description("The mapping transaction info.")
-      resolve(&Resolvers.TokenTransfer.transaction/3)
-    end
+    @desc "The mapping transaction info."
+    field :transaction, :transaction, resolve: dataloader(:graphql)
   end
 
   enum :token_transfers_sorter do

@@ -58,6 +58,12 @@ defmodule GodwokenExplorer.Account.CurrentUDTBalance do
     belongs_to(:account, GodwokenExplorer.Account, foreign_key: :account_id, references: :id)
     belongs_to(:udt, GodwokenExplorer.UDT, foreign_key: :udt_id, references: :id)
 
+    belongs_to(:udt_of_address, GodwokenExplorer.UDT,
+      foreign_key: :token_contract_address_hash,
+      references: :contract_address_hash,
+      define_field: false
+    )
+
     field(:uniq_id, :integer, virtual: true)
 
     field :token_id, :decimal

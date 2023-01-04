@@ -29,5 +29,20 @@ defmodule GodwokenExplorerWeb.API.SearchControllerTest do
                "type" => "account"
              }
     end
+
+    test "search not exist address will automatically insert", %{conn: conn} do
+      address = "0xbFbE23681D99A158f632e64A31288946770c7A9e"
+
+      conn =
+        get(
+          conn,
+          Routes.search_path(conn, :index, keyword: address)
+        )
+
+      assert json_response(conn, 200) == %{
+               "id" => address |> String.downcase(),
+               "type" => "address"
+             }
+    end
   end
 end
