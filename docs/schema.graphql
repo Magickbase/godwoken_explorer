@@ -10,6 +10,9 @@ type Account {
   """The mapping erc20 balance info of account."""
   account_current_udts(input: AccountChildUdtsInput = {page: 1, page_size: 20, sort_type: DESC}): [AccountCurrentUdt]
 
+  """.bit alias."""
+  bit_alias: String
+
   """The bridge udt object of account if account is udt account."""
   bridged_udt: Udt
 
@@ -585,6 +588,9 @@ type Erc1155Udt {
   """UDT's official site."""
   official_site: String
 
+  """rank number of current returns"""
+  rank: Int
+
   """[UAN](https://github.com/nervosnetwork/rfcs/pull/335)."""
   symbol: String
 
@@ -676,6 +682,9 @@ type Erc7211155CommonUdt {
 
   """UDT's official site."""
   official_site: String
+
+  """rank number of current returns"""
+  rank: Int
 
   """[UAN](https://github.com/nervosnetwork/rfcs/pull/335)."""
   symbol: String
@@ -807,6 +816,9 @@ type Erc721Udt {
   """UDT's official site."""
   official_site: String
 
+  """rank number of current returns"""
+  rank: Int
+
   """[UAN](https://github.com/nervosnetwork/rfcs/pull/335)."""
   symbol: String
 }
@@ -924,6 +936,21 @@ enum LogsSorter {
   INDEX
   TRANSACTION_HASH
 }
+
+input LogsSorterInput {
+  sort_type: SortType
+  sort_value: LogsSorter
+}
+
+input PageAndSizeInput {
+  """
+  ```
+  argument: the page of query result, the relations of postgres offset: offset = (page - 1) * page_size
+  default: 1
+  limit: > 0
+  ```
+  """
+  page: Int = 1
 
 input LogsSorterInput {
   sort_type: SortType
@@ -4462,6 +4489,9 @@ type Udt {
 
   """UDT's market price."""
   price: Decimal
+
+  """rank number of current returns"""
+  rank: Int
 
   """Layer1 script hash."""
   script_hash: HashFull
