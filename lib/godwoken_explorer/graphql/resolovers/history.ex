@@ -3,10 +3,12 @@ defmodule GodwokenExplorer.Graphql.Resolvers.History do
   alias GodwokenExplorer.UDT
   alias GodwokenExplorer.Account
   alias GodwokenExplorer.Repo
+  alias GodwokenExplorer.Graphql.Dataloader.BatchHistory
 
   import GodwokenExplorer.Graphql.Common, only: [cursor_order_sorter: 3]
   import GodwokenExplorer.Graphql.Resolvers.Common, only: [paginate_query: 3]
   import Ecto.Query
+  import Absinthe.Resolution.Helpers, only: [batch: 3]
 
   @default_sorter [:timestamp, :layer1_tx_hash, :layer1_output_index]
 
@@ -15,7 +17,13 @@ defmodule GodwokenExplorer.Graphql.Resolvers.History do
       do_deposit_withdrawal_histories(input)
       |> dw_histories_order_by(input)
 
-    Repo.all(q) |> IO.inspect()
+    q =
+      from(u in UDT,
+        right_join: sq in subquery(q),
+        as: :sq,
+        on: u.id == sq.udt_id,
+        select: sq
+      )
 
     q
     |> paginate_query(input, %{
@@ -38,8 +46,9 @@ defmodule GodwokenExplorer.Graphql.Resolvers.History do
     if sorter do
       order_params =
         sorter
-        |> cursor_order_sorter(:order, @default_sorter)
+        |> cursor_order_sorter(:order, [:timestamp])
 
+      order_params = order_params ++ [:layer1_tx_hash, :layer1_output_index]
       order_by(query, [u], ^order_params)
     else
       order_by(query, [u], @default_sorter)
@@ -50,8 +59,19 @@ defmodule GodwokenExplorer.Graphql.Resolvers.History do
     sorter = Map.get(input, :sorter)
 
     if sorter do
-      sorter
-      |> cursor_order_sorter(:cursor, @default_sorter)
+      sorter =
+        sorter
+        |> Enum.map(fn e ->
+          case e do
+            %{sort_type: st, sort_value: :timestamp} ->
+              {{:sq, :timestamp}, st}
+
+            _ ->
+              cursor_order_sorter(e, :cursor, @default_sorter)
+          end
+        end)
+
+      sorter ++ [{{:sq, :layer1_tx_hash}, :asc}, {{:sq, :layer1_output_index}, :asc}]
     else
       @default_sorter
     end
@@ -119,9 +139,10 @@ defmodule GodwokenExplorer.Graphql.Resolvers.History do
     end
   end
 
-  # TODO: show udt
-  def udt(%{udt_id: _udt_id}, _args, _resolution) do
-    {:ok, nil}
+  def udt(%{udt_id: udt_id}, _args, _resolution) do
+    batch({BatchHistory, :udt, UDT}, udt_id, fn batch_results ->
+      {:ok, Map.get(batch_results, udt_id)}
+    end)
   end
 
   defp withdrawal_base_query(condition) do

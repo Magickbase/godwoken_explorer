@@ -89,12 +89,12 @@ defmodule GodwokenExplorer.Graphql.HistoryTest do
                "data" => %{
                  "deposit_withdrawal_histories" => %{
                    "entries" => [
-                     %{"udt" => %{"id" => ^udt_id}}
+                     %{"udt" => %{"id" => ^udt_id}} | _
                    ]
                  }
                }
              },
-             json_response(conn, 200) |> IO.inspect()
+             json_response(conn, 200)
            )
   end
 end
