@@ -5,15 +5,19 @@ defmodule GodwokenExplorer.Graphql.Resolvers.History do
   alias GodwokenExplorer.Repo
 
   import GodwokenExplorer.Graphql.Common, only: [cursor_order_sorter: 3]
-  import GodwokenExplorer.Graphql.Utils, only: [default_uniq_cursor_order_fields: 3]
   import GodwokenExplorer.Graphql.Resolvers.Common, only: [paginate_query: 3]
   import Ecto.Query
 
-  @default_sorter [:timestamp, :eth_address, :layer1_tx_hash, :layer1_output_index]
+  @default_sorter [:timestamp, :layer1_tx_hash, :layer1_output_index]
 
   def deposit_withdrawal_histories(_parent, %{input: input} = _args, _resolution) do
-    do_deposit_withdrawal_histories(input)
-    |> dw_histories_order_by(input)
+    q =
+      do_deposit_withdrawal_histories(input)
+      |> dw_histories_order_by(input)
+
+    Repo.all(q) |> IO.inspect()
+
+    q
     |> paginate_query(input, %{
       cursor_fields: paginate_cursor(input),
       total_count_primary_key_field: @default_sorter
@@ -35,11 +39,10 @@ defmodule GodwokenExplorer.Graphql.Resolvers.History do
       order_params =
         sorter
         |> cursor_order_sorter(:order, @default_sorter)
-        |> default_uniq_cursor_order_fields(:order, @default_sorter)
 
-      order_by(query, [l], ^order_params)
+      order_by(query, [u], ^order_params)
     else
-      order_by(query, [l], @default_sorter)
+      order_by(query, [u], @default_sorter)
     end
   end
 
@@ -49,7 +52,6 @@ defmodule GodwokenExplorer.Graphql.Resolvers.History do
     if sorter do
       sorter
       |> cursor_order_sorter(:cursor, @default_sorter)
-      |> default_uniq_cursor_order_fields(:cursor, @default_sorter)
     else
       @default_sorter
     end
@@ -82,23 +84,39 @@ defmodule GodwokenExplorer.Graphql.Resolvers.History do
             end
 
           {:eth_address, eth_address} when not is_nil(eth_address) ->
-            dynamic([account: a], ^acc and a.eth_address == ^eth_address)
-
-          {:start_block_number, value} ->
-            dynamic([b], ^acc and b.block_number >= ^value)
-
-          {:end_block_number, value} ->
-            dynamic([b], ^acc and b.block_number <= ^value)
+            dynamic([account: ac], ^acc and ac.eth_address == ^eth_address)
 
           _ ->
             dynamic([b], ^acc)
         end
       end)
 
-    deposits = deposit_base_query(condition)
-    withdrawals = withdrawal_base_query(condition)
+    history_with_block_number(condition, input)
+  end
 
-    from(q in subquery(deposits |> union_all(^withdrawals)))
+  defp history_with_block_number(condition, input) do
+    if not is_nil(input[:start_block_number]) or not is_nil(input[:end_block_number]) do
+      condition =
+        Enum.reduce(input, condition, fn {k, v}, acc ->
+          case {k, v} do
+            {:start_block_number, value} ->
+              dynamic([b], ^acc and b.block_number >= ^value)
+
+            {:end_block_number, value} ->
+              dynamic([b], ^acc and b.block_number <= ^value)
+
+            _ ->
+              dynamic([b], ^acc)
+          end
+        end)
+
+      withdrawal_base_query(condition)
+    else
+      deposits = deposit_base_query(condition)
+      withdrawals = withdrawal_base_query(condition)
+
+      from(q in subquery(deposits |> union_all(^withdrawals)))
+    end
   end
 
   # TODO: show udt
@@ -133,8 +151,8 @@ defmodule GodwokenExplorer.Graphql.Resolvers.History do
         layer1_output_index: w.layer1_output_index,
         ckb_lock_hash: nil,
         state: w.state,
-        type: :withdrawal,
-        capacity: w.capacity
+        capacity: w.capacity,
+        type: "withdrawal"
       }
     )
   end
@@ -144,8 +162,8 @@ defmodule GodwokenExplorer.Graphql.Resolvers.History do
       join: u in UDT,
       on: u.id == d.udt_id,
       join: a2 in Account,
-      on: a2.script_hash == d.script_hash,
       as: :account,
+      on: a2.script_hash == d.script_hash,
       where: ^condition,
       select: %{
         script_hash: d.script_hash,
@@ -166,8 +184,8 @@ defmodule GodwokenExplorer.Graphql.Resolvers.History do
         layer1_output_index: d.layer1_output_index,
         ckb_lock_hash: d.ckb_lock_hash,
         state: "succeed",
-        type: :deposit,
-        capacity: d.capacity
+        capacity: d.capacity,
+        type: "deposit"
       }
     )
   end

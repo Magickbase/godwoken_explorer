@@ -102,7 +102,7 @@ defmodule GodwokenExplorer.Graphql.Types.History do
   end
 
   enum :histories_sorter do
-    value(:block_number)
+    value(:timestamp)
   end
 
   input_object :histories_sorter_input do
@@ -118,8 +118,7 @@ defmodule GodwokenExplorer.Graphql.Types.History do
 
     field :sorter, list_of(:histories_sorter_input),
       default_value: [
-        %{sort_type: :asc, sort_value: :transaction_hash},
-        %{sort_type: :asc, sort_value: :index}
+        %{sort_type: :desc, sort_value: :timestamp}
       ]
   end
 end
