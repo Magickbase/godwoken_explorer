@@ -38,6 +38,7 @@ defmodule GodwokenExplorer.Graphql.HistoryTest do
         entries{
           block_number
           eth_address
+          type
         }
       }
     }
@@ -73,6 +74,7 @@ defmodule GodwokenExplorer.Graphql.HistoryTest do
             id
           }
           eth_address
+          type
         }
       }
     }

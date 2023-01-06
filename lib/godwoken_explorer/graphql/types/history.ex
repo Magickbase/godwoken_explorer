@@ -4,6 +4,78 @@ defmodule GodwokenExplorer.Graphql.Types.History do
   import Absinthe.Resolution.Helpers, only: [dataloader: 1]
 
   object :history_querys do
+    @desc """
+    function: get deposit withdrawal histories
+    ```graphql
+    query {
+      deposit_withdrawal_histories(input: {udt_id: 1, limit: 1}) {
+        entries {
+          script_hash
+          eth_address
+          value
+        }
+      }
+    }
+    ```
+    ```json
+    {
+      "data": {
+        "deposit_withdrawal_histories": {
+          "entries": [
+            {
+              "eth_address": "0x202bb8e620dfaf22e243232855a9f0ddb34b17ee",
+              "script_hash": "0x9ab1ede9789fe76e04f4f78fb0b2e7f4126f203311ae7fd73fed5c37c61cfe3f",
+              "value": "959999998703"
+            }
+          ]
+        }
+      }
+    }
+    ```
+
+    block number example
+    ```
+    query {
+      deposit_withdrawal_histories(
+        input: {
+          start_block_number: 1
+          limit: 2
+        }
+      ) {
+        entries {
+          script_hash
+          block_number
+          eth_address
+          value
+        }
+      }
+    }
+    ```
+
+    ```
+    {
+      "data": {
+        "deposit_withdrawal_histories": {
+          "entries": [
+            {
+              "block_number": 1357466,
+              "eth_address": "0xd1667cbf1cc60da94c1cf6c9cfb261e71b6047f7",
+              "script_hash": "0xaea8e18bfd509331b6a6414c9335adfac35f0da8d474d3f8fa422cb6e54a7f0f",
+              "value": "100000000000000"
+            },
+            {
+              "block_number": 1357233,
+              "eth_address": "0x49efbd0f15526da037a0a51476bb80f4ce373fc5",
+              "script_hash": "0x6a12ccba19f20ae12d4b68fb6868ac8b1a0873509557c71ae6b6aaad6684167a",
+              "value": "40000000000"
+            }
+          ]
+        }
+      }
+    }
+    ```
+
+    """
     field :deposit_withdrawal_histories, :paginate_deposit_withdrawal_histories do
       arg(:input, :histories_input)
       resolve(&Resolvers.History.deposit_withdrawal_histories/3)
@@ -29,7 +101,7 @@ defmodule GodwokenExplorer.Graphql.Types.History do
     field :layer1_output_index, :hash_full
     field :ckb_lock_hash, :hash_full
     field :state, :withdrawal_history_state
-    field :type, :deposit_withdrawal_type
+    field :type, :string
     field :capacity, :decimal
 
     field :udt, :udt do
@@ -88,11 +160,6 @@ defmodule GodwokenExplorer.Graphql.Types.History do
     field :udt_id, :integer
 
     field :udt, :udt, resolve: dataloader(:graphql)
-  end
-
-  enum :deposit_withdrawal_type do
-    value(:deposit)
-    value(:withdrawal)
   end
 
   enum :withdrawal_history_state do
