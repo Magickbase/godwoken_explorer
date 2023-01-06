@@ -77,7 +77,8 @@ config :godwoken_explorer, Oban,
        {"@daily", GodwokenIndexer.Worker.CheckUpdateTransactionMethodIdName},
        {"*/1 * * * *", GodwokenIndexer.Worker.ERC721UpdaterScheduler},
        {"*/1 * * * *", GodwokenIndexer.Worker.ERC1155UpdaterScheduler},
-       {"@daily", GodwokenIndexer.Worker.TokenInstanceRetriesWorker}
+       {"@daily", GodwokenIndexer.Worker.TokenInstanceRetriesWorker},
+       {"@daily", GodwokenIndexer.Worker.CleanFailedPendingTransactions}
      ]}
   ],
   queues: [default: 3, token_instance: 3]
