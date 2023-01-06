@@ -29,4 +29,5 @@ config :godwoken_explorer,
   init_godwoken_l1_block_number: 5_293_197,
   ckb_token_script_hash: "0x0000000000000000000000000000000000000000000000000000000000000000",
   eth_addr_reg_id: "0x2",
-  polyjuice_creator_id: 4
+  polyjuice_creator_id: 4,
+  gas_less_entrypoint_id: 96666
