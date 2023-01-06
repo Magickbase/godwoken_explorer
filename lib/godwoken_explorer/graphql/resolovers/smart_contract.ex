@@ -65,6 +65,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.SmartContract do
     query =
       from(s in SmartContract,
         right_join: sq in subquery(subq),
+        on: s.id == sq.id,
         select:
           merge(sq, %{
             ckb_balance:
