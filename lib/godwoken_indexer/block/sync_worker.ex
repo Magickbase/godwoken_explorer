@@ -666,6 +666,13 @@ defmodule GodwokenIndexer.Block.SyncWorker do
            :status,
            :created_contract_address_hash,
            :native_transfer_address_hash,
+           :call_contract,
+           :call_data,
+           :call_gas_limit,
+           :verification_gas_limit,
+           :max_fee_per_gas,
+           :max_priority_fee_per_gas,
+           :paymaster_and_data,
            :updated_at
          ]}
     )
@@ -861,7 +868,14 @@ defmodule GodwokenIndexer.Block.SyncWorker do
                      hash: hash,
                      transaction_index: transaction_index,
                      created_contract_address_hash: created_contract_address_hash,
-                     native_transfer_address_hash: native_transfer_address_hash
+                     native_transfer_address_hash: native_transfer_address_hash,
+                     call_contract: call_contract,
+                     call_data: call_data,
+                     call_gas_limit: call_gas_limit,
+                     verification_gas_limit: verification_gas_limit,
+                     max_fee_per_gas: max_fee_per_gas,
+                     max_priority_fee_per_gas: max_priority_fee_per_gas,
+                     paymaster_and_data: paymaster_and_data
                    } ->
       %{
         is_create: is_create,
@@ -875,7 +889,14 @@ defmodule GodwokenIndexer.Block.SyncWorker do
         tx_hash: hash,
         transaction_index: transaction_index,
         created_contract_address_hash: created_contract_address_hash,
-        native_transfer_address_hash: native_transfer_address_hash
+        native_transfer_address_hash: native_transfer_address_hash,
+        call_contract: call_contract,
+        call_data: call_data,
+        call_gas_limit: call_gas_limit,
+        verification_gas_limit: verification_gas_limit,
+        max_fee_per_gas: max_fee_per_gas,
+        max_priority_fee_per_gas: max_priority_fee_per_gas,
+        paymaster_and_data: paymaster_and_data
       }
     end)
   end

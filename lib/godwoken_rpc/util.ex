@@ -249,4 +249,43 @@ defmodule GodwokenRPC.Util do
     address = address_struct |> String.slice(16, address_len_bytes * 2)
     {registry_id, "0x" <> address}
   end
+
+  def parse_gas_less_data(data) do
+    selector = %ABI.FunctionSelector{
+      function: "handleOp",
+      input_names: [
+        "callContract",
+        "callData",
+        "callGasLimit",
+        "verificationGasLimit",
+        "maxFeePerGas",
+        "maxPriorityFeePerGas",
+        "paymasterAndData"
+      ],
+      inputs_indexed: nil,
+      method_id: <<251, 67, 80, 216>>,
+      returns: [
+        tuple: [
+          :address,
+          :bytes,
+          {:uint, 256},
+          {:uint, 256},
+          {:uint, 256},
+          {:uint, 256},
+          :bytes
+        ]
+      ],
+      type: :function,
+      types: []
+    }
+
+    [
+      {call_contract, call_data, call_gas_limit, verification_gas_limit, max_fee_per_gas,
+       max_priority_fee_per_gas, paymaster_and_data}
+    ] = ABI.decode(selector, data |> Base.decode16!(case: :lower), :output)
+
+    {call_contract, "0x" <> (call_data |> Base.encode16(case: :lower)), call_gas_limit,
+     verification_gas_limit, max_fee_per_gas, max_priority_fee_per_gas,
+     "0x" <> (paymaster_and_data |> Base.encode16(case: :lower))}
+  end
 end
