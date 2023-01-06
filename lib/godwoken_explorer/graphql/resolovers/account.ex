@@ -7,7 +7,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Account do
   import GodwokenExplorer.Graphql.Common, only: [page_and_size: 2, sort_type: 3]
   import Absinthe.Resolution.Helpers, only: [batch: 3]
 
-  def account(_parent, %{input: input} = _args, _resolution) do
+  def account_or_address(_parent, %{input: input} = _args, _resolution) do
     address = Map.get(input, :address)
     script_hash = Map.get(input, :script_hash)
 
@@ -30,7 +30,6 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Account do
 
           nil ->
             Address.find_or_insert_from_hash(address)
-            # {:ok, address}
         end
     end
   end

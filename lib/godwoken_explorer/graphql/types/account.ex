@@ -2,6 +2,7 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
   use Absinthe.Schema.Notation
   alias GodwokenExplorer.Graphql.Resolvers, as: Resolvers
   import Absinthe.Resolution.Helpers, only: [dataloader: 1]
+  alias GodwokenExplorer.{Account, Address}
 
   object :account_querys do
     @desc """
@@ -10,8 +11,10 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
     ```
     query {
       account(input: {address: "0x59b670e9fa9d0a427751af201d676719a970857b"}){
-        type
-        eth_address
+        ... on Account{
+          type
+          eth_address
+        }
       }
     }
     ```
@@ -29,9 +32,11 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
     ```
     query {
       account(input: {script_hash: "0x08c9937e412e135928fd6dec7255965ddd7df4d5a163564b60895100bb3b2f9e"}){
-        type
-        eth_address
-        script_hash
+        ... on Account{
+          type
+          eth_address
+          script_hash
+        }
       }
     }
     ```
@@ -53,10 +58,12 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
           script_hash: "0x946d08cc356c4fe13bc49929f1f709611fe0a2aaa336efb579dad4ca197d1551"
         }
       ) {
-        type
-        eth_address
-        script_hash
-        script
+        ... on Account{
+          type
+          eth_address
+          script_hash
+          script
+        }
       }
     }
     ```
@@ -94,13 +101,15 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
           script_hash: "0x64050af0d25c38ddf9455b8108654f7c5cc30fe6d871a303d83b1020edddd7a7"
         }
       ) {
-        type
-        script_hash
-        script
-        udt {
-          id
-          name
-          decimal
+        ... on Account {
+          type
+          script_hash
+          script
+          udt {
+            id
+            name
+            decimal
+          }
         }
       }
     }
@@ -132,10 +141,12 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
           script_hash: "0x829cc5785a4d8ac642ede32cb3cb5cb9dc389d5892f2fc2afc760691445be194"
         }
       ) {
-        type
-        eth_address
-        script_hash
-        script
+        ... on Account {
+          type
+          eth_address
+          script_hash
+          script
+        }
       }
     }
     ```
@@ -162,10 +173,12 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
           script_hash: "0x08c9937e412e135928fd6dec7255965ddd7df4d5a163564b60895100bb3b2f9e"
         }
       ) {
-        type
-        eth_address
-        script_hash
-        script
+        ... on Account{
+          type
+          eth_address
+          script_hash
+          script
+        }
       }
     }
     ```
@@ -192,14 +205,16 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
           script_hash: "0x495D9CFB7B6FAEAEB0F5A7ED81A830A477F7AEEA8D53EF73ABDC2EC2F5FED07C"
         }
       ) {
-        type
-        eth_address
-        script
-        script_hash
-        smart_contract {
-          id
-          account_id
-          name
+        ... on Account{
+          type
+          eth_address
+          script
+          script_hash
+          smart_contract {
+            id
+            account_id
+            name
+          }
         }
       }
     }
@@ -228,17 +243,19 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
           script_hash: "0x3E1301E759261B676CE68D0D97936CD431A4AF2A34072AA94E44655909765EB4"
         }
       ) {
-        udt {
-          id
-          name
-          bridge_account_id
-          type
-        }
-        bridged_udt {
-          id
-          name
-          bridge_account_id
-          type
+        ... on Account{
+          udt {
+            id
+            name
+            bridge_account_id
+            type
+          }
+          bridged_udt {
+            id
+            name
+            bridge_account_id
+            type
+          }
         }
       }
     }
@@ -264,10 +281,26 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
     }
     ```
     """
-    field :account, :account do
+    field :account, :account_or_address do
       arg(:input, non_null(:account_input))
-      resolve(&Resolvers.Account.account/3)
+      resolve(&Resolvers.Account.account_or_address/3)
     end
+  end
+
+  union :account_or_address do
+    description("account api result")
+    types([:account, :address])
+
+    resolve_type(fn
+      %Account{}, _ ->
+        :account
+
+      %Address{}, _ ->
+        :address
+
+      _, _ ->
+        nil
+    end)
   end
 
   object :account_mutations do
