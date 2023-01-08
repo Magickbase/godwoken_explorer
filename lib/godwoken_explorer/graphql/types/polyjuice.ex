@@ -40,6 +40,13 @@ defmodule GodwokenExplorer.Graphql.Types.Polyjuice do
     field :status, :polyjuice_status, description: "Status of deployed."
 
     field :native_transfer_account, :account, resolve: dataloader(:graphql)
+    field :call_contract, :hash_address, description: "Gas less tx struct"
+    field :call_data, :chain_data, description: "Gas less tx struct"
+    field :call_gas_limit, :bigint, description: "Gas less tx struct"
+    field :verification_gas_limit, :bigint, description: "Gas less tx struct"
+    field :max_fee_per_gas, :bigint, description: "Gas less tx struct"
+    field :max_priority_fee_per_gas, :bigint, description: "Gas less tx struct"
+    field :paymaster_and_data, :chain_data, description: "Gas less tx struct"
   end
 
   object :polyjuice_creator do
