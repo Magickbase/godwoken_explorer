@@ -36,8 +36,21 @@ defmodule GodwokenExplorer.Graphql.HistoryTest do
     query {
       deposit_withdrawal_histories(input: {start_block_number: #{number}}){
         entries{
-          block_number
+          script_hash
           eth_address
+          value
+          owner_lock_hash
+          sudt_script_hash
+          block_hash
+          block_number
+          timestamp
+          layer1_block_number
+          layer1_tx_hash
+          layer1_output_index
+          ckb_lock_hash
+          state
+          type
+          capacity
         }
       }
     }
@@ -73,6 +86,7 @@ defmodule GodwokenExplorer.Graphql.HistoryTest do
             id
           }
           eth_address
+          type
         }
       }
     }
