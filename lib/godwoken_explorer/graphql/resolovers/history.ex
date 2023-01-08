@@ -135,7 +135,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.History do
       deposits = deposit_base_query(condition)
       withdrawals = withdrawal_base_query(condition)
 
-      from(q in subquery(deposits |> union_all(^withdrawals)))
+      from(q in subquery(withdrawals |> union_all(^deposits)))
     end
   end
 
