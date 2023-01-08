@@ -194,15 +194,6 @@ defmodule GodwokenExplorer.Chain.Hash do
     |> IO.iodata_to_binary()
   end
 
-  def to_string(hash) when is_binary(hash) do
-    byte_count = hash |> String.to_charlist() |> length()
-    data = %__MODULE__{bytes: hash, byte_count: byte_count}
-
-    data
-    |> to_iodata()
-    |> IO.iodata_to_binary()
-  end
-
   defp byte_count_to_hexadecimal_digit_count(byte_count) do
     byte_count * @hexadecimal_digits_per_byte
   end
