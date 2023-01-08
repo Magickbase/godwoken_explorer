@@ -98,7 +98,7 @@ defmodule GodwokenExplorer.Graphql.Types.History do
     field :timestamp, :datetime
     field :layer1_block_number, :integer
     field :layer1_tx_hash, :hash_full
-    field :layer1_output_index, :hash_full
+    field :layer1_output_index, :integer
     field :ckb_lock_hash, :hash_full
     field :state, :withdrawal_history_state
     field :type, :string
