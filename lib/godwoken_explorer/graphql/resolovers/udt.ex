@@ -605,8 +605,8 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
     return =
       from(u in UDT,
         right_join: cu in subquery(query),
-        on: u.contract_address_hash == cu.token_contract_address_hash,
         as: :holders,
+        on: u.contract_address_hash == cu.token_contract_address_hash,
         select: cu
       )
       |> paginate_query(input, %{

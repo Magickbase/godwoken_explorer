@@ -14,6 +14,8 @@ defmodule GodwokenIndexer.Fetcher.UDTBalance do
   alias GodwokenExplorer.Chain.{Hash, Import}
   alias GodwokenIndexer.Fetcher.UDTBalances
   alias GodwokenExplorer.Account.{CurrentUDTBalance, UDTBalance}
+  alias GodwokenExplorer.Graphql.Workers.UpdateSmartContractCKB
+  alias GodwokenExplorer.UDT
 
   import Ecto.Query
 
@@ -104,6 +106,14 @@ defmodule GodwokenIndexer.Fetcher.UDTBalance do
       )
 
     cub_default_conflict = default_current_token_balance_on_conflict()
+
+    [_ckb_bridged_address, ckb_contract_address] =
+      UDT.ckb_account_id() |> UDT.list_address_by_udt_id()
+
+    format_without_token_ids
+    |> Enum.filter(fn params -> params.token_contract_address_hash == ckb_contract_address end)
+    |> Enum.map(fn params -> params.address_hash end)
+    |> UpdateSmartContractCKB.new_job()
 
     return3 =
       Import.insert_changes_list(format_without_token_ids,
