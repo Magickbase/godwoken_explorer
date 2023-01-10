@@ -28,14 +28,14 @@ defmodule GodwokenExplorer.UDT do
     * `type_script` - Layer1 udt's type script.
     * `description` - UDT's description.
     * `official_site` - UDT's official site.
-    * `value` - UDT's price * supply.
-    * `price` - UDT's market price.
     * `bridge_account_id` - If udt type is bridge, it must have a native proxy account on layer2.
     * `contract_address_hash` - For type is native, it have contract address hash.
     * `type` - Bridge means from layer1;Native means layer2 contract.
     * `eth_type` - EVM token type.
     * `skip_metadata` - Skip metadata fetch.
     * `is_fetched` - Fetched metadata or not.
+    * `is_fetch_exchange_rate` - Fetched price or not.
+
   """
   @type t :: %__MODULE__{
           id: non_neg_integer(),
@@ -49,14 +49,13 @@ defmodule GodwokenExplorer.UDT do
           type_script: non_neg_integer(),
           description: non_neg_integer(),
           official_site: non_neg_integer(),
-          value: Decimal.t(),
-          price: Decimal.t(),
           bridge_account_id: non_neg_integer(),
           contract_address_hash: Hash.Address.t(),
           type: String.t(),
           eth_type: String.t(),
           skip_metadata: boolean(),
           is_fetched: boolean(),
+          is_fetch_exchange_rate: boolean(),
           inserted_at: NaiveDateTime.t(),
           updated_at: NaiveDateTime.t()
         }
@@ -73,8 +72,6 @@ defmodule GodwokenExplorer.UDT do
     field(:script_hash, Hash.Full)
     field(:description, :string)
     field(:official_site, :string)
-    field(:value, :decimal)
-    field(:price, :decimal)
     field(:bridge_account_id, :integer)
     field(:contract_address_hash, Hash.Address)
     field(:type, Ecto.Enum, values: [:bridge, :native])
@@ -83,6 +80,7 @@ defmodule GodwokenExplorer.UDT do
     field(:is_fetched, :boolean)
     field(:uan, :string)
     field(:display_name, :string)
+    field(:is_fetch_exchange_rate, :boolean, default: false)
 
     belongs_to(:account, Account,
       foreign_key: :bridge_account_id,
@@ -112,14 +110,14 @@ defmodule GodwokenExplorer.UDT do
       :description,
       :official_site,
       :type,
-      :value,
       :contract_address_hash,
       :bridge_account_id,
       :eth_type,
       :skip_metadata,
       :is_fetched,
       :uan,
-      :display_name
+      :display_name,
+      :is_fetch_exchange_rate
     ])
     |> unique_constraint(:id, name: :udts_pkey)
     |> unique_constraint(:contract_address_hash, name: :udts_contract_address_hash_index)
