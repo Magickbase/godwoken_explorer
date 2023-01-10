@@ -1,10 +1,8 @@
 defmodule GodwokenExplorer.Graphql.Resolvers.Account do
   alias GodwokenExplorer.{Account, Address, Repo, SmartContract, UDT}
-  alias GodwokenExplorer.Account.{CurrentUDTBalance, CurrentBridgedUDTBalance}
   alias GodwokenExplorer.Graphql.Dataloader.BatchAccount
 
   import Ecto.Query
-  import GodwokenExplorer.Graphql.Common, only: [page_and_size: 2, sort_type: 3]
   import Absinthe.Resolution.Helpers, only: [batch: 3]
 
   def account_or_address(_parent, %{input: input} = _args, _resolution) do
