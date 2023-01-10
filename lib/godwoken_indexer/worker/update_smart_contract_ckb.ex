@@ -20,9 +20,31 @@ defmodule GodwokenExplorer.Graphql.Workers.UpdateSmartContractCKB do
 
   @spec new_job(list(address())) :: {:ok, Oban.Job.t()} | {:error, Oban.Job.changeset() | term}
   def new_job(addresses) do
+    q =
+      from(a in Account,
+        where: a.eth_address in ^addresses,
+        join: s in SmartContract,
+        on: s.account_id == a.id,
+        select: fragment("'0x' || encode(?, 'hex')", a.eth_address)
+      )
+
+    addresses = Repo.all(q)
+
     %{addresses: addresses}
     |> __MODULE__.new()
     |> Oban.insert()
+  end
+
+  def trigger_update_all_smart_contracts_ckbs() do
+    q =
+      from(a in Account,
+        join: s in SmartContract,
+        on: s.account_id == a.id,
+        select: fragment("'0x' || encode(?, 'hex')", a.eth_address)
+      )
+
+    addresses = Repo.all(q)
+    do_perform(addresses)
   end
 
   @impl Oban.Worker

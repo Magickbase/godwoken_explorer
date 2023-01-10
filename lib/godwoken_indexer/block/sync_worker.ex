@@ -42,6 +42,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
 
   alias GodwokenExplorer.Chain.Hash
   alias GodwokenIndexer.Worker.ERC721ERC1155InstanceMetadata
+  alias GodwokenExplorer.Graphql.Workers.UpdateSmartContractCKB
 
   @default_worker_interval 20
 
@@ -1043,6 +1044,10 @@ defmodule GodwokenIndexer.Block.SyncWorker do
           |> Enum.map(fn ckbs ->
             ckbs |> Map.merge(%{block_number: block_number})
           end)
+
+        bridged_ckbs
+        |> Enum.map(& &1.address_hash)
+        |> UpdateSmartContractCKB.new_job()
 
         Import.insert_changes_list(
           bridged_ckbs,
