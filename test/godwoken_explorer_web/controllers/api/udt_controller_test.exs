@@ -40,8 +40,7 @@ defmodule GodwokenExplorerWeb.API.UDTControllerTest do
                    "supply" => udt.supply |> Decimal.to_string(),
                    "symbol" => udt.symbol,
                    "transfer_count" => 0,
-                   "type" => to_string(udt.type),
-                   "value" => udt.value
+                   "type" => to_string(udt.type)
                  },
                  "id" => to_string(udt.id),
                  "relationships" => %{},
