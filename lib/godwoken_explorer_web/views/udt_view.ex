@@ -18,7 +18,6 @@ defmodule GodwokenExplorer.UDTView do
       :eth_address,
       :official_site,
       :description,
-      :value,
       :transfer_count,
       :icon
     ]

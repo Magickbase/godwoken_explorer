@@ -8,6 +8,12 @@
     <% end %>
 
     <div class="torch-form-group">
+      <%= label f, :is_fetch_exchange_rate %>
+      <%= checkbox f, :is_fetch_exchange_rate %>
+      <%= error_tag f, :is_fetch_exchange_rate %>
+    </div>
+
+    <div class="torch-form-group">
       <%= label f, :type %>
       <%= select f, :type, ["Bridge": "bridge", "Native": "native"] %>
       <%= error_tag f, :type %>
@@ -117,7 +123,6 @@ const scriptHashElement = document.querySelector('#torch-form_udt_script_hash');
 const codeHashElement = document.querySelector('#torch-form_udt_type_script_code_hash');
 const argsElement = document.querySelector('#torch-form_udt_type_script_args');
 const hashTypeElement = document.querySelector('#torch-form_udt_type_script_hash_type');
-const contractAddressHashElement = document.querySelector('#torch-form_contract_address_hash');
 const idElement = document.querySelector('#torch-form_id');
 
   document.addEventListener('DOMContentLoaded', function() {
@@ -128,8 +133,6 @@ const idElement = document.querySelector('#torch-form_id');
     argsElement.parentNode.style.display = 'none';
     hashTypeElement.parentNode.style.display = 'none';
     idElement.parentNode.remove();
-    contractAddressHashElement.parentNode.style.display = 'flex';
-
   }
   else {
     bridgeAccountIdElement.parentNode.style.display = 'flex';
@@ -137,7 +140,6 @@ const idElement = document.querySelector('#torch-form_id');
     codeHashElement.parentNode.style.display = 'flex';
     argsElement.parentNode.style.display = 'flex';
     hashTypeElement.parentNode.style.display = 'flex';
-    contractAddressHashElement.parentNode.style.display = 'none';
   }
 }, false);
 
@@ -149,7 +151,6 @@ selectElement.addEventListener('change', (event) =>{
     argsElement.parentNode.style.display = 'none';
     hashTypeElement.parentNode.style.display = 'none';
     idElement.parentNode.remove();
-    contractAddressHashElement.parentNode.style.display = 'flex';
   }
   else {
     bridgeAccountIdElement.parentNode.style.display = 'flex';
@@ -157,7 +158,6 @@ selectElement.addEventListener('change', (event) =>{
     codeHashElement.parentNode.style.display = 'flex';
     argsElement.parentNode.style.display = 'flex';
     hashTypeElement.parentNode.style.display = 'flex';
-    contractAddressHashElement.parentNode.style.display = 'none';
   }
 });
 
