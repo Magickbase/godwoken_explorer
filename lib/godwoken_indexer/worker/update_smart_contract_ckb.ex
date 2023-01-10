@@ -11,8 +11,19 @@ defmodule GodwokenExplorer.Graphql.Workers.UpdateSmartContractCKB do
   alias GodwokenExplorer.Account
   alias GodwokenExplorer.Chain.Import
 
+  alias GodwokenExplorer.Chain.Hash.Address
+
   import GodwokenRPC.Util, only: [import_timestamps: 0]
   import Ecto.Query
+
+  @type address() :: Address.t()
+
+  @spec new_job(list(address())) :: {:ok, Oban.Job.t()} | {:error, Oban.Job.changeset() | term}
+  def new_job(addresses) do
+    %{addresses: addresses}
+    |> __MODULE__.new()
+    |> Oban.insert()
+  end
 
   @impl Oban.Worker
   def perform(%Oban.Job{args: %{"addresses" => addresses}}) do
