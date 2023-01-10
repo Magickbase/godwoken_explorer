@@ -66,7 +66,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
     symbol = udt.symbol
     uan = udt.uan
 
-    if not is_nil(symbol) and not is_nil(uan) do
+    if not is_nil(symbol) and not is_nil(uan) and udt.is_fetch_exchange_rate do
       fetch_symbol = hd(String.split(symbol, "."))
 
       fetch_symbol =
