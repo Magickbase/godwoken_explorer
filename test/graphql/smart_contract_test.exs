@@ -37,6 +37,8 @@ defmodule GodwokenExplorer.Graphql.SmartContractTest do
   } do
     account = smart_contract.account
 
+    GodwokenExplorer.Graphql.Workers.UpdateSmartContractCKB.trigger_update_all_smart_contracts_ckbs()
+
     query = """
     query {
       smart_contract(
