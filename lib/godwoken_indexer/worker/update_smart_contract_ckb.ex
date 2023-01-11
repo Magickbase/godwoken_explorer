@@ -3,6 +3,7 @@ defmodule GodwokenExplorer.Graphql.Workers.UpdateSmartContractCKB do
   update smart contract ckb balance
   """
   use Oban.Worker, queue: :default
+  require Logger
 
   alias GodwokenExplorer.Repo
   alias GodwokenExplorer.Account.CurrentUDTBalance
@@ -40,7 +41,7 @@ defmodule GodwokenExplorer.Graphql.Workers.UpdateSmartContractCKB do
     end
   end
 
-  def trigger_update_all_smart_contracts_ckbs() do
+  def trigger_update_all_smart_contracts_ckbs(inspect \\ false) do
     q =
       from(a in Account,
         join: s in SmartContract,
@@ -49,15 +50,25 @@ defmodule GodwokenExplorer.Graphql.Workers.UpdateSmartContractCKB do
       )
 
     addresses = Repo.all(q)
-    length(addresses) |> IO.inspect(label: "need process jobs: ")
+
+    if inspect do
+      length(addresses) |> IO.inspect(label: "need process jobs: ")
+    end
 
     addresses
     |> Enum.chunk_every(100)
     |> Enum.reduce(0, fn addresses, acc ->
-      IO.inspect(label: "starting: #{acc}")
+      if inspect do
+        IO.inspect(label: "starting: #{acc}")
+      end
+
       do_perform(addresses)
       res = acc + length(addresses)
-      IO.inspect(label: "finished: #{acc}")
+
+      if inspect do
+        IO.inspect(label: "finished: #{res}")
+      end
+
       res
     end)
   end
