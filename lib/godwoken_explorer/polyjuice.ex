@@ -59,13 +59,18 @@ defmodule GodwokenExplorer.Polyjuice do
 
     field :transaction_index, :integer
     field :created_contract_address_hash, Hash.Address
-    field :native_transfer_address_hash, Hash.Address
     field(:status, Ecto.Enum, values: [:succeed, :failed])
 
     belongs_to(:transaction, GodwokenExplorer.Transaction,
       foreign_key: :tx_hash,
       references: :hash,
       type: Hash.Full
+    )
+
+    belongs_to(:native_transfer_account, GodwokenExplorer.Account,
+      foreign_key: :native_transfer_address_hash,
+      references: :eth_address,
+      type: Hash.Address
     )
 
     timestamps()

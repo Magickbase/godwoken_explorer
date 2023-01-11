@@ -1,4 +1,4 @@
-defmodule GodwokenExplorer.AccountTest do
+defmodule GodwokenExplorer.UDTTest do
   use GodwokenExplorer.DataCase
 
   import GodwokenExplorer.Factory
