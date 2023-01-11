@@ -66,6 +66,27 @@ defmodule GodwokenExplorer.Graphql.Types.Search do
       arg(:input, non_null(:search_udt_input), default_value: %{})
       resolve(&Resolvers.Search.search_udt/3)
     end
+
+    @desc """
+    query {
+      search_bit_alias(
+        input: {
+          bit_alias: "freder.bit"
+        }
+      )
+    }
+
+    {
+      "data": {
+        "search_bit_alias": "0xcc0af0af911dd40853b8c8dfee90b32f8d1ecad6"
+      }
+    }
+    """
+
+    field :search_bit_alias, :string do
+      arg(:input, non_null(:search_bit_alias_input))
+      resolve(&Resolvers.Search.search_bit_alias/3)
+    end
   end
 
   object :search_result do
@@ -110,6 +131,10 @@ defmodule GodwokenExplorer.Graphql.Types.Search do
     value(:transaction)
     value(:udt)
     value(:account)
+  end
+
+  input_object :search_bit_alias_input do
+    field(:bit_alias, non_null(:string))
   end
 
   input_object :search_keyword_input do
