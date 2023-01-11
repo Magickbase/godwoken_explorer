@@ -49,7 +49,17 @@ defmodule GodwokenExplorer.Graphql.Workers.UpdateSmartContractCKB do
       )
 
     addresses = Repo.all(q)
-    do_perform(addresses)
+    length(addresses) |> IO.inspect(label: "need process jobs: ")
+
+    addresses
+    |> Enum.chunk_every(100)
+    |> Enum.reduce(0, fn addresses, acc ->
+      IO.inspect(label: "starting: #{acc}")
+      do_perform(addresses)
+      res = acc + length(addresses)
+      IO.inspect(label: "finished: #{acc}")
+      res
+    end)
   end
 
   @impl Oban.Worker
