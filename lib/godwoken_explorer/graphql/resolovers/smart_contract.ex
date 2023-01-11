@@ -49,7 +49,6 @@ defmodule GodwokenExplorer.Graphql.Resolvers.SmartContract do
     subq =
       from(sc in SmartContract, as: :smart_contract)
       |> join(:inner, [sc], a in Account, on: sc.account_id == a.id, as: :account)
-      |> smart_contracts_order_by(input)
       |> select(
         [smart_contract: sc],
         merge(sc, %{
@@ -62,7 +61,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.SmartContract do
         })
       )
 
-    query =
+    sq2 =
       from(s in SmartContract,
         right_join: sq in subquery(subq),
         on: s.id == sq.id,
@@ -76,6 +75,15 @@ defmodule GodwokenExplorer.Graphql.Resolvers.SmartContract do
               )
           })
       )
+
+    query =
+      from(s in SmartContract,
+        right_join: sq2 in subquery(sq2),
+        as: :ckb_sorted,
+        on: s.id == sq2.id,
+        select: sq2
+      )
+      |> smart_contracts_order_by(input)
 
     return =
       query
@@ -97,6 +105,9 @@ defmodule GodwokenExplorer.Graphql.Resolvers.SmartContract do
           case e do
             %{sort_type: st, sort_value: :ex_tx_count} ->
               {st, dynamic([account: a], a.transaction_count)}
+
+            %{sort_type: st, sort_value: :ckb_balance} ->
+              {st, dynamic([ckb_sorted: c], c.ckb_balance)}
 
             _ ->
               case cursor_order_sorter([e], :order, @sorter_fields) do
