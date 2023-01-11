@@ -7,10 +7,10 @@ defmodule GodwokenExplorer.Graphql.Resolvers.SmartContract do
   import Ecto.Query
   import GodwokenExplorer.Graphql.Common, only: [cursor_order_sorter: 3]
   import GodwokenExplorer.Graphql.Resolvers.Common, only: [paginate_query: 3]
+  import GodwokenExplorer.Graphql.Utils, only: [default_uniq_cursor_order_fields: 3]
   import Absinthe.Resolution.Helpers
 
-  @sorter_fields [:id, :name]
-  # @ex_sorter_fields [:ex_balance, :ex_tx_count]
+  @sorter_fields [:id, :name, :ex_tx_count, :ckb_balance]
   @default_sorter [:id]
 
   def smart_contract(
@@ -46,7 +46,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.SmartContract do
   end
 
   def smart_contracts(_parent, %{input: input} = _args, _resolution) do
-    subq =
+    sq =
       from(sc in SmartContract, as: :smart_contract)
       |> join(:inner, [sc], a in Account, on: sc.account_id == a.id, as: :account)
       |> select(
@@ -57,31 +57,22 @@ defmodule GodwokenExplorer.Graphql.Resolvers.SmartContract do
               "CASE WHEN ? IS NULL THEN '' ELSE ? END",
               sc.name,
               sc.name
+            ),
+          ckb_balance:
+            fragment(
+              "CASE WHEN ? IS NULL THEN 0 ELSE ? END",
+              sc.ckb_balance,
+              sc.ckb_balance
             )
         })
       )
 
-    sq2 =
-      from(s in SmartContract,
-        right_join: sq in subquery(subq),
-        on: s.id == sq.id,
-        select:
-          merge(sq, %{
-            ckb_balance:
-              fragment(
-                "CASE WHEN ? IS NULL THEN 0 ELSE ? END",
-                sq.ckb_balance,
-                sq.ckb_balance
-              )
-          })
-      )
-
     query =
       from(s in SmartContract,
-        right_join: sq2 in subquery(sq2),
+        right_join: sq in subquery(sq),
         as: :ckb_sorted,
-        on: s.id == sq2.id,
-        select: sq2
+        on: s.id == sq.id,
+        select: sq
       )
       |> smart_contracts_order_by(input)
 
@@ -109,14 +100,14 @@ defmodule GodwokenExplorer.Graphql.Resolvers.SmartContract do
             %{sort_type: st, sort_value: :ckb_balance} ->
               {st, dynamic([ckb_sorted: c], c.ckb_balance)}
 
+            %{sort_type: st, sort_value: :name} ->
+              {st, dynamic([ckb_sorted: c], c.name)}
+
             _ ->
-              case cursor_order_sorter([e], :order, @sorter_fields) do
-                [h | _] -> h
-                _ -> :skip
-              end
+              cursor_order_sorter(e, :order, @sorter_fields)
           end
         end)
-        |> Enum.filter(&(&1 != :skip))
+        |> default_uniq_cursor_order_fields(:order, [:id])
 
       order_by(query, [], ^order_params)
     else
@@ -134,14 +125,17 @@ defmodule GodwokenExplorer.Graphql.Resolvers.SmartContract do
           %{sort_type: st, sort_value: :ex_tx_count} ->
             {{:account, :transaction_count}, st}
 
+          %{sort_type: st, sort_value: :ckb_balance} ->
+            {{:ckb_sorted, :ckb_balance}, st}
+
+          %{sort_type: st, sort_value: :name} ->
+            {{:ckb_sorted, :name}, st}
+
           _ ->
-            case cursor_order_sorter([e], :cursor, @sorter_fields) do
-              [h | _] -> h
-              _ -> :skip
-            end
+            cursor_order_sorter(e, :cursor, @sorter_fields)
         end
       end)
-      |> Enum.filter(&(&1 != :skip))
+      |> default_uniq_cursor_order_fields(:cursor, [:id])
     else
       @default_sorter
     end

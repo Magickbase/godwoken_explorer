@@ -76,11 +76,9 @@ defmodule GodwokenExplorer.Graphql.SmartContractTest do
     query {
       smart_contracts(
         input: {
-          limit: 5
+          limit: 2
           sorter: [
             { sort_type: DESC, sort_value: CKB_BALANCE }
-            { sort_type: ASC, sort_value: ID }
-            { sort_type: ASC, sort_value: NAME }
           ]
         }
       ) {
@@ -132,17 +130,20 @@ defmodule GodwokenExplorer.Graphql.SmartContractTest do
         input: {
           limit: 5
           sorter: [
+            { sort_type: ASC, sort_value: CKB_BALANCE }
             { sort_type: ASC, sort_value: ID }
             { sort_type: ASC, sort_value: NAME }
           ]
         }
       ) {
         entries {
+          id
           name
           account_id
           account {
             eth_address
           }
+          ckb_balance
         }
         metadata {
           total_count
@@ -178,17 +179,20 @@ defmodule GodwokenExplorer.Graphql.SmartContractTest do
           limit: 5
           after: "#{after_value}"
           sorter: [
+            { sort_type: ASC, sort_value: CKB_BALANCE }
             { sort_type: ASC, sort_value: ID }
             { sort_type: ASC, sort_value: NAME }
           ]
         }
       ) {
         entries {
+          id
           name
           account_id
           account {
             eth_address
           }
+          ckb_balance
         }
         metadata {
           total_count
@@ -209,7 +213,7 @@ defmodule GodwokenExplorer.Graphql.SmartContractTest do
              %{
                "data" => %{
                  "smart_contracts" => %{
-                   "entries" => [%{"name" => ""} | _],
+                   "entries" => [%{"name" => ""}, %{"ckb_balance" => "10000"}],
                    "metadata" => %{
                      "total_count" => 7
                    }
