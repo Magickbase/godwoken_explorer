@@ -2,6 +2,7 @@ defmodule GodwokenExplorer.Graphql.SearchTest do
   use GodwokenExplorerWeb.ConnCase
 
   import GodwokenExplorer.Factory, only: [insert: 1, insert: 2, insert!: 1]
+  import Mock
 
   setup do
     for _ <- 1..10 do
@@ -291,5 +292,64 @@ defmodule GodwokenExplorer.Graphql.SearchTest do
              },
              json_response(conn, 200)
            )
+  end
+
+  describe "bit alias" do
+    test "query with wrong format alias", %{conn: conn} do
+      query = """
+      query{
+        search_bit_alias(
+          input: {
+            bit_alias: "freder"
+          }
+        )
+      }
+      """
+
+      conn =
+        post(conn, "/graphql", %{
+          "query" => query,
+          "variables" => %{}
+        })
+
+      assert match?(
+               %{
+                 "data" => %{
+                   "search_bit_alias" => nil
+                 },
+                 "errors" => _
+               },
+               json_response(conn, 200)
+             )
+    end
+
+    test "query with correct format alias", %{conn: conn} do
+      query = """
+      query{
+        search_bit_alias(
+          input: {
+            bit_alias: "freder.bit"
+          }
+        )
+      }
+      """
+
+      with_mock GodwokenExplorer.Bit.API,
+        fetch_address_by_alias: fn _bit_alias ->
+          {:ok, "0xcc0af0af911dd40853b8c8dfee90b32f8d1ecad6"}
+        end do
+        conn =
+          post(conn, "/graphql", %{
+            "query" => query,
+            "variables" => %{}
+          })
+
+        assert json_response(conn, 200) == %{
+                 "data" => %{
+                   "search_bit_alias" => "0xcc0af0af911dd40853b8c8dfee90b32f8d1ecad6"
+                 }
+               }
+      end
+    end
   end
 end
