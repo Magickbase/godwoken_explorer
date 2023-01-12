@@ -10,7 +10,9 @@ defmodule GodwokenExplorer.Graphql.Workers.UpdateSmartContractCKB do
   alias GodwokenExplorer.Chain.Hash.Address
   alias GodwokenExplorer.SmartContract
   alias GodwokenExplorer.Account
+  alias GodwokenExplorer.UDT
   alias GodwokenExplorer.Chain.Import
+  alias GodwokenExplorer.Chain.Hash.Full
 
   alias GodwokenExplorer.Chain.Hash.Address
 
@@ -21,7 +23,7 @@ defmodule GodwokenExplorer.Graphql.Workers.UpdateSmartContractCKB do
 
   @spec new_job(list(address())) ::
           {:ok, Oban.Job.t()} | {:error, Oban.Job.changeset() | term} | :ok
-  def new_job(addresses) do
+  def new_job(addresses) when is_list(addresses) do
     q =
       from(a in Account,
         where: a.eth_address in ^addresses,
@@ -39,6 +41,66 @@ defmodule GodwokenExplorer.Graphql.Workers.UpdateSmartContractCKB do
     else
       :ok
     end
+  end
+
+  @spec update_smart_contract_with_ckb_balance(list(map())) :: {:ok, term()}
+  def update_smart_contract_with_ckb_balance(params) when is_list(params) do
+    [ckb_bridged_address, ckb_contract_address] =
+      UDT.ckb_account_id() |> UDT.list_address_by_udt_id()
+
+    ckb_bridged_address = ckb_bridged_address
+
+    addresses =
+      params
+      |> Enum.filter(fn p ->
+        if not is_nil(p[:token_contract_address_hash]) do
+          {:ok, token_contract_address_hash} = Address.cast(p[:token_contract_address_hash])
+          token_contract_address_hash == ckb_contract_address
+        else
+          if not is_nil(p[:udt_script_hash]) do
+            {:ok, udt_script_hash} = Full.cast(p[:udt_script_hash])
+            udt_script_hash == ckb_bridged_address
+          else
+            false
+          end
+        end
+      end)
+      |> Enum.map(fn m -> m[:address_hash] end)
+      |> Enum.filter(&(not is_nil(&1)))
+
+    q =
+      from(a in Account,
+        where: a.eth_address in ^addresses,
+        join: s in SmartContract,
+        on: s.account_id == a.id,
+        select: %{s: s, address_hash: a.eth_address}
+      )
+
+    res = Repo.all(q)
+
+    need_update_map =
+      res
+      |> Enum.map(fn %{address_hash: address_hash, s: s} ->
+        case Enum.find(params, fn m ->
+               m[:address_hash] == address_hash and not is_nil(m[:value])
+             end) do
+          %{address_hash: ^address_hash, value: value} ->
+            s
+            |> Map.from_struct()
+            |> Map.merge(%{ckb_balance: value})
+
+          _ ->
+            :skip
+        end
+      end)
+      |> Enum.filter(&(&1 != :skip))
+
+    Import.insert_changes_list(need_update_map,
+      for: SmartContract,
+      timestamps: import_timestamps(),
+      on_conflict: {:replace, [:ckb_balance, :updated_at]},
+      conflict_target: :account_id
+    )
   end
 
   def trigger_update_all_smart_contracts_ckbs(inspect \\ false) do

@@ -107,13 +107,8 @@ defmodule GodwokenIndexer.Fetcher.UDTBalance do
 
     cub_default_conflict = default_current_token_balance_on_conflict()
 
-    [_ckb_bridged_address, ckb_contract_address] =
-      UDT.ckb_account_id() |> UDT.list_address_by_udt_id()
-
     format_without_token_ids
-    |> Enum.filter(fn params -> params.token_contract_address_hash == ckb_contract_address end)
-    |> Enum.map(fn params -> params.address_hash end)
-    |> UpdateSmartContractCKB.new_job()
+    |> UpdateSmartContractCKB.update_smart_contract_with_ckb_balance()
 
     return3 =
       Import.insert_changes_list(format_without_token_ids,

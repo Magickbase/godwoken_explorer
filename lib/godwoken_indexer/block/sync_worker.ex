@@ -1067,8 +1067,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
           end)
 
         bridged_ckbs
-        |> Enum.map(& &1.address_hash)
-        |> UpdateSmartContractCKB.new_job()
+        |> UpdateSmartContractCKB.update_smart_contract_with_ckb_balance()
 
         Import.insert_changes_list(
           bridged_ckbs,
