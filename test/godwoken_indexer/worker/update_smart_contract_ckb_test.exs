@@ -9,7 +9,7 @@ defmodule GodwokenIndexer.Worker.UpdateSmartContractCKBTest do
   alias GodwokenExplorer.SmartContract
 
   setup do
-    _ckb_account = insert(:ckb_account)
+    ckb_account = insert(:ckb_account)
     ckb_contract_account = insert(:ckb_contract_account)
     _ = insert(:ckb_udt)
     _ = insert(:ckb_native_udt)
@@ -30,13 +30,14 @@ defmodule GodwokenIndexer.Worker.UpdateSmartContractCKBTest do
       )
 
     %{
+      ckb_account: ckb_account,
       smart_contract: smart_contract,
       ckb_contract_account: ckb_contract_account,
       polyjuice_contract_account: polyjuice_contract_account
     }
   end
 
-  test "worker: UpdateSmartContractCKBTest", %{
+  test "worker: test UpdateSmartContractCKBTest worker", %{
     polyjuice_contract_account: polyjuice_contract_account
   } do
     account_id = polyjuice_contract_account.id
@@ -50,5 +51,37 @@ defmodule GodwokenIndexer.Worker.UpdateSmartContractCKBTest do
     sc = Repo.get_by(SmartContract, account_id: account_id)
 
     assert sc.ckb_balance == Decimal.new(10000)
+  end
+
+  test "worker: test update_smart_contract_with_ckb_balance", %{
+    ckb_account: ckb_account,
+    ckb_contract_account: ckb_contract_account,
+    polyjuice_contract_account: polyjuice_contract_account
+  } do
+    account_id = polyjuice_contract_account.id
+    address_hash = polyjuice_contract_account.eth_address
+    udt_script_hash = ckb_account.script_hash |> to_string()
+
+    params = %{
+      address_hash: address_hash,
+      udt_script_hash: udt_script_hash,
+      value: 1065
+    }
+
+    UpdateSmartContractCKB.update_smart_contract_with_ckb_balance([params])
+    sc = Repo.get_by(SmartContract, account_id: account_id)
+    assert sc.ckb_balance == Decimal.new(1065)
+
+    token_contract_address_hash = ckb_contract_account.eth_address
+
+    params = %{
+      address_hash: address_hash,
+      token_contract_address_hash: token_contract_address_hash,
+      value: 955
+    }
+
+    UpdateSmartContractCKB.update_smart_contract_with_ckb_balance([params])
+    sc = Repo.get_by(SmartContract, account_id: account_id)
+    assert sc.ckb_balance == Decimal.new(955)
   end
 end
