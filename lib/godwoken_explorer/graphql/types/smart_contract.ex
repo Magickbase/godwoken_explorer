@@ -160,31 +160,32 @@ defmodule GodwokenExplorer.Graphql.Types.SmartContract do
   end
 
   object :paginate_smart_contracts do
-    field :entries, list_of(:smart_contract)
-    field :metadata, :paginate_metadata
+    field(:entries, list_of(:smart_contract))
+    field(:metadata, :paginate_metadata)
   end
 
   object :smart_contract do
-    field :id, :integer, description: "ID of smart_contract table"
-    field :abi, list_of(:json), description: "Contract abi."
-    field :contract_source_code, :string, description: "Contract code."
-    field :name, :string, description: "Contract name."
-    field :account_id, :integer, description: "The account foreign key."
-    field :constructor_arguments, :string, description: "Contract constructor arguments."
+    field(:id, :integer, description: "ID of smart_contract table")
+    field(:abi, list_of(:json), description: "Contract abi.")
+    field(:contract_source_code, :string, description: "Contract code.")
+    field(:name, :string, description: "Contract name.")
+    field(:account_id, :integer, description: "The account foreign key.")
+    field(:constructor_arguments, :string, description: "Contract constructor arguments.")
 
-    field :deployment_tx_hash, :hash_full,
+    field(:deployment_tx_hash, :hash_full,
       description: "Contract deployment at which transaction."
+    )
 
-    field :compiler_version, :string, description: "Contract compiler version."
-    field :compiler_file_format, :string, description: "Solidity or other."
-    field :other_info, :string, description: "Some info."
+    field(:compiler_version, :string, description: "Contract compiler version.")
+    field(:compiler_file_format, :string, description: "Solidity or other.")
+    field(:other_info, :string, description: "Some info.")
 
     field :account, :account do
       description("The mapping account of smart contract.")
       resolve(&Resolvers.SmartContract.account/3)
     end
 
-    field :ckb_balance, :decimal, description: "The ckb-balance of this contract."
+    field(:ckb_balance, :decimal, description: "The ckb-balance of this contract.")
 
     # field :ckb_balance, :decimal do
     #   description("The ckb-balance of this contract.")
@@ -201,22 +202,25 @@ defmodule GodwokenExplorer.Graphql.Types.SmartContract do
   end
 
   input_object :smart_contract_input do
-    field :contract_address, :hash_address
-    field :script_hash, :hash_full
+    field(:contract_address, :hash_address)
+    field(:script_hash, :hash_full)
   end
 
   input_object :smart_contracts_input do
+    @desc "smart contract mapping account eth address list"
+    field(:contract_addresses, list_of(:hash_address), default_value: [])
     import_fields(:paginate_input)
 
-    field :sorter, list_of(:smart_contracts_sorter_input),
+    field(:sorter, list_of(:smart_contracts_sorter_input),
       default_value: [
         %{sort_type: :asc, sort_value: :id},
         %{sort_type: :asc, sort_value: :name}
       ]
+    )
   end
 
   input_object :smart_contracts_sorter_input do
-    field :sort_type, :sort_type
-    field :sort_value, :smart_contracts_sorter
+    field(:sort_type, :sort_type)
+    field(:sort_value, :smart_contracts_sorter)
   end
 end

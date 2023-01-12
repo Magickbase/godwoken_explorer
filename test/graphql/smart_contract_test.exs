@@ -71,6 +71,58 @@ defmodule GodwokenExplorer.Graphql.SmartContractTest do
            )
   end
 
+  test "graphql: smart_contracts with condition",
+       %{conn: conn, polyjuice_contract_account: a} do
+    address = a.eth_address |> to_string()
+    addresses = [address]
+
+    query = """
+    query {
+      smart_contracts(
+        input: {
+          contract_addresses: "#{addresses}"
+          limit: 2
+          sorter: [
+            { sort_type: DESC, sort_value: CKB_BALANCE }
+          ]
+        }
+      ) {
+        entries {
+          name
+          account_id
+          account {
+            eth_address
+          }
+          ckb_balance
+        }
+        metadata {
+          total_count
+          after
+          before
+        }
+      }
+    }
+    """
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    %{
+      "data" => %{
+        "smart_contracts" => %{
+          "entries" => [%{"ckb_balance" => "10000"} | _],
+          "metadata" => %{
+            "total_count" => 1,
+            "after" => _after_value
+          }
+        }
+      }
+    } = json_response(conn, 200)
+  end
+
   test "graphql: smart_contracts with ckb_balance_sorter", %{conn: conn} do
     query = """
     query {

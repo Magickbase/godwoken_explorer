@@ -66,6 +66,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.SmartContract do
             )
         })
       )
+      |> smart_contracts_conditions(input)
 
     query =
       from(s in SmartContract,
@@ -84,6 +85,25 @@ defmodule GodwokenExplorer.Graphql.Resolvers.SmartContract do
       })
 
     {:ok, return}
+  end
+
+  defp smart_contracts_conditions(query, input) do
+    where_condition =
+      Enum.reduce(input, true, fn i, acc ->
+        case i do
+          {:contract_addresses, addresses} ->
+            if length(addresses) > 0 do
+              dynamic([account: a], ^acc and a.eth_address in ^addresses)
+            else
+              acc
+            end
+
+          _ ->
+            acc
+        end
+      end)
+
+    query |> where(^where_condition)
   end
 
   defp smart_contracts_order_by(query, input) do
