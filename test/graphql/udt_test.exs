@@ -1252,6 +1252,64 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
            )
   end
 
+  test "graphql: erc1155_udts with sorter", %{
+    conn: conn,
+    erc1155_native_udt: erc1155_native_udt
+  } do
+    contract_address = erc1155_native_udt.contract_address_hash |> to_string()
+
+    query = """
+    query {
+      erc1155_udts(
+        input: {sorter: [{sort_type: DESC, sort_value: TOKEN_TYPE_COUNT}]}
+      ) {
+        entries {
+          id
+          name
+          contract_address_hash
+          eth_type
+          holders_count
+          token_type_count
+          minted_count
+          rank
+        }
+        metadata {
+          total_count
+          after
+          before
+        }
+      }
+    }
+    """
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    assert match?(
+             %{
+               "data" => %{
+                 "erc1155_udts" => %{
+                   "entries" => [
+                     %{
+                       "contract_address_hash" => ^contract_address,
+                       "eth_type" => "ERC1155",
+                       "holders_count" => 5,
+                       "token_type_count" => 6,
+                       "minted_count" => "600"
+                     }
+                     | _
+                   ],
+                   "metadata" => %{"total_count" => 2}
+                 }
+               }
+             },
+             json_response(conn, 200)
+           )
+  end
+
   test "graphql: erc1155_udts with first page check ", %{conn: conn} do
     _ = insert!(:native_udt, eth_type: :erc1155)
     query = erc1155_udts_with_first_page_check_base_query("")
