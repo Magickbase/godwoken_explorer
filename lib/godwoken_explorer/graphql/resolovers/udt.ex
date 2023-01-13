@@ -57,7 +57,11 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
     {:ok, UDT.count_holder(udt)}
   end
 
-  def minted_count(%{contract_address_hash: _contract_address_hash} = udt, _args, _resolution) do
+  def minted_count(
+        %{contract_address_hash: _contract_address_hash} = udt,
+        _args,
+        _resolution
+      ) do
     return = UDT.minted_count(udt) |> Decimal.new()
     {:ok, return}
   end
@@ -370,6 +374,9 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
             %{sort_type: st, sort_value: :ex_holders_count} ->
               {{:u_holders, :holders_count}, st}
 
+            %{sort_type: st, sort_value: :minted_count} ->
+              {{:u_holders, :minted_count}, st}
+
             _ ->
               cursor_order_sorter(e, :cursor, @sorter_fields)
           end
@@ -495,6 +502,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
             )
         })
       else
+        # erc721 need minted_count for sorting
         query
         |> join(:left, [u], h in subquery(squery),
           on: u.contract_address_hash == h.contract_address_hash
@@ -505,6 +513,12 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
               "CASE WHEN ? IS NULL THEN 0 ELSE ? END",
               u_holders.holders_count,
               u_holders.holders_count
+            ),
+          minted_count:
+            fragment(
+              "CASE WHEN ? IS NULL THEN 0 ELSE ? END",
+              u.created_count - u.burnt_count,
+              u.created_count - u.burnt_count
             )
         })
       end
@@ -621,7 +635,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
     contract_address = Map.get(input, :contract_address)
     minted_burn_address_hash = UDTBalance.minted_burn_address_hash()
 
-    burned_token_ids =
+    burnt_token_ids =
       from(tt in TokenTransfer,
         where:
           tt.token_contract_address_hash == ^contract_address and
@@ -644,7 +658,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
 
     squery =
       from(cu in CurrentUDTBalance)
-      |> where([c], c.token_type == :erc721 and c.token_id not in ^burned_token_ids)
+      |> where([c], c.token_type == :erc721 and c.token_id not in ^burnt_token_ids)
       |> where([_], ^conditions)
       |> where(
         [cu],
@@ -759,38 +773,26 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
   defp base_udts_order_by(holders_count_query, input, only_condition \\ false) do
     sorter = Map.get(input, :sorter)
 
-    holders_count_sorter_cond =
-      Enum.find(sorter, fn e ->
+    order_params =
+      sorter
+      |> Enum.map(fn e ->
         case e do
-          %{sort_type: _st, sort_value: :ex_holders_count} ->
-            true
+          %{sort_type: st, sort_value: :ex_holders_count} ->
+            st =
+              case st do
+                :desc -> :desc_nulls_last
+                :asc -> :asc_nulls_first
+              end
+
+            {st, dynamic([u_holders: uh], field(uh, :holders_count))}
+
+          %{sort_type: st, sort_value: :minted_count} ->
+            {st, dynamic([u_holders: uh], field(uh, :minted_count))}
 
           _ ->
-            false
+            cursor_order_sorter(e, :order, @sorter_fields)
         end
       end)
-
-    order_params =
-      if holders_count_sorter_cond do
-        sorter
-        |> Enum.map(fn e ->
-          case e do
-            %{sort_type: st, sort_value: :ex_holders_count} ->
-              st =
-                case st do
-                  :desc -> :desc_nulls_last
-                  :asc -> :asc_nulls_first
-                end
-
-              {st, dynamic([u_holders: uh], field(uh, :holders_count))}
-
-            _ ->
-              cursor_order_sorter(e, :order, @sorter_fields)
-          end
-        end)
-      else
-        cursor_order_sorter(sorter, :order, @sorter_fields)
-      end
 
     order_params =
       if List.keyfind(order_params, :id, 1) do
@@ -802,7 +804,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
     if only_condition do
       order_params
     else
-      order_by(holders_count_query, [], ^order_params)
+      order_by(holders_count_query, ^order_params)
     end
   end
 end

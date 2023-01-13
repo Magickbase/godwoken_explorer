@@ -19,6 +19,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
   alias GodwokenExplorer.GW.Log, as: GWLog
   alias GodwokenExplorer.GW.{SudtPayFee, SudtTransfer}
   alias GodwokenExplorer.GlobalConstants
+  alias GodwokenIndexer.Worker.UpdateUDTCountInfo
 
   alias GodwokenExplorer.{
     Address,
@@ -435,6 +436,8 @@ defmodule GodwokenIndexer.Block.SyncWorker do
         timestamps: import_timestamps(),
         on_conflict: :nothing
       )
+
+      UpdateUDTCountInfo.new_job(token_transfers)
 
       update_udt_balance(token_transfers)
       update_udt_token_instance_metadata(token_transfers)
