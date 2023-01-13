@@ -48,8 +48,6 @@ defmodule GodwokenExplorer.Graphql.Workers.UpdateSmartContractCKB do
     [ckb_bridged_address, ckb_contract_address] =
       UDT.ckb_account_id() |> UDT.list_address_by_udt_id()
 
-    ckb_bridged_address = ckb_bridged_address
-
     addresses =
       params
       |> Enum.filter(fn p ->

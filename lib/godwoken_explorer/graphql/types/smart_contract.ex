@@ -197,7 +197,6 @@ defmodule GodwokenExplorer.Graphql.Types.SmartContract do
     value(:id)
     value(:name)
     value(:ckb_balance)
-    # value(:ex_balance)
     value(:ex_tx_count)
   end
 
