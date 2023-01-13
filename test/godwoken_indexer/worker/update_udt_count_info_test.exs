@@ -79,7 +79,7 @@ defmodule GodwokenIndexer.Worker.UpdateUDTCountInfoTest do
     UpdateUDTCountInfo.do_perform([contract_address_hash], [contract_address_hash])
 
     udt = Repo.get_by(UDT, contract_address_hash: contract_address_hash)
-    assert udt.created_count == 5
-    assert udt.burnt_count == 3
+    assert udt.created_count == Decimal.new(5)
+    assert udt.burnt_count == Decimal.new(3)
   end
 end
