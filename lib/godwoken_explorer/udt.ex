@@ -35,7 +35,8 @@ defmodule GodwokenExplorer.UDT do
     * `skip_metadata` - Skip metadata fetch.
     * `is_fetched` - Fetched metadata or not.
     * `is_fetch_exchange_rate` - Fetched price or not.
-
+    * `created_count` - erc721/erc1155 token created count.
+    * `burnt_count` - erc721/erc1155 token burnt count.
   """
   @type t :: %__MODULE__{
           id: non_neg_integer(),
@@ -88,9 +89,13 @@ defmodule GodwokenExplorer.UDT do
       define_field: false
     )
 
+    field(:created_count, :decimal)
+    field(:burnt_count, :decimal)
+
     field(:holders_count, :integer, virtual: true)
     field(:token_type_count, :integer, virtual: true)
     field(:rank, :integer, virtual: true)
+    field(:minted_count, :decimal, virtual: true)
 
     timestamps()
   end
@@ -117,7 +122,9 @@ defmodule GodwokenExplorer.UDT do
       :is_fetched,
       :uan,
       :display_name,
-      :is_fetch_exchange_rate
+      :is_fetch_exchange_rate,
+      :created_count,
+      :burnt_count
     ])
     |> unique_constraint(:id, name: :udts_pkey)
     |> unique_constraint(:contract_address_hash, name: :udts_contract_address_hash_index)

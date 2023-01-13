@@ -512,7 +512,7 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
     ```
     """
     field :erc721_udts, :paginate_erc721_udts do
-      arg(:input, non_null(:erc721_erc1155_udts_input), default_value: %{})
+      arg(:input, non_null(:erc721_udts_input), default_value: %{})
       middleware(NullFilter)
       resolve(&Resolvers.UDT.erc721_udts/3)
     end
@@ -683,7 +683,7 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
     ```
     """
     field :erc1155_udts, :paginate_erc1155_udts do
-      arg(:input, non_null(:erc721_erc1155_udts_input), default_value: %{})
+      arg(:input, non_null(:erc1155_udts_input), default_value: %{})
       middleware(NullFilter)
       resolve(&Resolvers.UDT.erc1155_udts/3)
     end
@@ -1321,10 +1321,7 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
   object :erc721_udt do
     import_fields(:erc721_1155_common_udt)
 
-    field :minted_count, :decimal do
-      description("Count minted of erc721 udt.")
-      resolve(&Resolvers.UDT.minted_count/3)
-    end
+    field :minted_count, :decimal, description: "Count minted of erc721 udt."
 
     field :holders_count, :integer, description: "Count holders of udt."
   end
@@ -1411,6 +1408,14 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
     value(:ex_holders_count)
   end
 
+  enum :erc721_udts_sorter do
+    value(:id)
+    value(:name)
+    value(:supply)
+    value(:ex_holders_count)
+    value(:minted_count)
+  end
+
   input_object :udt_input do
     field(:id, :integer)
     field(:bridge_account_id, :integer)
@@ -1422,7 +1427,18 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
     import_fields(:paginate_input)
   end
 
-  input_object :erc721_erc1155_udts_input do
+  input_object :erc721_udts_input do
+    field(:fuzzy_name, :string)
+    field(:contract_address, :hash_address)
+
+    field(:sorter, list_of(:erc721_udts_sorter_input),
+      default_value: [%{sort_type: :asc, sort_value: :id}]
+    )
+
+    import_fields(:paginate_input)
+  end
+
+  input_object :erc1155_udts_input do
     field(:fuzzy_name, :string)
     field(:contract_address, :hash_address)
 
@@ -1457,11 +1473,16 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
 
   input_object :udts_input do
     field(:type, :udt_type)
-    import_fields(:erc721_erc1155_udts_input)
+    import_fields(:erc1155_udts_input)
   end
 
   input_object :udts_sorter_input do
     field(:sort_type, :sort_type)
     field(:sort_value, :udts_sorter)
+  end
+
+  input_object :erc721_udts_sorter_input do
+    field(:sort_type, :sort_type)
+    field(:sort_value, :erc721_udts_sorter)
   end
 end

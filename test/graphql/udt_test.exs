@@ -1,11 +1,13 @@
 defmodule GodwokenExplorer.Graphql.UDTTest do
   use GodwokenExplorerWeb.ConnCase
 
-  import GodwokenExplorer.Factory, only: [insert!: 1, insert!: 2, address_hash: 0, insert: 2]
+  import GodwokenExplorer.Factory
 
   alias GodwokenExplorer.{Repo, UDT}
   alias GodwokenExplorer.Chain.Cache.TokenExchangeRate
   alias GodwokenExplorer.Counters.Helper
+  alias GodwokenExplorer.Account.UDTBalance
+  alias GodwokenIndexer.Worker.UpdateUDTCountInfo
 
   setup do
     {:ok, script_hash} =
@@ -45,7 +47,9 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
     erc1155_native_udt = insert!(:native_udt, eth_type: :erc1155)
     _erc1155_native_udt2 = insert!(:native_udt, eth_type: :erc1155)
 
-    user = insert!(:user)
+    minted_burn_address_hash = UDTBalance.minted_burn_address_hash()
+
+    user = insert(:user)
 
     _erc721_token_instance =
       _erc721_cub1 =
@@ -133,7 +137,8 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
       polyjuice_contract_account: polyjuice_contract_account,
       user: user,
       erc721_native_udt: erc721_native_udt,
-      erc1155_native_udt: erc1155_native_udt
+      erc1155_native_udt: erc1155_native_udt,
+      minted_burn_address_hash: minted_burn_address_hash
     ]
   end
 
@@ -728,10 +733,30 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
 
   test "graphql: erc721_udts", %{
     conn: conn,
-    # user: user,
-    erc721_native_udt: erc721_native_udt
-    # erc1155_native_udt: erc1155_native_udt
+    user: user,
+    erc721_native_udt: erc721_native_udt,
+    minted_burn_address_hash: minted_burn_address_hash
   } do
+    for index <- 1..5 do
+      insert(:token_transfer,
+        from_address_hash: minted_burn_address_hash,
+        to_address_hash: user.eth_address,
+        token_contract_address_hash: erc721_native_udt.contract_address_hash,
+        token_id: index
+      )
+    end
+
+    for index <- 3..5 do
+      insert(:token_transfer,
+        from_address_hash: user.eth_address,
+        to_address_hash: minted_burn_address_hash,
+        token_contract_address_hash: erc721_native_udt.contract_address_hash,
+        token_id: index
+      )
+    end
+
+    UpdateUDTCountInfo.trigger_process_erc721_udts()
+
     contract_address = erc721_native_udt.contract_address_hash |> to_string()
 
     query = """
@@ -766,7 +791,10 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
     assert match?(
              %{
                "data" => %{
-                 "erc721_udts" => %{"metadata" => %{"total_count" => 1}}
+                 "erc721_udts" => %{
+                   "entries" => [%{"minted_count" => "2"}],
+                   "metadata" => %{"total_count" => 1}
+                 }
                }
              },
              json_response(conn, 200)
@@ -1021,6 +1049,115 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
     query {
       erc721_udts(
         input: {limit: 1, after: "#{after_value}", sorter: [{sort_type: ASC, sort_value: EX_HOLDERS_COUNT}]
+      }
+      ) {
+        entries {
+          id
+          name
+          contract_address_hash
+          eth_type
+          holders_count
+          minted_count
+        }
+        metadata {
+          total_count
+          after
+          before
+        }
+      }
+    }
+    """
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    assert match?(
+             %{
+               "data" => %{
+                 "erc721_udts" => %{"metadata" => %{"total_count" => 2}}
+               }
+             },
+             json_response(conn, 200)
+           )
+  end
+
+  test "graphql: erc721_udts with minted_count sorter", %{
+    conn: conn,
+    user: user,
+    erc721_native_udt: erc721_native_udt,
+    minted_burn_address_hash: minted_burn_address_hash
+  } do
+    for index <- 1..5 do
+      insert(:token_transfer,
+        from_address_hash: minted_burn_address_hash,
+        to_address_hash: user.eth_address,
+        token_contract_address_hash: erc721_native_udt.contract_address_hash,
+        token_id: index
+      )
+    end
+
+    for index <- 3..5 do
+      insert(:token_transfer,
+        from_address_hash: user.eth_address,
+        to_address_hash: minted_burn_address_hash,
+        token_contract_address_hash: erc721_native_udt.contract_address_hash,
+        token_id: index
+      )
+    end
+
+    UpdateUDTCountInfo.trigger_process_erc721_udts()
+
+    query = """
+    query {
+      erc721_udts(
+        input: {limit: 1, sorter: [{sort_type: DESC, sort_value: MINTED_COUNT}]
+      }
+      ) {
+        entries {
+          id
+          name
+          contract_address_hash
+          eth_type
+          holders_count
+          minted_count
+        }
+        metadata {
+          total_count
+          after
+          before
+        }
+      }
+    }
+    """
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    %{
+      "data" => %{
+        "erc721_udts" => %{"metadata" => %{"after" => after_value}}
+      }
+    } = json_response(conn, 200)
+
+    assert match?(
+             %{
+               "data" => %{
+                 "erc721_udts" => %{"metadata" => %{"total_count" => 2}}
+               }
+             },
+             json_response(conn, 200)
+           )
+
+    query = """
+    query {
+      erc721_udts(
+        input: {limit: 1, after: "#{after_value}", sorter: [{sort_type: DESC, sort_value: MINTED_COUNT}]
       }
       ) {
         entries {
