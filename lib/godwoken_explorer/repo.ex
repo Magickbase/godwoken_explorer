@@ -40,7 +40,6 @@ defmodule GodwokenExplorer.Repo do
 
   def graphql_paginate(queryable, opts \\ [], repo_opts \\ []) do
     opts = Keyword.merge(@graphql_paginate_defaults, opts)
-
     Paginator.paginate(queryable, opts, __MODULE__, repo_opts)
   end
 

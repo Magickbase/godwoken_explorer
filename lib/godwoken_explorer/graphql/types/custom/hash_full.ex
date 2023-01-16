@@ -27,5 +27,12 @@ defmodule GodwokenExplorer.Graphql.Types.Custom.HashFull do
     :error
   end
 
-  defp encode(value), do: Hash.to_string(value)
+  defp encode(%Hash{} = value) do
+    Hash.to_string(value)
+  end
+
+  defp encode(value) when is_binary(value) do
+    data = %Hash{bytes: value, byte_count: 32}
+    Hash.to_string(data)
+  end
 end

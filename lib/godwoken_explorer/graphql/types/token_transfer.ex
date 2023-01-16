@@ -411,6 +411,9 @@ defmodule GodwokenExplorer.Graphql.Types.TokenTransfer do
     @desc "The mapping receiver's account info."
     field :to_account, :account, resolve: dataloader(:graphql)
 
+    @desc "The mapping receiver's address info."
+    field :receiver_address, :address, resolve: dataloader(:graphql)
+
     field :udt, :udt do
       description("The mapping udt info.")
       resolve(&Resolvers.TokenTransfer.udt/3)
