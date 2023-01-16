@@ -84,7 +84,7 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
 
     _erc721_token_instance =
       insert!(:token_instance,
-        token_id: 5,
+        token_id: 1,
         token_contract_address_hash: erc721_native_udt.contract_address_hash
       )
 
@@ -2242,7 +2242,7 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
     query = """
     query {
       erc721_inventory(
-        input: {limit: 1, contract_address: "#{contract_address}"}
+        input: {limit: 5, contract_address: "#{contract_address}"}
       ) {
         entries {
           address_hash
@@ -2253,6 +2253,9 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
           token_instance {
             token_contract_address_hash
             metadata
+          }
+          account {
+            bit_alias
           }
         }
         metadata {
@@ -2275,9 +2278,16 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
                "data" => %{
                  "erc721_inventory" => %{
                    "entries" => [
+                     _,
+                     _,
+                     _,
+                     _,
                      %{
                        "token_instance" => %{
                          "token_contract_address_hash" => ^contract_address
+                       },
+                       "account" => %{
+                         "bit_alias" => "user.bit"
                        }
                      }
                    ],
@@ -2445,6 +2455,9 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
           token_id
           token_type
           counts
+          account {
+            bit_alias
+          }
         }
         metadata {
           total_count
@@ -2461,13 +2474,24 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
         "variables" => %{}
       })
 
+    result = json_response(conn, 200)
+
     assert match?(
              %{
                "data" => %{
                  "erc1155_user_inventory" => %{"metadata" => %{"total_count" => 6}}
                }
              },
-             json_response(conn, 200)
+             result
+           )
+
+    entry = List.last(result["data"]["erc1155_user_inventory"]["entries"])
+
+    assert match?(
+             %{
+               "account" => %{"bit_alias" => "user.bit"}
+             },
+             entry
            )
   end
 
