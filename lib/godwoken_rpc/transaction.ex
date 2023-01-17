@@ -1,6 +1,12 @@
 defmodule GodwokenRPC.Transaction do
   import GodwokenRPC.Util,
-    only: [hex_to_number: 1, parse_le_number: 1, transform_hash_type: 1, parse_polyjuice_args: 1]
+    only: [
+      hex_to_number: 1,
+      parse_le_number: 1,
+      transform_hash_type: 1,
+      parse_polyjuice_args: 1,
+      parse_gas_less_data: 1
+    ]
 
   import GodwokenExplorer.MoleculeParser,
     only: [parse_meta_contract_args: 1]
@@ -8,6 +14,7 @@ defmodule GodwokenRPC.Transaction do
   require Logger
 
   @eth_addr_reg_id Application.compile_env(:godwoken_explorer, :eth_addr_reg_id)
+  @gas_less_entrypoint_id Application.compile_env(:godwoken_explorer, :gas_less_entrypoint_id)
 
   def elixir_to_params(
         {%{
@@ -70,6 +77,16 @@ defmodule GodwokenRPC.Transaction do
         [is_create, gas_limit, gas_price, value, input_size, input, native_transfer_address_hash] =
           parse_polyjuice_args(args)
 
+        {call_contract, call_data, call_gas_limit, verification_gas_limit, max_fee_per_gas,
+         max_priority_fee_per_gas,
+         paymaster_and_data} =
+          if to_account_id == @gas_less_entrypoint_id && gas_price == 0 &&
+               String.starts_with?(input, "0xfb4350d8") do
+            input |> String.slice(10..-1) |> parse_gas_less_data()
+          else
+            {nil, nil, nil, nil, nil, nil, nil}
+          end
+
         %{
           type: :polyjuice,
           hash: hash,
@@ -87,6 +104,13 @@ defmodule GodwokenRPC.Transaction do
           input_size: input_size,
           input: input,
           native_transfer_address_hash: native_transfer_address_hash,
+          call_contract: call_contract,
+          call_data: call_data,
+          call_gas_limit: call_gas_limit,
+          verification_gas_limit: verification_gas_limit,
+          max_fee_per_gas: max_fee_per_gas,
+          max_priority_fee_per_gas: max_priority_fee_per_gas,
+          paymaster_and_data: paymaster_and_data,
           account_ids: [from_account_id, to_account_id]
         }
 
