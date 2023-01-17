@@ -57,13 +57,19 @@ defmodule GodwokenIndexer.Worker.UpdateUDTCountInfo do
 
     update_created_addresses =
       log_parse_token_transfers
-      |> Enum.filter(fn t -> t.from_address_hash == minted_burn_address_hash end)
+      |> Enum.filter(fn t ->
+        {:ok, from_address_hash} = Address.cast(t.from_address_hash)
+        from_address_hash == minted_burn_address_hash
+      end)
       |> Enum.map(fn t -> t.token_contract_address_hash end)
       |> Enum.uniq()
 
     update_burnt_addresses =
       log_parse_token_transfers
-      |> Enum.filter(fn t -> t.to_address_hash == minted_burn_address_hash end)
+      |> Enum.filter(fn t ->
+        {:ok, to_address_hash} = Address.cast(t.to_address_hash)
+        to_address_hash == minted_burn_address_hash
+      end)
       |> Enum.map(fn t -> t.token_contract_address_hash end)
       |> Enum.uniq()
 
