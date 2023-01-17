@@ -1,9 +1,10 @@
 defmodule GodwokenExplorer.Graphql.Resolvers.Search do
+  import Ecto.Query
+  import GodwokenExplorer.Graphql.Resolvers.Common, only: [paginate_query: 3]
+
   alias GodwokenExplorer.{UDT, Transaction, Block, Address, Account}
   alias GodwokenExplorer.Chain
-  import Ecto.Query
-
-  import GodwokenExplorer.Graphql.Resolvers.Common, only: [paginate_query: 3]
+  alias GodwokenExplorer.Bit.API, as: BitApi
 
   def search_keyword(_parent, %{input: %{keyword: keyword}} = _args, _resolution) do
     do_search_keyword(keyword)
@@ -61,6 +62,22 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Search do
       })
 
     {:ok, return}
+  end
+
+  def search_bit_alias(_parent, %{input: input} = _args, _resolution) do
+    bit_alias = Map.get(input, :bit_alias)
+
+    if String.ends_with?(bit_alias, ".bit") do
+      address =
+        case BitApi.fetch_address_by_alias(bit_alias) do
+          {:ok, address} -> address
+          {:error, nil} -> nil
+        end
+
+      {:ok, address}
+    else
+      {:error, "input bit alias wrong format"}
+    end
   end
 
   defp search_udt_condition(query, input) do
