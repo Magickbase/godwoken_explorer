@@ -1426,6 +1426,14 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
     value(:minted_count)
   end
 
+  enum :erc1155_udts_sorter do
+    value(:id)
+    value(:name)
+    value(:supply)
+    value(:ex_holders_count)
+    value(:token_type_count)
+  end
+
   input_object :udt_input do
     field(:id, :integer)
     field(:bridge_account_id, :integer)
@@ -1452,7 +1460,7 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
     field(:fuzzy_name, :string)
     field(:contract_address, :hash_address)
 
-    field(:sorter, list_of(:udts_sorter_input),
+    field(:sorter, list_of(:erc1155_udts_sorter_input),
       default_value: [%{sort_type: :asc, sort_value: :id}]
     )
 
@@ -1494,5 +1502,10 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
   input_object :erc721_udts_sorter_input do
     field(:sort_type, :sort_type)
     field(:sort_value, :erc721_udts_sorter)
+  end
+
+  input_object :erc1155_udts_sorter_input do
+    field(:sort_type, :sort_type)
+    field(:sort_value, :erc1155_udts_sorter)
   end
 end

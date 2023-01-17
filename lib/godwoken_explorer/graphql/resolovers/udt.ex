@@ -377,6 +377,9 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
             %{sort_type: st, sort_value: :minted_count} ->
               {{:u_holders, :minted_count}, st}
 
+            %{sort_type: st, sort_value: :token_type_count} ->
+              {{:u_holders, :token_type_count}, st}
+
             _ ->
               cursor_order_sorter(e, :cursor, @sorter_fields)
           end
@@ -792,6 +795,9 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
 
           %{sort_type: st, sort_value: :minted_count} ->
             {st, dynamic([u_holders: uh], field(uh, :minted_count))}
+
+          %{sort_type: st, sort_value: :token_type_count} ->
+            {st, dynamic([u_holders: uh], field(uh, :token_type_count))}
 
           _ ->
             cursor_order_sorter(e, :order, @sorter_fields)
