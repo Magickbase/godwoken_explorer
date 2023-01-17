@@ -519,8 +519,12 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
             ),
           minted_count:
             fragment(
-              "CASE WHEN ? IS NULL THEN 0 ELSE ? END",
-              u.created_count - u.burnt_count,
+              "CASE WHEN ? IS NULL THEN 0
+              WHEN ? IS NULL THEN ?
+              ELSE ? END",
+              u.created_count,
+              u.burnt_count,
+              u.created_count,
               u.created_count - u.burnt_count
             )
         })
