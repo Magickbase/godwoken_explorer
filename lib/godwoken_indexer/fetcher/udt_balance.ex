@@ -14,6 +14,8 @@ defmodule GodwokenIndexer.Fetcher.UDTBalance do
   alias GodwokenExplorer.Chain.{Hash, Import}
   alias GodwokenIndexer.Fetcher.UDTBalances
   alias GodwokenExplorer.Account.{CurrentUDTBalance, UDTBalance}
+  alias GodwokenExplorer.Graphql.Workers.UpdateSmartContractCKB
+  alias GodwokenExplorer.UDT
 
   import Ecto.Query
 
@@ -104,6 +106,9 @@ defmodule GodwokenIndexer.Fetcher.UDTBalance do
       )
 
     cub_default_conflict = default_current_token_balance_on_conflict()
+
+    format_without_token_ids
+    |> UpdateSmartContractCKB.update_smart_contract_with_ckb_balance()
 
     return3 =
       Import.insert_changes_list(format_without_token_ids,

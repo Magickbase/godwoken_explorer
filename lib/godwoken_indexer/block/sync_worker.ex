@@ -43,6 +43,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
 
   alias GodwokenExplorer.Chain.Hash
   alias GodwokenIndexer.Worker.ERC721ERC1155InstanceMetadata
+  alias GodwokenExplorer.Graphql.Workers.UpdateSmartContractCKB
 
   @default_worker_interval 20
 
@@ -190,6 +191,9 @@ defmodule GodwokenIndexer.Block.SyncWorker do
       import_account_udts
       |> Enum.uniq_by(&{Map.fetch!(&1, :address_hash), Map.fetch!(&1, :udt_id)})
       |> Enum.map(&Map.put(&1, :block_number, block_number))
+
+    import_account_udts
+    |> UpdateSmartContractCKB.update_smart_contract_with_ckb_balance()
 
     Import.insert_changes_list(
       import_account_udts,
@@ -743,6 +747,9 @@ defmodule GodwokenIndexer.Block.SyncWorker do
         import_account_udts
         |> Enum.map(&Map.put(&1, :block_number, block_number))
 
+      import_account_udts
+      |> UpdateSmartContractCKB.update_smart_contract_with_ckb_balance()
+
       Import.insert_changes_list(
         import_account_udts,
         for: CurrentBridgedUDTBalance,
@@ -1067,6 +1074,9 @@ defmodule GodwokenIndexer.Block.SyncWorker do
           |> Enum.map(fn ckbs ->
             ckbs |> Map.merge(%{block_number: block_number})
           end)
+
+        bridged_ckbs
+        |> UpdateSmartContractCKB.update_smart_contract_with_ckb_balance()
 
         Import.insert_changes_list(
           bridged_ckbs,

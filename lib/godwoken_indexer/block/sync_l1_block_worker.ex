@@ -37,6 +37,7 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
   }
 
   alias GodwokenExplorer.Account.CurrentBridgedUDTBalance
+  alias GodwokenExplorer.Graphql.Workers.UpdateSmartContractCKB
 
   @default_worker_interval 5
   @smallest_deposit_ckb_capacity 298 * :math.pow(10, 8)
@@ -385,6 +386,9 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
         import_account_udts =
           import_account_udts
           |> Enum.map(&Map.put(&1, :layer1_block_number, layer1_block_number))
+
+        import_account_udts
+        |> UpdateSmartContractCKB.update_smart_contract_with_ckb_balance()
 
         Import.insert_changes_list(
           import_account_udts,

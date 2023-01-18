@@ -7,12 +7,13 @@ defmodule GodwokenExplorer.Graphql.SmartContractTest do
     ckb_contract_account = insert(:ckb_contract_account)
     _ = insert(:ckb_udt)
     _ = insert(:ckb_native_udt)
-    polyjuice_contract_account = insert!(:polyjuice_contract_account)
-    smart_contract = insert!(:smart_contract, account: polyjuice_contract_account)
 
     for _ <- 1..3 do
       _smart_contract = insert(:smart_contract)
     end
+
+    polyjuice_contract_account = insert!(:polyjuice_contract_account)
+    smart_contract = insert!(:smart_contract, account: polyjuice_contract_account)
 
     _cub =
       insert(:current_udt_balance,
@@ -21,6 +22,8 @@ defmodule GodwokenExplorer.Graphql.SmartContractTest do
         value: 10000,
         token_type: :erc20
       )
+
+    GodwokenExplorer.Graphql.Workers.UpdateSmartContractCKB.trigger_update_all_smart_contracts_ckbs()
 
     [
       smart_contract: smart_contract,
@@ -68,6 +71,105 @@ defmodule GodwokenExplorer.Graphql.SmartContractTest do
            )
   end
 
+  test "graphql: smart_contracts with condition",
+       %{conn: conn, polyjuice_contract_account: a} do
+    address = a.eth_address |> to_string()
+    addresses = [address]
+
+    query = """
+    query {
+      smart_contracts(
+        input: {
+          contract_addresses: "#{addresses}"
+          limit: 2
+          sorter: [
+            { sort_type: DESC, sort_value: CKB_BALANCE }
+          ]
+        }
+      ) {
+        entries {
+          name
+          account_id
+          account {
+            eth_address
+          }
+          ckb_balance
+        }
+        metadata {
+          total_count
+          after
+          before
+        }
+      }
+    }
+    """
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    %{
+      "data" => %{
+        "smart_contracts" => %{
+          "entries" => [%{"ckb_balance" => "10000"} | _],
+          "metadata" => %{
+            "total_count" => 1,
+            "after" => _after_value
+          }
+        }
+      }
+    } = json_response(conn, 200)
+  end
+
+  test "graphql: smart_contracts with ckb_balance_sorter", %{conn: conn} do
+    query = """
+    query {
+      smart_contracts(
+        input: {
+          limit: 2
+          sorter: [
+            { sort_type: DESC, sort_value: CKB_BALANCE }
+          ]
+        }
+      ) {
+        entries {
+          name
+          account_id
+          account {
+            eth_address
+          }
+          ckb_balance
+        }
+        metadata {
+          total_count
+          after
+          before
+        }
+      }
+    }
+    """
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    %{
+      "data" => %{
+        "smart_contracts" => %{
+          "entries" => [%{"ckb_balance" => "10000"} | _],
+          "metadata" => %{
+            "total_count" => 4,
+            "after" => _after_value
+          }
+        }
+      }
+    } = json_response(conn, 200)
+  end
+
   test "graphql: smart_contracts ", %{conn: conn} do
     # paginator with null value of name
     for _ <- 1..3 do
@@ -80,17 +182,20 @@ defmodule GodwokenExplorer.Graphql.SmartContractTest do
         input: {
           limit: 5
           sorter: [
+            { sort_type: ASC, sort_value: CKB_BALANCE }
             { sort_type: ASC, sort_value: ID }
             { sort_type: ASC, sort_value: NAME }
           ]
         }
       ) {
         entries {
+          id
           name
           account_id
           account {
             eth_address
           }
+          ckb_balance
         }
         metadata {
           total_count
@@ -126,17 +231,20 @@ defmodule GodwokenExplorer.Graphql.SmartContractTest do
           limit: 5
           after: "#{after_value}"
           sorter: [
+            { sort_type: ASC, sort_value: CKB_BALANCE }
             { sort_type: ASC, sort_value: ID }
             { sort_type: ASC, sort_value: NAME }
           ]
         }
       ) {
         entries {
+          id
           name
           account_id
           account {
             eth_address
           }
+          ckb_balance
         }
         metadata {
           total_count
@@ -157,7 +265,7 @@ defmodule GodwokenExplorer.Graphql.SmartContractTest do
              %{
                "data" => %{
                  "smart_contracts" => %{
-                   "entries" => [%{"name" => ""} | _],
+                   "entries" => [%{"name" => ""}, %{"ckb_balance" => "10000"}],
                    "metadata" => %{
                      "total_count" => 7
                    }
