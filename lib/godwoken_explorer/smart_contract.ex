@@ -21,6 +21,7 @@ defmodule GodwokenExplorer.SmartContract do
   * `compiler_version` - Contract compiler version.
   * `compiler_file_format` - Solidity or other.
   * `other_info` - Some info.
+  * `ckb_balance` - SmartContract ckb balance.
   * `account_id` - The account foreign key.
   """
   @type t :: %__MODULE__{
@@ -32,6 +33,7 @@ defmodule GodwokenExplorer.SmartContract do
           compiler_version: Hash.Address.t(),
           compiler_file_format: String.t(),
           other_info: String.t(),
+          ckb_balance: Decimal.t(),
           account_id: Integer.t(),
           account: %Ecto.Association.NotLoaded{} | Account.t(),
           inserted_at: NaiveDateTime.t(),
@@ -56,6 +58,7 @@ defmodule GodwokenExplorer.SmartContract do
     field :compiler_version, :string
     field :compiler_file_format, :string
     field :other_info, :string
+    field :ckb_balance, :decimal
     field(:eth_address, :binary, virtual: true)
 
     timestamps()

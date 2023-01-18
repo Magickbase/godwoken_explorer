@@ -59,13 +59,26 @@ defmodule GodwokenExplorer.Polyjuice do
 
     field :transaction_index, :integer
     field :created_contract_address_hash, Hash.Address
-    field :native_transfer_address_hash, Hash.Address
     field(:status, Ecto.Enum, values: [:succeed, :failed])
+
+    field :call_contract, Hash.Address
+    field :call_data, Data
+    field :call_gas_limit, :decimal
+    field :verification_gas_limit, :decimal
+    field :max_fee_per_gas, :decimal
+    field :max_priority_fee_per_gas, :decimal
+    field :paymaster_and_data, Data
 
     belongs_to(:transaction, GodwokenExplorer.Transaction,
       foreign_key: :tx_hash,
       references: :hash,
       type: Hash.Full
+    )
+
+    belongs_to(:native_transfer_account, GodwokenExplorer.Account,
+      foreign_key: :native_transfer_address_hash,
+      references: :eth_address,
+      type: Hash.Address
     )
 
     timestamps()
@@ -86,7 +99,14 @@ defmodule GodwokenExplorer.Polyjuice do
       :status,
       :created_contract_address_hash,
       :tx_hash,
-      :native_transfer_address_hash
+      :native_transfer_address_hash,
+      :call_contract,
+      :call_data,
+      :call_gas_limit,
+      :verification_gas_limit,
+      :max_fee_per_gas,
+      :max_priority_fee_per_gas,
+      :paymaster_and_data
     ])
     |> validate_required([
       :tx_hash,

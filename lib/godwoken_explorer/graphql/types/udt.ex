@@ -512,7 +512,7 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
     ```
     """
     field :erc721_udts, :paginate_erc721_udts do
-      arg(:input, non_null(:erc721_erc1155_udts_input), default_value: %{})
+      arg(:input, non_null(:erc721_udts_input), default_value: %{})
       middleware(NullFilter)
       resolve(&Resolvers.UDT.erc721_udts/3)
     end
@@ -683,7 +683,7 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
     ```
     """
     field :erc1155_udts, :paginate_erc1155_udts do
-      arg(:input, non_null(:erc721_erc1155_udts_input), default_value: %{})
+      arg(:input, non_null(:erc1155_udts_input), default_value: %{})
       middleware(NullFilter)
       resolve(&Resolvers.UDT.erc1155_udts/3)
     end
@@ -1227,9 +1227,9 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
   end
 
   object :erc1155_inventory do
-    field :contract_address_hash, :hash_address, description: "The erc1155 contract address."
-    field :token_id, :decimal, description: "The erc1155 token id."
-    field :counts, :decimal, description: "Count of erc1155 with the token id."
+    field(:contract_address_hash, :hash_address, description: "The erc1155 contract address.")
+    field(:token_id, :decimal, description: "The erc1155 token id.")
+    field(:counts, :decimal, description: "Count of erc1155 with the token id.")
 
     field :token_instance, :token_instance do
       description("The mapping token instance of erc1155.")
@@ -1238,10 +1238,10 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
   end
 
   object :erc721_erc1155_holder_item do
-    field :rank, :integer, description: "The rank number of holder list."
-    field :address_hash, :hash_address, description: "Owner of token."
-    field :token_contract_address_hash, :hash_address, description: "Contract of token."
-    field :quantity, :decimal, description: "The quantity of holder item."
+    field(:rank, :integer, description: "The rank number of holder list.")
+    field(:address_hash, :hash_address, description: "Owner of token.")
+    field(:token_contract_address_hash, :hash_address, description: "Contract of token.")
+    field(:quantity, :decimal, description: "The quantity of holder item.")
 
     field(:account, :account) do
       description("The mapping owner account.")
@@ -1250,17 +1250,22 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
   end
 
   object :erc721_erc1155_common_user_token do
-    field :address_hash, :hash_address, description: "Owner of token."
-    field :token_contract_address_hash, :hash_address, description: "Contract of token."
-    field :token_id, :decimal, description: "Token id of erc1155/erc721."
-    field :token_type, :eth_type, description: "Token type of erc1155/erc721."
+    field(:address_hash, :hash_address, description: "Owner of token.")
+    field(:token_contract_address_hash, :hash_address, description: "Contract of token.")
+    field(:token_id, :decimal, description: "Token id of erc1155/erc721.")
+    field(:token_type, :eth_type, description: "Token type of erc1155/erc721.")
+
+    field(:account, :account) do
+      description("The mapping owner account.")
+      resolve(&Resolvers.UDT.account_of_address/3)
+    end
 
     field :token_instance, :token_instance do
       description("The token instance info of token id")
       resolve(&Resolvers.UDT.token_instance/3)
     end
 
-    field :value, :decimal, deprecate: true
+    field(:value, :decimal, deprecate: true)
 
     field(:counts, :decimal) do
       description("Count value of token id")
@@ -1285,15 +1290,16 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
   end
 
   object :erc721_1155_common_udt do
-    field :id, :integer, description: "UDT ID is same with account id."
-    field :name, :string, description: "[UAN](https://github.com/nervosnetwork/rfcs/pull/335)."
-    field :symbol, :string, description: "[UAN](https://github.com/nervosnetwork/rfcs/pull/335)."
-    field :icon, :string, description: "UDT icon url."
+    field(:id, :integer, description: "UDT ID is same with account id.")
+    field(:name, :string, description: "[UAN](https://github.com/nervosnetwork/rfcs/pull/335).")
+    field(:symbol, :string, description: "[UAN](https://github.com/nervosnetwork/rfcs/pull/335).")
+    field(:icon, :string, description: "UDT icon url.")
 
-    field :contract_address_hash, :hash_address,
+    field(:contract_address_hash, :hash_address,
       description: "For type is native, it have contract address hash."
+    )
 
-    field :eth_type, :eth_type, description: "EVM token type."
+    field(:eth_type, :eth_type, description: "EVM token type.")
 
     # use dataloader
     field :account, :account do
@@ -1301,9 +1307,9 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
       resolve(&Resolvers.UDT.account/3)
     end
 
-    field :description, :string, description: "UDT's description."
-    field :official_site, :string, description: "UDT's official site."
-    field :rank, :integer, description: "rank number of current returns"
+    field(:description, :string, description: "UDT's description.")
+    field(:official_site, :string, description: "UDT's official site.")
+    field(:rank, :integer, description: "rank number of current returns")
   end
 
   object :erc1155_udt do
@@ -1314,24 +1320,21 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
       resolve(&Resolvers.UDT.erc1155_minted_count/3)
     end
 
-    field :holders_count, :integer, description: "Count holders of udt."
-    field :token_type_count, :integer, description: "Count token type of udt."
+    field(:holders_count, :integer, description: "Count holders of udt.")
+    field(:token_type_count, :integer, description: "Count token type of udt.")
   end
 
   object :erc721_udt do
     import_fields(:erc721_1155_common_udt)
 
-    field :minted_count, :decimal do
-      description("Count minted of erc721 udt.")
-      resolve(&Resolvers.UDT.minted_count/3)
-    end
+    field :minted_count, :decimal, description: "Count minted of erc721 udt."
 
-    field :holders_count, :integer, description: "Count holders of udt."
+    field(:holders_count, :integer, description: "Count holders of udt.")
   end
 
   object :udt do
-    field :id, :integer, description: "UDT ID is same with account id."
-    field :decimal, :integer, description: "Set in contract."
+    field(:id, :integer, description: "UDT ID is same with account id.")
+    field(:decimal, :integer, description: "Set in contract.")
 
     field :name, :string do
       description(
@@ -1349,28 +1352,32 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
       resolve(&Resolvers.UDT.symbol/3)
     end
 
-    field :icon, :string, description: "UDT icon url."
-    field :supply, :decimal, description: "Total supply."
-    field :type_script, :json, description: "Layer1 udt's type script."
-    field :script_hash, :hash_full, description: "Layer1 script hash."
-    field :description, :string, description: "UDT's description."
-    field :official_site, :string, description: "UDT's official site."
-    field :value, :decimal, description: "UDT's price * supply."
-    field :price, :decimal, description: "UDT's market price."
+    field(:icon, :string, description: "UDT icon url.")
+    field(:supply, :decimal, description: "Total supply.")
+    field(:type_script, :json, description: "Layer1 udt's type script.")
+    field(:script_hash, :hash_full, description: "Layer1 script hash.")
+    field(:description, :string, description: "UDT's description.")
+    field(:official_site, :string, description: "UDT's official site.")
+    field(:value, :decimal, description: "UDT's price * supply.")
+    field(:price, :decimal, description: "UDT's market price.")
 
-    field :bridge_account_id, :integer,
+    field(:bridge_account_id, :integer,
       description: "If udt type is bridge, it must have a native proxy account on layer2."
+    )
 
-    field :contract_address_hash, :hash_address,
+    field(:contract_address_hash, :hash_address,
       description: "For type is native, it have contract address hash."
+    )
 
-    field :type, :udt_type, description: " Bridge means from layer1;Native means layer2 contract."
-    field :eth_type, :eth_type, description: "EVM token type."
+    field(:type, :udt_type, description: " Bridge means from layer1;Native means layer2 contract.")
 
-    field :uan, :string, description: "[UAN](https://github.com/nervosnetwork/rfcs/pull/335)."
+    field(:eth_type, :eth_type, description: "EVM token type.")
 
-    field :display_name, :string,
+    field(:uan, :string, description: "[UAN](https://github.com/nervosnetwork/rfcs/pull/335).")
+
+    field(:display_name, :string,
       description: "[UAN](https://github.com/nervosnetwork/rfcs/pull/335)."
+    )
 
     # use dataloader
     field :account, :account do
@@ -1378,7 +1385,7 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
       resolve(&Resolvers.UDT.account/3)
     end
 
-    field :holders_count, :integer, description: "Count holders of udt."
+    field(:holders_count, :integer, description: "Count holders of udt.")
 
     field :minted_count, :decimal do
       description("Count minted of udt.")
@@ -1390,7 +1397,7 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
       resolve(&Resolvers.UDT.token_exchange_rate/3)
     end
 
-    field :rank, :integer, description: "rank number of current returns"
+    field(:rank, :integer, description: "rank number of current returns")
   end
 
   enum :eth_type do
@@ -1411,6 +1418,22 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
     value(:ex_holders_count)
   end
 
+  enum :erc721_udts_sorter do
+    value(:id)
+    value(:name)
+    value(:supply)
+    value(:ex_holders_count)
+    value(:minted_count)
+  end
+
+  enum :erc1155_udts_sorter do
+    value(:id)
+    value(:name)
+    value(:supply)
+    value(:ex_holders_count)
+    value(:token_type_count)
+  end
+
   input_object :udt_input do
     field(:id, :integer)
     field(:bridge_account_id, :integer)
@@ -1422,11 +1445,22 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
     import_fields(:paginate_input)
   end
 
-  input_object :erc721_erc1155_udts_input do
+  input_object :erc721_udts_input do
     field(:fuzzy_name, :string)
     field(:contract_address, :hash_address)
 
-    field(:sorter, list_of(:udts_sorter_input),
+    field(:sorter, list_of(:erc721_udts_sorter_input),
+      default_value: [%{sort_type: :asc, sort_value: :id}]
+    )
+
+    import_fields(:paginate_input)
+  end
+
+  input_object :erc1155_udts_input do
+    field(:fuzzy_name, :string)
+    field(:contract_address, :hash_address)
+
+    field(:sorter, list_of(:erc1155_udts_sorter_input),
       default_value: [%{sort_type: :asc, sort_value: :id}]
     )
 
@@ -1457,11 +1491,21 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
 
   input_object :udts_input do
     field(:type, :udt_type)
-    import_fields(:erc721_erc1155_udts_input)
+    import_fields(:erc1155_udts_input)
   end
 
   input_object :udts_sorter_input do
     field(:sort_type, :sort_type)
     field(:sort_value, :udts_sorter)
+  end
+
+  input_object :erc721_udts_sorter_input do
+    field(:sort_type, :sort_type)
+    field(:sort_value, :erc721_udts_sorter)
+  end
+
+  input_object :erc1155_udts_sorter_input do
+    field(:sort_type, :sort_type)
+    field(:sort_value, :erc1155_udts_sorter)
   end
 end

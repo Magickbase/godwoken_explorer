@@ -19,6 +19,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
   alias GodwokenExplorer.GW.Log, as: GWLog
   alias GodwokenExplorer.GW.{SudtPayFee, SudtTransfer}
   alias GodwokenExplorer.GlobalConstants
+  alias GodwokenIndexer.Worker.UpdateUDTCountInfo
 
   alias GodwokenExplorer.{
     Address,
@@ -42,6 +43,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
 
   alias GodwokenExplorer.Chain.Hash
   alias GodwokenIndexer.Worker.ERC721ERC1155InstanceMetadata
+  alias GodwokenExplorer.Graphql.Workers.UpdateSmartContractCKB
 
   @default_worker_interval 20
 
@@ -189,6 +191,9 @@ defmodule GodwokenIndexer.Block.SyncWorker do
       import_account_udts
       |> Enum.uniq_by(&{Map.fetch!(&1, :address_hash), Map.fetch!(&1, :udt_id)})
       |> Enum.map(&Map.put(&1, :block_number, block_number))
+
+    import_account_udts
+    |> UpdateSmartContractCKB.update_smart_contract_with_ckb_balance()
 
     Import.insert_changes_list(
       import_account_udts,
@@ -435,6 +440,8 @@ defmodule GodwokenIndexer.Block.SyncWorker do
         on_conflict: :nothing
       )
 
+      UpdateUDTCountInfo.new_job(token_transfers)
+
       update_udt_balance(token_transfers)
       update_udt_token_instance_metadata(token_transfers)
       import_addresses(token_transfers)
@@ -666,6 +673,13 @@ defmodule GodwokenIndexer.Block.SyncWorker do
            :status,
            :created_contract_address_hash,
            :native_transfer_address_hash,
+           :call_contract,
+           :call_data,
+           :call_gas_limit,
+           :verification_gas_limit,
+           :max_fee_per_gas,
+           :max_priority_fee_per_gas,
+           :paymaster_and_data,
            :updated_at
          ]}
     )
@@ -732,6 +746,9 @@ defmodule GodwokenIndexer.Block.SyncWorker do
       import_account_udts =
         import_account_udts
         |> Enum.map(&Map.put(&1, :block_number, block_number))
+
+      import_account_udts
+      |> UpdateSmartContractCKB.update_smart_contract_with_ckb_balance()
 
       Import.insert_changes_list(
         import_account_udts,
@@ -861,7 +878,14 @@ defmodule GodwokenIndexer.Block.SyncWorker do
                      hash: hash,
                      transaction_index: transaction_index,
                      created_contract_address_hash: created_contract_address_hash,
-                     native_transfer_address_hash: native_transfer_address_hash
+                     native_transfer_address_hash: native_transfer_address_hash,
+                     call_contract: call_contract,
+                     call_data: call_data,
+                     call_gas_limit: call_gas_limit,
+                     verification_gas_limit: verification_gas_limit,
+                     max_fee_per_gas: max_fee_per_gas,
+                     max_priority_fee_per_gas: max_priority_fee_per_gas,
+                     paymaster_and_data: paymaster_and_data
                    } ->
       %{
         is_create: is_create,
@@ -875,7 +899,14 @@ defmodule GodwokenIndexer.Block.SyncWorker do
         tx_hash: hash,
         transaction_index: transaction_index,
         created_contract_address_hash: created_contract_address_hash,
-        native_transfer_address_hash: native_transfer_address_hash
+        native_transfer_address_hash: native_transfer_address_hash,
+        call_contract: call_contract,
+        call_data: call_data,
+        call_gas_limit: call_gas_limit,
+        verification_gas_limit: verification_gas_limit,
+        max_fee_per_gas: max_fee_per_gas,
+        max_priority_fee_per_gas: max_priority_fee_per_gas,
+        paymaster_and_data: paymaster_and_data
       }
     end)
   end
@@ -1043,6 +1074,9 @@ defmodule GodwokenIndexer.Block.SyncWorker do
           |> Enum.map(fn ckbs ->
             ckbs |> Map.merge(%{block_number: block_number})
           end)
+
+        bridged_ckbs
+        |> UpdateSmartContractCKB.update_smart_contract_with_ckb_balance()
 
         Import.insert_changes_list(
           bridged_ckbs,
