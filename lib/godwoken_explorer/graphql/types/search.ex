@@ -68,6 +68,7 @@ defmodule GodwokenExplorer.Graphql.Types.Search do
     end
 
     @desc """
+    ```graphql
     query {
       search_bit_alias(
         input: {
@@ -75,12 +76,14 @@ defmodule GodwokenExplorer.Graphql.Types.Search do
         }
       )
     }
-
+    ```
+    ```json
     {
       "data": {
         "search_bit_alias": "0xcc0af0af911dd40853b8c8dfee90b32f8d1ecad6"
       }
     }
+    ```
     """
 
     field :search_bit_alias, :string do
@@ -88,11 +91,41 @@ defmodule GodwokenExplorer.Graphql.Types.Search do
       resolve(&Resolvers.Search.search_bit_alias/3)
     end
 
+    @desc """
+    ```graphql
+    query{
+      batch_fetch_addresses_by_aliases(
+        input: {
+          bit_aliases: ["freder.bit"]
+        }
+      )
+      {
+        address
+        bit_alias
+      }
+    }
+    ```
+    """
     field :batch_fetch_addresses_by_aliases, list_of(:address_bit_alias) do
       arg(:input, non_null(:batch_fetch_addresses_by_alias_input))
       resolve(&Resolvers.Search.batch_fetch_addresses_by_aliases/3)
     end
 
+    @desc """
+    ```graphql
+    query{
+      batch_fetch_aliases_by_addresses(
+        input: {
+          addresses: ["0xcc0af0af911dd40853b8c8dfee90b32f8d1ecad6"]
+        }
+      )
+      {
+        address
+        bit_alias
+      }
+    }
+    ```
+    """
     field :batch_fetch_aliases_by_addresses, list_of(:address_bit_alias) do
       arg(:input, non_null(:batch_fetch_aliases_by_addresses_input))
       resolve(&Resolvers.Search.batch_fetch_aliases_by_addresses/3)
