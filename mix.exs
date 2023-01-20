@@ -144,9 +144,13 @@ defmodule GodwokenExplorer.MixProject do
       {:money, "~> 1.9"},
       {:plug_heartbeat, "~> 1.0"},
       {:paginator, "~> 1.1.0"},
-      {:tesla, "~> 1.4"},
       {:quarto, "~> 1.0"},
-      {:constants, "~> 0.1.0"}
+      {:constants, "~> 0.1.0"},
+
+      # http client
+      {:tesla, "~> 1.4"},
+      {:castore, "~> 0.1.0"},
+      {:mint, "~> 1.0"}
     ]
   end
 
