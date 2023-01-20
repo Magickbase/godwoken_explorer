@@ -4,6 +4,8 @@ defmodule GodwokenExplorer.Graphql.SearchTest do
   import GodwokenExplorer.Factory, only: [insert: 1, insert: 2, insert!: 1]
   import Mock
 
+  alias GodwokenExplorer.Chain.Hash.Address
+
   setup do
     for _ <- 1..10 do
       insert(:native_udt, eth_type: :erc721)
@@ -349,6 +351,104 @@ defmodule GodwokenExplorer.Graphql.SearchTest do
                    "search_bit_alias" => "0xcc0af0af911dd40853b8c8dfee90b32f8d1ecad6"
                  }
                }
+      end
+    end
+
+    test "batch fetch", %{conn: conn} do
+      query = """
+        query{
+          batch_fetch_addresses_by_aliases(
+            input: {
+              bit_aliases: ["freder.bit"]
+            }
+          )
+          {
+            address
+            bit_alias
+          }
+        }
+      """
+
+      with_mock GodwokenExplorer.Bit.API,
+        batch_fetch_addresses_by_aliases: fn _bit_alias ->
+          address = "0xcc0af0af911dd40853b8c8dfee90b32f8d1ecad6"
+          {:ok, address} = Address.cast(address)
+
+          {:ok,
+           [
+             %{
+               address: address,
+               bit_alias: "freder.bit"
+             }
+           ]}
+        end do
+        conn =
+          post(conn, "/graphql", %{
+            "query" => query,
+            "variables" => %{}
+          })
+
+        assert match?(
+                 %{
+                   "data" => %{
+                     "batch_fetch_addresses_by_aliases" => [
+                       %{
+                         "address" => "0xcc0af0af911dd40853b8c8dfee90b32f8d1ecad6",
+                         "bit_alias" => "freder.bit"
+                       }
+                     ]
+                   }
+                 },
+                 json_response(conn, 200)
+               )
+      end
+
+      query = """
+        query{
+          batch_fetch_aliases_by_addresses(
+            input: {
+              addresses: ["0xcc0af0af911dd40853b8c8dfee90b32f8d1ecad6"]
+            }
+          )
+          {
+            address
+            bit_alias
+          }
+        }
+      """
+
+      with_mock GodwokenExplorer.Bit.API,
+        batch_fetch_aliases_by_addresses: fn _bit_alias ->
+          address = "0xcc0af0af911dd40853b8c8dfee90b32f8d1ecad6"
+          {:ok, address} = Address.cast(address)
+
+          {:ok,
+           [
+             %{
+               address: address,
+               bit_alias: "freder.bit"
+             }
+           ]}
+        end do
+        conn =
+          post(conn, "/graphql", %{
+            "query" => query,
+            "variables" => %{}
+          })
+
+        assert match?(
+                 %{
+                   "data" => %{
+                     "batch_fetch_aliases_by_addresses" => [
+                       %{
+                         "address" => "0xcc0af0af911dd40853b8c8dfee90b32f8d1ecad6",
+                         "bit_alias" => "freder.bit"
+                       }
+                     ]
+                   }
+                 },
+                 json_response(conn, 200)
+               )
       end
     end
   end

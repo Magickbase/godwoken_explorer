@@ -80,6 +80,18 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Search do
     end
   end
 
+  def batch_fetch_addresses_by_aliases(_parent, %{input: input} = _args, _resolution) do
+    bit_aliases = Map.get(input, :bit_aliases)
+
+    BitApi.batch_fetch_addresses_by_aliases(bit_aliases)
+  end
+
+  def batch_fetch_aliases_by_addresses(_parent, %{input: input} = _args, _resolution) do
+    addresses = Map.get(input, :addresses)
+
+    BitApi.batch_fetch_aliases_by_addresses(addresses)
+  end
+
   defp search_udt_condition(query, input) do
     fuzzy_name = Map.get(input, :fuzzy_name)
     contract_address = Map.get(input, :contract_address)

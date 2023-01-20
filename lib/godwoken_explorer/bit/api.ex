@@ -1,12 +1,19 @@
 defmodule GodwokenExplorer.Bit.API do
+  use Tesla, only: [:get, :post], docs: false
   require Logger
 
-  use Tesla, only: [:get, :post], docs: false
+  alias GodwokenExplorer.Chain.Hash.Address
 
   plug(Tesla.Middleware.BaseUrl, base_url())
   plug(Tesla.Middleware.JSON)
 
-  def batch_fetch_reverse_record_info(addresses) do
+  def batch_fetch_aliases_by_addresses(addresses) do
+    addresses =
+      addresses
+      |> Enum.filter(fn address ->
+        Address.cast(address) != :error
+      end)
+
     batch_key_info =
       addresses
       |> Enum.map(fn address ->
@@ -23,7 +30,7 @@ defmodule GodwokenExplorer.Bit.API do
       end)
 
     params = %{
-      "batch_key_info" => batch_key_info
+      batch_key_info: batch_key_info
     }
 
     with {:ok, %{body: body}} <- post("/v1/batch/reverse/record", params) do
@@ -31,7 +38,10 @@ defmodule GodwokenExplorer.Bit.API do
 
       result =
         Enum.zip(addresses, returns)
-        |> Enum.map(fn {address, bit_alias} -> %{address: address, bit_alias: bit_alias} end)
+        |> Enum.map(fn {address, bit_alias} ->
+          {:ok, address} = Address.cast(address)
+          %{address: address, bit_alias: bit_alias}
+        end)
 
       {:ok, result}
     else
@@ -60,7 +70,7 @@ defmodule GodwokenExplorer.Bit.API do
     end
   end
 
-  def batch_fetch_addresses_by_alias(aliases) do
+  def batch_fetch_addresses_by_aliases(aliases) do
     aliases =
       aliases
       |> Enum.filter(fn a ->
@@ -76,7 +86,8 @@ defmodule GodwokenExplorer.Bit.API do
       {:ok, return}
     else
       error ->
-        {:error, "error with #{inspect(error)}"}
+        Logger.error(fn -> "batch_fetch_addresses_by_aliases with error: #{inspect(error)}" end)
+        {:error, "internal_error"}
     end
   end
 
@@ -88,8 +99,9 @@ defmodule GodwokenExplorer.Bit.API do
       |> Enum.map(fn r ->
         case r do
           %{"account" => bit_alias, "records" => records} ->
-            found = Enum.find(records, fn r -> r["key"] == "address.eth" end)
-            %{bit_alias: bit_alias, address: found["value"]}
+            found = Enum.find(records, fn r -> r["key"] == "address.60" end)
+            {:ok, address} = Address.cast(found["value"])
+            %{bit_alias: bit_alias, address: address}
 
           _ ->
             :skip
