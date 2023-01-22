@@ -76,7 +76,7 @@ defmodule GodwokenExplorer.MixProject do
       {:telemetry_poller, "~> 1.0.0"},
       {:gettext, "~> 0.21"},
       {:plug_cowboy, "~> 2.0"},
-      {:httpoison, "~> 1.8"},
+      {:httpoison, "~> 2.0"},
       {:rustler, "~> 0.26.0"},
       {:con_cache, "~> 1.0"},
       {:scrivener_ecto, "~> 2.0"},
