@@ -360,6 +360,19 @@ defmodule GodwokenExplorer.Graphql.Types.AccountUDT do
       middleware(MTermRange, MTermRange.page_and_size_default_config())
       resolve(&Resolvers.AccountUDT.account_bridged_udts_by_script_hash/3)
     end
+
+    @desc """
+    erc20 udt holders list or bridged erc20 udt holders list
+    """
+    field :account_udt_holders, :paginate_account_udt_holders do
+      arg(:input, non_null(:account_udt_holders_input))
+      resolve(&Resolvers.AccountUDT.account_udt_holders/3)
+    end
+  end
+
+  object :paginate_account_udt_holders do
+    field :entries, list_of(:account_udt)
+    field :metadata, :paginate_metadata
   end
 
   object :account_udt do
@@ -374,12 +387,12 @@ defmodule GodwokenExplorer.Graphql.Types.AccountUDT do
     field :uniq_id, :integer, description: "The token's layer2 native token id"
 
     field :udt, :udt do
-      description("The udt info of balance.")
+      description("The udt info of token.")
       resolve(&Resolvers.AccountUDT.udt/3)
     end
 
     field :account, :account do
-      description("The mapping account of balance.")
+      description("The mapping account of token.")
       resolve(&Resolvers.AccountUDT.account/3)
     end
   end
@@ -437,6 +450,10 @@ defmodule GodwokenExplorer.Graphql.Types.AccountUDT do
   input_object :account_ckbs_input do
     field :address_hashes, list_of(:hash_address), default_value: []
     field :script_hashes, list_of(:hash_full), default_value: []
+  end
+
+  input_object :account_udt_holders_input do
+    field :udt_id, non_null(:integer)
   end
 
   input_object :account_udts_input do

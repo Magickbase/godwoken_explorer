@@ -194,8 +194,8 @@ defmodule GodwokenExplorer.Graphql.AccountUDTTest do
              %{
                "data" => %{
                  "account_udts" => [
-                   %{"value" => "20000"},
-                   %{"value" => "20000"}
+                   %{"value" => "10000"},
+                   %{"value" => "10000"}
                  ]
                }
              },
@@ -250,7 +250,7 @@ defmodule GodwokenExplorer.Graphql.AccountUDTTest do
                "data" => %{
                  "account_current_udts" => [
                    %{"account" => %{"id" => ^native_udt2_id}},
-                   %{"account" => %{"id" => ^native_udt1_id}},
+                   %{"account" => %{"id" => ^native_udt1_id}}
                  ]
                }
              },
@@ -354,8 +354,8 @@ defmodule GodwokenExplorer.Graphql.AccountUDTTest do
                "data" => %{
                  "account_udts" => [
                    %{"value" => "30000", "account" => %{"id" => ^native_udt1_id}},
-                   %{"value" => "20000", "account" => %{"id" => 1}},
-                   %{"value" => "20000", "account" => %{"id" => ^native_udt2_id}}
+                   %{"value" => "10000", "account" => %{"id" => ^native_udt2_id}},
+                   %{"value" => "10000", "account" => %{"id" => 1}}
                  ]
                }
              },
@@ -403,7 +403,7 @@ defmodule GodwokenExplorer.Graphql.AccountUDTTest do
     assert match?(
              %{
                "data" => %{
-                 "account_udts" => [%{"value" => "20000"}, %{"value" => "20000"}]
+                 "account_udts" => [%{"value" => "10000"}, %{"value" => "10000"}]
                }
              },
              json_response(conn, 200)
@@ -450,7 +450,7 @@ defmodule GodwokenExplorer.Graphql.AccountUDTTest do
     assert match?(
              %{
                "data" => %{
-                 "account_udts" => [%{"value" => "20000"}, %{"value" => "20000"}]
+                 "account_udts" => [%{"value" => "10000"}, %{"value" => "10000"}]
                }
              },
              json_response(conn, 200)
@@ -496,7 +496,7 @@ defmodule GodwokenExplorer.Graphql.AccountUDTTest do
                "data" => %{
                  "account_ckbs" => [
                    %{
-                     "value" => "20000"
+                     "value" => "10000"
                    }
                  ]
                }
