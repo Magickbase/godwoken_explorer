@@ -97,12 +97,12 @@ defmodule GodwokenExplorer.Bit.API do
     if results do
       results
       |> Enum.map(fn r ->
-        case r do
-          %{"account" => bit_alias, "records" => records} ->
-            found = Enum.find(records, fn r -> r["key"] == "address.60" end)
-            {:ok, address} = Address.cast(found["value"])
-            %{bit_alias: bit_alias, address: address}
-
+        with %{"account" => bit_alias, "records" => records} <- r,
+             found when not is_nil(found) <-
+               Enum.find(records, fn r -> r["key"] == "address.60" end),
+             {:ok, address} <- Address.cast(found["value"]) do
+          %{bit_alias: bit_alias, address: address}
+        else
           _ ->
             :skip
         end
