@@ -42,7 +42,8 @@ defmodule GodwokenExplorer.Bit.APITest do
   test "batch fetch addresses by aliases", %{user: _user} do
     {:ok, data} =
       GodwokenExplorer.Bit.API.batch_fetch_addresses_by_aliases([
-        "freder.bit"
+        "freder.bit",
+        "magickbase.bit"
       ])
 
     assert match?([%{bit_alias: "freder.bit"} | _], data)
