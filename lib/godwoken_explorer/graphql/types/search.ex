@@ -86,7 +86,7 @@ defmodule GodwokenExplorer.Graphql.Types.Search do
     ```
     """
 
-    field :search_bit_alias, :string do
+    field :search_bit_alias, :hash_address do
       arg(:input, non_null(:search_bit_alias_input))
       resolve(&Resolvers.Search.search_bit_alias/3)
     end

@@ -11,7 +11,6 @@ defmodule GodwokenExplorer.Application do
       GodwokenExplorer.Chain.Cache.Blocks,
       GodwokenExplorer.Chain.Cache.Transactions,
       GodwokenExplorer.ETS.SmartContracts,
-      {Finch, name: MyFinch},
       {Oban, oban_config()}
     ]
 
