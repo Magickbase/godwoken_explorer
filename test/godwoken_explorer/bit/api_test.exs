@@ -11,13 +11,11 @@ defmodule GodwokenExplorer.Bit.APITest do
   end
 
   test "account hash alias", %{user: user} do
-    with_mock HTTPoison,
-      post: fn _url, _request, _options ->
+    with_mock Tesla,
+      execute: fn _, _, _ ->
         {:ok,
-         %HTTPoison.Response{
-           status_code: 200,
-           body:
-             "{\"errno\":0,\"errmsg\":\"\",\"data\":{\"account\":\"zmcnotafraid.bit\",\"account_alias\":\"test.bit\"}}"
+         %{
+           body: %{"data" => %{"account_alias" => "test.bit"}}
          }}
       end do
       assert GodwokenExplorer.Bit.API.fetch_reverse_record_info(user.eth_address) ==
@@ -26,16 +24,17 @@ defmodule GodwokenExplorer.Bit.APITest do
   end
 
   test "account on lock", %{user: user} do
-    with_mock HTTPoison,
-      post: fn _url, _request, _options ->
+    with_mock Tesla,
+      execute: fn _, _, _ ->
         {:ok,
-         %HTTPoison.Response{
-           status_code: 200,
-           body: "{\"errno\":20008,\"errmsg\":\"account on lock\",\"data\":null}"
+         %{
+           body: %{"data" => nil, "errmsg" => "account on lock", "errno" => 20008}
          }}
       end do
-      assert GodwokenExplorer.Bit.API.fetch_reverse_record_info(user.eth_address) ==
-               {:error, nil}
+      assert match?(
+               {:error, _},
+               GodwokenExplorer.Bit.API.fetch_reverse_record_info(user.eth_address)
+             )
     end
   end
 
@@ -50,15 +49,18 @@ defmodule GodwokenExplorer.Bit.APITest do
   end
 
   test "batch fetch aliases by addresses", %{user: _user} do
-    address = "0xcc0af0af911dd40853b8c8dfee90b32f8d1ecad6"
+    freder_address = "0xcc0af0af911dd40853b8c8dfee90b32f8d1ecad6"
+    hello_address = "0x38401c6364bfd05c45ceefccc3b75e33fa815815"
 
-    {:ok, bit_alias} = GodwokenExplorer.Bit.API.fetch_reverse_record_info(address)
+    {:ok, freder_address_alias} =
+      GodwokenExplorer.Bit.API.fetch_reverse_record_info(freder_address)
 
     {:ok, data} =
       GodwokenExplorer.Bit.API.batch_fetch_aliases_by_addresses([
-        address
+        freder_address,
+        hello_address
       ])
 
-    assert match?([%{bit_alias: ^bit_alias} | _], data)
+    assert match?([%{bit_alias: ^freder_address_alias} | _], data)
   end
 end

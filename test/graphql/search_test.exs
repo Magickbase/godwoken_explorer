@@ -338,7 +338,9 @@ defmodule GodwokenExplorer.Graphql.SearchTest do
 
       with_mock GodwokenExplorer.Bit.API,
         fetch_address_by_alias: fn _bit_alias ->
-          {:ok, "0xcc0af0af911dd40853b8c8dfee90b32f8d1ecad6"}
+          address = "0xcc0af0af911dd40853b8c8dfee90b32f8d1ecad6"
+          {:ok, address} = Address.cast(address)
+          {:ok, address}
         end do
         conn =
           post(conn, "/graphql", %{
