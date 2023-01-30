@@ -395,43 +395,43 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
   end
 
   object :transaction do
-    field :hash, :hash_full, description: "Godwoken transaction hash."
-    field :args, :chain_data, description: ""
+    field(:hash, :hash_full, description: "Godwoken transaction hash.")
+    field(:args, :chain_data, description: "")
 
-    field :from_account_id, :integer,
+    field(:from_account_id, :integer,
       description: "The foreign key of account and which account invoke contract."
+    )
 
-    field :nonce, :integer, description: "From account's nonce."
-    field :to_account_id, :integer, description: "Contract account."
+    field(:nonce, :integer, description: "From account's nonce.")
+    field(:to_account_id, :integer, description: "Contract account.")
 
-    field :type, :transaction_type,
+    field(:type, :transaction_type,
       description: "Polyjuice means polyjuice tx;The other are godwoken tx."
+    )
 
-    field :block_number, :integer, description: "In Which block."
-    field :block_hash, :hash_full, description: "The block hash which in."
-    field :eth_hash, :hash_full, description: "Polyjuice transaction hash."
-    field :index, :integer, description: "Order of transaction in block."
+    field(:block_number, :integer, description: "In Which block.")
+    field(:block_hash, :hash_full, description: "The block hash which in.")
+    field(:eth_hash, :hash_full, description: "Polyjuice transaction hash.")
+    field(:index, :integer, description: "Order of transaction in block.")
 
-    field :method_id, :chain_data do
-      resolve &Resolvers.Transaction.method_id/3
-    end
+    field(:method_id, :chain_data)
 
-    field :method_name, :string
+    field(:method_name, :string)
 
-    field :polyjuice, :polyjuice, resolve: dataloader(:graphql)
+    field(:polyjuice, :polyjuice, resolve: dataloader(:graphql))
 
-    field :polyjuice_creator, :polyjuice_creator, resolve: dataloader(:graphql)
+    field(:polyjuice_creator, :polyjuice_creator, resolve: dataloader(:graphql))
 
-    field :from_account, :account, resolve: dataloader(:graphql)
+    field(:from_account, :account, resolve: dataloader(:graphql))
 
-    field :to_account, :account, resolve: dataloader(:graphql)
+    field(:to_account, :account, resolve: dataloader(:graphql))
 
-    field :block, :block, resolve: dataloader(:graphql)
+    field(:block, :block, resolve: dataloader(:graphql))
   end
 
   object :paginate_trasactions do
-    field :entries, list_of(:transaction)
-    field :metadata, :paginate_metadata
+    field(:entries, list_of(:transaction))
+    field(:metadata, :paginate_metadata)
   end
 
   enum :transaction_type do
@@ -441,8 +441,8 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
   end
 
   input_object :transaction_input do
-    field :transaction_hash, :hash_full
-    field :eth_hash, :hash_full
+    field(:transaction_hash, :hash_full)
+    field(:eth_hash, :hash_full)
   end
 
   enum :transactions_sorter do
@@ -452,31 +452,32 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
   end
 
   input_object :transactions_sorter_input do
-    field :sort_type, :sort_type
-    field :sort_value, :transactions_sorter
+    field(:sort_type, :sort_type)
+    field(:sort_value, :transactions_sorter)
   end
 
   input_object :transactions_input do
-    field :from_eth_address, :hash_address
-    field :to_eth_address, :hash_address
-    field :from_script_hash, :hash_full
-    field :to_script_hash, :hash_full
-    field :status, :status
+    field(:from_eth_address, :hash_address)
+    field(:to_eth_address, :hash_address)
+    field(:from_script_hash, :hash_full)
+    field(:to_script_hash, :hash_full)
+    field(:status, :status)
 
-    field :method_id, :chain_data
-    field :method_name, :string
+    field(:method_id, :chain_data)
+    field(:method_name, :string)
 
     @desc """
     if combine_from_to is true, then from_address and to_address are combined into query condition like `address = from_address OR address = to_address`
     """
-    field :combine_from_to, :boolean, default_value: true
+    field(:combine_from_to, :boolean, default_value: true)
 
-    field :sorter, list_of(:transactions_sorter_input),
+    field(:sorter, list_of(:transactions_sorter_input),
       default_value: [
         %{sort_type: :desc, sort_value: :block_number},
         %{sort_type: :desc, sort_value: :index},
         %{sort_type: :asc, sort_value: :hash}
       ]
+    )
 
     import_fields(:age_range_input)
     import_fields(:paginate_input)
