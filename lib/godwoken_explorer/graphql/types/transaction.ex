@@ -412,9 +412,7 @@ defmodule GodwokenExplorer.Graphql.Types.Transaction do
     field :eth_hash, :hash_full, description: "Polyjuice transaction hash."
     field :index, :integer, description: "Order of transaction in block."
 
-    field :method_id, :chain_data do
-      resolve &Resolvers.Transaction.method_id/3
-    end
+    field :method_id, :chain_data
 
     field :method_name, :string
 

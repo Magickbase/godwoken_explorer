@@ -660,8 +660,7 @@ defmodule GodwokenExplorer.Graphql.TransactionTest do
         from_account: user,
         to_account: contract,
         block_number: block.number,
-        block: block,
-        method_id: "0x00"
+        block: block
       )
 
     eth_hash = transaction.eth_hash |> to_string()
