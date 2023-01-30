@@ -83,7 +83,7 @@ defmodule GodwokenIndexer.Worker.CheckUpdateTransactionMethodIdName do
       where: a.type == :polyjuice_contract,
       inner_join: p in Polyjuice,
       on: t.hash == p.tx_hash,
-      where: is_nil(p.native_transfer_address_hash),
+      where: p.input_size != 0,
       select: %{
         hash: t.hash,
         from_account_id: t.from_account_id,
