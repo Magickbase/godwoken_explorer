@@ -102,6 +102,8 @@ config :godwoken_explorer,
       "homestead,tangerineWhistle,spuriousDragon,byzantium,constantinople,petersburg,istanbul,berlin,london,default",
   solc_bin_api_url: "https://solc-bin.ethereum.org"
 
+config :tesla, :adapter, Tesla.Adapter.Mint
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{config_env()}.exs"

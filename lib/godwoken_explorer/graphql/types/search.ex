@@ -68,6 +68,7 @@ defmodule GodwokenExplorer.Graphql.Types.Search do
     end
 
     @desc """
+    ```graphql
     query {
       search_bit_alias(
         input: {
@@ -75,18 +76,88 @@ defmodule GodwokenExplorer.Graphql.Types.Search do
         }
       )
     }
-
+    ```
+    ```json
     {
       "data": {
         "search_bit_alias": "0xcc0af0af911dd40853b8c8dfee90b32f8d1ecad6"
       }
     }
+    ```
     """
 
-    field :search_bit_alias, :string do
+    field :search_bit_alias, :hash_address do
       arg(:input, non_null(:search_bit_alias_input))
       resolve(&Resolvers.Search.search_bit_alias/3)
     end
+
+    @desc """
+    ```graphql
+    query {
+      reverse_search_bit_alias(
+        input: {
+          address: "0xcc0af0af911dd40853b8c8dfee90b32f8d1ecad6"
+        }
+      )
+    }
+    ```
+    ```json
+    {
+      "data": {
+        "reverse_search_bit_alias": "freder.bit"
+      }
+    }
+    ```
+    """
+    field :reverse_search_bit_alias, :string do
+      arg(:input, non_null(:reverse_search_bit_alias_input))
+      resolve(&Resolvers.Search.reverse_search_bit_alias/3)
+    end
+
+    @desc """
+    ```graphql
+    query{
+      batch_fetch_addresses_by_aliases(
+        input: {
+          bit_aliases: ["freder.bit"]
+        }
+      )
+      {
+        address
+        bit_alias
+      }
+    }
+    ```
+    """
+    field :batch_fetch_addresses_by_aliases, list_of(:address_bit_alias) do
+      arg(:input, non_null(:batch_fetch_addresses_by_alias_input))
+      resolve(&Resolvers.Search.batch_fetch_addresses_by_aliases/3)
+    end
+
+    @desc """
+    ```graphql
+    query{
+      batch_fetch_aliases_by_addresses(
+        input: {
+          addresses: ["0xcc0af0af911dd40853b8c8dfee90b32f8d1ecad6"]
+        }
+      )
+      {
+        address
+        bit_alias
+      }
+    }
+    ```
+    """
+    field :batch_fetch_aliases_by_addresses, list_of(:address_bit_alias) do
+      arg(:input, non_null(:batch_fetch_aliases_by_addresses_input))
+      resolve(&Resolvers.Search.batch_fetch_aliases_by_addresses/3)
+    end
+  end
+
+  object :address_bit_alias do
+    field(:address, :hash_address)
+    field(:bit_alias, :string)
   end
 
   object :search_result do
@@ -135,6 +206,18 @@ defmodule GodwokenExplorer.Graphql.Types.Search do
 
   input_object :search_bit_alias_input do
     field(:bit_alias, non_null(:string))
+  end
+
+  input_object :reverse_search_bit_alias_input do
+    field(:address, non_null(:hash_address))
+  end
+
+  input_object :batch_fetch_addresses_by_alias_input do
+    field(:bit_aliases, non_null(list_of(:string)))
+  end
+
+  input_object :batch_fetch_aliases_by_addresses_input do
+    field(:addresses, non_null(list_of(:hash_address)))
   end
 
   input_object :search_keyword_input do
