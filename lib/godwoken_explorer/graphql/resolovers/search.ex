@@ -68,7 +68,10 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Search do
     bit_alias = Map.get(input, :bit_alias)
 
     if String.ends_with?(bit_alias, ".bit") do
-      BitApi.fetch_address_by_alias(bit_alias)
+      case BitApi.fetch_address_by_alias(bit_alias) do
+        {:ok, _} = r -> r
+        _ -> {:ok, nil}
+      end
     else
       {:error, "input bit alias wrong format"}
     end
@@ -76,7 +79,11 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Search do
 
   def reverse_search_bit_alias(_parent, %{input: input} = _args, _resolution) do
     address = Map.get(input, :address)
-    BitApi.fetch_reverse_record_info(address)
+
+    case BitApi.fetch_reverse_record_info(address) do
+      {:ok, _} = r -> r
+      _ -> {:ok, nil}
+    end
   end
 
   def batch_fetch_addresses_by_aliases(_parent, %{input: input} = _args, _resolution) do
