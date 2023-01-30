@@ -46,6 +46,7 @@ defmodule GodwokenExplorer.Bit.API do
       {:ok, result}
     else
       error ->
+        Logger.error(fn -> "batch_fetch_aliases_by_addresses with error: #{inspect(error)}" end)
         {:error, "error with #{inspect(error)}"}
     end
   end
@@ -87,7 +88,7 @@ defmodule GodwokenExplorer.Bit.API do
     else
       error ->
         Logger.error(fn -> "batch_fetch_addresses_by_aliases with error: #{inspect(error)}" end)
-        {:error, "internal_error"}
+        {:error, "error with #{inspect(error)}"}
     end
   end
 
