@@ -354,6 +354,33 @@ defmodule GodwokenExplorer.Graphql.SearchTest do
                  }
                }
       end
+
+      query = """
+      query{
+        reverse_search_bit_alias(
+          input: {
+            address: "0xcc0af0af911dd40853b8c8dfee90b32f8d1ecad6"
+          }
+        )
+      }
+      """
+
+      with_mock GodwokenExplorer.Bit.API,
+        fetch_reverse_record_info: fn _bit_alias ->
+          {:ok, "freder.bit"}
+        end do
+        conn =
+          post(conn, "/graphql", %{
+            "query" => query,
+            "variables" => %{}
+          })
+
+        assert json_response(conn, 200) == %{
+                 "data" => %{
+                   "reverse_search_bit_alias" => "freder.bit"
+                 }
+               }
+      end
     end
 
     test "batch fetch", %{conn: conn} do

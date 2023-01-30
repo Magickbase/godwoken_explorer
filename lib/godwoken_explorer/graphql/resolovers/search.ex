@@ -80,6 +80,11 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Search do
     end
   end
 
+  def reverse_search_bit_alias(_parent, %{input: input} = _args, _resolution) do
+    address = Map.get(input, :address)
+    BitApi.fetch_reverse_record_info(address)
+  end
+
   def batch_fetch_addresses_by_aliases(_parent, %{input: input} = _args, _resolution) do
     bit_aliases = Map.get(input, :bit_aliases)
 
