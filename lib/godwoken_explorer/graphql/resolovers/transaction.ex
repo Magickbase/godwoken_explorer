@@ -9,6 +9,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
 
   alias GodwokenExplorer.Repo
   alias GodwokenExplorer.{Account, Transaction, Block, Polyjuice, PolyjuiceCreator}
+  alias GodwokenExplorer.Chain.Data
 
   import GodwokenExplorer.Graphql.Utils, only: [default_uniq_cursor_order_fields: 3]
 
@@ -28,6 +29,14 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
 
       return ->
         {:ok, return}
+    end
+  end
+
+  def method_id(%{method_id: method_id}, _args, _resolution) do
+    case method_id |> to_string() do
+      "" -> {:ok, nil}
+      "0x00" -> {:ok, nil}
+      _ -> {:ok, method_id}
     end
   end
 
