@@ -48,7 +48,6 @@ defmodule GodwokenExplorer.Graphql.Resolvers.SmartContract do
   def smart_contracts(_parent, %{input: input} = _args, _resolution) do
     sq =
       from(sc in SmartContract, as: :smart_contract)
-      |> join(:inner, [sc], a in Account, on: sc.account_id == a.id, as: :account)
       |> select(
         [smart_contract: sc],
         merge(sc, %{
@@ -66,15 +65,18 @@ defmodule GodwokenExplorer.Graphql.Resolvers.SmartContract do
             )
         })
       )
-      |> smart_contracts_conditions(input)
 
     query =
       from(s in SmartContract,
         right_join: sq in subquery(sq),
         as: :ckb_sorted,
         on: s.id == sq.id,
+        inner_join: a in Account,
+        as: :account,
+        on: a.id == sq.account_id,
         select: sq
       )
+      |> smart_contracts_conditions(input)
       |> smart_contracts_order_by(input)
 
     return =
