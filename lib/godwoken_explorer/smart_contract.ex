@@ -23,6 +23,10 @@ defmodule GodwokenExplorer.SmartContract do
   * `other_info` - Some info.
   * `ckb_balance` - SmartContract ckb balance.
   * `account_id` - The account foreign key.
+  * `address_hash` - The account's eth address.
+  * `implementation_name` - name of the proxy implementation
+  * `implementation_fetched_at` - timestamp of the last fetching contract's implementation info
+  * `implementation_address_hash` - address hash of the proxy's implementation if any
   """
   @type t :: %__MODULE__{
           abi: list(map()),
@@ -36,6 +40,10 @@ defmodule GodwokenExplorer.SmartContract do
           ckb_balance: Decimal.t(),
           account_id: Integer.t(),
           account: %Ecto.Association.NotLoaded{} | Account.t(),
+          address_hash: Hash.Address.t(),
+          implementation_name: String.t() | nil,
+          implementation_fetched_at: DateTime.t(),
+          implementation_address_hash: Hash.Address.t(),
           inserted_at: NaiveDateTime.t(),
           updated_at: NaiveDateTime.t()
         }
@@ -59,7 +67,11 @@ defmodule GodwokenExplorer.SmartContract do
     field :compiler_file_format, :string
     field :other_info, :string
     field :ckb_balance, :decimal
-    field(:eth_address, :binary, virtual: true)
+    field :eth_address, :binary, virtual: true
+    field :address_hash, Hash.Address
+    field :implementation_name, :string
+    field :implementation_fetched_at, :utc_datetime_usec, default: nil
+    field :implementation_address_hash, Hash.Address, default: nil
 
     timestamps()
   end
