@@ -130,7 +130,8 @@ defmodule GodwokenExplorer.Graphql.SmartContractTest do
         input: {
           limit: 2
           sorter: [
-            { sort_type: DESC, sort_value: CKB_BALANCE }
+            { sort_type: DESC, sort_value: CKB_BALANCE },
+            { sort_type: DESC, sort_value: EX_TX_COUNT }
           ]
         }
       ) {
