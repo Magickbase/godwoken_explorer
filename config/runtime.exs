@@ -264,3 +264,8 @@ config :godwoken_explorer, Oban.Crontab, enabled: System.get_env("DISABLE_OBAN_C
 
 config :godwoken_explorer, :bit,
   indexer_url: System.get_env("BIT_INDEXER_URL") || "https://indexer-v1.did.id"
+
+config :godwoken_explorer,
+  enable_caching_implementation_data_of_proxy: true,
+  avg_block_time_as_ttl_cached_implementation_data_of_proxy: true,
+  fallback_ttl_cached_implementation_data_of_proxy: :timer.seconds(5)

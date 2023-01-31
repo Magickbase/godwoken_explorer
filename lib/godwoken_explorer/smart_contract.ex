@@ -11,6 +11,8 @@ defmodule GodwokenExplorer.SmartContract do
 
   alias GodwokenExplorer.ETS.SmartContracts, as: ETSSmartContracts
   alias GodwokenExplorer.Chain.Hash
+  alias GodwokenExplorer.SmartContract.Reader
+  alias GodwokenExplorer.Counters.AverageBlockTime
 
   @typedoc """
   * `abi` - Contract abi.
@@ -49,9 +51,9 @@ defmodule GodwokenExplorer.SmartContract do
         }
   @derive {Jason.Encoder, except: [:__meta__]}
   schema "smart_contracts" do
-    field :abi, {:array, :map}
-    field :contract_source_code, :string
-    field :name, :string
+    field(:abi, {:array, :map})
+    field(:contract_source_code, :string)
+    field(:name, :string)
 
     belongs_to(
       :account,
@@ -61,17 +63,17 @@ defmodule GodwokenExplorer.SmartContract do
       type: :integer
     )
 
-    field :constructor_arguments, :binary
-    field :deployment_tx_hash, Hash.Full
-    field :compiler_version, :string
-    field :compiler_file_format, :string
-    field :other_info, :string
-    field :ckb_balance, :decimal
-    field :eth_address, :binary, virtual: true
-    field :address_hash, Hash.Address
-    field :implementation_name, :string
-    field :implementation_fetched_at, :utc_datetime_usec, default: nil
-    field :implementation_address_hash, Hash.Address, default: nil
+    field(:constructor_arguments, :binary)
+    field(:deployment_tx_hash, Hash.Full)
+    field(:compiler_version, :string)
+    field(:compiler_file_format, :string)
+    field(:other_info, :string)
+    field(:ckb_balance, :decimal)
+    field(:eth_address, :binary, virtual: true)
+    field(:address_hash, Hash.Address)
+    field(:implementation_name, :string)
+    field(:implementation_fetched_at, :utc_datetime_usec, default: nil)
+    field(:implementation_address_hash, Hash.Address, default: nil)
 
     timestamps()
   end
@@ -146,6 +148,157 @@ defmodule GodwokenExplorer.SmartContract do
     else
       nil
     end
+  end
+
+  def get_implementation_address_hash(%__MODULE__{abi: nil}), do: {nil, nil}
+
+  def get_implementation_address_hash(%__MODULE__{
+        implementation_address_hash: implementation_address_hash_from_db,
+        implementation_name: implementation_name_from_db
+      })
+      when not is_nil(implementation_address_hash_from_db),
+      do: {implementation_address_hash_from_db, implementation_name_from_db}
+
+  def get_implementation_address_hash(%__MODULE__{
+        address_hash: proxy_address_hash,
+        abi: abi,
+        implementation_fetched_at: implementation_fetched_at
+      }) do
+    if check_implementation_refetch_neccessity(implementation_fetched_at) do
+      get_implementation_address_hash(proxy_address_hash, abi)
+    end
+  end
+
+  def get_implementation_address_hash(_), do: {nil, nil}
+
+  @spec get_implementation_address_hash(Hash.Address.t(), list()) ::
+          {String.t() | nil, String.t() | nil}
+  defp get_implementation_address_hash(proxy_address_hash, abi)
+       when not is_nil(proxy_address_hash) and not is_nil(abi) do
+    implementation_method_abi =
+      abi
+      |> Enum.find(fn method ->
+        Map.get(method, "name") == "implementation" &&
+          Map.get(method, "stateMutability") == "view"
+      end)
+
+    if implementation_method_abi do
+      implementation_address = get_implementation_address_hash_basic(proxy_address_hash, abi)
+
+      save_implementation_data(
+        implementation_address,
+        proxy_address_hash
+      )
+    end
+  end
+
+  defp save_implementation_data(implementation_address_hash_string, proxy_address_hash)
+       when is_binary(implementation_address_hash_string) do
+    with {:ok, address_hash} <- Chain.string_to_address_hash(implementation_address_hash_string),
+         proxy_contract <- Chain.address_hash_to_smart_contract(proxy_address_hash),
+         false <- is_nil(proxy_contract),
+         %{implementation: %__MODULE__{name: name}, proxy: proxy_contract} <- %{
+           implementation: Chain.address_hash_to_smart_contract(address_hash),
+           proxy: proxy_contract
+         } do
+      proxy_contract
+      |> changeset(%{
+        implementation_name: name,
+        implementation_address_hash: implementation_address_hash_string,
+        implementation_fetched_at: DateTime.utc_now()
+      })
+      |> Repo.update()
+
+      {implementation_address_hash_string, name}
+    else
+      %{implementation: _, proxy: proxy_contract} ->
+        proxy_contract
+        |> changeset(%{
+          implementation_name: nil,
+          implementation_address_hash: implementation_address_hash_string,
+          implementation_fetched_at: DateTime.utc_now()
+        })
+        |> Repo.update()
+
+        {implementation_address_hash_string, nil}
+
+      true ->
+        {:ok, address_hash} = Chain.string_to_address_hash(implementation_address_hash_string)
+        smart_contract = Chain.address_hash_to_smart_contract(address_hash)
+
+        {implementation_address_hash_string, smart_contract && smart_contract.name}
+
+      _ ->
+        {implementation_address_hash_string, nil}
+    end
+  end
+
+  defp check_implementation_refetch_neccessity(nil), do: true
+
+  defp check_implementation_refetch_neccessity(timestamp) do
+    if Application.get_env(:explorer, :enable_caching_implementation_data_of_proxy) do
+      now = DateTime.utc_now()
+
+      average_block_time =
+        if Application.get_env(
+             :explorer,
+             :avg_block_time_as_ttl_cached_implementation_data_of_proxy
+           ) do
+          case AverageBlockTime.average_block_time() do
+            {:error, :disabled} ->
+              0
+
+            duration ->
+              duration
+              |> Duration.to_milliseconds()
+          end
+        else
+          0
+        end
+
+      fresh_time_distance =
+        case average_block_time do
+          0 ->
+            Application.get_env(:explorer, :fallback_ttl_cached_implementation_data_of_proxy)
+
+          time ->
+            round(time)
+        end
+
+      timestamp
+      |> DateTime.add(fresh_time_distance, :millisecond)
+      |> DateTime.compare(now) != :gt
+    else
+      true
+    end
+  end
+
+  defp address_to_hex(address) do
+    if address do
+      if String.starts_with?(address, "0x") do
+        address
+      else
+        "0x" <> Base.encode16(address, case: :lower)
+      end
+    end
+  end
+
+  defp get_implementation_address_hash_basic(proxy_address_hash, abi) do
+    # 5c60da1b = keccak256(implementation())
+    implementation_address =
+      case Reader.query_contract(
+             proxy_address_hash,
+             abi,
+             %{
+               "5c60da1b" => []
+             },
+             false
+           ) do
+        %{"5c60da1b" => {:ok, [result]}} -> result
+        _ -> nil
+      end
+
+    address_to_hex(implementation_address)
   end
 
   defp map_abi(x) do
