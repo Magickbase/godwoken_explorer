@@ -46,7 +46,7 @@ defmodule GodwokenIndexer.Worker.CheckUpdateTransactionMethodIdName do
                   {mid, method_name}
                 else
                   _ ->
-                    {"0x00", nil}
+                    {nil, nil}
                 end
 
               map
@@ -57,6 +57,7 @@ defmodule GodwokenIndexer.Worker.CheckUpdateTransactionMethodIdName do
             timeout: :infinity
           )
           |> Enum.map(fn {:ok, r} -> r end)
+          |> Enum.filter(fn r -> not is_nil(r.method_id) end)
 
         Import.insert_changes_list(return,
           for: Transaction,
@@ -82,6 +83,7 @@ defmodule GodwokenIndexer.Worker.CheckUpdateTransactionMethodIdName do
       where: a.type == :polyjuice_contract,
       inner_join: p in Polyjuice,
       on: t.hash == p.tx_hash,
+      where: p.input_size != 0,
       select: %{
         hash: t.hash,
         from_account_id: t.from_account_id,
