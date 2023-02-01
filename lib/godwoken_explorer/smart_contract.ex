@@ -9,10 +9,12 @@ defmodule GodwokenExplorer.SmartContract do
   """
   use GodwokenExplorer, :schema
 
-  alias GodwokenExplorer.ETS.SmartContracts, as: ETSSmartContracts
+  alias GodwokenExplorer.Chain
   alias GodwokenExplorer.Chain.Hash
-  alias GodwokenExplorer.SmartContract.Reader
   alias GodwokenExplorer.Counters.AverageBlockTime
+  alias GodwokenExplorer.ETS.SmartContracts, as: ETSSmartContracts
+  alias GodwokenExplorer.SmartContract.Reader
+  alias Timex.Duration
 
   @typedoc """
   * `abi` - Contract abi.
@@ -157,7 +159,7 @@ defmodule GodwokenExplorer.SmartContract do
         implementation_name: implementation_name_from_db
       })
       when not is_nil(implementation_address_hash_from_db),
-      do: {implementation_address_hash_from_db, implementation_name_from_db}
+      do: {to_string(implementation_address_hash_from_db), implementation_name_from_db}
 
   def get_implementation_address_hash(%__MODULE__{
         address_hash: proxy_address_hash,
@@ -183,7 +185,8 @@ defmodule GodwokenExplorer.SmartContract do
       end)
 
     if implementation_method_abi do
-      implementation_address = get_implementation_address_hash_basic(proxy_address_hash, abi)
+      implementation_address =
+        get_implementation_address_hash_basic(to_string(proxy_address_hash), abi)
 
       save_implementation_data(
         implementation_address,

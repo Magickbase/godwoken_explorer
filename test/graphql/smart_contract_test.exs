@@ -349,6 +349,43 @@ defmodule GodwokenExplorer.Graphql.SmartContractTest do
     assert length(entries) == 2
   end
 
+  test "graphql: proxy contract ", %{
+    conn: conn,
+    smart_contract: smart_contract
+  } do
+    proxy_contract =
+      insert(:proxy_contract, implementation_address_hash: smart_contract.address_hash)
+
+    account = proxy_contract.account
+
+    query = """
+    query {
+      smart_contract(
+        input: { contract_address: "#{account.eth_address}" }
+      ) {
+        implementation_address_hash
+        implementation_abi
+      }
+    }
+    """
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    assert json_response(conn, 200) ==
+             %{
+               "data" => %{
+                 "smart_contract" => %{
+                   "implementation_address_hash" => to_string(smart_contract.address_hash),
+                   "implementation_abi" => smart_contract.abi
+                 }
+               }
+             }
+  end
+
   defp smart_contract_with_first_page_check_query(before_value: before_value) do
     """
     query {
