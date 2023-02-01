@@ -570,10 +570,10 @@ defmodule GodwokenIndexer.Block.SyncWorker do
             {mid, method_name}
           else
             _ ->
-              {"0x00", nil}
+              {nil, nil}
           end
         else
-          {"0x00", nil}
+          {nil, nil}
         end
 
       tx
