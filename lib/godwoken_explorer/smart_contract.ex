@@ -59,7 +59,9 @@ defmodule GodwokenExplorer.SmartContract do
     field :compiler_file_format, :string
     field :other_info, :string
     field :ckb_balance, :decimal
-    field(:eth_address, :binary, virtual: true)
+
+    field :transaction_count, :integer, virtual: true
+    field :eth_address, :binary, virtual: true
 
     timestamps()
   end
