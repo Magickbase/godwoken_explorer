@@ -7,6 +7,7 @@ defmodule GodwokenIndexer.Block.SyncWorkerTest do
   alias GodwokenExplorer.{Account, Block, Repo, Transaction, Log, TokenTransfer, Polyjuice}
   alias GodwokenExplorer.GW.{SudtPayFee, SudtTransfer}
   alias GodwokenExplorer.Account.CurrentBridgedUDTBalance
+  alias GodwokenIndexer.Block.SyncWorker
 
   setup do
     insert(:block,
@@ -331,5 +332,310 @@ defmodule GodwokenIndexer.Block.SyncWorkerTest do
 
       assert Repo.aggregate(Polyjuice, :count) == 1
     end
+  end
+
+  test "sync transaction trigger method_id and mehod_name update" do
+    from_account = insert(:user)
+
+    to_account = insert(:polyjuice_contract_account)
+
+    transaction =
+      insert(:transaction,
+        from_account: from_account,
+        to_account: to_account
+      )
+
+    abi = abi_contents()
+    insert(:smart_contract, account: to_account, abi: abi)
+
+    insert(:polyjuice,
+      transaction: transaction,
+      input: "0x40d097c3000000000000000000000000cc0af0af911dd40853b8c8dfee90b32f8d1ecad6"
+    )
+
+    txs_params = [
+      %{hash: transaction.hash |> to_string(), to_account_id: transaction.to_account_id}
+    ]
+
+    return = hd(SyncWorker.add_method_id_and_name_to_tx_params(txs_params))
+    assert match?(%{method_id: "0x40d097c3", method_name: "SafeMint"}, return)
+  end
+
+  defp abi_contents() do
+    [
+      %{"inputs" => [], "stateMutability" => "nonpayable", "type" => "constructor"},
+      %{
+        "anonymous" => false,
+        "inputs" => [
+          %{
+            "indexed" => true,
+            "internalType" => "address",
+            "name" => "owner",
+            "type" => "address"
+          },
+          %{
+            "indexed" => true,
+            "internalType" => "address",
+            "name" => "approved",
+            "type" => "address"
+          },
+          %{
+            "indexed" => true,
+            "internalType" => "uint256",
+            "name" => "tokenId",
+            "type" => "uint256"
+          }
+        ],
+        "name" => "Approval",
+        "type" => "event"
+      },
+      %{
+        "anonymous" => false,
+        "inputs" => [
+          %{
+            "indexed" => true,
+            "internalType" => "address",
+            "name" => "owner",
+            "type" => "address"
+          },
+          %{
+            "indexed" => true,
+            "internalType" => "address",
+            "name" => "operator",
+            "type" => "address"
+          },
+          %{
+            "indexed" => false,
+            "internalType" => "bool",
+            "name" => "approved",
+            "type" => "bool"
+          }
+        ],
+        "name" => "ApprovalForAll",
+        "type" => "event"
+      },
+      %{
+        "anonymous" => false,
+        "inputs" => [
+          %{
+            "indexed" => true,
+            "internalType" => "address",
+            "name" => "previousOwner",
+            "type" => "address"
+          },
+          %{
+            "indexed" => true,
+            "internalType" => "address",
+            "name" => "newOwner",
+            "type" => "address"
+          }
+        ],
+        "name" => "OwnershipTransferred",
+        "type" => "event"
+      },
+      %{
+        "anonymous" => false,
+        "inputs" => [
+          %{
+            "indexed" => true,
+            "internalType" => "address",
+            "name" => "from",
+            "type" => "address"
+          },
+          %{
+            "indexed" => true,
+            "internalType" => "address",
+            "name" => "to",
+            "type" => "address"
+          },
+          %{
+            "indexed" => true,
+            "internalType" => "uint256",
+            "name" => "tokenId",
+            "type" => "uint256"
+          }
+        ],
+        "name" => "Transfer",
+        "type" => "event"
+      },
+      %{
+        "inputs" => [
+          %{"internalType" => "address", "name" => "to", "type" => "address"},
+          %{"internalType" => "uint256", "name" => "tokenId", "type" => "uint256"}
+        ],
+        "name" => "approve",
+        "outputs" => [],
+        "stateMutability" => "nonpayable",
+        "type" => "function"
+      },
+      %{
+        "inputs" => [
+          %{"internalType" => "address", "name" => "owner", "type" => "address"}
+        ],
+        "name" => "balanceOf",
+        "outputs" => [
+          %{"internalType" => "uint256", "name" => "", "type" => "uint256"}
+        ],
+        "stateMutability" => "view",
+        "type" => "function"
+      },
+      %{
+        "inputs" => [
+          %{"internalType" => "uint256", "name" => "tokenId", "type" => "uint256"}
+        ],
+        "name" => "burn",
+        "outputs" => [],
+        "stateMutability" => "nonpayable",
+        "type" => "function"
+      },
+      %{
+        "inputs" => [
+          %{"internalType" => "uint256", "name" => "tokenId", "type" => "uint256"}
+        ],
+        "name" => "getApproved",
+        "outputs" => [
+          %{"internalType" => "address", "name" => "", "type" => "address"}
+        ],
+        "stateMutability" => "view",
+        "type" => "function"
+      },
+      %{
+        "inputs" => [
+          %{"internalType" => "address", "name" => "owner", "type" => "address"},
+          %{"internalType" => "address", "name" => "operator", "type" => "address"}
+        ],
+        "name" => "isApprovedForAll",
+        "outputs" => [%{"internalType" => "bool", "name" => "", "type" => "bool"}],
+        "stateMutability" => "view",
+        "type" => "function"
+      },
+      %{
+        "inputs" => [],
+        "name" => "name",
+        "outputs" => [
+          %{"internalType" => "string", "name" => "", "type" => "string"}
+        ],
+        "stateMutability" => "view",
+        "type" => "function"
+      },
+      %{
+        "inputs" => [],
+        "name" => "owner",
+        "outputs" => [
+          %{"internalType" => "address", "name" => "", "type" => "address"}
+        ],
+        "stateMutability" => "view",
+        "type" => "function"
+      },
+      %{
+        "inputs" => [
+          %{"internalType" => "uint256", "name" => "tokenId", "type" => "uint256"}
+        ],
+        "name" => "ownerOf",
+        "outputs" => [
+          %{"internalType" => "address", "name" => "", "type" => "address"}
+        ],
+        "stateMutability" => "view",
+        "type" => "function"
+      },
+      %{
+        "inputs" => [],
+        "name" => "renounceOwnership",
+        "outputs" => [],
+        "stateMutability" => "nonpayable",
+        "type" => "function"
+      },
+      %{
+        "inputs" => [
+          %{"internalType" => "address", "name" => "to", "type" => "address"}
+        ],
+        "name" => "safeMint",
+        "outputs" => [],
+        "stateMutability" => "nonpayable",
+        "type" => "function"
+      },
+      %{
+        "inputs" => [
+          %{"internalType" => "address", "name" => "from", "type" => "address"},
+          %{"internalType" => "address", "name" => "to", "type" => "address"},
+          %{"internalType" => "uint256", "name" => "tokenId", "type" => "uint256"}
+        ],
+        "name" => "safeTransferFrom",
+        "outputs" => [],
+        "stateMutability" => "nonpayable",
+        "type" => "function"
+      },
+      %{
+        "inputs" => [
+          %{"internalType" => "address", "name" => "from", "type" => "address"},
+          %{"internalType" => "address", "name" => "to", "type" => "address"},
+          %{"internalType" => "uint256", "name" => "tokenId", "type" => "uint256"},
+          %{"internalType" => "bytes", "name" => "data", "type" => "bytes"}
+        ],
+        "name" => "safeTransferFrom",
+        "outputs" => [],
+        "stateMutability" => "nonpayable",
+        "type" => "function"
+      },
+      %{
+        "inputs" => [
+          %{"internalType" => "address", "name" => "operator", "type" => "address"},
+          %{"internalType" => "bool", "name" => "approved", "type" => "bool"}
+        ],
+        "name" => "setApprovalForAll",
+        "outputs" => [],
+        "stateMutability" => "nonpayable",
+        "type" => "function"
+      },
+      %{
+        "inputs" => [
+          %{"internalType" => "bytes4", "name" => "interfaceId", "type" => "bytes4"}
+        ],
+        "name" => "supportsInterface",
+        "outputs" => [%{"internalType" => "bool", "name" => "", "type" => "bool"}],
+        "stateMutability" => "view",
+        "type" => "function"
+      },
+      %{
+        "inputs" => [],
+        "name" => "symbol",
+        "outputs" => [
+          %{"internalType" => "string", "name" => "", "type" => "string"}
+        ],
+        "stateMutability" => "view",
+        "type" => "function"
+      },
+      %{
+        "inputs" => [
+          %{"internalType" => "uint256", "name" => "tokenId", "type" => "uint256"}
+        ],
+        "name" => "tokenURI",
+        "outputs" => [
+          %{"internalType" => "string", "name" => "", "type" => "string"}
+        ],
+        "stateMutability" => "view",
+        "type" => "function"
+      },
+      %{
+        "inputs" => [
+          %{"internalType" => "address", "name" => "from", "type" => "address"},
+          %{"internalType" => "address", "name" => "to", "type" => "address"},
+          %{"internalType" => "uint256", "name" => "tokenId", "type" => "uint256"}
+        ],
+        "name" => "transferFrom",
+        "outputs" => [],
+        "stateMutability" => "nonpayable",
+        "type" => "function"
+      },
+      %{
+        "inputs" => [
+          %{"internalType" => "address", "name" => "newOwner", "type" => "address"}
+        ],
+        "name" => "transferOwnership",
+        "outputs" => [],
+        "stateMutability" => "nonpayable",
+        "type" => "function"
+      }
+    ]
   end
 end
