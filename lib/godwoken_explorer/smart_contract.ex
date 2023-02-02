@@ -212,6 +212,10 @@ defmodule GodwokenExplorer.SmartContract do
     )
   end
 
+  defp get_implementation_address_hash(_proxy_address_hash, _abi) do
+    {nil, nil}
+  end
+
   defp save_implementation_data(implementation_address_hash_string, proxy_address_hash)
        when is_binary(implementation_address_hash_string) do
     with {:ok, address_hash} <- Chain.string_to_address_hash(implementation_address_hash_string),
