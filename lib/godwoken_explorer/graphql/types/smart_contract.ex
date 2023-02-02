@@ -187,10 +187,21 @@ defmodule GodwokenExplorer.Graphql.Types.SmartContract do
 
     field(:ckb_balance, :decimal, description: "The ckb-balance of this contract.")
 
-    # field :ckb_balance, :decimal do
-    #   description("The ckb-balance of this contract.")
-    #   resolve(&Resolvers.SmartContract.ckb_balance/3)
-    # end
+    field(:address_hash, :hash_address, description: "The account's eth address")
+    field(:implementation_name, :string, description: "name of the proxy implementation")
+
+    field(:implementation_fetched_at, :datetime,
+      description: "timestamp of the last fetching contract's implementation info"
+    )
+
+    field(:implementation_address_hash, :hash_address,
+      description: "address hash of the proxy's implementation if any"
+    )
+
+    field :implementation_abi, list_of(:json) do
+      description("The implementation contract's abi of proxy contract.")
+      resolve(&Resolvers.SmartContract.implementation_abi/3)
+    end
   end
 
   enum :smart_contracts_sorter do

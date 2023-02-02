@@ -99,7 +99,7 @@ defmodule GodwokenExplorer.Graphql.Sourcify do
         else
           params =
             attrs
-            |> Map.merge(%{account_id: account.id})
+            |> Map.merge(%{account_id: account.id, address_hash: address})
             |> filter_params_nil()
 
           %SmartContract{}
