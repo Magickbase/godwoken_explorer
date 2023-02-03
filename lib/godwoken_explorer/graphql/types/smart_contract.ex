@@ -219,7 +219,7 @@ defmodule GodwokenExplorer.Graphql.Types.SmartContract do
   end
 
   input_object :smart_contracts_sorter_input do
-    field(:sort_type, :sort_type)
-    field(:sort_value, :smart_contracts_sorter)
+    field(:sort_type, non_null :sort_type)
+    field(:sort_value, non_null :smart_contracts_sorter)
   end
 end
