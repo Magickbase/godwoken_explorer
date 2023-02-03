@@ -92,6 +92,12 @@ defmodule GodwokenExplorer.SmartContract do
     end
   end
 
+  def cache_account_ids do
+    account_ids = SmartContract |> select([sc], sc.account_id) |> Repo.all()
+    ETSSmartContracts.put(:contract_account_ids, account_ids)
+    account_ids
+  end
+
   def cache_abis() do
     from(sc in SmartContract)
     |> Repo.all()
