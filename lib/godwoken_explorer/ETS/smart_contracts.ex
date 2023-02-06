@@ -21,27 +21,16 @@ defmodule GodwokenExplorer.ETS.SmartContracts do
   end
 
   def put(k, v) do
-    now = DateTime.utc_now() |> DateTime.to_unix()
-    :ets.insert(GodwokenExplorer.ETS.SmartContracts, {k, v, now})
+    :ets.insert(GodwokenExplorer.ETS.SmartContracts, {k, v})
   end
 
   def get(k) do
     case :ets.lookup(GodwokenExplorer.ETS.SmartContracts, k) do
-      [{_, v, now}] ->
-        if check_expired(now) do
-          v
-        else
-          nil
-        end
+      [{_, v}] ->
+        v
 
       _ ->
         nil
     end
-  end
-
-  # one hour
-  defp check_expired(t) do
-    now = DateTime.utc_now() |> DateTime.to_unix()
-    abs(now - t) > 60 * 60
   end
 end

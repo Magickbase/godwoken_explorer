@@ -11,6 +11,11 @@ defmodule GodwokenExplorer.SmartContract do
 
   alias GodwokenExplorer.ETS.SmartContracts, as: ETSSmartContracts
   alias GodwokenExplorer.Chain.Hash
+  alias GodwokenExplorer.Chain.Cache.SmartContract, as: CacheSmartContract
+  alias GodwokenExplorer.SmartContract
+  alias GodwokenExplorer.Repo
+
+  import Ecto.Query
 
   @typedoc """
   * `abi` - Contract abi.
@@ -83,19 +88,13 @@ defmodule GodwokenExplorer.SmartContract do
   end
 
   def account_ids do
-    if ETSSmartContracts.get(:contract_account_ids) do
-      ETSSmartContracts.get(:contract_account_ids)
-    else
-      account_ids = SmartContract |> select([sc], sc.account_id) |> Repo.all()
-      ETSSmartContracts.put(:contract_account_ids, account_ids)
-      account_ids
-    end
+    CacheSmartContract.get(:account_ids)
   end
 
   def cache_account_ids do
-    account_ids = SmartContract |> select([sc], sc.account_id) |> Repo.all()
-    ETSSmartContracts.put(:contract_account_ids, account_ids)
-    account_ids
+    account_ids = from(s in SmartContract, select: s.account_id) |> Repo.all()
+
+    CacheSmartContract.set(:account_ids, account_ids)
   end
 
   def cache_abis() do
