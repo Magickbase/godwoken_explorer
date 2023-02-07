@@ -47,7 +47,6 @@ defmodule GodwokenExplorer.Graphql.Types.Polyjuice do
     field :max_priority_fee_per_gas, :bigint, description: "Gas less tx struct"
     field :paymaster_and_data, :chain_data, description: "Gas less tx struct"
     field :native_transfer_account, :account, resolve: dataloader(:graphql)
-
   end
 
   object :polyjuice_creator do
