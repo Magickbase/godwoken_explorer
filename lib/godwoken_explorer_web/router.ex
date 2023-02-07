@@ -27,14 +27,14 @@ defmodule GodwokenExplorerWeb.Router do
       get("/", Absinthe.Plug.GraphiQL,
         schema: GodwokenExplorer.Graphql.Schemas.Graphql,
         interface: :playground,
-        log_level: :info,
+        log_level: :debug,
         adapter: Absinthe.Adapter.Underscore
       )
     end
 
     post("/", Absinthe.Plug,
       schema: GodwokenExplorer.Graphql.Schemas.Graphql,
-      log_level: :info,
+      log_level: :debug,
       adapter: Absinthe.Adapter.Underscore
     )
   end
