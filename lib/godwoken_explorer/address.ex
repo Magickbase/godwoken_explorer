@@ -47,7 +47,8 @@ defmodule GodwokenExplorer.Address do
         {:ok, address}
 
       nil ->
-        __MODULE__.changeset(%__MODULE__{}, %{eth_address: hash}) |> Repo.insert()
+        __MODULE__.changeset(%__MODULE__{}, %{eth_address: hash})
+        |> Repo.insert(on_conflict: :nothing)
     end
   end
 
