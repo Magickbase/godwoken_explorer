@@ -558,22 +558,23 @@ defmodule GodwokenIndexer.Block.SyncWorker do
            end) do
           p =
             Enum.find(polyjuices, fn p ->
-              ptx = p.tx_hash |> to_string
-              tx.hash == ptx
+              {:ok, p_tx_hash} = Hash.Full.cast(p.tx_hash)
+              {:ok, t_hash} = Hash.Full.cast(tx.hash)
+              t_hash == p_tx_hash
             end)
 
           with p when not is_nil(p) <- p,
-               input <- p.input |> to_string(),
+               input when not is_nil(input) <- p.input,
                mid <- input |> to_string() |> String.slice(0, 10),
                true <- String.length(mid) >= 10 do
-            method_name = Polyjuice.get_method_name(tx.to_account_id, input)
+            method_name = Polyjuice.get_method_name(tx.to_account_id, to_string(input))
             {mid, method_name}
           else
             _ ->
-              {"0x00", nil}
+              {nil, nil}
           end
         else
-          {"0x00", nil}
+          {nil, nil}
         end
 
       tx

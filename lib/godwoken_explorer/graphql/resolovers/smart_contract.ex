@@ -48,9 +48,9 @@ defmodule GodwokenExplorer.Graphql.Resolvers.SmartContract do
   def smart_contracts(_parent, %{input: input} = _args, _resolution) do
     sq =
       from(sc in SmartContract, as: :smart_contract)
-      |> join(:inner, [sc], a in Account, on: sc.account_id == a.id, as: :account)
+      |> join(:inner, [sc], a in Account, as: :account, on: sc.account_id == a.id)
       |> select(
-        [smart_contract: sc],
+        [smart_contract: sc, account: a],
         merge(sc, %{
           name:
             fragment(
@@ -63,18 +63,25 @@ defmodule GodwokenExplorer.Graphql.Resolvers.SmartContract do
               "CASE WHEN ? IS NULL THEN 0 ELSE ? END",
               sc.ckb_balance,
               sc.ckb_balance
-            )
+            ),
+          transaction_count:
+            fragment(
+              "CASE WHEN ? IS NULL THEN 0 ELSE ? END",
+              a.transaction_count,
+              a.transaction_count
+            ),
+          eth_address: a.eth_address
         })
       )
-      |> smart_contracts_conditions(input)
 
     query =
       from(s in SmartContract,
         right_join: sq in subquery(sq),
-        as: :ckb_sorted,
+        as: :sc_processed,
         on: s.id == sq.id,
         select: sq
       )
+      |> smart_contracts_conditions(input)
       |> smart_contracts_order_by(input)
 
     return =
@@ -93,7 +100,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.SmartContract do
         case i do
           {:contract_addresses, addresses} ->
             if length(addresses) > 0 do
-              dynamic([account: a], ^acc and a.eth_address in ^addresses)
+              dynamic([sc_processed: sc], ^acc and sc.eth_address in ^addresses)
             else
               acc
             end
@@ -115,13 +122,13 @@ defmodule GodwokenExplorer.Graphql.Resolvers.SmartContract do
         |> Enum.map(fn e ->
           case e do
             %{sort_type: st, sort_value: :ex_tx_count} ->
-              {st, dynamic([account: a], a.transaction_count)}
+              {st, dynamic([sc_processed: sc], sc.transaction_count)}
 
             %{sort_type: st, sort_value: :ckb_balance} ->
-              {st, dynamic([ckb_sorted: c], c.ckb_balance)}
+              {st, dynamic([sc_processed: sc], sc.ckb_balance)}
 
             %{sort_type: st, sort_value: :name} ->
-              {st, dynamic([ckb_sorted: c], c.name)}
+              {st, dynamic([sc_processed: sc], sc.name)}
 
             _ ->
               cursor_order_sorter(e, :order, @sorter_fields)
@@ -143,13 +150,13 @@ defmodule GodwokenExplorer.Graphql.Resolvers.SmartContract do
       |> Enum.map(fn e ->
         case e do
           %{sort_type: st, sort_value: :ex_tx_count} ->
-            {{:account, :transaction_count}, st}
+            {{:sc_processed, :transaction_count}, st}
 
           %{sort_type: st, sort_value: :ckb_balance} ->
-            {{:ckb_sorted, :ckb_balance}, st}
+            {{:sc_processed, :ckb_balance}, st}
 
           %{sort_type: st, sort_value: :name} ->
-            {{:ckb_sorted, :name}, st}
+            {{:sc_processed, :name}, st}
 
           _ ->
             cursor_order_sorter(e, :cursor, @sorter_fields)

@@ -1495,17 +1495,17 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
   end
 
   input_object :udts_sorter_input do
-    field(:sort_type, :sort_type)
-    field(:sort_value, :udts_sorter)
+    field(:sort_type, non_null :sort_type)
+    field(:sort_value, non_null :udts_sorter)
   end
 
   input_object :erc721_udts_sorter_input do
-    field(:sort_type, :sort_type)
-    field(:sort_value, :erc721_udts_sorter)
+    field(:sort_type, non_null :sort_type)
+    field(:sort_value, non_null :erc721_udts_sorter)
   end
 
   input_object :erc1155_udts_sorter_input do
-    field(:sort_type, :sort_type)
-    field(:sort_value, :erc1155_udts_sorter)
+    field(:sort_type, non_null :sort_type)
+    field(:sort_value, non_null :erc1155_udts_sorter)
   end
 end

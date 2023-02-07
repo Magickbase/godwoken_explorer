@@ -1,6 +1,6 @@
 defmodule GodwokenExplorer.Graphql.SmartContractTest do
   use GodwokenExplorerWeb.ConnCase
-  import GodwokenExplorer.Factory, only: [insert!: 1, insert!: 2, insert: 1, insert: 2]
+  import GodwokenExplorer.Factory, only: [insert!: 2, insert: 1, insert: 2]
 
   setup do
     ckb_account = insert(:ckb_account)
@@ -8,11 +8,12 @@ defmodule GodwokenExplorer.Graphql.SmartContractTest do
     _ = insert(:ckb_udt)
     _ = insert(:ckb_native_udt)
 
-    for _ <- 1..3 do
-      _smart_contract = insert(:smart_contract)
+    for index <- 1..3 do
+      polyjuice_contract_account = insert!(:polyjuice_contract_account, transaction_count: index)
+      _smart_contract = insert(:smart_contract, account: polyjuice_contract_account)
     end
 
-    polyjuice_contract_account = insert!(:polyjuice_contract_account)
+    polyjuice_contract_account = insert!(:polyjuice_contract_account, transaction_count: 4)
     smart_contract = insert!(:smart_contract, account: polyjuice_contract_account)
 
     _cub =
@@ -123,6 +124,56 @@ defmodule GodwokenExplorer.Graphql.SmartContractTest do
     } = json_response(conn, 200)
   end
 
+  test "graphql: smart_contracts with EX_TX_COUNT sorter ", %{
+    conn: conn
+  } do
+    query = """
+    query {
+      smart_contracts(
+        input: {
+          limit: 2
+          sorter: [
+            { sort_type: DESC, sort_value: EX_TX_COUNT }
+          ]
+        }
+      ) {
+        entries {
+          name
+          account_id
+          account {
+            eth_address
+            transaction_count
+          }
+          ckb_balance
+        }
+        metadata {
+          total_count
+          after
+          before
+        }
+      }
+    }
+    """
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    %{
+      "data" => %{
+        "smart_contracts" => %{
+          "entries" => [%{"ckb_balance" => "10000", "account" => %{"transaction_count" => 4}} | _],
+          "metadata" => %{
+            "total_count" => 4,
+            "after" => _after_value
+          }
+        }
+      }
+    } = json_response(conn, 200)
+  end
+
   test "graphql: smart_contracts with ckb_balance_sorter", %{conn: conn} do
     query = """
     query {
@@ -130,7 +181,8 @@ defmodule GodwokenExplorer.Graphql.SmartContractTest do
         input: {
           limit: 2
           sorter: [
-            { sort_type: DESC, sort_value: CKB_BALANCE }
+            { sort_type: DESC, sort_value: CKB_BALANCE },
+            { sort_type: DESC, sort_value: EX_TX_COUNT }
           ]
         }
       ) {

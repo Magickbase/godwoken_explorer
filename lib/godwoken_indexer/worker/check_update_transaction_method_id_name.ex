@@ -1,7 +1,7 @@
 defmodule GodwokenIndexer.Worker.CheckUpdateTransactionMethodIdName do
   use Oban.Worker, queue: :default, max_attempts: 3
 
-  import Ecto.Query, only: [from: 2, order_by: 3, limit: 2]
+  import Ecto.Query
 
   import GodwokenRPC.Util,
     only: [
@@ -17,10 +17,17 @@ defmodule GodwokenIndexer.Worker.CheckUpdateTransactionMethodIdName do
   end
 
   def do_perform() do
-    return = common_base_query() |> process_order_by_limit() |> Repo.all()
-    result = batch_update_transaction_method_id_name(return)
+    return1 = common_base_query() |> process_order_by_limit() |> Repo.all()
+    batch_update_transaction_method_id_name(return1)
 
-    {:ok, result}
+    # check method name if smart_contract abi update later
+    return2 =
+      check_method_name_query()
+      |> process_order_by_limit()
+      |> Repo.all()
+
+    batch_update_transaction_method_id_name(return2)
+    {:ok, nil}
   end
 
   def batch_update_transaction_method_id_name(return) do
@@ -41,12 +48,15 @@ defmodule GodwokenIndexer.Worker.CheckUpdateTransactionMethodIdName do
                      mid <- input |> String.slice(0, 10),
                      true <- String.length(mid) >= 10 do
                   method_name =
-                    Polyjuice.get_method_name_without_account_check(map.to_account_id, input)
+                    Polyjuice.get_method_name_without_account_check(
+                      map.to_account_id,
+                      input |> to_string
+                    )
 
                   {mid, method_name}
                 else
                   _ ->
-                    {"0x00", nil}
+                    {nil, nil}
                 end
 
               map
@@ -57,6 +67,7 @@ defmodule GodwokenIndexer.Worker.CheckUpdateTransactionMethodIdName do
             timeout: :infinity
           )
           |> Enum.map(fn {:ok, r} -> r end)
+          |> Enum.filter(fn r -> not is_nil(r.method_id) end)
 
         Import.insert_changes_list(return,
           for: Transaction,
@@ -72,16 +83,24 @@ defmodule GodwokenIndexer.Worker.CheckUpdateTransactionMethodIdName do
   end
 
   def common_base_query() do
+    common_query()
+    |> where([transaction: t], is_nil(t.method_id))
+  end
+
+  defp common_query() do
     from(t in Transaction,
-      where: is_nil(t.method_id),
+      as: :transaction,
       inner_join: sc in SmartContract,
       on: t.to_account_id == sc.account_id,
       as: :smart_contract,
       inner_join: a in Account,
+      as: :account,
       on: a.id == t.to_account_id,
       where: a.type == :polyjuice_contract,
       inner_join: p in Polyjuice,
+      as: :polyjuice,
       on: t.hash == p.tx_hash,
+      where: p.input_size >= 10,
       select: %{
         hash: t.hash,
         from_account_id: t.from_account_id,
@@ -93,9 +112,18 @@ defmodule GodwokenIndexer.Worker.CheckUpdateTransactionMethodIdName do
     )
   end
 
+  def check_method_name_query() do
+    common_query()
+    |> where([transaction: t], not is_nil(t.method_id) and is_nil(t.method_name))
+    |> where(
+      [smart_contract: sc],
+      not is_nil(sc.abi)
+    )
+  end
+
   def process_order_by_limit(query) do
     query
-    |> order_by([smart_contract: sc], desc: sc.updated_at)
+    |> order_by([transaction: t], desc: t.updated_at)
     |> limit(1000)
   end
 end

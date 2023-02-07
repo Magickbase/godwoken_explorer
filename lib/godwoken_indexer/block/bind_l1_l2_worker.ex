@@ -93,6 +93,8 @@ defmodule GodwokenIndexer.Block.BindL1L2Worker do
           hex_to_number(block_number),
           tx_hash
         )
+      else
+        _ -> nil
       end
     end)
     |> Enum.reject(&is_nil/1)
