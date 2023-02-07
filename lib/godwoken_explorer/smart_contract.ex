@@ -73,6 +73,7 @@ defmodule GodwokenExplorer.SmartContract do
       type: :integer
     )
 
+
     field(:constructor_arguments, :binary)
     field(:deployment_tx_hash, Hash.Full)
     field(:compiler_version, :string)
