@@ -7,6 +7,7 @@ defmodule GodwokenIndexer.Block.SyncWorkerTest do
   alias GodwokenExplorer.{Account, Block, Repo, Transaction, Log, TokenTransfer, Polyjuice}
   alias GodwokenExplorer.GW.{SudtPayFee, SudtTransfer}
   alias GodwokenExplorer.Account.CurrentBridgedUDTBalance
+  alias GodwokenIndexer.Block.SyncWorker
 
   setup do
     insert(:block,
@@ -331,5 +332,36 @@ defmodule GodwokenIndexer.Block.SyncWorkerTest do
 
       assert Repo.aggregate(Polyjuice, :count) == 1
     end
+  end
+
+  test "sync transaction trigger method_id and mehod_name update" do
+    from_account = insert(:user)
+
+    to_account = insert(:polyjuice_contract_account)
+
+    transaction =
+      insert(:transaction,
+        from_account: from_account,
+        to_account: to_account
+      )
+
+    abi = abi_contents()
+    insert(:smart_contract, account: to_account, abi: abi)
+
+    insert(:polyjuice,
+      transaction: transaction,
+      input: "0x40d097c3000000000000000000000000cc0af0af911dd40853b8c8dfee90b32f8d1ecad6"
+    )
+
+    txs_params = [
+      %{hash: transaction.hash |> to_string(), to_account_id: transaction.to_account_id}
+    ]
+
+    return = hd(SyncWorker.add_method_id_and_name_to_tx_params(txs_params))
+    assert match?(%{method_id: "0x40d097c3", method_name: "SafeMint"}, return)
+  end
+
+  defp abi_contents() do
+    Jason.decode!(File.read!(Path.join(["test/support", "erc721_abi.json"])))
   end
 end

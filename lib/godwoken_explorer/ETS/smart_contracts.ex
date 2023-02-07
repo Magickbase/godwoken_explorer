@@ -26,8 +26,11 @@ defmodule GodwokenExplorer.ETS.SmartContracts do
 
   def get(k) do
     case :ets.lookup(GodwokenExplorer.ETS.SmartContracts, k) do
-      [{_, v}] -> v
-      _ -> nil
+      [{_, v}] ->
+        v
+
+      _ ->
+        nil
     end
   end
 end

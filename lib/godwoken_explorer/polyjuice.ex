@@ -8,7 +8,9 @@ defmodule GodwokenExplorer.Polyjuice do
   """
   use GodwokenExplorer, :schema
 
+  alias GodwokenExplorer.SmartContract
   import Ecto.Changeset
+  import Ecto.Query
 
   require Logger
 
@@ -49,25 +51,25 @@ defmodule GodwokenExplorer.Polyjuice do
         }
   @derive {Jason.Encoder, except: [:__meta__]}
   schema "polyjuices" do
-    field :is_create, :boolean, default: false
-    field :gas_limit, :decimal
-    field :gas_price, :decimal
-    field :gas_used, :decimal
-    field :value, :decimal
-    field :input_size, :integer
-    field :input, Data
+    field(:is_create, :boolean, default: false)
+    field(:gas_limit, :decimal)
+    field(:gas_price, :decimal)
+    field(:gas_used, :decimal)
+    field(:value, :decimal)
+    field(:input_size, :integer)
+    field(:input, Data)
 
-    field :transaction_index, :integer
-    field :created_contract_address_hash, Hash.Address
+    field(:transaction_index, :integer)
+    field(:created_contract_address_hash, Hash.Address)
     field(:status, Ecto.Enum, values: [:succeed, :failed])
 
-    field :call_contract, Hash.Address
-    field :call_data, Data
-    field :call_gas_limit, :decimal
-    field :verification_gas_limit, :decimal
-    field :max_fee_per_gas, :decimal
-    field :max_priority_fee_per_gas, :decimal
-    field :paymaster_and_data, Data
+    field(:call_contract, Hash.Address)
+    field(:call_data, Data)
+    field(:call_gas_limit, :decimal)
+    field(:verification_gas_limit, :decimal)
+    field(:max_fee_per_gas, :decimal)
+    field(:max_priority_fee_per_gas, :decimal)
+    field(:paymaster_and_data, Data)
 
     belongs_to(:transaction, GodwokenExplorer.Transaction,
       foreign_key: :tx_hash,
@@ -184,7 +186,9 @@ defmodule GodwokenExplorer.Polyjuice do
   end
 
   def decode_input(to_account_id, input, hash) do
-    if to_account_id in SmartContract.account_ids() do
+    q = from(sc in SmartContract, where: sc.account_id == ^to_account_id)
+
+    if Repo.exists?(q) do
       decode_input_without_account_check(to_account_id, input, hash)
     else
       {:error, :decode_error}
