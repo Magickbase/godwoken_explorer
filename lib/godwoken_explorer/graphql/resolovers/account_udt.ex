@@ -6,11 +6,92 @@ defmodule GodwokenExplorer.Graphql.Resolvers.AccountUDT do
 
   import Ecto.Query
   import GodwokenExplorer.Graphql.Common, only: [page_and_size: 2, sort_type: 3]
+  import GodwokenExplorer.Graphql.Resolvers.Common, only: [paginate_query: 3]
 
   @addresses_max_limit 20
 
   def account_udt_holders(_parent, %{input: input} = _args, _resolution) do
-    {:ok, nil}
+    udt_id = Map.get(input, :udt_id)
+
+    [udt_script_hash, token_contract_address_hash] = UDT.list_address_by_udt_id(udt_id)
+
+    base_query =
+      cond do
+        is_nil(udt_script_hash) ->
+          cub_holders_query(token_contract_address_hash)
+
+        is_nil(token_contract_address_hash) ->
+          cbub_holders_query(udt_script_hash)
+
+        true ->
+          bridged_udt_balance_query = cbub_holders_query(udt_script_hash)
+
+          udt_balance_query = cub_holders_query(token_contract_address_hash)
+
+          from(q in subquery(union_all(udt_balance_query, ^bridged_udt_balance_query)),
+            join: a in Account,
+            on: a.eth_address == q.eth_address,
+            select: %{
+              eth_address: q.eth_address,
+              balance:
+                fragment(
+                  "CASE WHEN ? is null THEN 0 ELSE ? END",
+                  q.balance,
+                  q.balance
+                ),
+              tx_count:
+                fragment(
+                  "CASE WHEN ? is null THEN 0 ELSE ? END",
+                  a.transaction_count,
+                  a.transaction_count
+                )
+            },
+            order_by: [desc: :updated_at],
+            distinct: q.eth_address
+          )
+      end
+
+    from(a in Account,
+      right_join: sq in subquery(base_query),
+      as: :processed,
+      on: a.eth_address == sq.eth_address,
+      select: %{
+        bit_alias: sq.bit_alias,
+        eth_address: sq.eth_address,
+        balance: sq.balance,
+        tx_count: sq.tx_count
+      }
+    )
+    |> paginate_query(input, %{
+      cursor_fields: [{:processed, :balance, :desc}],
+      total_count_primary_key_field: [:eth_address]
+    })
+  end
+
+  defp cbub_holders_query(token_address) when not is_nil(token_address) do
+    from(cbub in CurrentBridgedUDTBalance,
+      where: cbub.udt_script_hash == ^token_address and cbub.value > 0,
+      select: %{
+        eth_address: cbub.address_hash,
+        balance: cbub.value,
+        updated_at: cbub.updated_at
+      }
+    )
+  end
+
+  defp cub_holders_query(token_address) when not is_nil(token_address) do
+    from(cub in CurrentUDTBalance,
+      join: a1 in Account,
+      on: a1.eth_address == cub.address_hash,
+      where:
+        cub.token_contract_address_hash == ^token_address and
+          cub.value > 0,
+      select: %{
+        eth_address: cub.address_hash,
+        balance: cub.value,
+        updated_at: cub.updated_at
+      }
+    )
   end
 
   def account_current_udts(_parent, %{input: input} = _args, _resolution) do
