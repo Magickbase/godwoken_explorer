@@ -146,6 +146,7 @@ defmodule GodwokenExplorer.MixProject do
       {:paginator, "~> 1.1.0"},
       {:quarto, "~> 1.0"},
       {:constants, "~> 0.1.0"},
+      {:graphql_builder, "~> 0.3.4"},
 
       # http client
       {:tesla, "~> 1.4"},

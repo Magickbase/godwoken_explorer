@@ -2,6 +2,7 @@ defmodule GodwokenExplorer.Graphql.AccountUDTTest do
   use GodwokenExplorerWeb.ConnCase
 
   import GodwokenExplorer.Factory, only: [insert!: 1, insert!: 2, insert: 2]
+  alias GraphqlBuilder.Query
 
   setup do
     {:ok, script_hash} =
@@ -78,6 +79,42 @@ defmodule GodwokenExplorer.Graphql.AccountUDTTest do
       cub: cub,
       cbub: cbub
     ]
+  end
+
+  test "graphql: account_udt_holders ", %{conn: conn} do
+    query =
+      %Query{
+        operation: :account_udt_holders,
+        fields: [
+          entries: [
+            :bit_alias,
+            :eth_address,
+            :balance,
+            :tx_count
+          ]
+        ],
+        variables: [input: [udt_id: 1]]
+      }
+      |> GraphqlBuilder.query()
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    assert match?(
+             %{
+               "data" => %{
+                 "account_udt_holders" => %{
+                   "entries" => [
+                     %{"balance" => "10000"}
+                   ]
+                 }
+               }
+             },
+             json_response(conn, 200)
+           )
   end
 
   test "graphql: account_udts with bridge without mapping native token", %{conn: conn} do

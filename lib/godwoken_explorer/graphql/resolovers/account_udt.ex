@@ -35,7 +35,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.AccountUDT do
               eth_address: q.eth_address,
               balance:
                 fragment(
-                  "CASE WHEN ? is null THEN 0 ELSE ? END",
+                  "CASE WHEN ? is null THEN 0::decimal ELSE ? END",
                   q.balance,
                   q.balance
                 ),
@@ -56,7 +56,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.AccountUDT do
       as: :processed,
       on: a.eth_address == sq.eth_address,
       select: %{
-        bit_alias: sq.bit_alias,
+        bit_alias: a.bit_alias,
         eth_address: sq.eth_address,
         balance: sq.balance,
         tx_count: sq.tx_count
@@ -66,6 +66,14 @@ defmodule GodwokenExplorer.Graphql.Resolvers.AccountUDT do
       cursor_fields: [{:processed, :balance, :desc}],
       total_count_primary_key_field: [:eth_address]
     })
+    |> do_account_udt_holders()
+  end
+
+  defp do_account_udt_holders({:error, {:not_found, []}}), do: {:ok, nil}
+  defp do_account_udt_holders({:error, _} = error), do: error
+
+  defp do_account_udt_holders(result) do
+    {:ok, result}
   end
 
   defp cbub_holders_query(token_address) when not is_nil(token_address) do
