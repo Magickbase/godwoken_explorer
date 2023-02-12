@@ -67,13 +67,22 @@ defmodule GodwokenExplorer.Graphql.Resolvers.AccountUDT do
       cursor_fields: [{{:processed, :balance}, :desc}, {{:processed, :eth_address}, :desc}],
       total_count_primary_key_field: [:eth_address]
     })
-    |> do_account_udt_holders()
+    |> do_account_udt_holders(udt_id)
   end
 
-  defp do_account_udt_holders({:error, {:not_found, []}}), do: {:ok, nil}
-  defp do_account_udt_holders({:error, _} = error), do: error
+  defp do_account_udt_holders({:error, {:not_found, []}}, _), do: {:ok, nil}
+  defp do_account_udt_holders({:error, _} = error, _), do: error
 
-  defp do_account_udt_holders(result) do
+  defp do_account_udt_holders(result, udt_id) do
+    %UDT{decimal: decimal} = Repo.get_by(UDT, id: udt_id)
+
+    entries =
+      Enum.map(result.entries, fn r ->
+        %{r | balance: Decimal.div(r.balance, Integer.pow(10, decimal || 0))}
+      end)
+
+    result = %{result | entries: entries}
+
     {:ok, result}
   end
 
