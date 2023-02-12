@@ -81,7 +81,16 @@ defmodule GodwokenExplorer.Graphql.AccountUDTTest do
     ]
   end
 
-  test "graphql: account_udt_holders ", %{conn: conn} do
+  test "graphql: account_udt_holders ", %{conn: conn, ckb_udt: ckb_udt} do
+    user = insert!(:user)
+
+    insert!(:current_bridged_udt_balance,
+      value: 6666,
+      address_hash: user.eth_address,
+      udt_id: 1,
+      udt_script_hash: ckb_udt.script_hash
+    )
+
     query =
       %Query{
         operation: :account_udt_holders,
@@ -91,9 +100,14 @@ defmodule GodwokenExplorer.Graphql.AccountUDTTest do
             :eth_address,
             :balance,
             :tx_count
+          ],
+          metadata: [
+            :before,
+            :after,
+            :total_count
           ]
         ],
-        variables: [input: [udt_id: 1]]
+        variables: [input: [udt_id: 1, limit: 1]]
       }
       |> GraphqlBuilder.query()
 
@@ -109,6 +123,53 @@ defmodule GodwokenExplorer.Graphql.AccountUDTTest do
                  "account_udt_holders" => %{
                    "entries" => [
                      %{"balance" => "10000"}
+                   ]
+                 }
+               }
+             },
+             json_response(conn, 200)
+           )
+
+    %{
+      "data" => %{
+        "account_udt_holders" => %{
+          "metadata" => %{"after" => after_value}
+        }
+      }
+    } = json_response(conn, 200)
+
+    query =
+      %Query{
+        operation: :account_udt_holders,
+        fields: [
+          entries: [
+            :bit_alias,
+            :eth_address,
+            :balance,
+            :tx_count
+          ],
+          metadata: [
+            :before,
+            :after,
+            :total_count
+          ]
+        ],
+        variables: [input: [udt_id: 1, limit: 1, after: after_value]]
+      }
+      |> GraphqlBuilder.query()
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    assert match?(
+             %{
+               "data" => %{
+                 "account_udt_holders" => %{
+                   "entries" => [
+                     %{"balance" => "6666"}
                    ]
                  }
                }

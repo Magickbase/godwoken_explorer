@@ -474,6 +474,7 @@ defmodule GodwokenExplorer.Graphql.Types.AccountUDT do
 
   input_object :account_udt_holders_input do
     field :udt_id, non_null(:integer)
+    import_fields(:paginate_input)
   end
 
   input_object :account_udts_input do
