@@ -55,6 +55,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.AccountUDT do
       right_join: sq in subquery(base_query),
       as: :processed,
       on: a.eth_address == sq.eth_address,
+      order_by: [desc: sq.balance, desc: sq.eth_address],
       select: %{
         bit_alias: a.bit_alias,
         eth_address: sq.eth_address,
@@ -63,7 +64,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.AccountUDT do
       }
     )
     |> paginate_query(input, %{
-      cursor_fields: [{:processed, :balance, :desc}],
+      cursor_fields: [{{:processed, :balance}, :desc}, {{:processed, :eth_address}, :desc}],
       total_count_primary_key_field: [:eth_address]
     })
     |> do_account_udt_holders()
