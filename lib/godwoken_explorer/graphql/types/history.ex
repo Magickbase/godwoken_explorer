@@ -90,7 +90,11 @@ defmodule GodwokenExplorer.Graphql.Types.History do
   object :deposit_withdrawal_history do
     field :script_hash, :hash_full
     field :eth_address, :hash_address
-    field :value, :decimal
+
+    field :value, :decimal do
+      resolve(&Resolvers.History.value/3)
+    end
+
     field :owner_lock_hash, :hash_full
     field :sudt_script_hash, :hash_full
     field :block_hash, :hash_full
