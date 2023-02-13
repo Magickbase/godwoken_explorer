@@ -10,9 +10,10 @@ defmodule GodwokenExplorer.Application do
       GodwokenExplorer.Repo,
       GodwokenExplorer.Chain.Cache.Blocks,
       GodwokenExplorer.Chain.Cache.Transactions,
-      GodwokenExplorer.ETS.SmartContracts,
       {Oban, oban_config()}
     ]
+
+    cache_children = GodwokenExplorer.Chain.Cache.children()
 
     web_children =
       if should_start?(Web) do
@@ -45,7 +46,7 @@ defmodule GodwokenExplorer.Application do
 
     indexer_children = if should_start?(Indexer), do: [GodwokenIndexer.Server], else: []
 
-    children = base_children ++ web_children ++ indexer_children
+    children = base_children ++ cache_children ++ web_children ++ indexer_children
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options

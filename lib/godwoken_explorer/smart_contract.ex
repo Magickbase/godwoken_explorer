@@ -10,9 +10,9 @@ defmodule GodwokenExplorer.SmartContract do
   use GodwokenExplorer, :schema
 
   alias GodwokenExplorer.Chain
+  alias GodwokenExplorer.Cache.ConCacheSC, as: CacheSC
   alias GodwokenExplorer.Chain.Hash
   alias GodwokenExplorer.Counters.AverageBlockTime
-  alias GodwokenExplorer.ETS.SmartContracts, as: ETSSmartContracts
   alias GodwokenExplorer.SmartContract.Reader
   alias GodwokenRPC.Contract
   alias Timex.Duration
@@ -125,7 +125,7 @@ defmodule GodwokenExplorer.SmartContract do
     |> Enum.map(fn sm_cs ->
       sm_cs
       |> Task.async_stream(fn sm_c ->
-        ETSSmartContracts.put("contract_abi_#{sm_c.account_id}", sm_c.abi)
+        CacheSC.put("contract_abi_#{sm_c.account_id}", sm_c.abi)
         {"contract_abi_#{sm_c.account_id}", sm_c.abi}
       end)
       |> Enum.to_list()
@@ -135,14 +135,14 @@ defmodule GodwokenExplorer.SmartContract do
   end
 
   def cache_abi(account_id) do
-    if ETSSmartContracts.get("contract_abi_#{account_id}") do
-      ETSSmartContracts.get("contract_abi_#{account_id}")
+    if CacheSC.get("contract_abi_#{account_id}") do
+      CacheSC.get("contract_abi_#{account_id}")
     else
       abi =
         from(sc in SmartContract, where: sc.account_id == ^account_id, select: sc.abi)
         |> Repo.one()
 
-      ETSSmartContracts.put("contract_abi_#{account_id}", abi)
+      CacheSC.put("contract_abi_#{account_id}", abi)
       abi
     end
   end
