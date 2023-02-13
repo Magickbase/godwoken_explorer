@@ -116,8 +116,10 @@ defmodule GodwokenExplorer.SmartContract do
   end
 
   def cache_abi(account_id) do
-    if CacheSC.get("contract_abi_#{account_id}") do
-      CacheSC.get("contract_abi_#{account_id}")
+    result = CacheSC.get("contract_abi_#{account_id}")
+
+    if result do
+      result
     else
       abi =
         from(sc in SmartContract, where: sc.account_id == ^account_id, select: sc.abi)
