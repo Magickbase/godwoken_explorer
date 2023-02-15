@@ -471,10 +471,12 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
         holders_count: count(cu.address_hash, :distinct)
       })
 
+    minted_burn_address_hash = UDTBalance.minted_burn_address_hash()
     ## erc1155 need token_type_count
     s1 =
       from(cu in CurrentUDTBalance)
       |> where([cu], cu.token_type == :erc1155)
+      |> where([cu], cu.address_hash != ^minted_burn_address_hash)
       |> group_by([cu], cu.token_contract_address_hash)
       |> select([cu], %{
         contract_address_hash: cu.token_contract_address_hash,
