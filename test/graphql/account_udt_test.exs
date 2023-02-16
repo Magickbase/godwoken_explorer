@@ -250,6 +250,78 @@ defmodule GodwokenExplorer.Graphql.AccountUDTTest do
            )
   end
 
+  test "graphql: account_udts with zero value", %{conn: conn} do
+    {:ok, script_hash} =
+      GodwokenExplorer.Chain.Hash.cast(
+        GodwokenExplorer.Chain.Hash.Full,
+        "0x1100000000000000000000000000000000000000000000000000000000000011"
+      )
+
+    native_account = insert!(:polyjuice_contract_account)
+    bridge_account = insert(:ckb_account, id: 678_686, script_hash: script_hash)
+
+    bridge_udt =
+      insert!(:ckb_udt,
+        id: bridge_account.id,
+        script_hash: script_hash,
+        bridge_account_id: native_account.id
+      )
+
+    cbub =
+      insert!(:current_bridged_udt_balance,
+        value: 0,
+        udt_id: bridge_udt.id,
+        udt_script_hash: bridge_udt.script_hash
+      )
+
+    query = """
+    query {
+      account_udts(
+        input: {
+          address_hashes: ["#{cbub.address_hash}"]
+        }
+      ) {
+        value
+        uniq_id
+        udt {
+          id
+          type
+          name
+          bridge_account_id
+          script_hash
+          decimal
+          value
+        }
+        account {
+          id
+          eth_address
+          script_hash
+        }
+      }
+    }
+    """
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    native_account_id = native_account.id
+
+    assert match?(
+             %{
+               "data" => %{
+                 "account_udts" => [
+                   %{"value" => "0"},
+                   %{"value" => "0", "udt" => %{"id" => ^native_account_id}}
+                 ]
+               }
+             },
+             json_response(conn, 200)
+           )
+  end
+
   test "graphql: account_udts with native and bridge token", %{conn: conn, cub: cub, cbub: cbub} do
     address = cbub.address_hash |> to_string()
     token_contract_address_hash = cub.token_contract_address_hash |> to_string()
