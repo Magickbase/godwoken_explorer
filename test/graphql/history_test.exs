@@ -75,6 +75,7 @@ defmodule GodwokenExplorer.Graphql.HistoryTest do
              json_response(conn, 200)
            )
 
+    # ckb id
     udt_id = udt.id
 
     query = """
@@ -115,7 +116,7 @@ defmodule GodwokenExplorer.Graphql.HistoryTest do
                "data" => %{
                  "deposit_withdrawal_histories" => %{
                    "entries" => [
-                     %{"udt" => %{"id" => ^udt_id}} | _
+                     %{"udt" => %{"id" => ^udt_id}, "value" => "0"} | _
                    ]
                  }
                }

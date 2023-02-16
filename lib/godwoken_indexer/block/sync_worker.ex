@@ -1034,7 +1034,6 @@ defmodule GodwokenIndexer.Block.SyncWorker do
     with ckb_id when not is_nil(ckb_id) <- UDT.ckb_account_id(),
          %Account{script_hash: ckb_script_hash} = Repo.get(Account, ckb_id) do
       polyjuice_params
-      |> Enum.filter(fn %{value: value} -> value > 0 end)
       |> Enum.group_by(&Map.get(&1, :block_number))
       |> Enum.map(fn {block_number, list} ->
         account_ids =
@@ -1068,7 +1067,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
           end)
 
         {:ok, %GodwokenRPC.Account.FetchedBalances{params_list: import_account_udts}} =
-          GodwokenRPC.fetch_balances(params)
+          rpc().fetch_balances(params)
 
         bridged_ckbs =
           import_account_udts
