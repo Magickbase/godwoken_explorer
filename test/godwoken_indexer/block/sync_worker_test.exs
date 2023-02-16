@@ -4,7 +4,7 @@ defmodule GodwokenIndexer.Block.SyncWorkerTest do
   import Hammox
   import GodwokenExplorer.Factory
 
-  alias GodwokenExplorer.{Account, Block, Repo, Transaction, Log, TokenTransfer, Polyjuice}
+  alias GodwokenExplorer.{Account, Block, Chain, Repo, Transaction, Log, TokenTransfer, Polyjuice}
   alias GodwokenExplorer.GW.{SudtPayFee, SudtTransfer}
   alias GodwokenExplorer.Account.CurrentBridgedUDTBalance
   alias GodwokenIndexer.Block.SyncWorker
@@ -18,13 +18,31 @@ defmodule GodwokenIndexer.Block.SyncWorkerTest do
     insert(:ckb_udt)
     insert(:ckb_account)
     insert(:block_producer)
-    :ok
+
+    {:ok, user_address_hash} =
+      Chain.string_to_address_hash("0xe2d73bf4e1306002811258417152a3eaa4cd4794")
+
+    {:ok, contract_address_hash} =
+      Chain.string_to_address_hash("0x83963a90b74e165df914b53ed9a5e8b29f5550bf")
+
+    {:ok, register_address_hash} =
+      Chain.string_to_address_hash("0x715ab282b873b79a7be8b0e8c13c4e8966a52040")
+
+    %{
+      user_address_hash: user_address_hash,
+      contract_address_hash: contract_address_hash,
+      register_address_hash: register_address_hash
+    }
   end
 
   setup :verify_on_exit!
 
   describe "import_range/2" do
-    test "import a block succeed" do
+    test "import a block succeed", %{
+      user_address_hash: user_address_hash,
+      contract_address_hash: contract_address_hash,
+      register_address_hash: register_address_hash
+    } do
       MockGodwokenRPC
       |> expect(
         :fetch_blocks_by_range,
@@ -192,7 +210,35 @@ defmodule GodwokenIndexer.Block.SyncWorkerTest do
            ]
          }}
       end)
-      |> expect(:fetch_balances, fn _params ->
+      |> expect(:fetch_balances, fn [
+                                      %{
+                                        registry_address:
+                                          "0x020000001400000083963a90b74e165df914b53ed9a5e8b29f5550bf",
+                                        eth_address: ^contract_address_hash,
+                                        account_id: nil,
+                                        udt_id: 1,
+                                        udt_script_hash:
+                                          "0x595cc14e574a708dc70a320d2026f79374246ed4659261131cdda7dd5814b5ca"
+                                      },
+                                      %{
+                                        registry_address:
+                                          "0x0200000014000000e2d73bf4e1306002811258417152a3eaa4cd4794",
+                                        eth_address: ^user_address_hash,
+                                        account_id: nil,
+                                        udt_id: 1,
+                                        udt_script_hash:
+                                          "0x595cc14e574a708dc70a320d2026f79374246ed4659261131cdda7dd5814b5ca"
+                                      },
+                                      %{
+                                        registry_address:
+                                          "0x0200000014000000715ab282b873b79a7be8b0e8c13c4e8966a52040",
+                                        eth_address: ^register_address_hash,
+                                        account_id: nil,
+                                        udt_id: 1,
+                                        udt_script_hash:
+                                          "0x595cc14e574a708dc70a320d2026f79374246ed4659261131cdda7dd5814b5ca"
+                                      }
+                                    ] ->
         {:ok,
          %GodwokenRPC.Account.FetchedBalances{
            errors: [],
@@ -220,6 +266,49 @@ defmodule GodwokenIndexer.Block.SyncWorkerTest do
                udt_script_hash:
                  "0x595cc14e574a708dc70a320d2026f79374246ed4659261131cdda7dd5814b5ca",
                value: 1_314_789_835_175_333_437_765_997
+             }
+           ]
+         }}
+      end)
+      |> expect(:fetch_balances, fn [
+                                      %{
+                                        registry_address:
+                                          "0x020000001400000083963a90b74e165df914b53ed9a5e8b29f5550bf",
+                                        eth_address: ^contract_address_hash,
+                                        account_id: 17544,
+                                        udt_id: 1,
+                                        udt_script_hash:
+                                          "0x595cc14e574a708dc70a320d2026f79374246ed4659261131cdda7dd5814b5ca"
+                                      },
+                                      %{
+                                        registry_address:
+                                          "0x0200000014000000e2d73bf4e1306002811258417152a3eaa4cd4794",
+                                        eth_address: ^user_address_hash,
+                                        account_id: 60691,
+                                        udt_id: 1,
+                                        udt_script_hash:
+                                          "0x595cc14e574a708dc70a320d2026f79374246ed4659261131cdda7dd5814b5ca"
+                                      }
+                                    ] ->
+        {:ok,
+         %GodwokenRPC.Account.FetchedBalances{
+           errors: [],
+           params_list: [
+             %{
+               account_id: 17544,
+               address_hash: "0x83963a90b74e165df914b53ed9a5e8b29f5550bf",
+               udt_id: 1,
+               udt_script_hash:
+                 "0x595cc14e574a708dc70a320d2026f79374246ed4659261131cdda7dd5814b5ca",
+               value: 0
+             },
+             %{
+               account_id: 60691,
+               address_hash: "0xe2d73bf4e1306002811258417152a3eaa4cd4794",
+               udt_id: 1,
+               udt_script_hash:
+                 "0x595cc14e574a708dc70a320d2026f79374246ed4659261131cdda7dd5814b5ca",
+               value: 1_231_321_520_394_985_843_894
              }
            ]
          }}
