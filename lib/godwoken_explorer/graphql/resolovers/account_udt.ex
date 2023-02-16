@@ -50,8 +50,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.AccountUDT do
       )
       |> where(
         [cu, _a1, u],
-        not is_nil(u.name) and
-          cu.value != 0
+        not is_nil(u.name)
       )
       |> select_merge([cu, _a1, u], %{
         udt_id: u.id,
@@ -107,7 +106,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.AccountUDT do
       |> join(:inner, [cbu, _a1, a2], u in UDT, on: u.id == a2.id)
       |> where(
         [cbu, _a1, _a2, u],
-        not is_nil(u.bridge_account_id) and cbu.value != 0
+        not is_nil(u.bridge_account_id)
       )
       |> select_merge([cbu, _a1, _a2, u], %{udt_id: u.id, uniq_id: u.bridge_account_id})
       |> order_by([cbu], desc: cbu.updated_at)
@@ -326,7 +325,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.AccountUDT do
           |> join(:inner, [cu], u in UDT,
             on: u.contract_address_hash == cu.token_contract_address_hash
           )
-          |> where([cu, u], cu.value != 0 and not is_nil(u.name))
+          |> where([cu, u], not is_nil(u.name))
           |> select_merge([cu, u], %{udt_id: u.id, uniq_id: u.id, updated_at: cu.value_fetched_at})
           |> Repo.all()
 
@@ -337,7 +336,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.AccountUDT do
             cbu.address_hash in ^address_hashes
           )
           |> join(:inner, [cbu], u in UDT, on: cbu.udt_id == u.id)
-          |> where([cbu, u], cbu.value != 0 and not is_nil(u.bridge_account_id))
+          |> where([cbu, u], not is_nil(u.bridge_account_id))
           |> select_merge([_cu, u], %{udt_id: u.id, uniq_id: u.bridge_account_id})
           |> Repo.all()
 

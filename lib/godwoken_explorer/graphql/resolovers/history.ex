@@ -139,6 +139,16 @@ defmodule GodwokenExplorer.Graphql.Resolvers.History do
     end
   end
 
+  def value(%{udt_id: udt_id, value: value}, _args, _resolution) do
+    ckb_id = UDT.ckb_account_id()
+
+    if udt_id == ckb_id do
+      {:ok, Decimal.new(0)}
+    else
+      {:ok, value}
+    end
+  end
+
   def udt(%{udt_id: udt_id}, _args, _resolution) do
     batch({BatchHistory, :udt, UDT}, udt_id, fn batch_results ->
       {:ok, Map.get(batch_results, udt_id)}
