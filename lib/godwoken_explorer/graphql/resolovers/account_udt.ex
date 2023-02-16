@@ -466,7 +466,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.AccountUDT do
             cbu.address_hash in ^address_hashes
           )
           |> join(:inner, [cbu], u in UDT, on: cbu.udt_id == u.id)
-          |> where([cbu, u],not is_nil(u.bridge_account_id))
+          |> where([cbu, u], not is_nil(u.bridge_account_id))
           |> select(
             [cbu, u],
             %{
