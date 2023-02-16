@@ -122,7 +122,7 @@ defmodule GodwokenExplorer.Graphql.AccountUDTTest do
                "data" => %{
                  "account_udt_holders" => %{
                    "entries" => [
-                     %{"balance" => "1E-14"}
+                     %{"balance" => "0.00000000000001"}
                    ]
                  }
                }
@@ -169,7 +169,7 @@ defmodule GodwokenExplorer.Graphql.AccountUDTTest do
                "data" => %{
                  "account_udt_holders" => %{
                    "entries" => [
-                     %{"balance" => "6.666E-15"}
+                     %{"balance" => "0.000000000000006666"}
                    ]
                  }
                }
