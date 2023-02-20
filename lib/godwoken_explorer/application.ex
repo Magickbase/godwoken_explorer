@@ -13,7 +13,12 @@ defmodule GodwokenExplorer.Application do
       {Oban, oban_config()}
     ]
 
-    cache_children = GodwokenExplorer.Chain.Cache.children()
+    cache_children = [
+      con_cache_child_spec(:cache_sc,
+        ttl_check_interval: :timer.minutes(15),
+        global_ttl: :timer.hours(1)
+      )
+    ]
 
     web_children =
       if should_start?(Web) do
@@ -52,6 +57,18 @@ defmodule GodwokenExplorer.Application do
     # for other strategies and supported options
     opts = [strategy: :one_for_one, name: GodwokenExplorer.Supervisor]
     Supervisor.start_link(children, opts)
+  end
+
+  defp con_cache_child_spec(name, params) do
+    params = Keyword.put(params, :name, name)
+
+    Supervisor.child_spec(
+      {
+        ConCache,
+        params
+      },
+      id: {ConCache, name}
+    )
   end
 
   defp should_start?(process) do

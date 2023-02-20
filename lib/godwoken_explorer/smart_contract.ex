@@ -9,7 +9,6 @@ defmodule GodwokenExplorer.SmartContract do
   """
   use GodwokenExplorer, :schema
 
-  alias GodwokenExplorer.Cache.ConCacheSC, as: CacheSC
   alias GodwokenExplorer.Chain.Hash
   alias GodwokenExplorer.Chain.Cache.SmartContract, as: CacheSmartContract
   alias GodwokenExplorer.SmartContract
@@ -106,7 +105,8 @@ defmodule GodwokenExplorer.SmartContract do
     |> Enum.map(fn sm_cs ->
       sm_cs
       |> Task.async_stream(fn sm_c ->
-        CacheSC.put("contract_abi_#{sm_c.account_id}", sm_c.abi)
+        ConCache.put(:cache_sc, "contract_abi_#{sm_c.account_id}", sm_c.abi)
+
         {"contract_abi_#{sm_c.account_id}", sm_c.abi}
       end)
       |> Enum.to_list()
@@ -116,7 +116,7 @@ defmodule GodwokenExplorer.SmartContract do
   end
 
   def cache_abi(account_id) do
-    result = CacheSC.get("contract_abi_#{account_id}")
+    result = ConCache.get(:cache_sc, "contract_abi_#{account_id}")
 
     if result do
       result
@@ -125,7 +125,7 @@ defmodule GodwokenExplorer.SmartContract do
         from(sc in SmartContract, where: sc.account_id == ^account_id, select: sc.abi)
         |> Repo.one()
 
-      CacheSC.put("contract_abi_#{account_id}", abi)
+      ConCache.put(:cache_sc, "contract_abi_#{account_id}", abi)
       abi
     end
   end

@@ -32,17 +32,3 @@ defmodule GodwokenExplorer.Chain.Cache.SmartContract do
     @default_cache_period
   end
 end
-
-defmodule GodwokenExplorer.Cache.ConCacheSC do
-  @moduledoc """
-  Caches smart contract's account ids
-  """
-
-  def put(k, v) do
-    ConCache.put(:cache_sc, k, v)
-  end
-
-  def get(k) do
-    ConCache.get(:cache_sc, k)
-  end
-end
