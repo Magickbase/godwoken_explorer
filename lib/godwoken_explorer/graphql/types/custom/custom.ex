@@ -96,7 +96,7 @@ defmodule GodwokenExplorer.Graphql.Types.Custom do
           "NaN8275"    -- diagnostic NaN
       """)
 
-      serialize(&Absinthe.Type.Custom.Decimal.serialize/1)
+      serialize(&Decimal.to_string(&1, :normal))
       parse(&Absinthe.Type.Custom.Decimal.parse/1)
     end
   end
