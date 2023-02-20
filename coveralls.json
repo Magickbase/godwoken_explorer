@@ -1,5 +1,13 @@
 {
   "skip_files": [
-    "test"
+    "test",
+    "lib/release_tasks.ex",
+    "lib/mix/tasks",
+    "lib/godwoken_rpc/account",
+    "lib/godwoken_rpc/block",
+    "lib/godwoken_rpc/ckb_indexer",
+    "lib/godwoken_rpc/http",
+    "lib/godwoken_rpc/transaction",
+    "lib/godwoken_rpc/web3"
   ]
 }
