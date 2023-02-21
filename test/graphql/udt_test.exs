@@ -1994,10 +1994,20 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
     erc721_udt_name = erc721_native_udt.name
     erc721_udt_contract_address_hash = erc721_native_udt.contract_address_hash |> to_string()
 
+    _erc721_cub2 =
+      insert!(:current_udt_balance,
+        address_hash: user.eth_address,
+        token_contract_address_hash: erc721_native_udt.contract_address_hash,
+        token_id: 11,
+        value: 0,
+        block_number: 11,
+        token_type: :erc721
+      )
+
     query = """
     query {
       user_erc721_assets(
-        input: {limit: 1, user_address: "#{user_address}"}
+        input: {limit: 2, user_address: "#{user_address}"}
       ) {
         entries {
           address_hash
@@ -2036,6 +2046,7 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
                        "token_type" => "ERC721",
                        "udt" => %{"id" => ^erc721_udt_id, "name" => ^erc721_udt_name}
                      }
+                     | _
                    ],
                    "metadata" => %{"total_count" => 2}
                  }
