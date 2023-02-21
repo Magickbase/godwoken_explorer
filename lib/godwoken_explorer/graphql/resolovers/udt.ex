@@ -149,6 +149,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
 
     from(cu in CurrentUDTBalance)
     |> where([cu], ^base_conditions)
+    |> where([cu], cu.value > 0)
     |> where(
       [cu],
       cu.address_hash == ^user_address
