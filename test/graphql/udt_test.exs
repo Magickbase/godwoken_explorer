@@ -787,7 +787,7 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
                  }
                }
              },
-             json_response(conn, 200) |> IO.inspect()
+             json_response(conn, 200)
            )
 
     for index <- 3..5 do
@@ -816,7 +816,7 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
                  }
                }
              },
-             json_response(conn, 200) |> IO.inspect()
+             json_response(conn, 200)
            )
 
     for index <- 1..2 do
