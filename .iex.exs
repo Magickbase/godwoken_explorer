@@ -35,4 +35,6 @@ alias GodwokenExplorer.Token.InstanceMetadataRetriever
 alias GodwokenExplorer.TokenInstance
 alias GodwokenExplorer.Chain.Cache.TokenExchangeRate
 
+alias GodwokenExplorer.Chain.Hash
+
 import Ecto.{Query, Queryable, Changeset}

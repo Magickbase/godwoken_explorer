@@ -14,6 +14,7 @@ defmodule GodwokenExplorer.Chain do
   alias GodwokenExplorer.Chain.Cache.TransactionCount
   alias GodwokenExplorer.Chain.{Hash, Data}
   alias GodwokenExplorer.{Address, Repo}
+  alias GodwokenExplorer.Account.UDTBalance
 
   @address_hash_len 40
   @tx_block_hash_len 64

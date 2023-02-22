@@ -51,8 +51,7 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
 
     user = insert(:user)
 
-    _erc721_token_instance =
-      _erc721_cub1 =
+    _erc721_cub1 =
       insert!(:current_udt_balance,
         address_hash: user.eth_address,
         token_contract_address_hash: erc721_native_udt.contract_address_hash,
@@ -67,7 +66,7 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
         address_hash: user.eth_address,
         token_contract_address_hash: erc721_native_udt.contract_address_hash,
         token_id: 2,
-        value: 2,
+        value: 1,
         block_number: 2,
         token_type: :erc721
       )
@@ -818,6 +817,33 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
                }
              },
              json_response(conn, 200)
+           )
+
+    for index <- 1..2 do
+      insert(:token_transfer,
+        from_address_hash: user.eth_address,
+        to_address_hash: minted_burn_address_hash,
+        token_contract_address_hash: erc721_native_udt.contract_address_hash,
+        token_id: index
+      )
+    end
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    assert match?(
+             %{
+               "data" => %{
+                 "erc721_udts" => %{
+                   "entries" => [%{"minted_count" => "2"}],
+                   "metadata" => %{"total_count" => 1}
+                 }
+               }
+             },
+             json_response(conn, 200) |> IO.inspect()
            )
   end
 
