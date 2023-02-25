@@ -843,7 +843,7 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
                  }
                }
              },
-             json_response(conn, 200) |> IO.inspect()
+             json_response(conn, 200)
            )
   end
 

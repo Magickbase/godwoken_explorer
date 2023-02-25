@@ -550,42 +550,52 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
       |> where(
         [cu],
         cu.token_contract_address_hash == ^contract_address and cu.token_type == :erc721 and
-          cu.value > 0
+          cu.value > 0 and not is_nil(cu.token_id)
       )
       |> order_by([cu],
         desc: cu.block_number,
         desc: cu.id
       )
-      |> distinct([cu], [cu.address_hash])
+      |> distinct([cu], [cu.address_hash, cu.token_id])
       |> select([cu], %{
         id: cu.id,
         address_hash: cu.address_hash,
         token_contract_address_hash: cu.token_contract_address_hash,
-        quantity: cu.value
+        token_id: cu.token_id
       })
 
     sq2 =
       from(c in CurrentUDTBalance)
       |> join(:inner, [c], cu in subquery(squery), on: c.id == cu.id)
-      |> order_by([c, cu], desc: cu.quantity, desc: cu.id)
+      |> group_by([c, cu], [cu.address_hash, cu.token_contract_address_hash])
+      |> order_by([c, cu], desc: type(count(cu.token_id), :decimal), desc: cu.address_hash)
+      |> select([c, cu], %{
+        address_hash: cu.address_hash,
+        token_contract_address_hash: cu.token_contract_address_hash,
+        quantity: type(count(cu.token_id), :decimal)
+      })
+
+    sq3 =
+      from(a in Account)
+      |> join(:right, [a], cu in subquery(sq2), on: a.eth_address == cu.address_hash)
       |> select(
-        [c, cu],
+        [_, cu],
         merge(cu, %{
           rank:
             row_number()
             |> over(
-              partition_by: :token_contract_address_hash,
-              order_by: [desc: cu.quantity, desc: cu.id]
+              partition_by: cu.token_contract_address_hash,
+              order_by: [desc: cu.quantity, desc: cu.address_hash]
             )
         })
       )
 
     return =
-      from(c in CurrentUDTBalance)
-      |> join(:right, [c], cu in subquery(sq2), on: c.id == cu.id, as: :holders)
+      from(a in Account)
+      |> join(:right, [c], cu in subquery(sq3), on: c.eth_address == cu.address_hash, as: :holders)
       |> select([c, holders], holders)
       |> paginate_query(input, %{
-        cursor_fields: [{{:holders, :quantity}, :desc}, {{:holders, :id}, :desc}],
+        cursor_fields: [{{:holders, :quantity}, :desc}, {{:holders, :address_hash}, :desc}],
         total_count_primary_key_field: [:address_hash]
       })
 
