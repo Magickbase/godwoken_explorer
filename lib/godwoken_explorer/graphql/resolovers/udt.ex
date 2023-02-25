@@ -464,10 +464,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
     minted_burn_address_hash = UDTBalance.minted_burn_address_hash()
 
     squery =
-      from(
-        cu in CurrentUDTBalance,
-        where: cu.value > 0
-      )
+      from(cu in CurrentUDTBalance, where: cu.value > 0)
       |> where([cu], cu.address_hash != ^minted_burn_address_hash)
       |> group_by([cu], cu.token_contract_address_hash)
       |> select([cu], %{
@@ -546,7 +543,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
   def erc721_holders(_parent, %{input: input} = _args, _resolution) do
     contract_address = Map.get(input, :contract_address)
 
-    squery =
+    sq1 =
       from(cu in CurrentUDTBalance)
       |> where(
         [cu],
@@ -555,30 +552,18 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
       )
       |> order_by([cu],
         desc: cu.block_number,
-        desc: cu.id
+        desc: cu.address_hash
       )
-      |> distinct([cu], [cu.address_hash, cu.token_id])
+      |> distinct([cu], [cu.address_hash, cu.token_contract_address_hash])
       |> select([cu], %{
-        id: cu.id,
         address_hash: cu.address_hash,
         token_contract_address_hash: cu.token_contract_address_hash,
-        token_id: cu.token_id
+        quantity: cu.value
       })
 
     sq2 =
-      from(c in CurrentUDTBalance)
-      |> join(:inner, [c], cu in subquery(squery), on: c.id == cu.id)
-      |> group_by([c, cu], [cu.address_hash, cu.token_contract_address_hash])
-      |> order_by([c, cu], desc: type(count(cu.token_id), :decimal), desc: cu.address_hash)
-      |> select([c, cu], %{
-        address_hash: cu.address_hash,
-        token_contract_address_hash: cu.token_contract_address_hash,
-        quantity: type(count(cu.token_id), :decimal)
-      })
-
-    sq3 =
       from(a in Account)
-      |> join(:right, [a], cu in subquery(sq2), on: a.eth_address == cu.address_hash)
+      |> join(:right, [a], cu in subquery(sq1), on: a.eth_address == cu.address_hash)
       |> select(
         [_, cu],
         merge(cu, %{
@@ -593,7 +578,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
 
     return =
       from(a in Account)
-      |> join(:right, [c], cu in subquery(sq3), on: c.eth_address == cu.address_hash, as: :holders)
+      |> join(:right, [c], cu in subquery(sq2), on: c.eth_address == cu.address_hash, as: :holders)
       |> select([c, holders], holders)
       |> paginate_query(input, %{
         cursor_fields: [{{:holders, :quantity}, :desc}, {{:holders, :address_hash}, :desc}],
