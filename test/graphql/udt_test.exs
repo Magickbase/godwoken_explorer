@@ -61,12 +61,13 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
         token_type: :erc721
       )
 
+    # value means the balances of address_hash in current block, if it is erc721, it means the user owning how many nft of this token
     _erc721_cub2 =
       insert!(:current_udt_balance,
         address_hash: user.eth_address,
         token_contract_address_hash: erc721_native_udt.contract_address_hash,
         token_id: 2,
-        value: 1,
+        value: 2,
         block_number: 2,
         token_type: :erc721
       )
