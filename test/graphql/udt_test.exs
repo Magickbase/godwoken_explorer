@@ -1583,7 +1583,7 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
         address_hash: address_hash,
         token_contract_address_hash: contract_address,
         token_id: 100 + index,
-        # this  value means holder's latest quantify of token
+        # this value means holder's latest quantify of token
         value: 1 + index,
         token_type: :erc721
       )
