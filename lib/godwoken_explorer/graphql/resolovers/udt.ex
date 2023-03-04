@@ -570,30 +570,22 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
     sq2 =
       from(a in Account)
       |> join(:right, [a], cu in subquery(sq1), on: a.eth_address == cu.address_hash)
-      |> order_by([a, cu], desc: cu.quantity, desc: cu.address_hash)
-      |> select([a, cu], cu)
-
-    sq3 =
-      from(a in Account)
-      |> join(:right, [a], cu in subquery(sq2), on: a.eth_address == cu.address_hash)
+      |> order_by([a, cu], desc: cu.quantity, asc: cu.address_hash)
       |> select(
-        [_, cu],
+        [a, cu],
         merge(cu, %{
           rank:
             rank()
-            |> over(
-              partition_by: cu.token_contract_address_hash,
-              order_by: [desc: cu.quantity, desc: cu.address_hash]
-            )
+            |> over(order_by: [desc: cu.quantity, asc: cu.address_hash])
         })
       )
 
     return =
       from(a in Account)
-      |> join(:right, [c], cu in subquery(sq3), on: c.eth_address == cu.address_hash, as: :holders)
+      |> join(:right, [c], cu in subquery(sq2), on: c.eth_address == cu.address_hash, as: :holders)
       |> select([c, holders], holders)
       |> paginate_query(input, %{
-        cursor_fields: [{{:holders, :quantity}, :desc}, {{:holders, :address_hash}, :desc}],
+        cursor_fields: [{{:holders, :quantity}, :desc}, {{:holders, :address_hash}, :asc}],
         total_count_primary_key_field: [:address_hash]
       })
 
