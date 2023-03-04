@@ -1471,6 +1471,15 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
     eth_address = user.eth_address |> to_string()
     contract_address = erc721_native_udt.contract_address_hash |> to_string()
 
+    # add 0 value example
+    _erc721_cub1 =
+      insert(:current_udt_balance,
+        token_contract_address_hash: contract_address,
+        value: 0,
+        token_type: :erc721,
+        token_id: 1001
+      )
+
     query = """
     query {
       erc721_holders(
