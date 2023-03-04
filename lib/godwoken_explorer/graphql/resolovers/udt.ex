@@ -570,6 +570,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
     sq3 =
       from(a in Account)
       |> join(:right, [a], cu in subquery(sq1), on: a.eth_address == cu.address_hash)
+      |> where([a, cu], cu.quantity > 0)
       |> select(
         [a, cu],
         merge(cu, %{
