@@ -1008,6 +1008,21 @@ defmodule GodwokenIndexer.Block.SyncWorker do
          ~s<(address_hash, token_contract_address_hash, token_id, block_number) WHERE token_id IS NOT NULL>}
     )
 
+    erc721_tokens =
+      with_token_ids
+      |> Enum.filter(fn w ->
+        w.token_type == :erc721
+      end)
+
+    Import.insert_changes_list(erc721_tokens,
+      for: ERC721Token,
+      timestamps: import_utc_timestamps(),
+      on_conflict: :replace_all,
+      conflict_target:
+        {:unsafe_fragment,
+         ~s[ (token_contract_address_hash, token_id) WHERE block_number < EXCLUDED.block_number ]}
+    )
+
     :ok
   end
 
