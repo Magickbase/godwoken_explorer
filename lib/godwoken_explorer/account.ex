@@ -635,10 +635,9 @@ defmodule GodwokenExplorer.Account do
     params = not_exist_script_hashes |> Enum.map(&%{script_hash: &1, script: nil})
 
     {:ok, %GodwokenRPC.Account.FetchedAccountIDs{errors: [], params_list: l2_script_hash_and_ids}} =
-      GodwokenRPC.fetch_account_ids(params)
+      rpc().fetch_account_ids(params)
 
-    {:ok, %{errors: [], params_list: account_list}} =
-      GodwokenRPC.fetch_scripts(l2_script_hash_and_ids)
+    {:ok, %{errors: [], params_list: account_list}} = rpc().fetch_scripts(l2_script_hash_and_ids)
 
     import_accounts(account_list)
   end

@@ -92,10 +92,12 @@ defmodule GodwokenRPC do
   @callback fetch_gw_transaction_receipts(list(map())) :: {:ok, map()}
   @callback fetch_account_id(String.t()) ::
               {:error, :account_slow | :network_error} | {:ok, integer}
+  @callback fetch_account_ids(list(map())) :: nil | {:ok, map()}
   @callback fetch_nonce(integer) :: nil | integer
   @callback fetch_script(String.t()) :: {:error, :network_error} | {:ok, map()}
   @callback fetch_script_hash(%{:account_id => integer}) ::
               {:error, :network_error} | {:ok, String.t()}
+  @callback fetch_tip_block_number() :: {:error, any()} | {:ok, integer()}
 
   def request(%{method: method, params: params} = map)
       when is_binary(method) and is_list(params) do
@@ -127,6 +129,7 @@ defmodule GodwokenRPC do
     end
   end
 
+  @spec fetch_tip_block_number :: {:error, String.t()} | {:ok, integer()}
   def fetch_tip_block_number do
     options = Application.get_env(:godwoken_explorer, :json_rpc_named_arguments)
 

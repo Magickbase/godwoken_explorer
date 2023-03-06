@@ -41,9 +41,13 @@ defmodule GodwokenExplorer.AccountFactory do
       end
 
       def user_factory do
+        eth_address = address_hash()
+
         %Account{
           id: sequence(:id, & &1, start_at: 1000),
-          eth_address: address_hash(),
+          eth_address: eth_address,
+          registry_address:
+            eth_address |> to_string() |> Account.eth_address_to_registry_address(),
           script_hash: block_hash(),
           type: :eth_user,
           nonce: sequence(:nonce, & &1, start_at: 0),
