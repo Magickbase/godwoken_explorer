@@ -470,10 +470,10 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
       |> distinct([cu], cu.address_hash)
 
     squery =
-      from(a in Account, right_join: s in subquery(s0), on: a.eth_address == s.address_hash)
-      |> where([a, cu], cu.value > 0)
-      |> group_by([a, cu], cu.token_contract_address_hash)
-      |> select([a, cu], %{
+      from(cu in subquery(s0))
+      |> where([cu], cu.value > 0)
+      |> group_by([cu], cu.token_contract_address_hash)
+      |> select([cu], %{
         contract_address_hash: cu.token_contract_address_hash,
         holders_count: count(cu.address_hash)
       })
