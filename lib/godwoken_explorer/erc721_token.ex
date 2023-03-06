@@ -30,7 +30,7 @@ defmodule GodwokenExplorer.ERC721Token do
     field(:address_hash, Hash.Address)
     field(:block_number, :integer)
 
-    timestamps()
+    timestamps(type: :utc_datetime_usec)
   end
 
   def changeset(%ERC721Token{} = instance, params \\ %{}) do

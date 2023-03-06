@@ -8,7 +8,7 @@ defmodule GodwokenExplorer.Repo.Migrations.CreateErc721Tokens do
       add :address_hash, :bytea, null: false
       add :block_number, :bigint, null: false
 
-      timestamps(null: false, type: :utc_datetime)
+      timestamps(null: false, type: :utc_datetime_usec)
     end
   end
 end

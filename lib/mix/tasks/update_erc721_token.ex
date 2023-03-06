@@ -98,9 +98,7 @@ defmodule Mix.Tasks.UpdateErc721Token do
       for: ERC721Token,
       timestamps: import_utc_timestamps(),
       on_conflict: :replace_all,
-      conflict_target:
-        {:unsafe_fragment,
-         ~s[ (token_contract_address_hash, token_id) WHERE block_number < EXCLUDED.block_number ]}
+      conflict_target: {:unsafe_fragment, ~s[ (token_contract_address_hash, token_id)  ]}
     )
   end
 

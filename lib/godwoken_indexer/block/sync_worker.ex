@@ -33,7 +33,8 @@ defmodule GodwokenIndexer.Block.SyncWorker do
     TokenTransfer,
     Polyjuice,
     PolyjuiceCreator,
-    UDT
+    UDT,
+    ERC721Token
   }
 
   alias GodwokenExplorer.Account.{UDTBalance, CurrentBridgedUDTBalance}
@@ -444,6 +445,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
 
       update_udt_balance(token_transfers)
       update_udt_token_instance_metadata(token_transfers)
+      update_erc721_token(token_transfers)
       import_addresses(token_transfers)
     end
 
@@ -969,7 +971,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
     end
   end
 
-  defp update_udt_balance(token_transfers) do
+  def update_udt_balance(token_transfers) do
     {without_token_ids, with_token_ids} =
       TokenBalances.params_set(%{token_transfers_params: token_transfers})
       |> Enum.split_with(fn udt_balance -> is_nil(Map.get(udt_balance, :token_id)) end)
@@ -1008,22 +1010,30 @@ defmodule GodwokenIndexer.Block.SyncWorker do
          ~s<(address_hash, token_contract_address_hash, token_id, block_number) WHERE token_id IS NOT NULL>}
     )
 
+    :ok
+  end
+
+  def update_erc721_token(tt) do
     erc721_tokens =
-      with_token_ids
+      tt
       |> Enum.filter(fn w ->
         w.token_type == :erc721
+      end)
+      |> Enum.map(fn t ->
+        %{
+          token_contract_address_hash: t.token_contract_address_hash,
+          token_id: t.token_id,
+          block_number: t.block_number,
+          address_hash: t.to_address_hash
+        }
       end)
 
     Import.insert_changes_list(erc721_tokens,
       for: ERC721Token,
       timestamps: import_utc_timestamps(),
       on_conflict: :replace_all,
-      conflict_target:
-        {:unsafe_fragment,
-         ~s[ (token_contract_address_hash, token_id) WHERE block_number < EXCLUDED.block_number ]}
+      conflict_target: [:token_contract_address_hash, :token_id]
     )
-
-    :ok
   end
 
   def filter_udt_balance_params(params_list) do
