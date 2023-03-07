@@ -8,6 +8,7 @@ defmodule GodwokenExplorer.AccountFactory do
           id: 0,
           nonce: 0,
           script_hash: "0x946d08cc356c4fe13bc49929f1f709611fe0a2aaa336efb579dad4ca197d1551",
+          script: %{},
           type: :meta_contract
         }
       end
