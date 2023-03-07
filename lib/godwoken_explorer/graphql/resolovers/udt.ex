@@ -461,21 +461,28 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
   end
 
   defp erc721_erc1155_udts_order_by(query, input, type) do
+    minted_burn_address_hash = UDTBalance.minted_burn_address_hash()
+
+    s0 =
+      from(cu in CurrentUDTBalance)
+      |> where([cu], cu.address_hash != ^minted_burn_address_hash)
+      |> order_by([cu], desc: cu.block_number, desc: cu.id)
+      |> distinct([cu], cu.address_hash)
+
     squery =
-      from(
-        cu in CurrentUDTBalance,
-        where: cu.value > 0
-      )
+      from(cu in subquery(s0))
+      |> where([cu], cu.value > 0)
       |> group_by([cu], cu.token_contract_address_hash)
       |> select([cu], %{
         contract_address_hash: cu.token_contract_address_hash,
-        holders_count: count(cu.address_hash, :distinct)
+        holders_count: count(cu.address_hash)
       })
 
     ## erc1155 need token_type_count
     s1 =
       from(cu in CurrentUDTBalance)
       |> where([cu], cu.token_type == :erc1155)
+      |> where([cu], cu.address_hash != ^minted_burn_address_hash)
       |> group_by([cu], cu.token_contract_address_hash)
       |> select([cu], %{
         contract_address_hash: cu.token_contract_address_hash,
@@ -542,47 +549,42 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
   def erc721_holders(_parent, %{input: input} = _args, _resolution) do
     contract_address = Map.get(input, :contract_address)
 
-    squery =
+    sq1 =
       from(cu in CurrentUDTBalance)
       |> where(
         [cu],
         cu.token_contract_address_hash == ^contract_address and cu.token_type == :erc721 and
-          cu.value > 0
+          not is_nil(cu.token_id)
       )
       |> order_by([cu],
-        desc: cu.block_number,
-        desc: cu.id
+        asc: cu.address_hash,
+        desc: cu.block_number
       )
       |> distinct([cu], [cu.address_hash])
       |> select([cu], %{
-        id: cu.id,
         address_hash: cu.address_hash,
         token_contract_address_hash: cu.token_contract_address_hash,
         quantity: cu.value
       })
 
-    sq2 =
-      from(c in CurrentUDTBalance)
-      |> join(:inner, [c], cu in subquery(squery), on: c.id == cu.id)
-      |> order_by([c, cu], desc: cu.quantity, desc: cu.id)
+    sq3 =
+      from(a in Account)
+      |> join(:right, [a], cu in subquery(sq1), on: a.eth_address == cu.address_hash)
+      |> where([a, cu], cu.quantity > 0)
       |> select(
-        [c, cu],
+        [a, cu],
         merge(cu, %{
-          rank:
-            row_number()
-            |> over(
-              partition_by: :token_contract_address_hash,
-              order_by: [desc: cu.quantity, desc: cu.id]
-            )
+          rank: row_number() |> over(order_by: [desc: cu.quantity, asc: cu.address_hash])
         })
       )
 
     return =
-      from(c in CurrentUDTBalance)
-      |> join(:right, [c], cu in subquery(sq2), on: c.id == cu.id, as: :holders)
+      from(a in Account)
+      |> join(:right, [c], cu in subquery(sq3), on: c.eth_address == cu.address_hash, as: :holders)
+      |> order_by([c, holders], desc: holders.quantity, asc: holders.address_hash)
       |> select([c, holders], holders)
       |> paginate_query(input, %{
-        cursor_fields: [{{:holders, :quantity}, :desc}, {{:holders, :id}, :desc}],
+        cursor_fields: [{{:holders, :quantity}, :desc}, {{:holders, :address_hash}, :asc}],
         total_count_primary_key_field: [:address_hash]
       })
 

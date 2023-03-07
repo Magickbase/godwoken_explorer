@@ -51,8 +51,7 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
 
     user = insert(:user)
 
-    _erc721_token_instance =
-      _erc721_cub1 =
+    _erc721_cub1 =
       insert!(:current_udt_balance,
         address_hash: user.eth_address,
         token_contract_address_hash: erc721_native_udt.contract_address_hash,
@@ -62,6 +61,7 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
         token_type: :erc721
       )
 
+    # value means the balances of address_hash in current block, if it is erc721, it means the user owning how many nft of this token
     _erc721_cub2 =
       insert!(:current_udt_balance,
         address_hash: user.eth_address,
@@ -819,6 +819,33 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
              },
              json_response(conn, 200)
            )
+
+    for index <- 1..2 do
+      insert(:token_transfer,
+        from_address_hash: user.eth_address,
+        to_address_hash: minted_burn_address_hash,
+        token_contract_address_hash: erc721_native_udt.contract_address_hash,
+        token_id: index
+      )
+    end
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    assert match?(
+             %{
+               "data" => %{
+                 "erc721_udts" => %{
+                   "entries" => [%{"minted_count" => "2"}],
+                   "metadata" => %{"total_count" => 1}
+                 }
+               }
+             },
+             json_response(conn, 200)
+           )
   end
 
   test "graphql: erc721_udts with first page check ", %{conn: conn} do
@@ -1444,6 +1471,15 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
     eth_address = user.eth_address |> to_string()
     contract_address = erc721_native_udt.contract_address_hash |> to_string()
 
+    # add 0 value example
+    _erc721_cub1 =
+      insert(:current_udt_balance,
+        token_contract_address_hash: contract_address,
+        value: 0,
+        token_type: :erc721,
+        token_id: 1001
+      )
+
     query = """
     query {
       erc721_holders(
@@ -1556,7 +1592,7 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
         address_hash: address_hash,
         token_contract_address_hash: contract_address,
         token_id: 100 + index,
-        # this  value means holder's latest quantify of token
+        # this value means holder's latest quantify of token
         value: 1 + index,
         token_type: :erc721
       )
