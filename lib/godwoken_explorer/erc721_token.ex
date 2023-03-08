@@ -29,6 +29,14 @@ defmodule GodwokenExplorer.ERC721Token do
     field(:token_id, :decimal, primary_key: true)
     field(:address_hash, Hash.Address)
     field(:block_number, :integer)
+    field(:value, :decimal, virtual: true)
+    field(:token_type, Ecto.Enum, values: [:erc20, :erc721, :erc1155], virtual: true)
+
+    belongs_to(:udt_of_address, GodwokenExplorer.UDT,
+      foreign_key: :token_contract_address_hash,
+      references: :contract_address_hash,
+      define_field: false
+    )
 
     timestamps(type: :utc_datetime_usec)
   end

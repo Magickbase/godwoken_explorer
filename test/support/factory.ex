@@ -26,6 +26,7 @@ defmodule GodwokenExplorer.Factory do
   use GodwokenExplorer.WithdrawalHistoryFactory
   use GodwokenExplorer.WithdrawalRequestFactory
   use GodwokenExplorer.TokenInstanceFactory
+  use GodwokenExplorer.ERC721TokenFactory
 
   alias GodwokenExplorer.Repo
 
