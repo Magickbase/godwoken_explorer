@@ -12,7 +12,7 @@ defmodule GodwokenIndexer.Block.BindL1L2WorkerTest do
     with_mocks([
       {GodwokenRPC, [],
        [
-         fetch_l1_tip_block_nubmer: fn ->
+         fetch_l1_tip_block_number: fn ->
            {:ok, 5_293_290}
          end
        ]},
@@ -192,7 +192,7 @@ defmodule GodwokenIndexer.Block.BindL1L2WorkerTest do
     with_mocks([
       {GodwokenRPC, [],
        [
-         fetch_l1_tip_block_nubmer: fn ->
+         fetch_l1_tip_block_number: fn ->
            {:ok, 5_293_290}
          end
        ]}
@@ -207,7 +207,7 @@ defmodule GodwokenIndexer.Block.BindL1L2WorkerTest do
     with_mocks([
       {GodwokenRPC, [],
        [
-         fetch_l1_tip_block_nubmer: fn ->
+         fetch_l1_tip_block_number: fn ->
            {:ok, 5_293_290}
          end
        ]},
@@ -242,7 +242,7 @@ defmodule GodwokenIndexer.Block.BindL1L2WorkerTest do
     with_mocks([
       {GodwokenRPC, [],
        [
-         fetch_l1_tip_block_nubmer: fn ->
+         fetch_l1_tip_block_number: fn ->
            {:ok, 5_293_290}
          end
        ]},
@@ -263,7 +263,7 @@ defmodule GodwokenIndexer.Block.BindL1L2WorkerTest do
     with_mocks([
       {GodwokenRPC, [],
        [
-         fetch_l1_tip_block_nubmer: fn ->
+         fetch_l1_tip_block_number: fn ->
            {:ok, 100}
          end
        ]}

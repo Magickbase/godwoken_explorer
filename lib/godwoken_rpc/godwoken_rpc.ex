@@ -77,11 +77,13 @@ defmodule GodwokenRPC do
               {:ok, %GodwokenRPC.Account.FetchedScripts{}} | {:error, atom()}
   @callback fetch_balances(
               list(%{
-                registry_address: String.t(),
-                udt_id: integer(),
-                account_id: integer() | nil,
-                udt_script_hash: String.t(),
-                eth_address: Hash.t() | nil
+                :registry_address => String.t(),
+                :udt_id => integer(),
+                :account_id => integer() | nil,
+                :udt_script_hash => String.t() | Hash.t(),
+                :eth_address => Hash.t() | nil,
+                optional(:layer1_block_number) => integer(),
+                optional(:script_hash) => Hash.t()
               })
             ) :: {:ok, %GodwokenRPC.Account.FetchedBalances{}} | {:error, atom()}
 
@@ -98,6 +100,9 @@ defmodule GodwokenRPC do
   @callback fetch_script_hash(%{:account_id => integer}) ::
               {:error, :network_error} | {:ok, String.t()}
   @callback fetch_tip_block_number() :: {:error, any()} | {:ok, integer()}
+  @callback fetch_l1_tip_block_number() :: {:error, any()} | {:ok, integer()}
+  @callback fetch_l1_blocks(list(%{block_number: non_neg_integer()})) ::
+              {:ok, %GodwokenRPC.CKBIndexer.FetchedBlocks{}} | {:error, any()}
 
   def request(%{method: method, params: params} = map)
       when is_binary(method) and is_list(params) do
@@ -167,7 +172,7 @@ defmodule GodwokenRPC do
     end
   end
 
-  def fetch_l1_tip_block_nubmer do
+  def fetch_l1_tip_block_number do
     indexer_options = Application.get_env(:godwoken_explorer, :ckb_indexer_named_arguments)
 
     case FetchedTip.request() |> HTTP.json_rpc(indexer_options) do
@@ -361,11 +366,13 @@ defmodule GodwokenRPC do
 
   @spec fetch_balances(
           list(%{
-            registry_address: String.t(),
-            udt_id: integer(),
-            account_id: integer() | nil,
-            udt_script_hash: String.t(),
-            eth_address: Hash.t() | nil
+            :registry_address => String.t(),
+            :udt_id => integer(),
+            :account_id => integer() | nil,
+            :udt_script_hash => String.t() | Hash.t(),
+            :eth_address => Hash.t() | nil,
+            optional(:layer1_block_number) => integer(),
+            optional(:script_hash) => Hash.t()
           })
         ) :: {:ok, %GodwokenRPC.Account.FetchedBalances{}}
   def fetch_balances(params) do
