@@ -36,5 +36,6 @@ alias GodwokenExplorer.TokenInstance
 alias GodwokenExplorer.Chain.Cache.TokenExchangeRate
 
 alias GodwokenExplorer.Chain.Hash
+alias GodwokenExplorer.ERC721Token
 
 import Ecto.{Query, Queryable, Changeset}
