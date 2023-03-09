@@ -130,10 +130,10 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
   def user_erc721_assets(_, %{input: input}, _) do
     user_address = Map.get(input, :user_address)
 
-    s =
+    return =
       from(e in ERC721Token,
         where: e.address_hash == ^user_address,
-        order_by: [asc: e.token_contract_address_hash, asc: e.token_id, desc: e.block_number],
+        order_by: [desc: e.block_number, asc: e.token_contract_address_hash, asc: e.token_id],
         distinct: [e.token_contract_address_hash, e.token_id],
         select: %ERC721Token{
           address_hash: e.address_hash,
@@ -142,11 +142,6 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
           token_type: :erc721,
           value: fragment("1::decimal")
         }
-      )
-
-    return =
-      from(e in subquery(s),
-        order_by: [desc: e.block_number, asc: e.token_contract_address_hash, asc: e.token_id]
       )
       |> paginate_query(input, %{
         cursor_fields: [block_number: :desc, token_contract_address_hash: :asc, token_id: :asc],
