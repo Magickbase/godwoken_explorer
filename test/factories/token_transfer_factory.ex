@@ -46,7 +46,7 @@ defmodule GodwokenExplorer.TokenTransferFactory do
           log_index: 3,
           to_address_hash: "0xf00b259ed79bb80291b45a76b13e3d71d4869433",
           token_contract_address_hash: "0xb02c930c2825a960a50ba4ab005e8264498b64a0",
-          token_id: 1,
+          token_id: token_id(),
           token_ids: nil,
           transaction: insert(:transaction)
         }

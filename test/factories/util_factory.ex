@@ -75,6 +75,10 @@ defmodule GodwokenExplorer.UtilFactory do
       def block_number do
         sequence("block_number", & &1)
       end
+
+      def token_id do
+        sequence("token_id", & &1)
+      end
     end
   end
 end
