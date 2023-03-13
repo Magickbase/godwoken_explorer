@@ -77,8 +77,25 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
         token_contract_address_hash: erc721_native_udt.contract_address_hash,
         token_id: index,
         value: 1,
-        block_number: 3,
+        block_number: index,
         token_type: :erc721
+      )
+    end
+
+    for index <- 1..2 do
+      insert!(:erc721_token,
+        address_hash: user.eth_address,
+        token_contract_address_hash: erc721_native_udt.contract_address_hash,
+        token_id: index,
+        block_number: index
+      )
+    end
+
+    for index <- 3..5 do
+      insert!(:erc721_token,
+        token_contract_address_hash: erc721_native_udt.contract_address_hash,
+        token_id: index,
+        block_number: index
       )
     end
 

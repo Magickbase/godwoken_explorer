@@ -6,6 +6,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
   alias GodwokenExplorer.TokenInstance
   alias GodwokenExplorer.Chain.Cache.TokenExchangeRate, as: CacheTokenExchangeRate
   alias GodwokenExplorer.Graphql.Dataloader.BatchUDT
+  alias GodwokenExplorer.ERC721Token
   import Ecto.Query
   # import Ecto.Query.API, only: [fragment: 1]
 
@@ -127,7 +128,25 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
   end
 
   def user_erc721_assets(_, %{input: input}, _) do
-    return = do_user_erc721_erc1155_assets(input, :erc721)
+    user_address = Map.get(input, :user_address)
+
+    return =
+      from(e in ERC721Token,
+        where: e.address_hash == ^user_address,
+        order_by: [desc: e.block_number, asc: e.token_contract_address_hash, asc: e.token_id],
+        distinct: [e.token_contract_address_hash, e.token_id],
+        select: %ERC721Token{
+          address_hash: e.address_hash,
+          token_contract_address_hash: e.token_contract_address_hash,
+          token_id: e.token_id,
+          token_type: :erc721,
+          value: fragment("1::decimal")
+        }
+      )
+      |> paginate_query(input, %{
+        cursor_fields: [block_number: :desc, token_contract_address_hash: :asc, token_id: :asc],
+        total_count_primary_key_field: [:id]
+      })
 
     {:ok, return}
   end
@@ -143,7 +162,6 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
 
     base_conditions =
       case type do
-        :erc721 -> dynamic([cu], cu.token_type == :erc721)
         :erc1155 -> dynamic([cu], cu.token_type == :erc1155)
       end
 
@@ -161,11 +179,15 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
     })
   end
 
-  def erc721_erc1155_udt(
-        parent = %CurrentUDTBalance{},
-        _,
-        %{context: %{loader: loader}}
-      ) do
+  def erc721_erc1155_udt(parent = %CurrentUDTBalance{}, _, %{context: %{loader: loader}}) do
+    do_erc721_erc1155_udt(parent, loader)
+  end
+
+  def erc721_erc1155_udt(parent = %ERC721Token{}, _, %{context: %{loader: loader}}) do
+    do_erc721_erc1155_udt(parent, loader)
+  end
+
+  defp do_erc721_erc1155_udt(parent, loader) do
     loader
     |> Dataloader.load(:graphql, :udt_of_address, parent)
     |> on_load(fn loader ->
