@@ -15,8 +15,8 @@ jobs:
       DATABASE_URL: "ecto://postgres:postgres@localhost:5432/godwoken_explorer_test"
     strategy:
       matrix:
-        elixir: ['1.13']
-        otp: ['24']
+        elixir: ['1.14']
+        otp: ['25']
     services:
       # Label used to access the service container
       postgres:

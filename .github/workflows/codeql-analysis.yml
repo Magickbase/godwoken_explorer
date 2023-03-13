@@ -13,7 +13,7 @@ name: "CodeQL"
 
 on:
   push:
-    branches: [ "godwoken-v1-mainnet-prod", develop, godwoken-v1-testnet-prod, godwoken-v1-testnet-stg, main ]
+    branches: [ "godwoken-v1-mainnet-prod", main]
   pull_request:
     # The branches below must be a subset of the branches above
     branches: [ "godwoken-v1-mainnet-prod" ]
