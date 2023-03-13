@@ -64,7 +64,7 @@ defmodule GodwokenExplorer.MixProject do
   defp deps do
     [
       # default phoneix template deps
-      {:phoenix, "~> 1.6.6"},
+      {:phoenix, "~> 1.7.0"},
       {:phoenix_ecto, "~> 4.4"},
       {:ecto_sql, "~> 3.7.2"},
       {:postgrex, ">= 0.0.0"},
