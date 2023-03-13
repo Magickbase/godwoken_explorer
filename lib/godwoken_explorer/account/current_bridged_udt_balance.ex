@@ -16,7 +16,7 @@ defmodule GodwokenExplorer.Account.CurrentBridgedUDTBalance do
    *  `address_hash` - The `t:GowokenExplorer.Chain.Address.t/0` that is the balance's owner.
    *  `udt_id` - The udt foreign key.
    *  `account_id` - The account foreign key.
-   *  `token_contract_address_hash` - The contract address hash foreign key.
+   *  `udt_script_hash` - layer2 udt account script hash.
    *  `block_number` - The layer2 block's number that the transfer took place.
    *  `layer1_block_number` - The layer1 block's number that the transfer took place.
    *  `value` - The value that's represents the balance.

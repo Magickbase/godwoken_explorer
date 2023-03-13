@@ -51,8 +51,7 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
 
     user = insert(:user)
 
-    _erc721_token_instance =
-      _erc721_cub1 =
+    _erc721_cub1 =
       insert!(:current_udt_balance,
         address_hash: user.eth_address,
         token_contract_address_hash: erc721_native_udt.contract_address_hash,
@@ -62,6 +61,7 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
         token_type: :erc721
       )
 
+    # value means the balances of address_hash in current block, if it is erc721, it means the user owning how many nft of this token
     _erc721_cub2 =
       insert!(:current_udt_balance,
         address_hash: user.eth_address,
@@ -77,8 +77,25 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
         token_contract_address_hash: erc721_native_udt.contract_address_hash,
         token_id: index,
         value: 1,
-        block_number: 3,
+        block_number: index,
         token_type: :erc721
+      )
+    end
+
+    for index <- 1..2 do
+      insert!(:erc721_token,
+        address_hash: user.eth_address,
+        token_contract_address_hash: erc721_native_udt.contract_address_hash,
+        token_id: index,
+        block_number: index
+      )
+    end
+
+    for index <- 3..5 do
+      insert!(:erc721_token,
+        token_contract_address_hash: erc721_native_udt.contract_address_hash,
+        token_id: index,
+        block_number: index
       )
     end
 
@@ -819,6 +836,33 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
              },
              json_response(conn, 200)
            )
+
+    for index <- 1..2 do
+      insert(:token_transfer,
+        from_address_hash: user.eth_address,
+        to_address_hash: minted_burn_address_hash,
+        token_contract_address_hash: erc721_native_udt.contract_address_hash,
+        token_id: index
+      )
+    end
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    assert match?(
+             %{
+               "data" => %{
+                 "erc721_udts" => %{
+                   "entries" => [%{"minted_count" => "2"}],
+                   "metadata" => %{"total_count" => 1}
+                 }
+               }
+             },
+             json_response(conn, 200)
+           )
   end
 
   test "graphql: erc721_udts with first page check ", %{conn: conn} do
@@ -1444,6 +1488,15 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
     eth_address = user.eth_address |> to_string()
     contract_address = erc721_native_udt.contract_address_hash |> to_string()
 
+    # add 0 value example
+    _erc721_cub1 =
+      insert(:current_udt_balance,
+        token_contract_address_hash: contract_address,
+        value: 0,
+        token_type: :erc721,
+        token_id: 1001
+      )
+
     query = """
     query {
       erc721_holders(
@@ -1556,7 +1609,7 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
         address_hash: address_hash,
         token_contract_address_hash: contract_address,
         token_id: 100 + index,
-        # this  value means holder's latest quantify of token
+        # this value means holder's latest quantify of token
         value: 1 + index,
         token_type: :erc721
       )
@@ -1994,10 +2047,20 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
     erc721_udt_name = erc721_native_udt.name
     erc721_udt_contract_address_hash = erc721_native_udt.contract_address_hash |> to_string()
 
+    _erc721_cub2 =
+      insert!(:current_udt_balance,
+        address_hash: user.eth_address,
+        token_contract_address_hash: erc721_native_udt.contract_address_hash,
+        token_id: 11,
+        value: 0,
+        block_number: 11,
+        token_type: :erc721
+      )
+
     query = """
     query {
       user_erc721_assets(
-        input: {limit: 1, user_address: "#{user_address}"}
+        input: {limit: 2, user_address: "#{user_address}"}
       ) {
         entries {
           address_hash
@@ -2036,6 +2099,7 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
                        "token_type" => "ERC721",
                        "udt" => %{"id" => ^erc721_udt_id, "name" => ^erc721_udt_name}
                      }
+                     | _
                    ],
                    "metadata" => %{"total_count" => 2}
                  }
