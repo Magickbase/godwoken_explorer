@@ -8,6 +8,7 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
   alias GodwokenExplorer.Counters.Helper
   alias GodwokenExplorer.Account.UDTBalance
   alias GodwokenIndexer.Worker.UpdateUDTCountInfo
+  alias GraphqlBuilder.Query
 
   setup do
     {:ok, script_hash} =
@@ -857,6 +858,61 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
                "data" => %{
                  "erc721_udts" => %{
                    "entries" => [%{"minted_count" => "2"}],
+                   "metadata" => %{"total_count" => 1}
+                 }
+               }
+             },
+             json_response(conn, 200)
+           )
+  end
+
+  test "graphql: erc721_udts with holder_count", %{
+    conn: conn,
+    user: user,
+    erc721_native_udt: erc721_native_udt
+    # minted_burn_address_hash: minted_burn_address_hash
+  } do
+    _erc721_cub1 =
+      insert(
+        :current_udt_balance,
+        address_hash: user.eth_address,
+        token_contract_address_hash: erc721_native_udt.contract_address_hash,
+        token_id: 6,
+        block_number: 6,
+        value: 0,
+        token_type: :erc721
+      )
+
+    contract_address = erc721_native_udt.contract_address_hash |> to_string()
+
+    query =
+      %Query{
+        operation: :erc721_udts,
+        fields: [
+          entries: [
+            :holders_count
+          ],
+          metadata: [
+            :before,
+            :after,
+            :total_count
+          ]
+        ],
+        variables: [input: [contract_address: contract_address]]
+      }
+      |> GraphqlBuilder.query()
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    assert match?(
+             %{
+               "data" => %{
+                 "erc721_udts" => %{
+                   "entries" => [%{"holders_count" => 3}],
                    "metadata" => %{"total_count" => 1}
                  }
                }
