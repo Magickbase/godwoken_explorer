@@ -5,7 +5,7 @@ defmodule GodwokenIndexer.Block.GlobalStateWorker do
 
   use GenServer
 
-  import GodwokenExplorer.MoleculeParser, only: [parse_global_state: 1, parse_v0_global_state: 1]
+  import GodwokenExplorer.MoleculeParser, only: [parse_global_state: 1]
 
   alias GodwokenExplorer.{Block, Account, WithdrawalHistory}
 
@@ -53,13 +53,7 @@ defmodule GodwokenIndexer.Block.GlobalStateWorker do
         {l2_block_count, block_merkle_root},
         {account_count, account_merkle_root},
         status
-      } =
-        try do
-          global_state |> parse_global_state()
-        rescue
-          ErlangError ->
-            global_state |> parse_v0_global_state()
-        end
+      } = global_state |> parse_global_state()
 
       parsed_status =
         if status == "00" do

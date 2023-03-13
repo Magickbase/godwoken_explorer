@@ -71,7 +71,7 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
   end
 
   def handle_info({:bind_deposit_work, block_number}, state) do
-    {:ok, l1_tip_number} = GodwokenRPC.fetch_l1_tip_block_nubmer()
+    {:ok, l1_tip_number} = rpc().fetch_l1_tip_block_number()
 
     {:ok, next_block_number} =
       if block_number + @buffer_block_for_create_account <= l1_tip_number do
@@ -103,7 +103,7 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
      %GodwokenRPC.CKBIndexer.FetchedBlocks{
        errors: [],
        params_list: block_responses
-     }} = GodwokenRPC.fetch_l1_blocks(range)
+     }} = rpc().fetch_l1_blocks(range)
 
     responses = block_responses |> Enum.map(&Map.fetch!(&1, :block))
     last_header = responses |> List.first() |> Map.fetch!("header")
@@ -381,7 +381,7 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
       |> Enum.group_by(&Map.get(&1, :layer1_block_number))
       |> Enum.map(fn {layer1_block_number, params} ->
         {:ok, %GodwokenRPC.Account.FetchedBalances{params_list: import_account_udts}} =
-          GodwokenRPC.fetch_balances(params)
+          rpc().fetch_balances(params)
 
         import_account_udts =
           import_account_udts
@@ -444,5 +444,9 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
     else
       parent_hash != check_info.block_hash
     end
+  end
+
+  defp rpc() do
+    Application.get_env(:godwoken_explorer, :rpc_module, GodwokenRPC)
   end
 end
