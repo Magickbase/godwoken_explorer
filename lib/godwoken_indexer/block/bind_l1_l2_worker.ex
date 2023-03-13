@@ -35,7 +35,7 @@ defmodule GodwokenIndexer.Block.BindL1L2Worker do
   end
 
   def handle_info({:bind_l1_work, block_number}, state) do
-    {:ok, l1_tip_number} = GodwokenRPC.fetch_l1_tip_block_nubmer()
+    {:ok, l1_tip_number} = GodwokenRPC.fetch_l1_tip_block_number()
 
     {:ok, next_start_block_number} =
       fetch_l1_number_and_update(block_number, l1_tip_number - @buffer_block_number)

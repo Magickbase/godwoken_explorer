@@ -93,7 +93,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
        errors: []
      }} = rpc().fetch_blocks_by_range(range)
 
-    if is_nil(multiple_block_once?) do
+    unless multiple_block_once? do
       {:ok, _} = validate_last_block_fork(blocks_params, next_block_number)
     end
 
@@ -300,7 +300,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
 
   @spec under_tip_block?(GodwokenRPC.block_number()) :: boolean
   defp under_tip_block?(block_number) do
-    case GodwokenRPC.fetch_tip_block_number() do
+    case rpc().fetch_tip_block_number() do
       {:ok, tip_number} ->
         block_number <= tip_number
 
@@ -320,7 +320,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
 
     if forked?(parent_hash, next_block_number - 1) do
       Logger.error("!!!!!!Layer2 forked!!!!!!#{next_block_number - 1}")
-      Block.rollback!(parent_hash)
+      Block.rollback!(next_block_number - 1)
       {:error, :forked}
     else
       {:ok, :normal}
@@ -719,7 +719,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
       udt_id_to_script_hashes =
         from(a in Account,
           where: a.id in ^udt_ids,
-          select: {a.id, a.script_hash}
+          select: {a.id, fragment("'0x' || encode(?, 'hex')", a.script_hash)}
         )
         |> Repo.all()
         |> Enum.into(%{})
@@ -742,7 +742,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
         end)
 
       {:ok, %GodwokenRPC.Account.FetchedBalances{params_list: import_account_udts}} =
-        GodwokenRPC.fetch_balances(params)
+        rpc().fetch_balances(params)
 
       import_account_udts =
         import_account_udts
@@ -1050,7 +1050,8 @@ defmodule GodwokenIndexer.Block.SyncWorker do
               id: a.id,
               registry_address: a.registry_address,
               eth_address: a.eth_address
-            }
+            },
+            order_by: [asc: :id]
           )
           |> Repo.all()
 
@@ -1097,7 +1098,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
   defp forked?(parent_hash, parent_block_number) do
     case Repo.get_by(Block, number: parent_block_number) do
       nil -> false
-      %Block{hash: database_hash} -> parent_hash != database_hash
+      %Block{hash: database_hash} -> parent_hash != to_string(database_hash)
     end
   end
 

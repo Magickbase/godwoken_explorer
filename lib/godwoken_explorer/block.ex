@@ -73,25 +73,26 @@ defmodule GodwokenExplorer.Block do
   @derive {Jason.Encoder, except: [:__meta__]}
   @primary_key {:hash, Hash.Full, autogenerate: false}
   schema "blocks" do
-    field :number, :integer
-    field :parent_hash, Hash.Full
-    field :timestamp, :utc_datetime_usec
-    field :status, Ecto.Enum, values: [:committed, :finalized]
-    field :transaction_count, :integer
-    field :layer1_tx_hash, Hash.Full
-    field :layer1_block_number, :integer
-    field :size, :integer
-    field :gas_limit, :decimal
-    field :gas_used, :decimal
-    field :logs_bloom, :binary
-    field :registry_id, :integer
+    field(:number, :integer)
+    field(:parent_hash, Hash.Full)
+    field(:timestamp, :utc_datetime_usec)
+    field(:status, Ecto.Enum, values: [:committed, :finalized])
+    field(:transaction_count, :integer)
+    field(:layer1_tx_hash, Hash.Full)
+    field(:layer1_block_number, :integer)
+    field(:size, :integer)
+    field(:gas_limit, :decimal)
+    field(:gas_used, :decimal)
+    field(:logs_bloom, :binary)
+    field(:registry_id, :integer)
 
-    has_many :transactions, GodwokenExplorer.Transaction, foreign_key: :block_hash
+    has_many(:transactions, GodwokenExplorer.Transaction, foreign_key: :block_hash)
 
-    belongs_to :account, Account,
+    belongs_to(:account, Account,
       foreign_key: :producer_address,
       references: :eth_address,
       type: Hash.Address
+    )
 
     timestamps()
   end
@@ -238,8 +239,8 @@ defmodule GodwokenExplorer.Block do
     end)
   end
 
-  def rollback!(hash) do
-    Repo.get(__MODULE__, hash) |> Repo.delete!()
-    from(t in Transaction, where: t.block_hash == ^hash) |> Repo.delete_all()
+  def rollback!(number) do
+    Repo.get_by(__MODULE__, number: number) |> Repo.delete!()
+    from(t in Transaction, where: t.block_number == ^number) |> Repo.delete_all()
   end
 end
