@@ -10,6 +10,7 @@ defmodule GodwokenExplorer.Factory do
   use GodwokenExplorer.AccountFactory
   use GodwokenExplorer.AddressFactory
   use GodwokenExplorer.BlockFactory
+  use GodwokenExplorer.CheckInfoFactory
   use GodwokenExplorer.ContractMethodFactory
   use GodwokenExplorer.CurrentBridgedUDTBalanceFactory
   use GodwokenExplorer.CurrentUDTBalanceFactory

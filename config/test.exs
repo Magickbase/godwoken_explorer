@@ -13,7 +13,7 @@ config :godwoken_explorer, GodwokenExplorerWeb.Endpoint,
   http: [port: 4002],
   server: false
 
-config :godwoken_explorer, Oban, testing: :inline
+config :godwoken_explorer, Oban, testing: :manual
 
 # Print only warnings and errors during test
 config :logger, level: :warn

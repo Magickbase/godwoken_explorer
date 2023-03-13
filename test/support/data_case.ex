@@ -18,6 +18,8 @@ defmodule GodwokenExplorer.DataCase do
 
   using do
     quote do
+      use Oban.Testing, repo: GodwokenExplorer.Repo
+
       import Ecto
       import Ecto.Changeset
       import Ecto.Query
