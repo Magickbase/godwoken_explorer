@@ -489,7 +489,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
       from(cu in CurrentUDTBalance)
       |> where([cu], cu.address_hash != ^minted_burn_address_hash)
       |> order_by([cu], desc: cu.block_number, desc: cu.id)
-      |> distinct([cu], cu.address_hash)
+      |> distinct([cu], [cu.address_hash, cu.token_contract_address_hash])
 
     squery =
       from(cu in subquery(s0))
