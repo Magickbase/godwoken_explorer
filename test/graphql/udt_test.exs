@@ -860,7 +860,7 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
 
   test "graphql: erc721_udts with holder_count", %{
     conn: conn,
-    user: user,
+    user: _user,
     erc721_native_udt: erc721_native_udt
     # minted_burn_address_hash: minted_burn_address_hash
   } do
@@ -1340,7 +1340,7 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
                      %{
                        "contract_address_hash" => ^contract_address,
                        "eth_type" => "ERC1155",
-                       "holders_count" => 5,
+                       "holders_count" => 4,
                        "token_type_count" => 6,
                        "minted_count" => "500"
                      }
@@ -1397,7 +1397,7 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
                      %{
                        "contract_address_hash" => ^contract_address,
                        "eth_type" => "ERC1155",
-                       "holders_count" => 5,
+                       "holders_count" => 4,
                        "token_type_count" => 6,
                        "minted_count" => "500"
                      }

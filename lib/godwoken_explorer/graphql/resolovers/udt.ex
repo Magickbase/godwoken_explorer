@@ -496,7 +496,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
           |> group_by([cu], cu.token_contract_address_hash)
           |> select([cu], %{
             contract_address_hash: cu.token_contract_address_hash,
-            holders_count: count(cu.address_hash)
+            holders_count: count(cu.address_hash, :distinct)
           })
 
         s1 =
