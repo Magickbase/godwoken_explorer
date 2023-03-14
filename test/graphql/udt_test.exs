@@ -1597,21 +1597,16 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
     } = json_response(conn, 200)
 
     %{address_hash: address_hash} =
-      insert(:current_udt_balance,
+      insert(:erc721_token,
         token_contract_address_hash: contract_address,
-        token_id: 100,
-        value: 1,
-        token_type: :erc721
+        token_id: 100
       )
 
     for index <- 1..2 do
-      insert(:current_udt_balance,
-        address_hash: address_hash,
+      insert(:erc721_token,
         token_contract_address_hash: contract_address,
-        token_id: 100 + index,
-        # this value means holder's latest quantify of token
-        value: 1 + index,
-        token_type: :erc721
+        address_hash: address_hash,
+        token_id: 100 + index
       )
     end
 
