@@ -538,7 +538,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
             group_by: e.token_contract_address_hash,
             select: %{
               contract_address_hash: e.token_contract_address_hash,
-              holders_count: count(e.address_hash)
+              holders_count: count(e.address_hash, :distinct)
             }
           )
 
