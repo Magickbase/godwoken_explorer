@@ -4,8 +4,7 @@ on:
     types:
       - closed
 
-permissions:
-  security-events: write
+permissions: write-all
 
 jobs:
   cleanup:
