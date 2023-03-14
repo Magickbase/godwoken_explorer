@@ -16,6 +16,7 @@ jobs:
       - name: Cleanup
         run: |
           gh extension install actions/gh-actions-cache
+          gh auth status
           
           REPO=${{ github.repository }}
           BRANCH="refs/pull/${{ github.event.pull_request.number }}/merge"
