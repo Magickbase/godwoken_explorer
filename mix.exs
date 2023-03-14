@@ -5,9 +5,8 @@ defmodule GodwokenExplorer.MixProject do
     [
       app: :godwoken_explorer,
       version: "0.1.0",
-      elixir: "~> 1.12",
+      elixir: "~> 1.14",
       elixirc_paths: elixirc_paths(Mix.env()),
-      compilers: [:phoenix] ++ Mix.compilers(),
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
       deps: deps(),
@@ -64,13 +63,14 @@ defmodule GodwokenExplorer.MixProject do
   defp deps do
     [
       # default phoneix template deps
-      {:phoenix, "~> 1.6.6"},
+      {:phoenix, "~> 1.7"},
       {:phoenix_ecto, "~> 4.4"},
-      {:ecto_sql, "~> 3.7.2"},
+      {:ecto_sql, "~> 3.9.0"},
       {:postgrex, ">= 0.0.0"},
       {:phoenix_html, "~> 3.3.0"},
+      {:phoenix_view, "~> 2.0"},
       {:phoenix_live_reload, "~> 1.4.0", only: :dev},
-      {:phoenix_live_dashboard, "~> 0.7.0"},
+      {:phoenix_live_dashboard, "~> 0.7.2"},
       {:esbuild, "~> 0.6", runtime: Mix.env() == :dev},
       {:telemetry_metrics, "~> 0.6.1"},
       {:telemetry_poller, "~> 1.0.0"},
@@ -93,7 +93,7 @@ defmodule GodwokenExplorer.MixProject do
       {:poison, "~> 5.0"},
 
       # admin dashboard
-      {:torch, "~> 4.0"},
+      {:torch, "~> 5.0.0-rc.1"},
 
       # CORS
       {:cors_plug, "~> 2.0"},
@@ -111,7 +111,7 @@ defmodule GodwokenExplorer.MixProject do
       {:ex_abi, "~> 0.5.11"},
 
       # database_history
-      {:ex_audit, "~> 0.9"},
+      {:ex_audit, "~> 0.10.0"},
 
       # jsonapi
       {:jsonapi, "~> 1.4.0"},
@@ -121,7 +121,7 @@ defmodule GodwokenExplorer.MixProject do
       {:retry, "~> 0.15"},
       {:briefly, "~> 0.3"},
       {:nimble_csv, "~> 1.1"},
-      {:prom_ex, "~> 1.7.1"},
+      #      {:prom_ex, "~> 1.7.1"},
       {:dotenv, "~> 3.0.0", only: [:dev, :test]},
       {:ex_doc, "~> 0.27", only: :dev, runtime: false},
 
