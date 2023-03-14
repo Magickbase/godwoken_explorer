@@ -124,15 +124,7 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
         value: 100
       )
 
-    _erc1155_cub3 =
-      insert!(:current_udt_balance,
-        token_contract_address_hash: erc1155_native_udt.contract_address_hash,
-        token_id: 8,
-        token_type: :erc1155,
-        value: 100
-      )
-
-    for index <- 9..11 do
+    for index <- 8..10 do
       insert!(:current_udt_balance,
         token_contract_address_hash: erc1155_native_udt.contract_address_hash,
         token_id: index,
@@ -872,17 +864,6 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
     erc721_native_udt: erc721_native_udt
     # minted_burn_address_hash: minted_burn_address_hash
   } do
-    _erc721_cub1 =
-      insert(
-        :current_udt_balance,
-        address_hash: user.eth_address,
-        token_contract_address_hash: erc721_native_udt.contract_address_hash,
-        token_id: 6,
-        block_number: 6,
-        value: 0,
-        token_type: :erc721
-      )
-
     contract_address = erc721_native_udt.contract_address_hash |> to_string()
 
     query =
@@ -912,7 +893,7 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
              %{
                "data" => %{
                  "erc721_udts" => %{
-                   "entries" => [%{"holders_count" => 3}],
+                   "entries" => [%{"holders_count" => 5}],
                    "metadata" => %{"total_count" => 1}
                  }
                }
@@ -1361,7 +1342,7 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
                        "eth_type" => "ERC1155",
                        "holders_count" => 5,
                        "token_type_count" => 6,
-                       "minted_count" => "600"
+                       "minted_count" => "500"
                      }
                    ],
                    "metadata" => %{"total_count" => 1}
@@ -1418,7 +1399,7 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
                        "eth_type" => "ERC1155",
                        "holders_count" => 5,
                        "token_type_count" => 6,
-                       "minted_count" => "600"
+                       "minted_count" => "500"
                      }
                      | _
                    ],
@@ -1891,12 +1872,9 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
                      },
                      %{
                        "rank" => 4
-                     },
-                     %{
-                       "rank" => 5
                      }
                    ],
-                   "metadata" => %{"total_count" => 5}
+                   "metadata" => %{"total_count" => 4}
                  }
                }
              },
@@ -2619,7 +2597,7 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
     assert match?(
              %{
                "data" => %{
-                 "erc1155_user_inventory" => %{"metadata" => %{"total_count" => 6}}
+                 "erc1155_user_inventory" => %{"metadata" => %{"total_count" => 5}}
                }
              },
              result
