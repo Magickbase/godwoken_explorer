@@ -11,11 +11,12 @@ defmodule GodwokenExplorerWeb.Endpoint do
     signing_salt: "CrbXU5In"
   ]
 
-  socket "/socket", GodwokenExplorerWeb.UserSocket,
+  socket("/socket", GodwokenExplorerWeb.UserSocket,
     websocket: true,
     longpoll: false
+  )
 
-  socket "/live", Phoenix.LiveView.Socket, websocket: [connect_info: [session: @session_options]]
+  socket("/live", Phoenix.LiveView.Socket, websocket: [connect_info: [session: @session_options]])
 
   # Serve at "/" the static files from "priv/static" directory.
   #
@@ -39,37 +40,39 @@ defmodule GodwokenExplorerWeb.Endpoint do
   # Code reloading can be explicitly enabled under the
   # :code_reloader configuration of your endpoint.
   if code_reloading? do
-    socket "/phoenix/live_reload/socket", Phoenix.LiveReloader.Socket
-    plug Phoenix.LiveReloader
-    plug Phoenix.CodeReloader
-    plug Phoenix.Ecto.CheckRepoStatus, otp_app: :godwoken_explorer
+    socket("/phoenix/live_reload/socket", Phoenix.LiveReloader.Socket)
+    plug(Phoenix.LiveReloader)
+    plug(Phoenix.CodeReloader)
+    plug(Phoenix.Ecto.CheckRepoStatus, otp_app: :godwoken_explorer)
   end
 
-  plug PlugHeartbeat, path: "/health"
+  plug(PlugHeartbeat, path: "/health")
 
-  plug PromEx.Plug, prom_ex_module: GodwokenExplorer.PromEx
+  # plug PromEx.Plug, prom_ex_module: GodwokenExplorer.PromEx
 
-  plug Phoenix.LiveDashboard.RequestLogger,
+  plug(Phoenix.LiveDashboard.RequestLogger,
     param_key: "request_logger",
     cookie_key: "request_logger"
+  )
 
-  plug Plug.RequestId
-  plug Plug.Telemetry, event_prefix: [:phoenix, :endpoint]
+  plug(Plug.RequestId)
+  plug(Plug.Telemetry, event_prefix: [:phoenix, :endpoint])
 
-  plug Plug.Parsers,
+  plug(Plug.Parsers,
     parsers: [:urlencoded, :multipart, :json, Absinthe.Plug.Parser],
     pass: ["*/*"],
     json_decoder: Phoenix.json_library()
+  )
 
-  plug Sentry.PlugContext
+  plug(Sentry.PlugContext)
 
-  plug Plug.MethodOverride
-  plug Plug.Head
-  plug Plug.Session, @session_options
+  plug(Plug.MethodOverride)
+  plug(Plug.Head)
+  plug(Plug.Session, @session_options)
 
   if Mix.env() in [:stg, :prod] do
-    plug CORSPlug
+    plug(CORSPlug)
   end
 
-  plug GodwokenExplorerWeb.Router
+  plug(GodwokenExplorerWeb.Router)
 end

@@ -26,10 +26,20 @@ defmodule GodwokenRPC.Contract do
   """
   @type call_result :: {:ok, term()} | {:error, String.t()}
 
-  @spec execute_contract_functions([call()], [map()], EthereumJSONRPC.json_rpc_named_arguments(), true | false) :: [
+  @spec execute_contract_functions(
+          [call()],
+          [map()],
+          EthereumJSONRPC.json_rpc_named_arguments(),
+          true | false
+        ) :: [
           call_result()
         ]
-  def execute_contract_functions(requests, abi, json_rpc_named_arguments, leave_error_as_map \\ false) do
+  def execute_contract_functions(
+        requests,
+        abi,
+        json_rpc_named_arguments,
+        leave_error_as_map \\ false
+      ) do
     parsed_abi =
       abi
       |> ABI.parse_specification()
@@ -40,7 +50,11 @@ defmodule GodwokenRPC.Contract do
 
     indexed_responses =
       requests_with_index
-      |> Enum.map(fn {%{contract_address: contract_address, method_id: target_method_id, args: args} = request, index} ->
+      |> Enum.map(fn {%{
+                        contract_address: contract_address,
+                        method_id: target_method_id,
+                        args: args
+                      } = request, index} ->
         function =
           functions
           |> define_function(target_method_id)
@@ -50,7 +64,12 @@ defmodule GodwokenRPC.Contract do
 
         function
         |> Encoder.encode_function_call(formatted_args)
-        |> eth_call_request(contract_address, index, Map.get(request, :block_number), Map.get(request, :from))
+        |> eth_call_request(
+          contract_address,
+          index,
+          Map.get(request, :block_number),
+          Map.get(request, :from)
+        )
       end)
       |> HTTP.json_rpc(json_rpc_named_arguments)
       |> case do
@@ -109,7 +128,8 @@ defmodule GodwokenRPC.Contract do
 
   defp convert_int_string_to_array(arg) when is_nil(arg), do: true
 
-  defp convert_int_string_to_array(arg) when is_list(arg), do: convert_int_string_to_array_inner(arg)
+  defp convert_int_string_to_array(arg) when is_list(arg),
+    do: convert_int_string_to_array_inner(arg)
 
   defp convert_int_string_to_array(arg) when not is_nil(arg) do
     cond do
@@ -162,7 +182,8 @@ defmodule GodwokenRPC.Contract do
     {_, function} =
       Enum.find(functions, fn {method_id, _func} ->
         if method_id do
-          Base.encode16(method_id, case: :lower) == target_method_id || method_id == target_method_id
+          Base.encode16(method_id, case: :lower) == target_method_id ||
+            method_id == target_method_id
         else
           method_id == target_method_id
         end
@@ -199,6 +220,29 @@ defmodule GodwokenRPC.Contract do
     }
 
     request(full_params)
+  end
+
+  def eth_get_storage_at_request(
+        contract_address,
+        storage_pointer,
+        block_number,
+        json_rpc_named_arguments
+      ) do
+    block =
+      case block_number do
+        nil -> "latest"
+        block_number -> integer_to_quantity(block_number)
+      end
+
+    result =
+      %{id: 0, method: "eth_getStorageAt", params: [contract_address, storage_pointer, block]}
+      |> request()
+      |> HTTP.json_rpc(json_rpc_named_arguments)
+
+    case result do
+      {:ok, storage_value} -> {:ok, storage_value}
+      other -> other
+    end
   end
 
   defp format_error(message) when is_binary(message) do

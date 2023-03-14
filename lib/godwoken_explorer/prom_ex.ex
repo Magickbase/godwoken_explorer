@@ -52,7 +52,7 @@ defmodule GodwokenExplorer.PromEx do
      to Grafana in the `dashboards/0` function.
   """
 
-  use PromEx, otp_app: :godwoken_explorer
+  # use PromEx, otp_app: :godwoken_explorer
 
   alias PromEx.Plugins
 

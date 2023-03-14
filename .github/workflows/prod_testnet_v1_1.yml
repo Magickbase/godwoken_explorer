@@ -5,7 +5,7 @@ on:
       - "godwoken-v1-testnet-prod"
 jobs:
   build:
-    uses: ./.github/workflows/build.yml 
+    uses: ./.github/workflows/build.yml
     with:
       environment: prod_testnet_v1_1
       chain: testnet_v1_1
@@ -13,10 +13,10 @@ jobs:
     secrets: inherit
   deploy-update:
     needs: build
-    uses: ./.github/workflows/deploy.yml 
+    uses: ./.github/workflows/deploy.yml
     with:
       k8s-namespace: testnet
       k8s-workload: gwscan-api
       image: ${{ needs.build.outputs.image }}
       environment: prod_testnet_v1_1
-    secrets: inherit  
+    secrets: inherit

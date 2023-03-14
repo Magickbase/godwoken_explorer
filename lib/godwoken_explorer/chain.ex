@@ -594,6 +594,27 @@ defmodule GodwokenExplorer.Chain do
     end
   end
 
+  def master_copy_pattern?(method) do
+    Map.get(method, "type") == "constructor" &&
+      method
+      |> Enum.find(fn item ->
+        case item do
+          {"inputs", inputs} ->
+            master_copy_input?(inputs)
+
+          _ ->
+            false
+        end
+      end)
+  end
+
+  defp master_copy_input?(inputs) do
+    inputs
+    |> Enum.find(fn input ->
+      Map.get(input, "name") == "_masterCopy"
+    end)
+  end
+
   defp check_verified(address_hash) do
     query =
       from(

@@ -187,4 +187,19 @@ defmodule GodwokenExplorer.Graphql.Resolvers.SmartContract do
       end
     end)
   end
+
+  def implementation_abi(
+        %SmartContract{implementation_address_hash: implementation_address_hash} = _parent,
+        _args,
+        _resolution
+      ) do
+    with false <- is_nil(implementation_address_hash),
+         %SmartContract{abi: abi} <-
+           Repo.get_by(SmartContract, address_hash: implementation_address_hash) do
+      {:ok, abi}
+    else
+      true ->
+        {:ok, nil}
+    end
+  end
 end
