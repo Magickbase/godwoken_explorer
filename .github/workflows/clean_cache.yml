@@ -5,7 +5,7 @@ on:
       - closed
 
 permissions:
-  actions: write
+  security-events: write
 
 jobs:
   cleanup:
@@ -24,15 +24,14 @@ jobs:
           echo "Fetching list of cache key"
           cacheKeysForPR=$(gh actions-cache list -R $REPO -B $BRANCH | cut -f 1 )
           readarray -t cacheKeysArr<<<"$cacheKeysForPR"
-          echo ${cacheKeysArr[0]}
-          cacheKeysArr=("${cacheKeysArr[@]:2}")
 
           ## Setting this to not fail the workflow while deleting cache keys. 
           set +e
           echo "Deleting caches..."
           for cacheKey in "${cacheKeysArr[@]}"
           do
-              gh actions-cache delete $cacheKey -R $REPO -B $BRANCH --confirm
+            echo $cacheKey
+            gh actions-cache delete $cacheKey -R $REPO -B $BRANCH --confirm
           done
           echo "Done"
         env:
