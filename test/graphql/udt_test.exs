@@ -893,7 +893,7 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
              %{
                "data" => %{
                  "erc721_udts" => %{
-                   "entries" => [%{"holders_count" => 5}],
+                   "entries" => [%{"holders_count" => 4}],
                    "metadata" => %{"total_count" => 1}
                  }
                }
