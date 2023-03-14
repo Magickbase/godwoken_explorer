@@ -485,34 +485,30 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
   defp erc721_erc1155_udts_order_by(query, input, type) do
     minted_burn_address_hash = UDTBalance.minted_burn_address_hash()
 
-    s0 =
-      from(cu in CurrentUDTBalance)
-      |> where([cu], cu.address_hash != ^minted_burn_address_hash)
-      |> order_by([cu], desc: cu.block_number, desc: cu.id)
-      |> distinct([cu], [cu.address_hash, cu.token_contract_address_hash])
-
-    squery =
-      from(cu in subquery(s0))
-      |> where([cu], cu.value > 0)
-      |> group_by([cu], cu.token_contract_address_hash)
-      |> select([cu], %{
-        contract_address_hash: cu.token_contract_address_hash,
-        holders_count: count(cu.address_hash)
-      })
-
     ## erc1155 need token_type_count
-    s1 =
-      from(cu in CurrentUDTBalance)
-      |> where([cu], cu.token_type == :erc1155)
-      |> where([cu], cu.address_hash != ^minted_burn_address_hash)
-      |> group_by([cu], cu.token_contract_address_hash)
-      |> select([cu], %{
-        contract_address_hash: cu.token_contract_address_hash,
-        token_type_count: count(cu.token_id, :distinct)
-      })
-
     s2 =
       if type == :erc1155 do
+        squery =
+          from(cu in CurrentUDTBalance)
+          |> where([cu], cu.address_hash != ^minted_burn_address_hash)
+          |> where([cu], cu.token_type == :erc1155)
+          |> where([cu], cu.value > 0)
+          |> group_by([cu], cu.token_contract_address_hash)
+          |> select([cu], %{
+            contract_address_hash: cu.token_contract_address_hash,
+            holders_count: count(cu.address_hash)
+          })
+
+        s1 =
+          from(cu in CurrentUDTBalance)
+          |> where([cu], cu.address_hash != ^minted_burn_address_hash)
+          |> where([cu], cu.token_type == :erc1155)
+          |> group_by([cu], cu.token_contract_address_hash)
+          |> select([cu], %{
+            contract_address_hash: cu.token_contract_address_hash,
+            token_type_count: count(cu.token_id, :distinct)
+          })
+
         query
         |> join(:left, [u], h in subquery(squery),
           on: u.contract_address_hash == h.contract_address_hash
@@ -536,6 +532,16 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
         })
       else
         # erc721 need minted_count for sorting
+        squery =
+          from(e in ERC721Token,
+            where: e.address_hash != ^minted_burn_address_hash,
+            group_by: e.token_contract_address_hash,
+            select: %{
+              contract_address_hash: e.token_contract_address_hash,
+              holders_count: count(e.address_hash)
+            }
+          )
+
         query
         |> join(:left, [u], h in subquery(squery),
           on: u.contract_address_hash == h.contract_address_hash
