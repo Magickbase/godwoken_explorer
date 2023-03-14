@@ -3,7 +3,6 @@ on:
   pull_request:
     types:
       - closed
-  workflow_dispatch:
 
 jobs:
   cleanup:
@@ -27,6 +26,7 @@ jobs:
           echo "Deleting caches..."
           for cacheKey in $cacheKeysForPR
           do
+            echo $cacheKey
               gh actions-cache delete $cacheKey -R $REPO -B $BRANCH --confirm
           done
           echo "Done"
