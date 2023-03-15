@@ -2,7 +2,6 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
   alias GodwokenExplorer.{UDT, Account}
   alias GodwokenExplorer.Repo
   alias GodwokenExplorer.Account.{CurrentBridgedUDTBalance, CurrentUDTBalance, UDTBalance}
-  alias GodwokenExplorer.TokenTransfer
   alias GodwokenExplorer.TokenInstance
   alias GodwokenExplorer.Chain.Cache.TokenExchangeRate, as: CacheTokenExchangeRate
   alias GodwokenExplorer.Graphql.Dataloader.BatchUDT
@@ -670,16 +669,6 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
     contract_address = Map.get(input, :contract_address)
     minted_burn_address_hash = UDTBalance.minted_burn_address_hash()
 
-    burnt_token_ids =
-      from(tt in TokenTransfer,
-        where:
-          tt.token_contract_address_hash == ^contract_address and
-            tt.to_address_hash == ^minted_burn_address_hash,
-        distinct: [tt.token_id],
-        select: tt.token_id
-      )
-      |> Repo.all()
-
     conditions =
       Enum.reduce(input, true, fn arg, acc ->
         case arg do
@@ -691,21 +680,20 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
         end
       end)
 
-    squery =
-      from(cu in CurrentUDTBalance)
-      |> where([c], c.token_type == :erc721 and c.token_id not in ^burnt_token_ids)
-      |> where([_], ^conditions)
-      |> where(
-        [cu],
-        cu.token_contract_address_hash == ^contract_address and cu.value > 0
-      )
-      |> order_by([c], desc: :token_id, desc: :block_number, desc: :id)
-      |> distinct([c], [c.token_contract_address_hash, c.token_id])
-
     return =
-      from(cu in CurrentUDTBalance)
-      |> join(:inner, [cu], scu in subquery(squery), on: cu.id == scu.id)
-      |> order_by([_], desc: :token_id)
+      from(e in ERC721Token,
+        where:
+          e.token_contract_address_hash == ^contract_address and
+            e.address_hash != ^minted_burn_address_hash and ^conditions,
+        order_by: [desc: e.token_id],
+        select: %ERC721Token{
+          address_hash: e.address_hash,
+          token_contract_address_hash: e.token_contract_address_hash,
+          token_id: e.token_id,
+          token_type: :erc721,
+          value: fragment("1::decimal")
+        }
+      )
       |> paginate_query(input, %{
         cursor_fields: [token_id: :desc],
         total_count_primary_key_field: [:id]
