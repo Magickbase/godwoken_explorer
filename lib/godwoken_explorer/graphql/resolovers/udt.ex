@@ -576,23 +576,20 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
 
   def erc721_holders(_parent, %{input: input} = _args, _resolution) do
     contract_address = Map.get(input, :contract_address)
+    minted_burn_address_hash = UDTBalance.minted_burn_address_hash()
 
     sq1 =
-      from(cu in CurrentUDTBalance)
+      from(e in ERC721Token)
       |> where(
-        [cu],
-        cu.token_contract_address_hash == ^contract_address and cu.token_type == :erc721 and
-          not is_nil(cu.token_id)
+        [e],
+        e.token_contract_address_hash == ^contract_address and
+          e.address_hash != ^minted_burn_address_hash
       )
-      |> order_by([cu],
-        asc: cu.address_hash,
-        desc: cu.block_number
-      )
-      |> distinct([cu], [cu.address_hash])
-      |> select([cu], %{
-        address_hash: cu.address_hash,
-        token_contract_address_hash: cu.token_contract_address_hash,
-        quantity: cu.value
+      |> group_by([e], [e.token_contract_address_hash, e.address_hash])
+      |> select([e], %{
+        address_hash: e.address_hash,
+        token_contract_address_hash: e.token_contract_address_hash,
+        quantity: type(count(e.token_id, :distinct), :decimal)
       })
 
     sq3 =
