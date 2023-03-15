@@ -1024,8 +1024,18 @@ defmodule GodwokenIndexer.Block.SyncWorker do
           token_contract_address_hash: t.token_contract_address_hash,
           token_id: t.token_id,
           block_number: t.block_number,
-          address_hash: t.to_address_hash
+          address_hash: t.to_address_hash,
+          log_index: t.log_index
         }
+      end)
+      |> Enum.sort_by(
+        fn map ->
+          {map[:block_number], map[:log_index]}
+        end,
+        :desc
+      )
+      |> Enum.uniq_by(fn map ->
+        {map[:token_contract_address_hash], map[:token_id]}
       end)
 
     Import.insert_changes_list(erc721_tokens,
