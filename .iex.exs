@@ -20,6 +20,7 @@ alias GodwokenExplorer.{
   Version,
   WithdrawalHistory,
   WithdrawalRequest
+  ERC721Token
 }
 
 alias GodwokenExplorer.Graphql.{Sourcify}

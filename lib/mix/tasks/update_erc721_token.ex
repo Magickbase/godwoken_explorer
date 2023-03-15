@@ -35,7 +35,12 @@ defmodule Mix.Tasks.UpdateErc721Token do
         on:
           u.contract_address_hash == t.token_contract_address_hash and u.eth_type == :erc721 and
             not is_nil(t.token_id),
-        order_by: [asc: t.token_contract_address_hash, asc: t.token_id, desc: t.block_number],
+        order_by: [
+          asc: t.token_contract_address_hash,
+          asc: t.token_id,
+          desc: t.block_number,
+          desc: t.log_index
+        ],
         distinct: [t.token_contract_address_hash, t.token_id],
         select: %{
           token_contract_address_hash: t.token_contract_address_hash,
