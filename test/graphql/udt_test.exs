@@ -2431,10 +2431,9 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
 
     # add more one
     _ =
-      insert(:current_udt_balance,
+      insert(:erc721_token,
         token_contract_address_hash: contract_address_hash,
         token_id: 100,
-        value: 1,
         token_type: :erc721
       )
 
