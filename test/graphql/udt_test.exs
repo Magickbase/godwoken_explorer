@@ -2410,6 +2410,53 @@ defmodule GodwokenExplorer.Graphql.UDTTest do
              },
              json_response(conn, 200)
            )
+
+    query = """
+    query {
+      erc721_inventory(
+        input: {limit: 5, contract_address: "#{contract_address}", token_id: "1"}
+      ) {
+        entries {
+          address_hash
+          token_contract_address_hash
+          token_id
+          token_type
+          counts
+          token_instance {
+            token_contract_address_hash
+            metadata
+          }
+          account {
+            bit_alias
+          }
+        }
+        metadata {
+          total_count
+          after
+          before
+        }
+      }
+    }
+    """
+
+    conn =
+      post(conn, "/graphql", %{
+        "query" => query,
+        "variables" => %{}
+      })
+
+    assert match?(
+             %{
+               "data" => %{
+                 "erc721_inventory" => %{
+                   "entries" => [
+                     %{"token_id" => "1"}
+                   ]
+                 }
+               }
+             },
+             json_response(conn, 200)
+           )
   end
 
   test "graphql: erc721_inventory with first page check", %{

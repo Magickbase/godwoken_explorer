@@ -682,9 +682,10 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
 
     return =
       from(e in ERC721Token,
+        where: ^conditions,
         where:
           e.token_contract_address_hash == ^contract_address and
-            e.address_hash != ^minted_burn_address_hash and ^conditions,
+            e.address_hash != ^minted_burn_address_hash,
         order_by: [desc: e.token_id],
         select: %ERC721Token{
           address_hash: e.address_hash,
