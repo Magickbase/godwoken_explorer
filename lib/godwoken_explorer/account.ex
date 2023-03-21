@@ -626,6 +626,41 @@ defmodule GodwokenExplorer.Account do
     end)
   end
 
+  def batch_import_contracts_with_eth_addresses(eth_addresses) do
+    params =
+      eth_addresses
+      |> Enum.map(fn eth_address ->
+        polyjuice_validator_code_hash =
+          Application.get_env(:godwoken_explorer, :polyjuice_validator_code_hash)
+
+        rollup_type_hash = Application.get_env(:godwoken_explorer, :rollup_type_hash)
+        polyjuice_creator_id = Application.get_env(:godwoken_explorer, :polyjuice_creator_id)
+
+        le_hex_polyjuice_creator_id =
+          polyjuice_creator_id
+          |> integer_to_le_binary()
+          |> pad_trailing(4, 0)
+          |> Base.encode16(case: :lower)
+
+        account_script = %{
+          "code_hash" => polyjuice_validator_code_hash,
+          "hash_type" => "type",
+          "args" =>
+            rollup_type_hash <> le_hex_polyjuice_creator_id <> String.slice(eth_address, 2..-1)
+        }
+
+        %{
+          script: account_script,
+          script_hash: script_to_hash(account_script)
+        }
+      end)
+
+    {:ok, %GodwokenRPC.Account.FetchedAccountIDs{errors: [], params_list: account_list}} =
+      rpc().fetch_account_ids(params)
+
+    import_accounts(account_list)
+  end
+
   def batch_import_accounts_with_script_hashes(script_hashes) do
     exist_script_hashes =
       from(a in Account, where: a.script_hash in ^script_hashes, select: a.script_hash)
@@ -704,23 +739,6 @@ defmodule GodwokenExplorer.Account do
       |> changeset(attrs)
       |> Repo.insert_or_update!()
     end
-  end
-
-  def update_nonce!(id) do
-    nonce = GodwokenRPC.fetch_nonce(id)
-    Repo.get(Account, id) |> changeset(%{nonce: nonce}) |> Repo.update!()
-  end
-
-  def update_all_nonce!(ids) do
-    params = ids |> Enum.map(fn id -> %{account_id: id} end)
-    {:ok, responses} = GodwokenRPC.fetch_nonce_by_ids(params)
-
-    Import.insert_changes_list(responses,
-      for: Account,
-      timestamps: import_timestamps(),
-      on_conflict: {:replace, [:nonce, :updated_at]},
-      conflict_target: :id
-    )
   end
 
   def yok_sample_id do
