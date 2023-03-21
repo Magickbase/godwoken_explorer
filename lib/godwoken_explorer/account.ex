@@ -646,7 +646,9 @@ defmodule GodwokenExplorer.Account do
           "code_hash" => polyjuice_validator_code_hash,
           "hash_type" => "type",
           "args" =>
-            rollup_type_hash <> le_hex_polyjuice_creator_id <> String.slice(eth_address, 2..-1)
+            rollup_type_hash <>
+              le_hex_polyjuice_creator_id <>
+              (eth_address |> String.downcase() |> String.slice(2..-1))
         }
 
         %{

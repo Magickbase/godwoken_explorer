@@ -357,57 +357,71 @@ defmodule GodwokenIndexer.Block.SyncWorkerTest do
            ]
          }}
       end)
-      |> expect(:fetch_account_id, fn script_hash ->
-        assert script_hash == "0x20e9af552e1e926e0fa25b3facaa4805cfa6f522200c1f8cfc57121edd737856"
-
-        {:ok, 21252}
-      end)
-      |> expect(:fetch_nonce, fn id ->
-        assert id == 21252
-
-        10
-      end)
-      |> expect(:fetch_script, fn script_hash ->
-        assert script_hash == "0x20e9af552e1e926e0fa25b3facaa4805cfa6f522200c1f8cfc57121edd737856"
-
-        {:ok,
-         %{
-           "args" =>
-             "0x702359ea7f073558921eb50d8c1c77e92f760c8f8656bde4995f26b8963e2dd804000000ad1a3af247fe9905b4c6204cfd44061569ea4207",
-           "code_hash" => "0x1629b04b49ded9e5747481f985b11cba6cdd4ffc167971a585e96729455ca736",
-           "hash_type" => "type"
-         }}
-      end)
-      |> expect(:fetch_script_hash, fn params ->
-        assert params == %{account_id: 21252}
-
-        {:ok, "0x20e9af552e1e926e0fa25b3facaa4805cfa6f522200c1f8cfc57121edd737856"}
-      end)
-      |> expect(:fetch_script_hash, fn params ->
-        assert params == %{account_id: 104_500}
-
-        {:ok, "0x1e8de1f76c27b01748e9e483e2a2866f4d5b553f03072f472b7de7fd1b10b60e"}
-      end)
-      |> expect(:fetch_nonce, fn id ->
-        assert id == 104_500
-
-        1
-      end)
-      |> expect(:fetch_script, fn script_hash ->
-        assert script_hash == "0x1e8de1f76c27b01748e9e483e2a2866f4d5b553f03072f472b7de7fd1b10b60e"
+      |> expect(:fetch_account_ids, fn params ->
+        assert params == [
+                 %{
+                   script: %{
+                     "args" =>
+                       "0x702359ea7f073558921eb50d8c1c77e92f760c8f8656bde4995f26b8963e2dd804000000ad1a3af247fe9905b4c6204cfd44061569ea4207",
+                     "code_hash" =>
+                       "0x1629b04b49ded9e5747481f985b11cba6cdd4ffc167971a585e96729455ca736",
+                     "hash_type" => "type"
+                   },
+                   script_hash:
+                     "0x20e9af552e1e926e0fa25b3facaa4805cfa6f522200c1f8cfc57121edd737856"
+                 }
+               ]
 
         {:ok,
-         %{
-           "args" =>
-             "0x702359ea7f073558921eb50d8c1c77e92f760c8f8656bde4995f26b8963e2dd80400000078c88768b72db425836ae8abe93d35593f0d680c",
-           "code_hash" => "0x1629b04b49ded9e5747481f985b11cba6cdd4ffc167971a585e96729455ca736",
-           "hash_type" => "type"
+         %GodwokenRPC.Account.FetchedAccountIDs{
+           errors: [],
+           params_list: [
+             %{
+               id: 21252,
+               script: %{
+                 "args" =>
+                   "0x702359ea7f073558921eb50d8c1c77e92f760c8f8656bde4995f26b8963e2dd804000000ad1a3af247fe9905b4c6204cfd44061569ea4207",
+                 "code_hash" =>
+                   "0x1629b04b49ded9e5747481f985b11cba6cdd4ffc167971a585e96729455ca736",
+                 "hash_type" => "type"
+               },
+               script_hash: "0x20e9af552e1e926e0fa25b3facaa4805cfa6f522200c1f8cfc57121edd737856"
+             }
+           ]
          }}
       end)
-      |> expect(:fetch_account_id, fn script_hash ->
-        assert script_hash == "0x1e8de1f76c27b01748e9e483e2a2866f4d5b553f03072f472b7de7fd1b10b60e"
+      |> expect(:fetch_account_ids, fn params ->
+        assert params == [
+                 %{
+                   script: %{
+                     "args" =>
+                       "0x702359ea7f073558921eb50d8c1c77e92f760c8f8656bde4995f26b8963e2dd80400000078c88768b72db425836ae8abe93d35593f0d680c",
+                     "code_hash" =>
+                       "0x1629b04b49ded9e5747481f985b11cba6cdd4ffc167971a585e96729455ca736",
+                     "hash_type" => "type"
+                   },
+                   script_hash:
+                     "0x1e8de1f76c27b01748e9e483e2a2866f4d5b553f03072f472b7de7fd1b10b60e"
+                 }
+               ]
 
-        {:ok, 104_500}
+        {:ok,
+         %GodwokenRPC.Account.FetchedAccountIDs{
+           errors: [],
+           params_list: [
+             %{
+               id: 104_500,
+               script: %{
+                 "args" =>
+                   "0x702359ea7f073558921eb50d8c1c77e92f760c8f8656bde4995f26b8963e2dd80400000078c88768b72db425836ae8abe93d35593f0d680c",
+                 "code_hash" =>
+                   "0x1629b04b49ded9e5747481f985b11cba6cdd4ffc167971a585e96729455ca736",
+                 "hash_type" => "type"
+               },
+               script_hash: "0x1e8de1f76c27b01748e9e483e2a2866f4d5b553f03072f472b7de7fd1b10b60e"
+             }
+           ]
+         }}
       end)
 
       assert GodwokenIndexer.Block.SyncWorker.fetch_and_import(1) == {:ok, 2}
