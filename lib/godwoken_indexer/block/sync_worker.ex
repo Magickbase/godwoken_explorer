@@ -468,10 +468,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
       not_exist_contract_address = contract_address_hashes -- exist_contract_addresses
 
       if length(not_exist_contract_address) > 0 do
-        not_exist_contract_address
-        |> Enum.each(fn address ->
-          Account.find_or_create_contract_by_eth_address(address)
-        end)
+        Account.batch_import_contracts_with_eth_addresses(not_exist_contract_address)
 
         eth_address_to_ids =
           from(a in Account,
@@ -649,12 +646,16 @@ defmodule GodwokenIndexer.Block.SyncWorker do
       |> Enum.filter(fn p -> not is_nil(p.created_contract_address_hash) end)
 
     if created_contract_address_params != [] do
-      created_contract_address_params
-      |> Enum.filter(fn p -> p.status == :succeed end)
-      |> Enum.each(fn p ->
-        Account.find_or_create_contract_by_eth_address(p.created_contract_address_hash)
+      eth_addresses =
+        created_contract_address_params
+        |> Enum.filter(fn p -> p.status == :succeed end)
+        |> Enum.map(fn p -> p.created_contract_address_hash end)
 
-        %{address: p.created_contract_address_hash}
+      Account.batch_import_contracts_with_eth_addresses(eth_addresses)
+
+      eth_addresses
+      |> Enum.each(fn address ->
+        %{address: address}
         |> CheckContractUDT.new()
         |> Oban.insert()
       end)
