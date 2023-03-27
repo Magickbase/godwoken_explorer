@@ -1,4 +1,4 @@
-defmodule GodwokenIndexer.Worker.CleanFailedPendingTransactionsTest do
+defmodule GodwokenIndexer.Worker.CleanVersionsTest do
   use GodwokenExplorer.DataCase
 
   import GodwokenExplorer.Factory
