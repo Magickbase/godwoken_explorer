@@ -11,6 +11,7 @@ defmodule GodwokenExplorer.Graphql.Sourcify do
   alias GodwokenExplorer.{Account, Polyjuice, SmartContract, Transaction}
 
   alias GodwokenExplorer.Repo
+  alias GodwokenExplorer.Graphql.SourcifyExport
 
   require Logger
 
@@ -29,7 +30,7 @@ defmodule GodwokenExplorer.Graphql.Sourcify do
     smart_contract_params = %{deployment_tx_hash: deployment_tx_hash}
 
     extend_sourcify_params =
-      case get_metadata(address_hash_string) do
+      case SourcifyExport.get_metadata(address_hash_string) do
         {:ok, verification_metadata} ->
           case parse_params_from_sourcify(address_hash_string, verification_metadata) do
             %{
@@ -47,7 +48,8 @@ defmodule GodwokenExplorer.Graphql.Sourcify do
                 name: name,
                 abi: abi,
                 compiler_version: compiler_version,
-                contract_source_code: contract_source_code
+                contract_source_code: contract_source_code,
+                sourcify_metadata: verification_metadata
               }
 
             _ ->
@@ -139,11 +141,6 @@ defmodule GodwokenExplorer.Graphql.Sourcify do
 
   def check_by_address_any(address_hash_string) do
     get_metadata_full_url = get_metadata_any_url() <> "/" <> address_hash_string
-    http_get_request(get_metadata_full_url, [])
-  end
-
-  def get_metadata(address_hash_string) do
-    get_metadata_full_url = get_metadata_url() <> "/" <> address_hash_string
     http_get_request(get_metadata_full_url, [])
   end
 
@@ -441,7 +438,7 @@ defmodule GodwokenExplorer.Graphql.Sourcify do
     "#{base_server_url()}" <> "/check-by-addresses"
   end
 
-  defp get_metadata_url do
+  def get_metadata_url do
     chain_id = config(:chain_id)
     "#{base_server_url()}" <> "/files/" <> chain_id
   end
@@ -454,4 +451,13 @@ defmodule GodwokenExplorer.Graphql.Sourcify do
   def no_metadata_message, do: @no_metadata_message
 
   def failed_verification_message, do: @failed_verification_message
+end
+
+defmodule GodwokenExplorer.Graphql.SourcifyExport do
+  alias GodwokenExplorer.Graphql.Sourcify
+
+  def get_metadata(address_hash_string) do
+    get_metadata_full_url = Sourcify.get_metadata_url() <> "/" <> address_hash_string
+    Sourcify.http_get_request(get_metadata_full_url, [])
+  end
 end

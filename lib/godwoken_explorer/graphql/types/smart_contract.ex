@@ -187,10 +187,9 @@ defmodule GodwokenExplorer.Graphql.Types.SmartContract do
 
     field(:ckb_balance, :decimal, description: "The ckb-balance of this contract.")
 
-    # field :ckb_balance, :decimal do
-    #   description("The ckb-balance of this contract.")
-    #   resolve(&Resolvers.SmartContract.ckb_balance/3)
-    # end
+    field(:sourcify_metadata, :json,
+      description: "The sourcify metadata of this contract, if exists"
+    )
   end
 
   enum :smart_contracts_sorter do
@@ -219,7 +218,7 @@ defmodule GodwokenExplorer.Graphql.Types.SmartContract do
   end
 
   input_object :smart_contracts_sorter_input do
-    field(:sort_type, non_null :sort_type)
-    field(:sort_value, non_null :smart_contracts_sorter)
+    field(:sort_type, non_null(:sort_type))
+    field(:sort_value, non_null(:smart_contracts_sorter))
   end
 end
