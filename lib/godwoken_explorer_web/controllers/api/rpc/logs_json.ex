@@ -1,15 +1,13 @@
-defmodule GodwokenExplorerWeb.API.RPC.LogsView do
-  use GodwokenExplorerWeb, :view
-
-  alias GodwokenExplorerWeb.API.RPC.RPCView
+defmodule GodwokenExplorerWeb.API.RPC.LogsJSON do
+  alias GodwokenExplorerWeb.API.RPC.RPCJSON
 
   def render("getlogs.json", %{logs: logs}) do
     data = Enum.map(logs, &prepare_log/1)
-    RPCView.render("show.json", data: data)
+    RPCJSON.render("show.json", %{data: data})
   end
 
   def render("error.json", assigns) do
-    RPCView.render("error.json", assigns)
+    RPCJSON.render("error.json", assigns)
   end
 
   defp prepare_log(log) do

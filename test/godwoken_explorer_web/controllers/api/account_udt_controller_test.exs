@@ -45,7 +45,7 @@ defmodule GodwokenExplorerWeb.API.AccountUDTControllerTest do
       conn =
         get(
           conn,
-          Routes.account_udt_path(conn, :index, udt_id: ckb_native.id)
+          ~p"/api/account_udts?udt_id=#{ckb_native.id}"
         )
 
       assert json_response(conn, 200) == %{

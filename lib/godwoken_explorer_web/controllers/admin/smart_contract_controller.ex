@@ -37,7 +37,7 @@ defmodule GodwokenExplorerWeb.Admin.SmartContractController do
                  "abi" => Jason.decode!(smart_contract_params["abi"])
                })
              ) do
-          {:ok, smart_contract} ->
+          {:ok, _smart_contract} ->
             conn
             |> put_flash(:info, "Smart contract created successfully.")
             |> redirect(to: ~p"/admin/smart_contracts")

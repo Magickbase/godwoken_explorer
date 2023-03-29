@@ -1,6 +1,4 @@
-defmodule GodwokenExplorerWeb.API.RPC.RPCView do
-  use GodwokenExplorerWeb, :view
-
+defmodule GodwokenExplorerWeb.API.RPC.RPCJSON do
   def render("show.json", %{data: data}) do
     %{
       "status" => "1",

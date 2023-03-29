@@ -23,7 +23,7 @@ defmodule GodwokenExplorerWeb.API.UDTControllerTest do
       conn =
         get(
           conn,
-          Routes.udt_path(conn, :show, to_string(udt_account.eth_address))
+          ~p"/api/udts/#{to_string(udt_account.eth_address)}"
         )
 
       assert json_response(conn, 200) == %{

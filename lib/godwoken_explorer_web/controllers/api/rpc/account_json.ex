@@ -1,10 +1,8 @@
-defmodule GodwokenExplorerWeb.API.RPC.AccountView do
-  use GodwokenExplorerWeb, :view
-
-  alias GodwokenExplorerWeb.API.RPC.RPCView
+defmodule GodwokenExplorerWeb.API.RPC.AccountJSON do
+  alias GodwokenExplorerWeb.API.RPC.RPCJSON
 
   def render("balance.json", %{addresses: [address]}) do
-    RPCView.render("show.json", data: address[:balance])
+    RPCJSON.render("show.json", %{data: address[:balance]})
   end
 
   def render("balance.json", assigns) do
@@ -12,25 +10,25 @@ defmodule GodwokenExplorerWeb.API.RPC.AccountView do
   end
 
   def render("balancemulti.json", %{addresses: addresses}) do
-    RPCView.render("show.json", data: addresses)
+    RPCJSON.render("show.json", %{data: addresses})
   end
 
   def render("error.json", assigns) do
-    RPCView.render("error.json", assigns)
+    RPCJSON.render("error.json", assigns)
   end
 
   def render("txlist.json", %{transactions: transactions}) do
     data = Enum.map(transactions, &prepare_transaction/1)
-    RPCView.render("show.json", data: data)
+    RPCJSON.render("show.json", %{data: data})
   end
 
   def render("tokentx.json", %{token_transfers: token_transfers}) do
     data = Enum.map(token_transfers, &prepare_token_transfer/1)
-    RPCView.render("show.json", data: data)
+    RPCJSON.render("show.json", %{data: data})
   end
 
   def render("tokenbalance.json", %{token_balance: token_balance}) do
-    RPCView.render("show.json", data: to_string(token_balance))
+    RPCJSON.render("show.json", %{data: to_string(token_balance)})
   end
 
   defp prepare_transaction(transaction) do

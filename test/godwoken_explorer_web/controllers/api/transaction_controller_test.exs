@@ -93,7 +93,7 @@ defmodule GodwokenExplorerWeb.API.TransactionControllerTest do
       conn =
         get(
           conn,
-          Routes.transaction_path(conn, :index, eth_address: to_string(eth_user.eth_address))
+          ~p"/api/txs?eth_address=#{to_string(eth_user.eth_address)}"
         )
 
       assert json_response(conn, 200) ==
@@ -200,10 +200,7 @@ defmodule GodwokenExplorerWeb.API.TransactionControllerTest do
       conn =
         get(
           conn,
-          Routes.transaction_path(conn, :index,
-            eth_address: to_string(eth_user.eth_address),
-            contract_address: to_string(polyjuice_contract_account.eth_address)
-          )
+          ~p"/api/txs?eth_address=#{to_string(eth_user.eth_address)}&contract_address=#{to_string(polyjuice_contract_account.eth_address)}"
         )
 
       assert json_response(conn, 200) ==
@@ -254,7 +251,7 @@ defmodule GodwokenExplorerWeb.API.TransactionControllerTest do
       conn =
         get(
           conn,
-          Routes.transaction_path(conn, :index, block_hash: to_string(block.hash))
+          ~p"/api/txs?block_hash=#{to_string(block.hash)}"
         )
 
       assert json_response(conn, 200) ==
@@ -330,7 +327,7 @@ defmodule GodwokenExplorerWeb.API.TransactionControllerTest do
       conn =
         get(
           conn,
-          Routes.transaction_path(conn, :index)
+          ~p"/api/txs"
         )
 
       assert json_response(conn, 200) ==
@@ -407,11 +404,7 @@ defmodule GodwokenExplorerWeb.API.TransactionControllerTest do
       conn =
         get(
           conn,
-          Routes.transaction_path(
-            conn,
-            :show,
-            to_string(tx.eth_hash)
-          )
+          ~p"/api/txs/#{to_string(tx.eth_hash)}"
         )
 
       assert json_response(conn, 200) ==
@@ -453,11 +446,7 @@ defmodule GodwokenExplorerWeb.API.TransactionControllerTest do
       conn =
         get(
           conn,
-          Routes.transaction_path(
-            conn,
-            :show,
-            to_string(polyjuice_creator_tx.hash)
-          )
+          ~p"/api/txs/#{to_string(polyjuice_creator_tx.hash)}"
         )
 
       assert json_response(conn, 200) ==

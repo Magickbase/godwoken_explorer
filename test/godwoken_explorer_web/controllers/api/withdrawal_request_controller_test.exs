@@ -32,7 +32,7 @@ defmodule GodwokenExplorerWeb.API.WithdrawalRequestControllerTest do
       conn =
         get(
           conn,
-          Routes.withdrawal_request_path(conn, :index, eth_address: to_string(eth_address))
+          ~p"/api/withdrawal_requests?eth_address=#{to_string(eth_address)}"
         )
 
       assert json_response(conn, 200) ==

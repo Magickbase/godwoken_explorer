@@ -8,7 +8,7 @@ defmodule GodwokenExplorerWeb.API.SearchControllerTest do
       conn =
         get(
           conn,
-          Routes.search_path(conn, :index, keyword: 932_955_726_849_138_728)
+          ~p"/api/search?keyword=932955726849138728"
         )
 
       assert json_response(conn, 404) ==
@@ -21,7 +21,7 @@ defmodule GodwokenExplorerWeb.API.SearchControllerTest do
       conn =
         get(
           conn,
-          Routes.search_path(conn, :index, keyword: to_string(account.eth_address))
+          ~p"/api/search?keyword=#{to_string(account.eth_address)}"
         )
 
       assert json_response(conn, 200) == %{
@@ -36,7 +36,7 @@ defmodule GodwokenExplorerWeb.API.SearchControllerTest do
       conn =
         get(
           conn,
-          Routes.search_path(conn, :index, keyword: address)
+          ~p"/api/search?keyword=#{address}"
         )
 
       assert json_response(conn, 200) == %{
