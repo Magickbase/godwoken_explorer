@@ -21,7 +21,7 @@
           </div>
 
         <button type="submit" class="torch-button">Search</button>
-        <%= link "Clear Filters", to: Routes.admin_job_path(@conn, :index) %>
+        <%= link "Clear Filters", to: ~p"/admin/jobs" %>
       <% end %>
 
     </section>
@@ -64,8 +64,8 @@
                 <td><%= job.scheduled_at %></td>
 
               <td class="torch-actions">
-                <span><%= link "Show", to: Routes.admin_job_path(@conn, :show, job) %></span>
-                <span><%= link "Delete", to: Routes.admin_job_path(@conn, :delete, job), method: :delete, data: [confirm: "Are you sure?"] %></span>
+                <span><%= link "Show", to: ~p"/admin/jobs/#{job}" %></span>
+                <span><%= link "Delete", to: ~p"/admin/jobs/#{job}", method: :delete, data: [confirm: "Are you sure?"] %></span>
               </td>
             </tr>
           <% end %>

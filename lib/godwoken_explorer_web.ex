@@ -17,34 +17,11 @@ defmodule GodwokenExplorerWeb do
   and import those modules here.
   """
 
-  def controller do
-    quote do
-      use Phoenix.Controller, namespace: GodwokenExplorerWeb
-
-      import Plug.Conn
-      import GodwokenExplorerWeb.Gettext
-      alias GodwokenExplorerWeb.Router.Helpers, as: Routes
-    end
-  end
-
-  def view do
-    quote do
-      use Phoenix.View,
-        root: "lib/godwoken_explorer_web/templates",
-        namespace: GodwokenExplorerWeb
-
-      # Import convenience functions from controllers
-      import Phoenix.Controller,
-        only: [get_flash: 1, get_flash: 2, view_module: 1, view_template: 1]
-
-      # Include shared imports and aliases for views
-      unquote(view_helpers())
-    end
-  end
+  def static_paths, do: ~w(assets fonts images favicon.ico robots.txt)
 
   def router do
     quote do
-      use Phoenix.Router
+      use Phoenix.Router, helpers: false
 
       import Plug.Conn
       import Phoenix.Controller
@@ -58,17 +35,71 @@ defmodule GodwokenExplorerWeb do
     end
   end
 
-  defp view_helpers do
+  def controller do
     quote do
-      # Use all HTML functionality (forms, tags, etc)
-      use Phoenix.HTML
+      use Phoenix.Controller,
+        formats: [:html, :json],
+        layouts: [html: GodwokenExplorerWeb.Layouts]
 
-      # Import basic rendering functionality (render, render_layout, etc)
-      import Phoenix.View
-
-      import GodwokenExplorerWeb.ErrorHelpers
+      import Plug.Conn
       import GodwokenExplorerWeb.Gettext
-      alias GodwokenExplorerWeb.Router.Helpers, as: Routes
+
+      unquote(verified_routes())
+    end
+  end
+
+  def live_view do
+    quote do
+      use Phoenix.LiveView,
+        layout: {GodwokenExplorerWeb.Layouts, :app}
+
+      unquote(html_helpers())
+    end
+  end
+
+  def live_component do
+    quote do
+      use Phoenix.LiveComponent
+
+      unquote(html_helpers())
+    end
+  end
+
+  def html do
+    quote do
+      use Phoenix.Component
+
+      # Import convenience functions from controllers
+      import Phoenix.Controller,
+        only: [get_csrf_token: 0, view_module: 1, view_template: 1]
+
+      # Include general helpers for rendering HTML
+      unquote(html_helpers())
+    end
+  end
+
+  defp html_helpers do
+    quote do
+      # HTML escaping functionality
+      import Phoenix.HTML
+      # Core UI components and translation
+      import GodwokenExplorerWeb.CoreComponents
+      import GodwokenExplorerWeb.Gettext
+
+      # Shortcut for generating JS commands
+      alias Phoenix.LiveView.JS
+
+      # Routes generation with the ~p sigil
+      unquote(verified_routes())
+    end
+  end
+
+  def verified_routes do
+    quote do
+      use Phoenix.VerifiedRoutes,
+        endpoint: GodwokenExplorerWeb.Endpoint,
+        router: GodwokenExplorerWeb.Router,
+        statics: GodwokenExplorerWeb.static_paths()
     end
   end
 

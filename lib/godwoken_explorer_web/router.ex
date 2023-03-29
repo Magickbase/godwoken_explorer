@@ -82,7 +82,7 @@ defmodule GodwokenExplorerWeb.Router do
     get("/", RootController, :index)
   end
 
-  scope "/admin", GodwokenExplorerWeb.Admin, as: :admin do
+  scope "/admin", GodwokenExplorerWeb.Admin do
     pipe_through(:browser)
 
     get("/", DashboardController, :index)

@@ -1,0 +1,75 @@
+<section id="torch-toolbar">
+  <div class="torch-container">
+    <.link href={~p"/admin/smart_contracts/new"}>New Smart contract</.link>
+  </div>
+</section>
+<section id="torch-index-content">
+  <div class="torch-container">
+    <section id="torch-filters">
+      <h3>Find Smart contracts</h3>
+      <%= form_tag @conn.request_path, method: :get, id: "torch-filters-form" do %>
+
+        <div class="field">
+          <label>Name</label>
+          <%= filter_select(:smart_contract, :name, @conn.params) %>
+            <%= filter_string_input(:smart_contract, :name, @conn.params) %>
+        </div>
+
+        <div class="field">
+          <label>Account</label>
+          <%= number_filter_select(:smart_contract, :account_id, @conn.params) %>
+            <%= filter_number_input(:smart_contract, :account_id, @conn.params) %>
+        </div>
+
+        <button type="submit" class="torch-button">Search</button>
+        <%= link "Clear Filters" , to: ~p"/admin/smart_contracts" %>
+          <% end %>
+
+    </section>
+
+    <section id="torch-table">
+      <%= if length(@smart_contracts)> 0 do %>
+        <table>
+          <thead>
+            <tr>
+              <th>
+                <%= table_link(@conn, "Name" , :name) %>
+              </th>
+
+              <th>
+                <%= table_link(@conn, "Account" , :account_id) %>
+              </th>
+              <th><span>Actions</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <%= for smart_contract <- @smart_contracts do %>
+              <tr>
+
+                <td>
+                  <%= smart_contract.name %>
+                </td>
+
+                <td>
+                  <%= smart_contract.account.eth_address |> to_string() %>
+                </td>
+
+                <td class="torch-actions">
+                  <span>
+                    <%= link "Show" , to: ~p"/admin/smart_contracts/#{smart_contract}" %>
+                  </span>
+                  <span>
+                    <%= link "Edit" , to: ~p"/admin/smart_contracts/#{smart_contract}/edit" %>
+                  </span>
+                </td>
+              </tr>
+              <% end %>
+          </tbody>
+        </table>
+        <%= render Torch.PaginationView, "_pagination.html" , assigns %>
+          <% else %>
+            <p class="torch-no-data">No Smart contracts match your search.</p>
+            <% end %>
+    </section>
+  </div>
+</section>

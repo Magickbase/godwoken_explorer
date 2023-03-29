@@ -1,7 +1,7 @@
 defmodule GodwokenExplorerWeb.Admin.DashboardController do
   use GodwokenExplorerWeb, :controller
 
-  plug(:put_root_layout, {GodwokenExplorerWeb.LayoutView, "torch.html"})
+  plug(:put_root_layout, {GodwokenExplorerWeb.Layouts, "torch.html"})
   plug(:put_layout, false)
 
   def index(conn, _) do
@@ -13,6 +13,6 @@ defmodule GodwokenExplorerWeb.Admin.DashboardController do
 
     conn
     |> put_flash(:success, "flush cache successfully")
-    |> redirect(to: Routes.admin_dashboard_path(conn, :index))
+    |> redirect(to: ~p"/admin")
   end
 end
