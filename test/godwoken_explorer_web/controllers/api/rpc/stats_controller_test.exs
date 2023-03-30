@@ -3,6 +3,11 @@ defmodule GodwokenExplorerWeb.API.RPC.StatsControllerTest do
 
   import GodwokenExplorer.Factory
 
+  setup do
+    Code.ensure_loaded(GodwokenExplorerWeb.API.RPC.StatsController)
+    :ok
+  end
+
   describe "tokensupply" do
     test "with missing contract address", %{conn: conn} do
       params = %{
@@ -88,7 +93,7 @@ defmodule GodwokenExplorerWeb.API.RPC.StatsControllerTest do
     })
   end
 
-  defp resolve_schema(result \\ %{}) do
+  defp resolve_schema(result) do
     %{
       "type" => "object",
       "properties" => %{

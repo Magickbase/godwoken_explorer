@@ -42,11 +42,7 @@ defmodule GodwokenExplorerWeb.API.SnapshotControllerTest do
       conn =
         get(
           conn,
-          Routes.snapshot_path(conn, :index,
-            start_block_number: 1,
-            end_block_number: 10,
-            token_contract_address_hash: to_string(udt.contract_address_hash)
-          )
+          ~p"/api/snapshots.csv?start_block_number=1&end_block_number=10&token_contract_address_hash=#{to_string(udt.contract_address_hash)}"
         )
 
       assert conn.resp_body |> String.split("\r\n") |> Enum.drop(1) == [

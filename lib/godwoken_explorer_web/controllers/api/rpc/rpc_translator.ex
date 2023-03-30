@@ -20,7 +20,7 @@ defmodule GodwokenExplorerWeb.API.RPC.RPCTranslator do
 
   #  alias GodwokenExplorerWeb.AccessHelpers
   alias GodwokenExplorerWeb.API.APILogger
-  alias GodwokenExplorerWeb.API.RPC.RPCView
+  alias GodwokenExplorerWeb.API.RPC.RPCJSON
   alias Phoenix.Controller
   alias Plug.Conn
 
@@ -50,7 +50,7 @@ defmodule GodwokenExplorerWeb.API.RPC.RPCTranslator do
       {:error, :no_action} ->
         conn
         |> put_status(400)
-        |> put_view(RPCView)
+        |> put_view(RPCJSON)
         |> Controller.render(:error, error: "Unknown action")
         |> halt()
 
@@ -59,7 +59,7 @@ defmodule GodwokenExplorerWeb.API.RPC.RPCTranslator do
 
         conn
         |> put_status(500)
-        |> put_view(RPCView)
+        |> put_view(RPCJSON)
         |> Controller.render(:error, error: "Something went wrong.")
         |> halt()
 
@@ -69,7 +69,7 @@ defmodule GodwokenExplorerWeb.API.RPC.RPCTranslator do
       _ ->
         conn
         |> put_status(500)
-        |> put_view(RPCView)
+        |> put_view(RPCJSON)
         |> Controller.render(:error, error: "Something went wrong.")
         |> halt()
     end
@@ -78,7 +78,7 @@ defmodule GodwokenExplorerWeb.API.RPC.RPCTranslator do
   def call(%Conn{} = conn, _) do
     conn
     |> put_status(400)
-    |> put_view(RPCView)
+    |> put_view(RPCJSON)
     |> Controller.render(:error, error: "Params 'module' and 'action' are required parameters")
     |> halt()
   end

@@ -2,7 +2,6 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
   use Absinthe.Schema.Notation
   alias GodwokenExplorer.Graphql.Resolvers, as: Resolvers
   alias GodwokenExplorer.Graphql.Middleware.NullFilter
-  import Absinthe.Resolution.Helpers, only: [dataloader: 1]
 
   object :udt_querys do
     @desc """
@@ -1327,7 +1326,7 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
   object :erc721_udt do
     import_fields(:erc721_1155_common_udt)
 
-    field :minted_count, :decimal, description: "Count minted of erc721 udt."
+    field(:minted_count, :decimal, description: "Count minted of erc721 udt.")
 
     field(:holders_count, :integer, description: "Count holders of udt.")
   end
@@ -1495,17 +1494,17 @@ defmodule GodwokenExplorer.Graphql.Types.UDT do
   end
 
   input_object :udts_sorter_input do
-    field(:sort_type, non_null :sort_type)
-    field(:sort_value, non_null :udts_sorter)
+    field(:sort_type, non_null(:sort_type))
+    field(:sort_value, non_null(:udts_sorter))
   end
 
   input_object :erc721_udts_sorter_input do
-    field(:sort_type, non_null :sort_type)
-    field(:sort_value, non_null :erc721_udts_sorter)
+    field(:sort_type, non_null(:sort_type))
+    field(:sort_value, non_null(:erc721_udts_sorter))
   end
 
   input_object :erc1155_udts_sorter_input do
-    field(:sort_type, non_null :sort_type)
-    field(:sort_value, non_null :erc1155_udts_sorter)
+    field(:sort_type, non_null(:sort_type))
+    field(:sort_value, non_null(:erc1155_udts_sorter))
   end
 end

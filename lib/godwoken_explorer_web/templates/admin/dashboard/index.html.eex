@@ -1,7 +1,0 @@
-<section id="torch-toolbar">
-  <div class="torch-container">
-    <%= link "Flush Poly Version Cache", to: Routes.admin_dashboard_path(@conn, :flush_poly_version_cache), method: :delete %>
-  </div>
-</section>
-<section id="torch-index-content">
-</section>

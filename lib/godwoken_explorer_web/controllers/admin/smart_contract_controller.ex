@@ -4,7 +4,7 @@ defmodule GodwokenExplorerWeb.Admin.SmartContractController do
   alias GodwokenExplorer.Admin.SmartContract, as: Admin
   alias GodwokenExplorer.{Account, Chain, Repo, SmartContract}
 
-  plug(:put_root_layout, {GodwokenExplorerWeb.LayoutView, "torch.html"})
+  plug(:put_root_layout, {GodwokenExplorerWeb.Layouts, "torch.html"})
   plug(:put_layout, false)
 
   def index(conn, params) do
@@ -12,16 +12,16 @@ defmodule GodwokenExplorerWeb.Admin.SmartContractController do
       {:ok, assigns} ->
         render(conn, "index.html", assigns)
 
-      error ->
+      {:error, error} ->
         conn
         |> put_flash(:error, "There was an error rendering Smart contracts. #{inspect(error)}")
-        |> redirect(to: Routes.admin_smart_contract_path(conn, :index))
+        |> redirect(to: ~p"/admin/smart_contracts")
     end
   end
 
   def new(conn, _params) do
     changeset = Admin.change_smart_contract(%SmartContract{})
-    render(conn, "new.html", changeset: changeset)
+    render(conn, :new, changeset: changeset)
   end
 
   def create(conn, %{"smart_contract" => smart_contract_params}) do
@@ -37,13 +37,13 @@ defmodule GodwokenExplorerWeb.Admin.SmartContractController do
                  "abi" => Jason.decode!(smart_contract_params["abi"])
                })
              ) do
-          {:ok, smart_contract} ->
+          {:ok, _smart_contract} ->
             conn
             |> put_flash(:info, "Smart contract created successfully.")
-            |> redirect(to: Routes.admin_smart_contract_path(conn, :show, smart_contract))
+            |> redirect(to: ~p"/admin/smart_contracts")
 
           {:error, %Ecto.Changeset{} = changeset} ->
-            render(conn, "new.html", changeset: changeset)
+            render(conn, :new, changeset: changeset)
         end
       else
         Admin.verify_smart_contract(
@@ -57,19 +57,19 @@ defmodule GodwokenExplorerWeb.Admin.SmartContractController do
 
         conn
         |> put_flash(:info, "Smart contract is under verified")
-        |> redirect(to: Routes.admin_smart_contract_path(conn, :index))
+        |> redirect(to: ~p"/admin/smart_contracts")
       end
-  else
+    else
       _ ->
         changeset = Admin.change_smart_contract(%SmartContract{})
         changeset = Ecto.Changeset.add_error(changeset, :eth_address, "can't find this account")
-        render(conn, "new.html", changeset: %{changeset | action: :create})
+        render(conn, :new, changeset: %{changeset | action: :create})
     end
   end
 
   def show(conn, %{"id" => id}) do
     smart_contract = Admin.get_smart_contract!(id)
-    render(conn, "show.html", smart_contract: smart_contract)
+    render(conn, :show, smart_contract: smart_contract)
   end
 
   def edit(conn, %{"id" => id}) do
@@ -78,12 +78,11 @@ defmodule GodwokenExplorerWeb.Admin.SmartContractController do
     changeset =
       Admin.change_smart_contract(smart_contract)
       |> Ecto.Changeset.put_change(:eth_address, to_string(smart_contract.account.eth_address))
-      |> Ecto.Changeset.put_change(
-        :deployment_tx_hash,
-        to_string(smart_contract.deployment_tx_hash)
-      )
 
-    render(conn, "edit.html", smart_contract: smart_contract, changeset: changeset)
+    render(conn, :edit,
+      smart_contract: smart_contract,
+      changeset: changeset
+    )
   end
 
   def update(conn, %{"id" => id, "smart_contract" => smart_contract_params}) do
@@ -104,10 +103,10 @@ defmodule GodwokenExplorerWeb.Admin.SmartContractController do
         {:ok, smart_contract} ->
           conn
           |> put_flash(:info, "Smart contract updated successfully.")
-          |> redirect(to: Routes.admin_smart_contract_path(conn, :show, smart_contract))
+          |> redirect(to: ~p"/admin/smart_contracts/#{smart_contract}")
 
         {:error, %Ecto.Changeset{} = changeset} ->
-          render(conn, "edit.html", smart_contract: smart_contract, changeset: changeset)
+          render(conn, :edit, smart_contract: smart_contract, changeset: changeset)
       end
     else
       _ ->
@@ -116,7 +115,7 @@ defmodule GodwokenExplorerWeb.Admin.SmartContractController do
           |> Ecto.Changeset.put_change(:eth_address, smart_contract.account.eth_address)
           |> Ecto.Changeset.add_error(:eth_address, "can't find this account")
 
-        render(conn, "edit.html",
+        render(conn, :edit,
           smart_contract: smart_contract,
           changeset: %{changeset | action: :update}
         )

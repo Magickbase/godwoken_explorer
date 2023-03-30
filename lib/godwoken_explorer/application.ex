@@ -86,8 +86,7 @@ defmodule GodwokenExplorer.Application do
     if should_start?(Oban.Crontab) do
       Application.fetch_env!(:godwoken_explorer, Oban)
     else
-      [repo, _plugins, queues] = Application.fetch_env!(:godwoken_explorer, Oban)
-      [repo, queues]
+      Application.fetch_env!(:godwoken_explorer, Oban) |> List.delete_at(1)
     end
   end
 end

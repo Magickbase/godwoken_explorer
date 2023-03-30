@@ -1,0 +1,107 @@
+<section id="torch-toolbar">
+  <div class="torch-container">
+    <%= link "Edit" , to: ~p"/admin/udts/#{@udt}/edit", class: "torch-button" %>
+      <%= link "Back" , to: ~p"/admin/udts", class: "torch-button" %>
+  </div>
+</section>
+
+<section id="torch-header-and-content">
+  <div class="torch-container">
+    <div class="header">
+      <h3>Udt Details</h3>
+    </div>
+    <ul>
+      <li>
+        <div class="torch-show-label">Type:</div>
+        <div class="torch-show-data">
+          <%= @udt.type %>
+        </div>
+      </li>
+
+      <li>
+        <div class="torch-show-label">ETH Type:</div>
+        <div class="torch-show-data">
+          <%= @udt.eth_type %>
+        </div>
+      </li>
+
+      <li>
+        <div class="torch-show-label">Bridge Account eth addresss:</div>
+        <div class="torch-show-data">
+          <%= Map.get(@udt.account || %{}, :eth_address, nil) |> to_string() %>
+        </div>
+      </li>
+
+      <li>
+        <div class="torch-show-label">Contract addresss:</div>
+        <div class="torch-show-data">
+          <%= @udt.contract_address_hash |> to_string() %>
+        </div>
+      </li>
+
+      <li>
+        <div class="torch-show-label">Decimal:</div>
+        <div class="torch-show-data">
+          <%= @udt.decimal %>
+        </div>
+      </li>
+
+      <li>
+        <div class="torch-show-label">Name:</div>
+        <div class="torch-show-data">
+          <%= @udt.name %>
+        </div>
+      </li>
+
+      <li>
+        <div class="torch-show-label">Symbol:</div>
+        <div class="torch-show-data">
+          <%= @udt.symbol %>
+        </div>
+      </li>
+
+      <li>
+        <div class="torch-show-label">Icon:</div>
+        <div class="torch-show-data">
+          <%= @udt.icon %>
+        </div>
+      </li>
+
+      <li>
+        <div class="torch-show-label">Supply:</div>
+        <div class="torch-show-data">
+          <%= @udt.supply %>
+        </div>
+      </li>
+      <%= if @udt.type_script !=nil do %>
+        <li :for={{key, value} <- @udt.type_script}>
+          <div class="torch-show-label">Layer1 Type Script-<%= key %>:</div>
+          <div class="torch-show-data">
+            <%= value%>
+          </div>
+        </li>
+        <% end %>
+
+          <li>
+            <div class="torch-show-label">Layer1 Script hash:</div>
+            <div class="torch-show-data">
+              <%= @udt.script_hash |> to_string() %>
+            </div>
+          </li>
+
+          <li>
+            <div class="torch-show-label">Description:</div>
+            <div class="torch-show-data">
+              <%= @udt.description %>
+            </div>
+          </li>
+
+          <li>
+            <div class="torch-show-label">Official Site:</div>
+            <div class="torch-show-data">
+              <%= @udt.official_site %>
+            </div>
+          </li>
+    </ul>
+  </div>
+</section>

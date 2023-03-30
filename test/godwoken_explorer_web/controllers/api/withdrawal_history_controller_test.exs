@@ -40,7 +40,7 @@ defmodule GodwokenExplorerWeb.API.WithdrawalHistoryControllerTest do
         conn =
           get(
             conn,
-            Routes.withdrawal_history_path(conn, :index, eth_address: to_string(user.eth_address))
+            ~p"/api/withdrawal_histories?eth_address=#{to_string(user.eth_address)}"
           )
 
         assert json_response(conn, 200) ==
@@ -114,10 +114,7 @@ defmodule GodwokenExplorerWeb.API.WithdrawalHistoryControllerTest do
         conn =
           get(
             conn,
-            Routes.withdrawal_history_path(conn, :index,
-              eth_address: to_string(user.eth_address),
-              state: "available"
-            )
+            ~p"/api/withdrawal_histories?eth_address=#{to_string(user.eth_address)}&state=available"
           )
 
         assert json_response(conn, 200) ==
