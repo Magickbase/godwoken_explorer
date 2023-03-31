@@ -1,0 +1,81 @@
+<.simple_form :let={f} for={@changeset} action={@action} id="torch-form" enctype="multipart/form-data">
+  <fieldset class="torch-panel">
+    <legend>
+      <span>Details</span>
+    </legend>
+    <%= if @changeset.action do %>
+      <p class="torch-form-error">Oops, something went wrong! Please check the errors below.</p>
+      <% end %>
+
+        <div class="torch-form-group">
+          <%= label f, :eth_address %>
+            <%= text_input f, :eth_address %>
+              <%= error_tag f, :eth_address %>
+        </div>
+
+        <div class="torch-form-group">
+          <%= label f, :name %>
+            <%= text_input f, :name %>
+              <%= error_tag f, :name %>
+        </div>
+
+        <div class="torch-form-group">
+          <%= label f, :contract_source_code %>
+            <%= textarea f, :contract_source_code %>
+              <%= error_tag f, :contract_source_code %>
+        </div>
+
+        <div :if={@changeset.data.abi} class="torch-form-group">
+          <%= label f, :abi %>
+            <%= textarea f, :abi, value: Jason.encode!(@changeset.data.abi) %>
+              <%= error_tag f, :abi %>
+        </div>
+        <div :if={@changeset.data.abi==nil} class="torch-form-group">
+          <%= label f, :abi %>
+            <%= textarea f, :abi %>
+              <%= error_tag f, :abi %>
+        </div>
+
+        <div :if={@changeset.data.deployment_tx_hash} class="torch-form-group">
+          <%= label f, :deployment_tx_hash %>
+            <%= text_input f, :deployment_tx_hash, value: to_string(@changeset.data.deployment_tx_hash)%>
+              <%=error_tag f, :deployment_tx_hash %>
+        </div>
+
+
+        <div :if={@changeset.data.deployment_tx_hash==nil}class="torch-form-group">
+          <%= label f, :deployment_tx_hash %>
+            <%= text_input f, :deployment_tx_hash %>
+              <%=error_tag f, :deployment_tx_hash %>
+        </div>
+
+        <div class="torch-form-group">
+          <%= label f, :constructor_arguments %>
+            <%= text_input f, :constructor_arguments %>
+              <%= error_tag f, :constructor_arguments %>
+        </div>
+
+
+        <div class="torch-form-group">
+          <%= label f, :compiler_version %>
+            <%= text_input f, :compiler_version %>
+              <%= error_tag f, :compiler_version %>
+        </div>
+
+        <div class="torch-form-group">
+          <%= label f, :compiler_file_format %>
+            <%= text_input f, :compiler_file_format %>
+              <%= error_tag f, :compiler_file_format %>
+        </div>
+
+        <div class="torch-form-group">
+          <%= label f, :other_info %>
+            <%= text_input f, :other_info %>
+              <%= error_tag f, :other_info %>
+        </div>
+
+        <div class="torch-submit-form">
+          <%= submit "Submit" , class: "torch-submit-button" %>
+        </div>
+  </fieldset>
+</.simple_form>

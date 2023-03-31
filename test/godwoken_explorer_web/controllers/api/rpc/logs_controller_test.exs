@@ -6,6 +6,11 @@ defmodule GodwokenExplorerWeb.API.RPC.LogsControllerTest do
   alias GodwokenExplorer.{Log, Polyjuice, Repo, Transaction}
   alias Decimal
 
+  setup do
+    Code.ensure_loaded(GodwokenExplorerWeb.API.RPC.LogsController)
+    :ok
+  end
+
   describe "getLogs" do
     test "without fromBlock, toBlock, address, and topic{x}", %{conn: conn} do
       params = %{

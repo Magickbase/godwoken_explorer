@@ -5,6 +5,11 @@ defmodule GodwokenExplorerWeb.API.RPC.BlockControllerTest do
 
   alias GodwokenExplorer.Chain
 
+  setup do
+    Code.ensure_loaded(GodwokenExplorerWeb.API.RPC.BlockController)
+    :ok
+  end
+
   describe "getblocknobytime" do
     test "with missing timestamp param", %{conn: conn} do
       response =

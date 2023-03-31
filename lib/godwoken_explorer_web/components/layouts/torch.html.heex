@@ -1,0 +1,39 @@
+<html>
+  <head>
+    <title>Admin</title>
+    <link rel="stylesheet" href={ Phoenix.VerifiedRoutes.static_path(@conn, "/torch/theme.css") }>
+    <link rel="icon" href={Phoenix.VerifiedRoutes.static_path(@conn, "/torch/torch-logo.png")}>
+  </head>
+
+  <body class={Torch.PageView.body_classes(@conn) }>
+    <header>
+      <section id="torch-account-info">
+        <div class="torch-container">
+
+          <a href="/">user@example.com</a>
+          <a href="/">Logout</a>
+        </div>
+      </section>
+
+      <section id="torch-nav">
+        <div class="torch-container">
+          <div class="torch-logo">
+            <a href="/">
+              <h3>Torch</h3>
+            </a>
+          </div>
+          <nav class="torch-nav">
+            <.link href={~p"/dashboard"}>LiveDashboard</.link>
+            <a href="/admin/udts">UDT</a>
+            <a href="/admin/smart_contracts">Smart Contract</a>
+            <a href="/admin/jobs">Job</a>
+          </nav>
+        </div>
+      </section>
+    </header>
+
+    <%= Torch.FlashView.render("_flash_messages.html", assigns) %>
+    <%= @inner_content %>
+    <script src={ Phoenix.VerifiedRoutes.static_path(@conn, "/torch/torch.js") }></script>
+  </body>
+</html>

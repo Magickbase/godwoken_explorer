@@ -6,7 +6,9 @@ defmodule GodwokenExplorerWeb.API.BlockController do
   alias GodwokenExplorer.Block
   alias GodwokenExplorer.BlockView
 
-  plug JSONAPI.QueryParser, view: BlockView
+  plug(JSONAPI.QueryParser, view: BlockView)
+
+  action_fallback(GodwokenExplorerWeb.API.FallbackController)
 
   def index(conn, _params) do
     results = BlockView.list(conn.params["page"] || 1, conn.assigns.page_size)
@@ -23,13 +25,10 @@ defmodule GodwokenExplorerWeb.API.BlockController do
   def show(conn, params) do
     block = Block.find_by_number_or_hash(params["id"])
 
-    result =
-      if is_nil(block) do
-        %{
-          error_code: 404,
-          message: "not found"
-        }
-      else
+    if is_nil(block) do
+      {:error, :not_found}
+    else
+      result =
         %{
           hash: block.hash,
           number: block.number,
@@ -45,11 +44,11 @@ defmodule GodwokenExplorerWeb.API.BlockController do
           parent_hash: block.parent_hash
         }
         |> stringify_and_unix_maps()
-      end
 
-    json(
-      conn,
-      result
-    )
+      json(
+        conn,
+        result
+      )
+    end
   end
 end

@@ -20,24 +20,27 @@ defmodule GodwokenExplorer.DataCase do
     quote do
       use Oban.Testing, repo: GodwokenExplorer.Repo
 
+      alias GodwokenExplorer.Repo
+
       import Ecto
       import Ecto.Changeset
       import Ecto.Query
       import GodwokenExplorer.DataCase
       import GodwokenExplorer.Factory
-
-      alias GodwokenExplorer.Repo
     end
   end
 
   setup tags do
-    :ok = Ecto.Adapters.SQL.Sandbox.checkout(GodwokenExplorer.Repo)
-
-    unless tags[:async] do
-      Ecto.Adapters.SQL.Sandbox.mode(GodwokenExplorer.Repo, {:shared, self()})
-    end
-
+    GodwokenExplorer.DataCase.setup_sandbox(tags)
     :ok
+  end
+
+  @doc """
+  Sets up the sandbox based on the test tags.
+  """
+  def setup_sandbox(tags) do
+    pid = Ecto.Adapters.SQL.Sandbox.start_owner!(GodwokenExplorer.Repo, shared: not tags[:async])
+    on_exit(fn -> Ecto.Adapters.SQL.Sandbox.stop_owner(pid) end)
   end
 
   @doc """

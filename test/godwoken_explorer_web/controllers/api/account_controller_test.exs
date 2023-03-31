@@ -16,7 +16,7 @@ defmodule GodwokenExplorerWeb.API.AccountControllerTest do
       conn =
         get(
           conn,
-          Routes.account_path(conn, :show, to_string(user.eth_address))
+          ~p"/api/accounts/#{to_string(user.eth_address)}"
         )
 
       assert json_response(conn, 200) ==

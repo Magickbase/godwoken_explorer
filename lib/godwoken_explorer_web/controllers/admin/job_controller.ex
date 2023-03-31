@@ -3,7 +3,7 @@ defmodule GodwokenExplorerWeb.Admin.JobController do
 
   alias GodwokenExplorer.Admin.Job
 
-  plug(:put_root_layout, {GodwokenExplorerWeb.LayoutView, "torch.html"})
+  plug(:put_root_layout, {GodwokenExplorerWeb.Layouts, "torch.html"})
   plug(:put_layout, false)
 
   def index(conn, params) do
@@ -14,7 +14,7 @@ defmodule GodwokenExplorerWeb.Admin.JobController do
       error ->
         conn
         |> put_flash(:error, "There was an error rendering Jobs. #{inspect(error)}")
-        |> redirect(to: Routes.admin_job_path(conn, :index))
+        |> redirect(to: ~p"/admin/jobs")
     end
   end
 
@@ -29,6 +29,6 @@ defmodule GodwokenExplorerWeb.Admin.JobController do
 
     conn
     |> put_flash(:info, "Job deleted successfully.")
-    |> redirect(to: Routes.admin_job_path(conn, :index))
+    |> redirect(to: ~p"/admin/jobs")
   end
 end

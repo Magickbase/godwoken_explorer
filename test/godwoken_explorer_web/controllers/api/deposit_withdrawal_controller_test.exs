@@ -37,9 +37,7 @@ defmodule GodwokenExplorerWeb.API.DepositWithdrawalControllerTest do
       conn =
         get(
           conn,
-          Routes.deposit_withdrawal_path(conn, :index,
-            eth_address: "0x5d6718b0a5192a30618801788b7d75c72d307f03"
-          )
+          ~p"/api/deposit_withdrawals?eth_address=0x5d6718b0a5192a30618801788b7d75c72d307f03"
         )
 
       assert json_response(conn, 200) == %{"data" => [], "page" => 1, "total_count" => 0}
@@ -55,7 +53,7 @@ defmodule GodwokenExplorerWeb.API.DepositWithdrawalControllerTest do
       conn =
         get(
           conn,
-          Routes.deposit_withdrawal_path(conn, :index, block_number: block.number)
+          ~p"/api/deposit_withdrawals?block_number=#{block.number}"
         )
 
       assert json_response(conn, 200) ==
@@ -100,7 +98,7 @@ defmodule GodwokenExplorerWeb.API.DepositWithdrawalControllerTest do
       conn =
         get(
           conn,
-          Routes.deposit_withdrawal_path(conn, :index, udt_id: udt.id)
+          ~p"/api/deposit_withdrawals?udt_id=#{udt.id}"
         )
 
       assert json_response(conn, 200) ==
@@ -168,7 +166,7 @@ defmodule GodwokenExplorerWeb.API.DepositWithdrawalControllerTest do
       conn =
         get(
           conn,
-          Routes.deposit_withdrawal_path(conn, :index, udt_id: native_udt.id)
+          ~p"/api/deposit_withdrawals?udt_id=#{native_udt.id}"
         )
 
       assert json_response(conn, 200) ==

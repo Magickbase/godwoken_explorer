@@ -6,6 +6,11 @@ defmodule GodwokenExplorerWeb.API.RPC.AccountControllerTest do
   alias GodwokenExplorer.{Account, Repo, Transaction, Polyjuice}
   alias Decimal, as: D
 
+  setup do
+    Code.ensure_loaded(GodwokenExplorerWeb.API.RPC.AccountController)
+    :ok
+  end
+
   describe "balance" do
     setup do
       %Account{script_hash: bridge_script_hash} = insert(:ckb_account)

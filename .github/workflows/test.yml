@@ -13,6 +13,8 @@ jobs:
       CKB_INDEXER_URL: "http://localhost:8116"
       CKB_RPC_URL: "http://localhost:8114"
       DATABASE_URL: "ecto://postgres:postgres@localhost:5432/godwoken_explorer_test"
+      DISABLE_INDEXER: "true"
+      DISABLE_OBAN_CRONTAB: "true"
     strategy:
       matrix:
         elixir: ['1.14']

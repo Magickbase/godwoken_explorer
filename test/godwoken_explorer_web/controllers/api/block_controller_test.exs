@@ -16,10 +16,7 @@ defmodule GodwokenExplorerWeb.API.BlockControllerTest do
       conn =
         get(
           conn,
-          Routes.block_path(
-            conn,
-            :index
-          )
+          ~p"/api/blocks"
         )
 
       assert json_response(conn, 200) ==
@@ -52,11 +49,7 @@ defmodule GodwokenExplorerWeb.API.BlockControllerTest do
       conn =
         get(
           conn,
-          Routes.block_path(
-            conn,
-            :show,
-            to_string(block.hash)
-          )
+          ~p"/api/blocks/#{to_string(block.hash)}"
         )
 
       assert json_response(conn, 200) ==
