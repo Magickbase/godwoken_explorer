@@ -19,7 +19,7 @@ defmodule Mix.Tasks.UpdateSourcifyMetadata do
     do_perform()
   end
 
-  defp do_perform() do
+  def do_perform() do
     q =
       from(s in SmartContract,
         where: not is_nil(s.contract_source_code),
