@@ -5,7 +5,6 @@ defmodule GodwokenExplorer.SmartContract.Vyper.PublisherWorker do
 
   # use Que.Worker, concurrency: 5
 
-  alias GodwokenExplorer.Chain.Events.Publisher, as: EventsPublisher
   alias GodwokenExplorer.SmartContract.Vyper.Publisher
 
   def perform({address_hash, params, conn}) do
@@ -17,10 +16,5 @@ defmodule GodwokenExplorer.SmartContract.Vyper.PublisherWorker do
         {:error, changeset} ->
           {:error, changeset}
       end
-
-    EventsPublisher.broadcast(
-      [{:contract_verification_result, {address_hash, result, conn}}],
-      :on_demand
-    )
   end
 end
