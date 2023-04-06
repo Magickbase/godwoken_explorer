@@ -22,7 +22,7 @@ defmodule Mix.Tasks.UpdateSourcifyMetadata do
   def do_perform() do
     q =
       from(s in SmartContract,
-        where: not is_nil(s.contract_source_code),
+        where: not is_nil(s.contract_source_code) and is_nil(s.sourcify_metadata),
         join: a in Account,
         on: a.id == s.account_id,
         where: a.type == :polyjuice_contract,
