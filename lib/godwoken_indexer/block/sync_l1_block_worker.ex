@@ -39,7 +39,7 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
   alias GodwokenExplorer.Account.CurrentBridgedUDTBalance
   alias GodwokenExplorer.Graphql.Workers.UpdateSmartContractCKB
 
-  @default_worker_interval 5
+  @default_worker_interval 1
   @smallest_deposit_ckb_capacity 298 * :math.pow(10, 8)
   @smallest_deposit_udt_ckb_capacity 379 * :math.pow(10, 8)
   @smallest_withdrawal_ckb_capacity 266 * :math.pow(10, 8)
@@ -121,7 +121,7 @@ defmodule GodwokenIndexer.Block.SyncL1BlockWorker do
         CheckInfo.rollback!(check_info)
       end)
 
-      throw(:rollback)
+      Process.exit(self(), :kill)
     end
 
     combined_txs =
