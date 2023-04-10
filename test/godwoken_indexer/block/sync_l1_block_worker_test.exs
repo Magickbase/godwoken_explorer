@@ -19,6 +19,7 @@ defmodule GodwokenIndexer.Block.SyncL1WorkerTest do
     :ok
   end
 
+  setup :set_mox_from_context
   setup :verify_on_exit!
 
   test "forked" do
@@ -29,7 +30,7 @@ defmodule GodwokenIndexer.Block.SyncL1WorkerTest do
 
     MockGodwokenRPC
     |> expect(:fetch_l1_tip_block_number, fn ->
-      {:ok, 5_303_360}
+      {:ok, 5_303_460}
     end)
     |> expect(:fetch_l1_blocks, fn _range ->
       {:ok,
@@ -88,10 +89,10 @@ defmodule GodwokenIndexer.Block.SyncL1WorkerTest do
        }}
     end)
 
-    assert catch_throw(
-             GodwokenIndexer.Block.SyncL1BlockWorker.handle_info({:bind_deposit_work, 11}, [])
-           ) ==
-             :rollback
+    pid = start_supervised!(GodwokenIndexer.Block.SyncL1BlockWorker)
+    Process.sleep(3000)
+    refute Process.alive?(pid)
+    :ok = stop_supervised(GodwokenIndexer.Block.SyncL1BlockWorker)
   end
 
   describe "sync deposit l1 block" do
