@@ -67,6 +67,8 @@ defmodule GodwokenExplorer.SmartContract do
     field :transaction_count, :integer, virtual: true
     field :eth_address, :binary, virtual: true
 
+    field :sourcify_metadata, {:array, :map}
+
     timestamps()
   end
 

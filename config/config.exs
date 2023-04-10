@@ -8,8 +8,7 @@
 import Config
 
 config :godwoken_explorer,
-  ecto_repos: [GodwokenExplorer.Repo],
-  realtime_events_sender: GodwokenExplorer.Chain.Events.SimpleSender
+  ecto_repos: [GodwokenExplorer.Repo]
 
 # Configures the endpoint
 config :godwoken_explorer, GodwokenExplorerWeb.Endpoint,
