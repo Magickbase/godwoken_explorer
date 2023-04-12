@@ -59,6 +59,13 @@ defmodule GodwokenExplorerWeb.API.TransactionControllerTest do
     }
   end
 
+  setup_all do
+    on_exit(fn ->
+      Supervisor.terminate_child(GodwokenExplorer.Supervisor, {ConCache, :transaction_count})
+      Supervisor.restart_child(GodwokenExplorer.Supervisor, {ConCache, :transaction_count})
+    end)
+  end
+
   describe "index" do
     test "list user all txs", %{
       conn: conn,
@@ -389,9 +396,166 @@ defmodule GodwokenExplorerWeb.API.TransactionControllerTest do
                  ]
                }
     end
+
+    test "export tx by hash", %{
+      conn: conn,
+      tx: tx,
+      eth_user: eth_user,
+      polyjuice_contract_account: polyjuice_contract_account,
+      block: block,
+      polyjuice: polyjuice,
+      polyjuice_creator_tx: polyjuice_creator_tx
+    } do
+      conn =
+        get(
+          conn,
+          ~p"/api/txs?eth_address=#{to_string(eth_user.eth_address)}&export=true"
+        )
+
+      transaction = %{
+        "block_number" => block.number,
+        "block_hash" => to_string(block.hash),
+        "from" => to_string(eth_user.eth_address),
+        "to" => to_string(polyjuice_contract_account.eth_address),
+        "hash" => to_string(tx.eth_hash),
+        "timestamp" => block.timestamp |> DateTime.from_naive!("Etc/UTC") |> DateTime.to_unix(),
+        "type" => "polyjuice",
+        "value" => polyjuice.value |> balance_to_view(8),
+        "status" => "finalized",
+        "polyjuice_status" => "succeed"
+      }
+
+      polyjuice_creator_transaction = %{
+        "block_number" => block.number,
+        "block_hash" => to_string(block.hash),
+        "from" => to_string(eth_user.eth_address),
+        "to" => "0x946d08cc356c4fe13bc49929f1f709611fe0a2aaa336efb579dad4ca197d1551",
+        "hash" => to_string(polyjuice_creator_tx.hash),
+        "timestamp" => block.timestamp |> DateTime.from_naive!("Etc/UTC") |> DateTime.to_unix(),
+        "type" => "polyjuice_creator",
+        "value" => "",
+        "status" => "finalized",
+        "polyjuice_status" => nil
+      }
+
+      assert response(conn, 200) ==
+               "TxHash,BlockNumber,UnixTimestamp,FromAddress,ToAddress,Value,Type,PolyjuiceStatus,BlockStatus\r\n" <>
+                 "#{transaction["hash"]}," <>
+                 "#{transaction["block_number"]}," <>
+                 "#{transaction["timestamp"]}," <>
+                 "#{transaction["from"]}," <>
+                 "#{transaction["to"]}," <>
+                 "#{transaction["value"]}," <>
+                 "#{transaction["type"]}," <>
+                 "#{transaction["polyjuice_status"]}," <>
+                 "#{transaction["status"]}\r\n" <>
+                 "#{polyjuice_creator_transaction["hash"]}," <>
+                 "#{polyjuice_creator_transaction["block_number"]}," <>
+                 "#{polyjuice_creator_transaction["timestamp"]}," <>
+                 "#{polyjuice_creator_transaction["from"]}," <>
+                 "#{polyjuice_creator_transaction["to"]}," <>
+                 "#{polyjuice_creator_transaction["value"]}," <>
+                 "#{polyjuice_creator_transaction["type"]}," <>
+                 "#{polyjuice_creator_transaction["polyjuice_status"]}," <>
+                 "#{polyjuice_creator_transaction["status"]}\r\n"
+    end
+
+    test "export tx by block hash", %{
+      conn: conn,
+      tx: tx,
+      eth_user: eth_user,
+      polyjuice_contract_account: polyjuice_contract_account,
+      block: block,
+      polyjuice: polyjuice,
+      polyjuice_creator_tx: polyjuice_creator_tx
+    } do
+      conn =
+        get(
+          conn,
+          ~p"/api/txs?block_hash=#{to_string(block.hash)}&export=true"
+        )
+
+      transaction = %{
+        "block_number" => block.number,
+        "block_hash" => to_string(block.hash),
+        "from" => to_string(eth_user.eth_address),
+        "to" => to_string(polyjuice_contract_account.eth_address),
+        "hash" => to_string(tx.eth_hash),
+        "timestamp" => block.timestamp |> DateTime.from_naive!("Etc/UTC") |> DateTime.to_unix(),
+        "type" => "polyjuice",
+        "value" => polyjuice.value |> balance_to_view(8),
+        "status" => "finalized",
+        "polyjuice_status" => "succeed"
+      }
+
+      polyjuice_creator_transaction = %{
+        "block_number" => block.number,
+        "block_hash" => to_string(block.hash),
+        "from" => to_string(eth_user.eth_address),
+        "to" => "0x946d08cc356c4fe13bc49929f1f709611fe0a2aaa336efb579dad4ca197d1551",
+        "hash" => to_string(polyjuice_creator_tx.hash),
+        "timestamp" => block.timestamp |> DateTime.from_naive!("Etc/UTC") |> DateTime.to_unix(),
+        "type" => "polyjuice_creator",
+        "value" => "",
+        "status" => "finalized",
+        "polyjuice_status" => nil
+      }
+
+      assert response(conn, 200) ==
+               "TxHash,BlockNumber,UnixTimestamp,FromAddress,ToAddress,Value,Type,PolyjuiceStatus,BlockStatus\r\n" <>
+                 "#{transaction["hash"]}," <>
+                 "#{transaction["block_number"]}," <>
+                 "#{transaction["timestamp"]}," <>
+                 "#{transaction["from"]}," <>
+                 "#{transaction["to"]}," <>
+                 "#{transaction["value"]}," <>
+                 "#{transaction["type"]}," <>
+                 "#{transaction["polyjuice_status"]}," <>
+                 "#{transaction["status"]}\r\n" <>
+                 "#{polyjuice_creator_transaction["hash"]}," <>
+                 "#{polyjuice_creator_transaction["block_number"]}," <>
+                 "#{polyjuice_creator_transaction["timestamp"]}," <>
+                 "#{polyjuice_creator_transaction["from"]}," <>
+                 "#{polyjuice_creator_transaction["to"]}," <>
+                 "#{polyjuice_creator_transaction["value"]}," <>
+                 "#{polyjuice_creator_transaction["type"]}," <>
+                 "#{polyjuice_creator_transaction["polyjuice_status"]}," <>
+                 "#{polyjuice_creator_transaction["status"]}\r\n"
+    end
   end
 
   describe "GET #show" do
+    test "when query by gw hash return eth_hash", %{
+      conn: conn,
+      tx: tx
+    } do
+      conn =
+        get(
+          conn,
+          ~p"/api/txs/#{to_string(tx.hash)}"
+        )
+
+      assert json_response(conn, 400) == %{
+               "errors" => %{
+                 "detail" => "The eth hash is #{to_string(tx.eth_hash)}.",
+                 "status" => "400",
+                 "title" => "Please use eth hash query, not godwoken hash"
+               }
+             }
+    end
+
+    test "when query with not invalid hash", %{conn: conn} do
+      conn =
+        get(
+          conn,
+          ~p"/api/txs/123"
+        )
+
+      assert json_response(conn, 200) == %{
+               "message" => "Oops! An invalid Txn hash has been entered: 123"
+             }
+    end
+
     test "show polyjuice tx by hash", %{
       conn: conn,
       tx: tx,

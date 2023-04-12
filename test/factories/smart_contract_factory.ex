@@ -8,7 +8,8 @@ defmodule GodwokenExplorer.SmartContractFactory do
           account: build(:polyjuice_contract_account),
           abi: Jason.decode!(File.read!(Path.join(["test/support", "erc20_abi.json"]))),
           contract_source_code: "abc",
-          name: sequence("UDT", &"Contract#{&1}")
+          name: sequence("UDT", &"Contract#{&1}"),
+          deployment_tx_hash: transaction_hash()
         }
       end
     end

@@ -57,5 +57,21 @@ defmodule GodwokenExplorerWeb.API.DepositHistoryControllerTest do
                  "meta" => %{"current_page" => 1, "total_page" => 1}
                }
     end
+
+    test "when no address params", %{conn: conn} do
+      conn =
+        get(
+          conn,
+          ~p"/api/deposit_histories"
+        )
+
+      assert json_response(conn, 404) == %{
+               "errors" => %{
+                 "status" => "404",
+                 "title" => "not found",
+                 "detail" => ""
+               }
+             }
+    end
   end
 end

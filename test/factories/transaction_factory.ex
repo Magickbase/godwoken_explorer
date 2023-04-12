@@ -34,7 +34,7 @@ defmodule GodwokenExplorer.TransactionFactory do
       end
 
       def with_polyjuice(%Transaction{} = transaction) do
-        insert(:polyjuice, transaction: transaction)
+        insert(:polyjuice, transaction: transaction, transaction_index: transaction.index)
         transaction
       end
 

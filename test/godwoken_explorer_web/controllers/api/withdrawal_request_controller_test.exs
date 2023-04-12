@@ -65,5 +65,17 @@ defmodule GodwokenExplorerWeb.API.WithdrawalRequestControllerTest do
                  "meta" => %{"current_page" => 1, "total_page" => 1}
                }
     end
+
+    test "no params passed", %{conn: conn} do
+      conn =
+        get(
+          conn,
+          ~p"/api/withdrawal_requests"
+        )
+
+      assert json_response(conn, 400) == %{
+               "errors" => %{"detail" => "", "status" => "400", "title" => "bad request"}
+             }
+    end
   end
 end

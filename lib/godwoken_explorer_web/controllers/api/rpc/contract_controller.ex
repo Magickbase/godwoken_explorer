@@ -27,7 +27,7 @@ defmodule GodwokenExplorerWeb.API.RPC.ContractController do
     with {:address_param, {:ok, address_param}} <- fetch_address(params),
          {:format, {:ok, address_hash}} <- to_address_hash(address_param),
          {:contract, {:ok, contract}} <- to_smart_contract(address_hash) do
-      render(conn, :getabi, %{contract: contract})
+      render(conn, :getsourcecode, %{contract: contract})
     else
       {:address_param, :error} ->
         render(conn, :error, error: @address_required)

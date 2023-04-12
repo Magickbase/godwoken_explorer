@@ -36,7 +36,7 @@ defmodule GodwokenExplorer.Chain.Exporter.DepositWithdrawalCsv do
           deposit_withdrawal[:value],
           deposit_withdrawal[:udt_symbol],
           deposit_withdrawal[:capacity],
-          deposit_withdrawal[:timestamp],
+          deposit_withdrawal[:timestamp] |> DateTime.to_iso8601(),
           deposit_withdrawal[:eth_address],
           deposit_withdrawal[:layer1_tx_hash],
           deposit_withdrawal[:block_number]
