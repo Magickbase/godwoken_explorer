@@ -3,33 +3,29 @@ defmodule GodwokenExplorerWeb.API.WithdrawalRequestController do
 
   alias GodwokenExplorer.{Account, Chain, Repo, WithdrawalRequestView}
 
-  def index(conn, %{"eth_address" => "0x" <> _} = params) do
-    data =
-      with {:ok, address_hash} <-
-             Chain.string_to_address_hash(params["eth_address"]),
-           %Account{script_hash: script_hash} <-
-             Repo.get_by(Account, eth_address: address_hash) do
-        results = WithdrawalRequestView.list_by_script_hash(script_hash, conn.params["page"] || 1)
+  action_fallback(GodwokenExplorerWeb.API.FallbackController)
 
+  def index(conn, %{"eth_address" => "0x" <> _} = params) do
+    with {:ok, address_hash} <-
+           Chain.string_to_address_hash(params["eth_address"]),
+         %Account{script_hash: script_hash} <-
+           Repo.get_by(Account, eth_address: address_hash) do
+      results = WithdrawalRequestView.list_by_script_hash(script_hash, conn.params["page"] || 1)
+
+      data =
         JSONAPI.Serializer.serialize(WithdrawalRequestView, results.entries, conn, %{
           total_page: results.total_pages,
           current_page: results.page_number
         })
-      else
-        nil ->
-          %{
-            error_code: 404,
-            message: "account not found"
-          }
-      end
 
-    json(conn, data)
+      json(conn, data)
+    else
+      nil ->
+        {:error, :not_found}
+    end
   end
 
-  def index(conn, _) do
-    json(conn, %{
-      error_code: 400,
-      message: "bad request"
-    })
+  def index(_conn, _) do
+    {:error, :bad_request}
   end
 end

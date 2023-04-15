@@ -43,6 +43,7 @@ defmodule GodwokenExplorer.LogView do
         index: l.index,
         transaction_hash: l.transaction_hash,
         address_hash: l.address_hash,
+        block_number: l.block_number,
         first_topic: l.first_topic,
         second_topic: l.second_topic,
         third_topic: l.third_topic,

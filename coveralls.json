@@ -8,6 +8,15 @@
     "lib/godwoken_rpc/ckb_indexer",
     "lib/godwoken_rpc/http",
     "lib/godwoken_rpc/transaction",
-    "lib/godwoken_rpc/web3"
+    "lib/godwoken_rpc/web3",
+    "lib/godwoken_explorer_web/components/core_components.ex",
+    "lib/godwoken_explorer_web/channels/user_socket.ex",
+    "lib/godwoken_explorer_web/components/layouts.ex",
+    "lib/godwoken_explorer_web/controllers/admin",
+    "lib/godwoken_explorer_web/controllers/api/api_logger.ex",
+    "lib/godwoken_explorer_web/controllers/api/error.json",
+    "lib/godwoken_explorer_web/controllers/api/fallback_controller.ex",
+    "lib/godwoken_explorer_web/controllers/api/rpc/helpers.ex",
+    "lib/godwoken_explorer_web/controllers/api/rpc/rpc_json.ex"
   ]
 }

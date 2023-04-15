@@ -1,7 +1,7 @@
 defmodule GodwokenExplorerWeb.API.TransactionController do
   use GodwokenExplorerWeb, :controller
 
-  action_fallback GodwokenExplorerWeb.API.FallbackController
+  action_fallback(GodwokenExplorerWeb.API.FallbackController)
 
   alias GodwokenExplorer.Chain.Exporter.TransactionCsv
   alias GodwokenExplorer.{Account, Chain, Repo, Transaction}
@@ -167,7 +167,7 @@ defmodule GodwokenExplorerWeb.API.TransactionController do
   def show(conn, params) do
     json(
       conn,
-      %{message: "Oops! An invalid Txn hash has been entered: #{params['hash']}"}
+      %{message: "Oops! An invalid Txn hash has been entered: #{params["hash"]}"}
     )
   end
 end

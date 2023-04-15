@@ -66,8 +66,8 @@ defmodule GodwokenExplorer.Account.CurrentUDTBalance do
 
     field(:uniq_id, :integer, virtual: true)
 
-    field :token_id, :decimal
-    field :token_type, Ecto.Enum, values: [:erc20, :erc721, :erc1155]
+    field(:token_id, :decimal)
+    field(:token_type, Ecto.Enum, values: [:erc20, :erc721, :erc1155])
 
     timestamps(type: :utc_datetime_usec)
   end
@@ -137,8 +137,8 @@ defmodule GodwokenExplorer.Account.CurrentUDTBalance do
     end)
   end
 
-  def filter_ckb_balance(udt_balances) do
-    udt_balances |> Enum.filter(fn ub -> ub.id == UDT.ckb_bridge_account_id() end)
+  def reject_ckb_balance(udt_balances) do
+    udt_balances |> Enum.reject(fn ub -> ub.id == UDT.ckb_bridge_account_id() end)
   end
 
   def get_ckb_balance(addresses) do
@@ -277,7 +277,7 @@ defmodule GodwokenExplorer.Account.CurrentUDTBalance do
         result
         |> Map.merge(%{
           percentage: percentage,
-          balance: D.div(balance, Integer.pow(10, decimal || 0))
+          balance: D.div(balance, Integer.pow(10, decimal || 0)) |> D.to_string(:normal)
         })
       end)
     else
@@ -301,7 +301,7 @@ defmodule GodwokenExplorer.Account.CurrentUDTBalance do
         result
         |> Map.merge(%{
           percentage: percentage,
-          balance: D.div(balance, Integer.pow(10, decimal))
+          balance: D.div(balance, Integer.pow(10, decimal)) |> D.to_string(:normal)
         })
       end)
 

@@ -1,7 +1,7 @@
 defmodule GodwokenExplorerWeb.API.DepositWithdrawalController do
   use GodwokenExplorerWeb, :controller
 
-  action_fallback GodwokenExplorerWeb.API.FallbackController
+  action_fallback(GodwokenExplorerWeb.API.FallbackController)
 
   alias GodwokenExplorer.{Account, Block, Chain, DepositWithdrawalView, Repo, UDT}
   alias GodwokenExplorer.Chain.Exporter.DepositWithdrawalCsv
