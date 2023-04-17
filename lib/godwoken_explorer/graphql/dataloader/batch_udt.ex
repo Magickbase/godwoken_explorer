@@ -28,6 +28,7 @@ defmodule GodwokenExplorer.Graphql.Dataloader.BatchUDT do
     )
     |> Repo.all()
     |> Map.new(fn a ->
+      Account.async_fetch_transfer_and_transaction_count(a)
       {a.id, a}
     end)
   end
@@ -40,6 +41,7 @@ defmodule GodwokenExplorer.Graphql.Dataloader.BatchUDT do
     )
     |> Repo.all()
     |> Map.new(fn a ->
+      Account.async_fetch_transfer_and_transaction_count(a)
       {a.eth_address, a}
     end)
   end
