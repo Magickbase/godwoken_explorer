@@ -24,6 +24,7 @@ defmodule GodwokenExplorer.Graphql.Dataloader.BatchPolyjuice do
     )
     |> Repo.all()
     |> Map.new(fn a ->
+      Account.async_fetch_transfer_and_transaction_count(a)
       {a.script_hash |> to_string(), a}
     end)
   end
