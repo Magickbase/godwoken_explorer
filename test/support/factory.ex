@@ -14,6 +14,7 @@ defmodule GodwokenExplorer.Factory do
   use GodwokenExplorer.ContractMethodFactory
   use GodwokenExplorer.CurrentBridgedUDTBalanceFactory
   use GodwokenExplorer.CurrentUDTBalanceFactory
+  use GodwokenExplorer.DailyStatFactory
   use GodwokenExplorer.DepositHistoryFactory
   use GodwokenExplorer.LogFactory
   use GodwokenExplorer.PolyjuiceFactory

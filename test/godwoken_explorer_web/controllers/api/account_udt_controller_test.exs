@@ -73,5 +73,21 @@ defmodule GodwokenExplorerWeb.API.AccountUDTControllerTest do
                "total_count" => 2
              }
     end
+
+    test "download csv file", %{
+      conn: conn,
+      ckb_native: ckb_native,
+      udt_balance: udt_balance,
+      bridged_udt_balance: bridged_udt_balance
+    } do
+      conn =
+        get(
+          conn,
+          ~p"/api/account_udts?udt_id=#{ckb_native.id}&export=true"
+        )
+
+      assert response(conn, 200) ==
+               "Address,Balance,Percentage,Transaction Count\r\n#{bridged_udt_balance.address_hash},#{bridged_udt_balance.value |> Decimal.div(Integer.pow(10, 18)) |> Decimal.to_string(:normal)},0.00,0\r\n#{udt_balance.address_hash},#{udt_balance.value |> Decimal.div(Integer.pow(10, 18)) |> Decimal.to_string(:normal)},0.00,0\r\n"
+    end
   end
 end

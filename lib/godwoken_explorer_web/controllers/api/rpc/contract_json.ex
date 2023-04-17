@@ -8,7 +8,15 @@ defmodule GodwokenExplorerWeb.API.RPC.ContractJSON do
   def render("getsourcecode.json", %{contract: contract}) do
     RPCJSON.render(
       "show.json",
-      %{data: %{sourcecode: contract.source_code, abi: Jason.encode!(contract.abi)}}
+      %{
+        data: [
+          %{"SourceCode" => contract.contract_source_code, "ABI" => Jason.encode!(contract.abi)}
+        ]
+      }
     )
+  end
+
+  def render("error.json", assigns) do
+    RPCJSON.render("error.json", assigns)
   end
 end

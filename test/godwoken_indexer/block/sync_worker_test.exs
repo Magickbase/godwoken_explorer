@@ -47,6 +47,17 @@ defmodule GodwokenIndexer.Block.SyncWorkerTest do
 
   setup :verify_on_exit!
 
+  setup_all do
+    on_exit(fn ->
+      Supervisor.terminate_child(GodwokenExplorer.Supervisor, {ConCache, :blocks})
+      Supervisor.restart_child(GodwokenExplorer.Supervisor, {ConCache, :blocks})
+      Supervisor.terminate_child(GodwokenExplorer.Supervisor, {ConCache, :transactions})
+      Supervisor.restart_child(GodwokenExplorer.Supervisor, {ConCache, :transactions})
+    end)
+
+    :ok
+  end
+
   describe "import_range/2" do
     test "import a block succeed", %{
       user_address_hash: user_address_hash,

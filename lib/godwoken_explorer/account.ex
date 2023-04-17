@@ -202,7 +202,7 @@ defmodule GodwokenExplorer.Account do
         udt_list =
           eth_address
           |> CurrentUDTBalance.list_udt_by_eth_address()
-          |> CurrentUDTBalance.filter_ckb_balance()
+          |> CurrentUDTBalance.reject_ckb_balance()
 
         %{
           user: %{
@@ -224,7 +224,7 @@ defmodule GodwokenExplorer.Account do
         udt_list =
           eth_address
           |> CurrentUDTBalance.list_udt_by_eth_address()
-          |> CurrentUDTBalance.filter_ckb_balance()
+          |> CurrentUDTBalance.reject_ckb_balance()
 
         case account.smart_contract do
           smart_contract = %SmartContract{} ->
@@ -516,7 +516,7 @@ defmodule GodwokenExplorer.Account do
     udt_list =
       eth_address
       |> CurrentUDTBalance.list_udt_by_eth_address()
-      |> CurrentUDTBalance.filter_ckb_balance()
+      |> CurrentUDTBalance.reject_ckb_balance()
 
     %{
       id: nil,

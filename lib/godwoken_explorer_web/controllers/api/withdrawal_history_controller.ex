@@ -3,6 +3,8 @@ defmodule GodwokenExplorerWeb.API.WithdrawalHistoryController do
 
   alias GodwokenExplorer.{Account, Chain, Repo, WithdrawalHistoryView}
 
+  action_fallback(GodwokenExplorerWeb.API.FallbackController)
+
   def index(conn, %{"owner_lock_hash" => "0x" <> _} = params) do
     results =
       WithdrawalHistoryView.find_by_owner_lock_hash(
@@ -38,37 +40,31 @@ defmodule GodwokenExplorerWeb.API.WithdrawalHistoryController do
   end
 
   def index(conn, %{"eth_address" => "0x" <> _} = params) do
-    data =
-      with {:ok, address_hash} <-
-             Chain.string_to_address_hash(params["eth_address"]),
-           %Account{script_hash: script_hash} <-
-             Repo.get_by(Account, eth_address: address_hash) do
-        results =
-          WithdrawalHistoryView.find_by_l2_script_hash(
-            script_hash,
-            conn.params["state"],
-            conn.params["page"] || 1
-          )
+    with {:ok, address_hash} <-
+           Chain.string_to_address_hash(params["eth_address"]),
+         %Account{script_hash: script_hash} <-
+           Repo.get_by(Account, eth_address: address_hash) do
+      results =
+        WithdrawalHistoryView.find_by_l2_script_hash(
+          script_hash,
+          conn.params["state"],
+          conn.params["page"] || 1
+        )
 
+      data =
         JSONAPI.Serializer.serialize(WithdrawalHistoryView, results.entries, conn, %{
           total_page: results.total_pages,
           current_page: results.page_number
         })
-      else
-        nil ->
-          %{
-            error_code: 404,
-            message: "not found"
-          }
-      end
 
-    json(conn, data)
+      json(conn, data)
+    else
+      nil ->
+        {:error, :not_found}
+    end
   end
 
-  def index(conn, _) do
-    json(conn, %{
-      error_code: 400,
-      message: "bad request"
-    })
+  def index(_conn, _) do
+    {:error, :bad_request}
   end
 end

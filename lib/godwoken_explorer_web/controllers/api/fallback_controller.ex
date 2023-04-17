@@ -21,4 +21,11 @@ defmodule GodwokenExplorerWeb.API.FallbackController do
     |> put_view(GodwokenExplorerWeb.API.ErrorJSON)
     |> render(:"400")
   end
+
+  def call(conn, {:error, :bad_request}) do
+    conn
+    |> put_status(:bad_request)
+    |> put_view(GodwokenExplorerWeb.API.ErrorJSON)
+    |> render(:"400")
+  end
 end
