@@ -77,7 +77,7 @@ defmodule GodwokenExplorer.MixProject do
       {:gettext, "~> 0.22"},
       {:plug_cowboy, "~> 2.0"},
       {:httpoison, "~> 2.0"},
-      {:rustler, "~> 0.27.0"},
+      {:rustler, "~> 0.28.0"},
       {:con_cache, "~> 1.0"},
       {:scrivener_ecto, "~> 2.0"},
       {:decimal, "~> 2.0"},
