@@ -15,7 +15,7 @@ defmodule GodwokenIndexer.Worker.GenerateYokSeriesContract do
            Repo.get(Account, account_id),
          udt when is_nil(udt) <- Repo.get(UDT, account_id),
          smart_contract when is_nil(smart_contract) <- Repo.get(SmartContract, account_id),
-         {:ok, decimal} <- UDT.eth_call_decimal(account.eth_address) do
+         decimal when not is_nil(decimal) <- UDT.eth_call_decimal(account.eth_address) do
       supply = UDT.eth_call_total_supply(account.eth_address)
       name = UDT.eth_call_name(account.eth_address)
       symbol = UDT.eth_call_symbol(account.eth_address)
