@@ -66,7 +66,8 @@ defmodule GodwokenIndexer.Block.PendingTransactionWorker do
   end
 
   def parse_and_import(eth_hash) do
-    with {:ok, transaction} <- GodwokenRPC.fetch_mempool_transaction(eth_hash) do
+    with {:ok, transaction} <- GodwokenRPC.fetch_mempool_transaction(eth_hash),
+         raw when not is_nil(raw) <- transaction["transaction"]["raw"] do
       tx = transaction["transaction"]
 
       pending_transaction_attr =
