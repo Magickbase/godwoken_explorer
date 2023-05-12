@@ -150,4 +150,25 @@ defmodule GodwokenIndexer.Block.PendingTransactionWorkerTest do
       assert Repo.aggregate(Polyjuice, :count) == 1
     end
   end
+
+  test "fetch mempool transactions but raw is nil" do
+    with_mock GodwokenRPC,
+      fetch_mempool_transaction: fn _eth_hash ->
+        {:ok,
+         %{
+           "status" => "committed",
+           "transaction" => %{
+             "hash" => "0x1cfee93deed308e1bba6bf79821737ac66e537474932c137898243b04987554a",
+             "raw" => nil
+           },
+           "signature" =>
+             "0x98ddd37908d6022a77bdba8d4739ace9599f1c126704cf68add6b57dcd737c596fab8f13d31a2bfad94ebc38c46304e708d02f7bc0cdcc3f5bc1b42fff38d62201"
+         }}
+      end do
+      assert {0, nil} ==
+               GodwokenIndexer.Block.PendingTransactionWorker.parse_and_import(
+                 "0x019d19911a44651bde39ba6d44a3f0a56cfdccefdf4c2e953ed8ef04e503b0dd"
+               )
+    end
+  end
 end
