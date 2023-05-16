@@ -15,7 +15,6 @@ defmodule GodwokenIndexer.Fetcher.UDTBalance do
   alias GodwokenIndexer.Fetcher.UDTBalances
   alias GodwokenExplorer.Account.{CurrentUDTBalance, UDTBalance}
   alias GodwokenExplorer.Graphql.Workers.UpdateSmartContractCKB
-  alias GodwokenExplorer.UDT
 
   import Ecto.Query
 
