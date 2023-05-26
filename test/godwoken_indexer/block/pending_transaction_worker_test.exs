@@ -20,6 +20,29 @@ defmodule GodwokenIndexer.Block.PendingTransactionWorkerTest do
        ]},
       {GodwokenRPC, [],
        [
+         fetch_eth_hash_by_gw_hashes: fn _ ->
+           {:ok,
+            %{
+              errors: [],
+              params_list: [
+                %{
+                  eth_hash: nil,
+                  gw_tx_hash: "0xa312962527ae503c23dadc95fb007683d99a525006781ec6990b1671cc025800"
+                },
+                %{
+                  eth_hash: nil,
+                  gw_tx_hash: "0xd324ee7920336e5ca75de7d73dd85219434e3aa0ff1bd0cfea459ef837773318"
+                },
+                %{
+                  eth_hash: nil,
+                  gw_tx_hash: "0xd82aec9b23649abad4d302da76f1dd20729525558c821f885cc801bc4c8fc2d4"
+                }
+              ]
+            }}
+         end
+       ]},
+      {GodwokenRPC, [],
+       [
          fetch_pending_transactions: fn _tx_hashes ->
            {:ok,
             %{
