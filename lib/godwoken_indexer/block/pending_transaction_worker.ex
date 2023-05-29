@@ -51,11 +51,20 @@ defmodule GodwokenIndexer.Block.PendingTransactionWorker do
          {:ok, %{errors: [], params_list: params}} <-
            GodwokenRPC.fetch_pending_transactions(tx_hashes_params) do
       if params != [] do
+        {:ok, %{errors: [], params_list: hash_mappings}} =
+          GodwokenRPC.fetch_eth_hash_by_gw_hashes(tx_hashes_params)
+
+        hash_map =
+          hash_mappings |> Enum.into(%{}, fn map -> {map[:gw_tx_hash], map[:eth_hash]} end)
+
         pending_transaction_attrs =
           params
           |> Enum.map(fn transaction ->
             tx = transaction["transaction"]
-            tx["raw"] |> parse_raw() |> Map.merge(%{hash: tx["hash"], eth_hash: nil})
+
+            tx["raw"]
+            |> parse_raw()
+            |> Map.merge(%{hash: tx["hash"], eth_hash: hash_map[tx["hash"]]})
           end)
 
         import_attrs(pending_transaction_attrs)
