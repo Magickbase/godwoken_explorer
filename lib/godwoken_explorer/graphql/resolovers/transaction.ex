@@ -149,24 +149,29 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
 
       {from_account, to_account} ->
         if input[:combine_from_to] do
-          base_query =
-            query
-            |> where(
-              [t],
-              t.to_account_id == ^to_account.id or t.from_account_id == ^from_account.id
-            )
-
-          if to_account.type == :eth_user do
-            tx_hashes =
-              Polyjuice
-              |> where([p], p.native_transfer_address_hash == ^to_account.eth_address)
-              |> select([p], p.tx_hash)
-              |> limit(@account_tx_limit)
-              |> Repo.all()
-
-            base_query |> or_where([t], t.hash in ^tx_hashes)
+          if from_account.id == to_account.id do
+            hashes = query_tx_hashes_by_account_type(from_account)
+            query |> where([t], t.eth_hash in ^hashes or t.hash in ^hashes)
           else
-            base_query
+            base_query =
+              query
+              |> where(
+                [t],
+                t.to_account_id == ^to_account.id or t.from_account_id == ^from_account.id
+              )
+
+            if to_account.type == :eth_user do
+              tx_hashes =
+                Polyjuice
+                |> where([p], p.native_transfer_address_hash == ^to_account.eth_address)
+                |> select([p], p.tx_hash)
+                |> limit(@account_tx_limit)
+                |> Repo.all()
+
+              base_query |> or_where([t], t.hash in ^tx_hashes)
+            else
+              base_query
+            end
           end
         else
           query
@@ -286,5 +291,17 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
     l2_script_hash = script_to_hash(account_script)
 
     {:ok, Repo.get_by(Account, script_hash: l2_script_hash)}
+  end
+
+  defp query_tx_hashes_by_account_type(account) do
+    if account.type == :eth_user do
+      Transaction.list_tx_hash_with_polyjuice_query(account)
+    else
+      condition = dynamic([t], t.to_account_id == ^account.id)
+
+      Transaction.list_tx_hash_by_transaction_query(condition)
+      |> limit(@account_tx_limit)
+    end
+    |> Repo.all()
   end
 end
