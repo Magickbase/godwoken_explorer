@@ -14,7 +14,6 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
 
   @sorter_fields [:block_number, :index, :hash]
   @default_sorter @sorter_fields
-  @account_tx_limit 100_000
 
   def transaction(_parent, %{input: input} = _args, _resolution) do
     query = query_with_eth_hash_or_tx_hash(input)
@@ -64,19 +63,38 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
     |> query_with_block_range(input)
     |> query_with_block_age_range(input)
     |> query_with_method_id_name(input)
+    |> select([t], %{hash: t.hash, block_number: t.block_number, index: t.index})
     |> transactions_order_by(input)
     |> paginate_query(input, %{
       cursor_fields: paginate_cursor(input),
       total_count_primary_key_field: :hash
     })
-    |> do_transactions()
+    |> do_transactions(input)
   end
 
-  defp do_transactions({:error, {:not_found, []}}), do: {:ok, nil}
-  defp do_transactions({:error, _} = error), do: error
+  defp do_transactions({:error, {:not_found, []}}, _input), do: {:ok, nil}
+  defp do_transactions({:error, _} = error, _input), do: error
 
-  defp do_transactions(result) do
-    {:ok, result}
+  defp do_transactions(
+         %Paginator.Page{
+           metadata: metadata,
+           entries: entries
+         },
+         input
+       ) do
+    tx_hashes = entries |> Enum.map(fn entry -> entry.hash end)
+
+    tx_results =
+      from(t in Transaction)
+      |> where([t], t.hash in ^tx_hashes)
+      |> transactions_order_by(input)
+      |> Repo.all()
+
+    {:ok,
+     %Paginator.Page{
+       metadata: metadata,
+       entries: tx_results
+     }}
   end
 
   defp query_with_account_address(query, input, from_address, to_address) do
@@ -149,25 +167,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
 
       {from_account, to_account} ->
         if input[:combine_from_to] do
-          base_query =
-            query
-            |> where(
-              [t],
-              t.to_account_id == ^to_account.id or t.from_account_id == ^from_account.id
-            )
-
-          if to_account.type == :eth_user do
-            tx_hashes =
-              Polyjuice
-              |> where([p], p.native_transfer_address_hash == ^to_account.eth_address)
-              |> select([p], p.tx_hash)
-              |> limit(@account_tx_limit)
-              |> Repo.all()
-
-            base_query |> or_where([t], t.hash in ^tx_hashes)
-          else
-            base_query
-          end
+          query_tx_hashes_by_account_type(query, from_account)
         else
           query
           |> where(
@@ -286,5 +286,29 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
     l2_script_hash = script_to_hash(account_script)
 
     {:ok, Repo.get_by(Account, script_hash: l2_script_hash)}
+  end
+
+  defp query_tx_hashes_by_account_type(query, account) do
+    if account.type == :eth_user do
+      query |> where([t], t.from_account_id == ^account.id)
+
+      transaction_query =
+        from(t in Transaction,
+          select: t.hash,
+          where: t.from_account_id == ^account.id
+        )
+
+      polyjuice_query =
+        from(p in Polyjuice,
+          join: t in Transaction,
+          on: t.hash == p.tx_hash,
+          select: t.hash,
+          where: p.native_transfer_address_hash == ^account.eth_address
+        )
+
+      query |> where([t], t.hash in subquery(union_all(transaction_query, ^polyjuice_query)))
+    else
+      query |> where([t], t.to_account_id == ^account.id)
+    end
   end
 end
