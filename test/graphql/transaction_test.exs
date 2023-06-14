@@ -860,7 +860,8 @@ defmodule GodwokenExplorer.Graphql.TransactionTest do
       transactions(
         input: {
           from_eth_address: "#{receiver_user.eth_address |> to_string()}",
-          to_eth_address: "#{receiver_user.eth_address |> to_string()}"
+          to_eth_address: "#{receiver_user.eth_address |> to_string()}",
+          combine_from_to: true
         }
       ) {
         entries {

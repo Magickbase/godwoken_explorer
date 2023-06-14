@@ -78,8 +78,8 @@ defmodule GodwokenExplorer.Transaction do
       references: :hash
     )
 
-    field :method_id, Data
-    field :method_name, :string
+    field(:method_id, Data)
+    field(:method_name, :string)
     timestamps()
   end
 
