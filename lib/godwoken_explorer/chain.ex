@@ -125,18 +125,7 @@ defmodule GodwokenExplorer.Chain do
 
   @spec transaction_estimated_count() :: non_neg_integer()
   def transaction_estimated_count do
-    cached_value = TransactionCount.get_count()
-
-    if is_nil(cached_value) do
-      %Postgrex.Result{rows: [[rows]]} =
-        Repo.query!(
-          "SELECT reltuples::BIGINT AS estimate FROM pg_class WHERE relname='transactions'"
-        )
-
-      trunc(rows)
-    else
-      cached_value
-    end
+    TransactionCount.estimated_count()
   end
 
   def home_api_data(blocks, txs) do
