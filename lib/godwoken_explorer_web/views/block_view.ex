@@ -5,6 +5,9 @@ defmodule GodwokenExplorer.BlockView do
   import GodwokenRPC.Util, only: [utc_to_unix: 1]
 
   alias GodwokenExplorer.{Block, Repo}
+  alias GodwokenExplorer.Chain.Cache.BlockCount
+
+  @block_capped_limit 500_000
 
   def fields do
     [
@@ -42,10 +45,21 @@ defmodule GodwokenExplorer.BlockView do
   end
 
   def list(page, page_size) do
+    paging_options =
+      if BlockCount.estimated_count() > @block_capped_limit do
+        [total_entries: @block_capped_limit]
+      else
+        []
+      end
+
     from(
       b in Block,
       order_by: [desc: :number]
     )
-    |> Repo.paginate(page: page, page_size: page_size)
+    |> Repo.paginate(
+      page: page,
+      page_size: page_size,
+      options: paging_options
+    )
   end
 end

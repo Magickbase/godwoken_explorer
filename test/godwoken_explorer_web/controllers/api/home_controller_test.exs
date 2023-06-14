@@ -22,7 +22,7 @@ defmodule GodwokenExplorerWeb.API.HomeControllerTest do
   describe "index" do
     test "return home data", %{conn: conn, block: block, tx: tx, user: user, contract: contract} do
       with_mock TransactionCount,
-        get_count: fn ->
+        estimated_count: fn ->
           1
         end do
         conn =
