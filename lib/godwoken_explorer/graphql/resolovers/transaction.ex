@@ -14,6 +14,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
 
   @sorter_fields [:block_number, :index, :hash]
   @default_sorter @sorter_fields
+  @account_tx_limit 100_000
 
   def transaction(_parent, %{input: input} = _args, _resolution) do
     query = query_with_eth_hash_or_tx_hash(input)
@@ -160,14 +161,16 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
       {nil, to_account} ->
         query
         |> where([t], t.to_account_id == ^to_account.id)
+        |> limit(@account_tx_limit)
 
       {from_account, nil} ->
         query
         |> where([t], t.from_account_id == ^from_account.id)
+        |> limit(@account_tx_limit)
 
       {from_account, to_account} ->
         if input[:combine_from_to] do
-          query_tx_hashes_by_account_type(query, from_account)
+          query |> query_tx_hashes_by_account_type(from_account)
         else
           query
           |> where(
@@ -175,6 +178,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.Transaction do
             t.to_account_id == ^to_account.id and t.from_account_id == ^from_account.id
           )
         end
+        |> limit(@account_tx_limit)
     end
   end
 

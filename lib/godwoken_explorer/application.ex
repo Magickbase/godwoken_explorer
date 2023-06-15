@@ -38,7 +38,9 @@ defmodule GodwokenExplorer.Application do
           # web home api
           GodwokenExplorer.Counters.AccountsCounter,
           GodwokenExplorer.Counters.AverageBlockTime,
+          GodwokenExplorer.Chain.Cache.BlockCount,
           GodwokenExplorer.Chain.Cache.TransactionCount,
+
           # api
           GodwokenExplorer.Chain.Cache.PolyVersion,
           # admin

@@ -1,12 +1,12 @@
-defmodule GodwokenExplorer.Chain.Cache.TransactionCount do
+defmodule GodwokenExplorer.Chain.Cache.BlockCount do
   @moduledoc """
-  Cache for estimated transaction count.
+  Cache for estimated block count.
   """
 
   @default_cache_period :timer.hours(2)
 
   use GodwokenExplorer.Chain.MapCache,
-    name: :transaction_count,
+    name: :block_count,
     key: :count,
     key: :async_task,
     global_ttl: cache_period(),
@@ -15,7 +15,7 @@ defmodule GodwokenExplorer.Chain.Cache.TransactionCount do
 
   require Logger
 
-  alias GodwokenExplorer.{Repo, Transaction}
+  alias GodwokenExplorer.{Repo, Block}
 
   def estimated_count do
     cached_value = __MODULE__.get_count()
@@ -23,7 +23,7 @@ defmodule GodwokenExplorer.Chain.Cache.TransactionCount do
     if is_nil(cached_value) do
       %Postgrex.Result{rows: [[count]]} =
         Repo.query!(
-          "SELECT reltuples::BIGINT AS estimate FROM pg_class WHERE relname = 'transactions';"
+          "SELECT reltuples::BIGINT AS estimate FROM pg_class WHERE relname = 'blocks';"
         )
 
       max(count, 0)
@@ -46,13 +46,13 @@ defmodule GodwokenExplorer.Chain.Cache.TransactionCount do
     {:ok, task} =
       Task.start(fn ->
         try do
-          result = Repo.aggregate(Transaction, :count, :hash, timeout: :infinity)
+          result = Repo.aggregate(Block, :count, :hash, timeout: :infinity)
 
           set_count(result)
         rescue
           e ->
             Logger.debug([
-              "Coudn't update transaction count test #{inspect(e)}"
+              "Coudn't update block count test #{inspect(e)}"
             ])
         end
 
@@ -69,7 +69,7 @@ defmodule GodwokenExplorer.Chain.Cache.TransactionCount do
   defp async_task_on_deletion(_data), do: nil
 
   defp cache_period do
-    "TXS_COUNT_CACHE_PERIOD"
+    "BLOCKS_COUNT_CACHE_PERIOD"
     |> System.get_env("")
     |> Integer.parse()
     |> case do
