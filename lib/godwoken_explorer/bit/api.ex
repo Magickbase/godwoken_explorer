@@ -127,8 +127,8 @@ defmodule GodwokenExplorer.Bit.API do
     }
 
     with {:ok, %{body: body}} <- post("/v1/reverse/record", params),
-         %{"data" => %{"account_alias" => account_alias}} when not is_nil(account_alias) <- body do
-      {:ok, account_alias}
+         %{"data" => %{"account" => account}} when account != "" <- body do
+      {:ok, account}
     else
       error ->
         {:error, "error with #{inspect(error)}"}
