@@ -15,7 +15,7 @@ defmodule GodwokenExplorer.Bit.APITest do
       execute: fn _, _, _ ->
         {:ok,
          %{
-           body: %{"data" => %{"account_alias" => "test.bit"}}
+           body: %{"data" => %{"account" => "test.bit", "account_alias" => "test.bit"}}
          }}
       end do
       assert GodwokenExplorer.Bit.API.fetch_reverse_record_info(user.eth_address) ==
