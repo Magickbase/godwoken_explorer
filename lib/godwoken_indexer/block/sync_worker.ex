@@ -95,7 +95,6 @@ defmodule GodwokenIndexer.Block.SyncWorker do
 
         inserted_transactions = import_transactions(transactions_params_without_receipts)
 
-        update_transactions_cache(inserted_transactions)
         {:ok, inserted_transactions}
       else
         {:ok, []}
@@ -104,6 +103,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
     import_withdrawal_requests(withdrawal_params)
     inserted_blocks = import_block(blocks_params)
     update_block_cache(inserted_blocks)
+    update_transactions_cache(inserted_blocks, inserted_transactions)
     broadcast_block_and_tx(inserted_blocks, inserted_transactions)
 
     if multiple_block_once? do
@@ -215,7 +215,7 @@ defmodule GodwokenIndexer.Block.SyncWorker do
     {_count, returned_values} =
       Repo.insert_all(Transaction, inserted_transaction_params,
         on_conflict: :nothing,
-        returning: [:from_account_id, :to_account_id, :hash, :type, :block_number, :inserted_at]
+        returning: [:from_account_id, :to_account_id, :hash, :type, :block_number]
       )
 
     display_ids =
@@ -323,7 +323,18 @@ defmodule GodwokenIndexer.Block.SyncWorker do
     BlocksCache.update(blocks)
   end
 
-  defp update_transactions_cache(transactions) do
+  defp update_transactions_cache(blocks, transactions) do
+    timestamps =
+      blocks
+      |> Enum.map(fn block ->
+        {block.number, block.timestamp}
+      end)
+      |> Enum.into(%{})
+
+    transactions =
+      transactions
+      |> Enum.map(fn tx -> tx |> Map.merge(%{timestamp: timestamps[tx.block_number]}) end)
+
     Transactions.update(transactions)
   end
 

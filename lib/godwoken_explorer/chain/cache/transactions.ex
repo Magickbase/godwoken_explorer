@@ -13,7 +13,7 @@ defmodule GodwokenExplorer.Chain.Cache.Transactions do
 
   @type id :: {non_neg_integer(), non_neg_integer()}
 
-  def element_to_id(%Transaction{block_number: block_number, inserted_at: inserted_at, hash: hash}) do
-    {block_number, inserted_at, hash}
+  def element_to_id(%Transaction{block_number: block_number, timestamp: timestamp, hash: hash}) do
+    {block_number, timestamp, hash}
   end
 end
