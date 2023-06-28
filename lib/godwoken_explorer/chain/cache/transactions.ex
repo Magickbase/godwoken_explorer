@@ -3,8 +3,6 @@ defmodule GodwokenExplorer.Chain.Cache.Transactions do
   Caches the latest imported transactions
   """
 
-  alias GodwokenExplorer.Transaction
-
   use GodwokenExplorer.Chain.OrderedCache,
     name: :transactions,
     max_size: 10,
@@ -13,7 +11,7 @@ defmodule GodwokenExplorer.Chain.Cache.Transactions do
 
   @type id :: {non_neg_integer(), non_neg_integer()}
 
-  def element_to_id(%Transaction{block_number: block_number, timestamp: timestamp, hash: hash}) do
+  def element_to_id(%{block_number: block_number, timestamp: timestamp, hash: hash}) do
     {block_number, timestamp, hash}
   end
 end
