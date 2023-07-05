@@ -25,6 +25,14 @@ defmodule GodwokenIndexer.Transform.TokenTransfers do
       |> Enum.filter(&(&1.first_topic == unquote(TokenTransfer.constant())))
       |> Enum.reduce(initial_acc, &do_parse/2)
 
+    wckb_transfers =
+      logs
+      |> Enum.filter(fn log ->
+        log.first_topic == TokenTransfer.wckb_deposit_signature() ||
+          log.first_topic == TokenTransfer.wckb_withdrawal_signature()
+      end)
+      |> Enum.reduce(initial_acc, &do_parse/2)
+
     erc1155_token_transfers =
       logs
       |> Enum.filter(fn log ->
@@ -33,10 +41,13 @@ defmodule GodwokenIndexer.Transform.TokenTransfers do
       end)
       |> Enum.reduce(initial_acc, &do_parse(&1, &2, :erc1155))
 
-    tokens = erc1155_token_transfers.tokens ++ erc20_and_erc721_token_transfers.tokens
+    tokens =
+      erc1155_token_transfers.tokens ++
+        erc20_and_erc721_token_transfers.tokens ++ wckb_transfers.tokens
 
     token_transfers =
-      erc1155_token_transfers.token_transfers ++ erc20_and_erc721_token_transfers.token_transfers
+      erc1155_token_transfers.token_transfers ++
+        erc20_and_erc721_token_transfers.token_transfers ++ wckb_transfers.token_transfers
 
     token_transfers
     |> Enum.filter(fn token_transfer ->
@@ -98,6 +109,39 @@ defmodule GodwokenIndexer.Transform.TokenTransfers do
       token_contract_address_hash: log.address_hash,
       transaction_hash: log.transaction_hash,
       token_id: nil,
+      token_type: :erc20
+    }
+
+    token = %{
+      contract_address_hash: log.address_hash,
+      eth_type: :erc20
+    }
+
+    {token, token_transfer}
+  end
+
+  # ERC-20 token transfer for WCKB
+  defp parse_params(%{second_topic: second_topic, third_topic: nil, fourth_topic: nil} = log)
+       when not is_nil(second_topic) do
+    [amount] = decode_data(log.data, [{:uint, 256}])
+
+    {from_address_hash, to_address_hash} =
+      if log.first_topic == TokenTransfer.wckb_deposit_signature() do
+        {@burn_address, truncate_address_hash(log.second_topic)}
+      else
+        {truncate_address_hash(log.second_topic), @burn_address}
+      end
+
+    token_transfer = %{
+      amount: Decimal.new(amount || 0),
+      block_number: log.block_number,
+      block_hash: log.block_hash,
+      log_index: log.index,
+      from_address_hash: from_address_hash,
+      to_address_hash: to_address_hash,
+      token_contract_address_hash: log.address_hash,
+      transaction_hash: log.transaction_hash,
+      token_ids: nil,
       token_type: :erc20
     }
 
