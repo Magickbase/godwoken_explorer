@@ -1,4 +1,4 @@
-FROM bitwalker/alpine-elixir-phoenix:1.14.0 as builder
+FROM bitwalker/alpine-elixir-phoenix:1.15.0 as builder
 
 RUN apk --no-cache --update add alpine-sdk gmp-dev automake libtool inotify-tools autoconf python3 file qemu-x86_64
 
@@ -79,7 +79,7 @@ COPY config/runtime.exs config/
 COPY rel rel
 RUN mix release
 
-FROM bitwalker/alpine-elixir-phoenix:1.14.0 as deploy
+FROM bitwalker/alpine-elixir-phoenix:1.15.0 as deploy
 
 WORKDIR "/app"
 ENV MIX_ENV="prod"
