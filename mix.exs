@@ -114,7 +114,7 @@ defmodule GodwokenExplorer.MixProject do
       {:ex_audit, "~> 0.10.0"},
 
       # jsonapi
-      {:jsonapi, "~> 1.4.0"},
+      {:jsonapi, "~> 1.6.2"},
 
       # tool
       {:timex, "~> 3.0"},
