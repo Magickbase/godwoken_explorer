@@ -3,7 +3,7 @@ FROM bitwalker/alpine-elixir-phoenix:1.15.0 as builder
 RUN apk --no-cache --update add alpine-sdk gmp-dev automake libtool inotify-tools autoconf python3 file qemu-x86_64
 
 ENV GLIBC_REPO=https://github.com/sgerrand/alpine-pkg-glibc
-ENV GLIBC_VERSION=2.30-r0
+ENV GLIBC_VERSION=2.35-r1
 
 RUN set -ex && \
   apk --update add libstdc++ curl ca-certificates && \
@@ -65,7 +65,7 @@ COPY assets assets
 
 # compile assets
 RUN cd assets && \
-  npm install 
+  npm install
 
 RUN mix assets.deploy
 
