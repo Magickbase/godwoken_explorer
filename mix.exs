@@ -108,7 +108,7 @@ defmodule GodwokenExplorer.MixProject do
       {:sobelow, "~> 0.8", only: :dev},
 
       # web3 tool
-      {:ex_abi, "~> 0.5.11"},
+      {:ex_abi, "~> 0.6.0"},
 
       # database_history
       {:ex_audit, "~> 0.10.0"},
