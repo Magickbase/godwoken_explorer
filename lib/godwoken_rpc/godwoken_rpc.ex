@@ -173,7 +173,7 @@ defmodule GodwokenRPC do
   end
 
   def fetch_l1_tip_block_number do
-    indexer_options = Application.get_env(:godwoken_explorer, :ckb_indexer_named_arguments)
+    indexer_options = Application.get_env(:godwoken_explorer, :ckb_rpc_named_arguments)
 
     case FetchedTip.request() |> HTTP.json_rpc(indexer_options) do
       {:ok, %{"block_number" => l1_tip_block_number}} ->
@@ -186,7 +186,7 @@ defmodule GodwokenRPC do
   end
 
   def fetch_l1_txs_by_range(params) do
-    indexer_options = Application.get_env(:godwoken_explorer, :ckb_indexer_named_arguments)
+    indexer_options = Application.get_env(:godwoken_explorer, :ckb_rpc_named_arguments)
 
     case FetchedTransactions.request(params)
          |> HTTP.json_rpc(indexer_options) do
@@ -438,7 +438,7 @@ defmodule GodwokenRPC do
   end
 
   def fetch_cells(script, script_type) do
-    options = Application.get_env(:godwoken_explorer, :ckb_indexer_named_arguments)
+    options = Application.get_env(:godwoken_explorer, :ckb_rpc_named_arguments)
 
     case FetchedCells.request(script, script_type) |> HTTP.json_rpc(options) do
       {:ok, response} ->
