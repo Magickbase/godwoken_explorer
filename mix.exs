@@ -96,7 +96,7 @@ defmodule GodwokenExplorer.MixProject do
       {:torch, "~> 5.0.0-rc.1"},
 
       # CORS
-      {:cors_plug, "~> 2.0"},
+      {:cors_plug, "~> 3.0"},
 
       # monitor
       {:observer_cli, "~> 1.6"},
