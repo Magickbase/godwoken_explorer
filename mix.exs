@@ -93,10 +93,10 @@ defmodule GodwokenExplorer.MixProject do
       {:poison, "~> 5.0"},
 
       # admin dashboard
-      {:torch, "~> 5.0.0-rc.1"},
+      {:torch, "~> 5.1.0"},
 
       # CORS
-      {:cors_plug, "~> 2.0"},
+      {:cors_plug, "~> 3.0"},
 
       # monitor
       {:observer_cli, "~> 1.6"},
@@ -114,7 +114,7 @@ defmodule GodwokenExplorer.MixProject do
       {:ex_audit, "~> 0.10.0"},
 
       # jsonapi
-      {:jsonapi, "~> 1.4.0"},
+      {:jsonapi, "~> 1.6.2"},
 
       # tool
       {:timex, "~> 3.0"},
