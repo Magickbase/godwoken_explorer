@@ -2,10 +2,9 @@
   <head>
     <title>Admin</title>
     <link rel="stylesheet" href={ Phoenix.VerifiedRoutes.static_path(@conn, "/torch/theme.css") }>
-    <link rel="icon" href={Phoenix.VerifiedRoutes.static_path(@conn, "/torch/torch-logo.png")}>
   </head>
 
-  <body class={Torch.PageView.body_classes(@conn) }>
+  <body class={Torch.Helpers.body_classes(@conn) }>
     <header>
       <section id="torch-account-info">
         <div class="torch-container">
@@ -32,7 +31,7 @@
       </section>
     </header>
 
-    <%= Torch.FlashView.render("_flash_messages.html", assigns) %>
+  <Torch.Component.flash_messages flash={@conn.assigns.flash} />
     <%= @inner_content %>
     <script src={ Phoenix.VerifiedRoutes.static_path(@conn, "/torch/torch.js") }></script>
   </body>
