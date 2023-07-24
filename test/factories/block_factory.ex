@@ -12,7 +12,7 @@ defmodule GodwokenExplorer.BlockFactory do
           producer_address: address_hash(),
           gas_limit: Enum.random(1..100_000),
           gas_used: Enum.random(1..100_000),
-          timestamp: DateTime.utc_now(),
+          timestamp: DateTime.utc_now() |> DateTime.truncate(:millisecond),
           status: :finalized
         }
       end
