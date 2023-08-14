@@ -143,7 +143,7 @@ defmodule GodwokenExplorer.MixProject do
       {:dataloader, "~> 1.0"},
       {:money, "~> 1.9"},
       {:plug_heartbeat, "~> 1.0"},
-      {:paginator, "~> 1.1.0"},
+      {:paginator, "~> 1.2.0"},
       {:quarto, "~> 1.0"},
       {:constants, "~> 0.1.0"},
       {:graphql_builder, "~> 0.3.4"},
