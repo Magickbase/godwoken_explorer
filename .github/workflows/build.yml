@@ -25,9 +25,12 @@ on:
       GRAFANA_FOLDER_NAME:
         required: true
     outputs:
-      image:
-        description: URL for docker image with tag
-        value: ${{ jobs.build.outputs.image }}
+      image-name:
+        description: URL for docker image
+        value: ${{ jobs.build.outputs.image-name }}
+      image-tag:
+        description: image tag(version)
+        value: ${{ jobs.build.outputs.image-tag }}
 jobs:        
   build:
     runs-on: ubuntu-latest
