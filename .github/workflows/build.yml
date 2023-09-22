@@ -55,3 +55,5 @@ jobs:
           dockerfile: docker/Dockerfile
           username: ${{ secrets.GHCR_USERNAME }}
           password: ${{ secrets.GHCR_TOKEN }}
+      - name: PrintImageFullNameInfo
+        run: echo '${{ steps.docker_build.outputs.imageFullName }}:${{ steps.docker_build.outputs.tags }}'
