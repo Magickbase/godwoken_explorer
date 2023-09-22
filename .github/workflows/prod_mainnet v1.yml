@@ -18,6 +18,7 @@ jobs:
     with:
       k8s-namespace: mainnet
       k8s-workload: gwscan-api
-      image: ${{ needs.build.outputs.image }}
+      image-name: ${{ needs.build.outputs.image-name }}
+      image-tag: ${{ needs.build.outputs.image-tag }}
       environment: prod_mainnet_v1    
     secrets: inherit
