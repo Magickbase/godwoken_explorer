@@ -99,7 +99,6 @@ defmodule GodwokenExplorer.MixProject do
       {:cors_plug, "~> 3.0"},
 
       # monitor
-      {:observer_cli, "~> 1.6"},
       {:sentry, "~> 8.0"},
 
       # static code analysis tool
@@ -131,7 +130,7 @@ defmodule GodwokenExplorer.MixProject do
       # test
       {:ex_machina, "~> 2.7.0", only: [:test]},
       {:excoveralls, "~> 0.14.4", only: [:test]},
-      {:mock, "~> 0.3.7", only: [:test], runtime: false},
+      {:mock, "~> 0.3.8", only: [:test], runtime: false},
       {:hammox, "~> 0.7", only: :test},
       {:ex_json_schema, "~> 0.6.2"},
       {:bypass, "~> 2.1", only: :test},

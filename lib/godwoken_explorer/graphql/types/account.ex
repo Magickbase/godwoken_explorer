@@ -303,21 +303,20 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
     end)
   end
 
-  object :account_mutations do
-  end
-
   object :account do
-    field :id, :integer, description: "ID of account."
-    field :eth_address, :hash_full, description: "The polyjuice account's address"
-    field :script_hash, :hash_address, description: "Godwoken chain script hash."
-    field :registry_address, :string, description: "This account's register's address."
-    field :script, :json, description: "Godwoken chain script."
-    field :nonce, :integer, description: "The account invokes contract's times."
-    field :transaction_count, :integer, description: "The account cached transction count."
-    field :token_transfer_count, :integer, description: "The account cached token transfer count."
-    field :contract_code, :string, description: "The contract's bytecode."
-    field :type, :account_type, description: "Account type."
-    field :bit_alias, :string, description: ".bit alias."
+    field(:id, :integer, description: "ID of account.")
+    field(:eth_address, :hash_full, description: "The polyjuice account's address")
+    field(:script_hash, :hash_address, description: "Godwoken chain script hash.")
+    field(:registry_address, :string, description: "This account's register's address.")
+    field(:script, :json, description: "Godwoken chain script.")
+    field(:nonce, :integer, description: "The account invokes contract's times.")
+    field(:transaction_count, :integer, description: "The account cached transction count.")
+
+    field(:token_transfer_count, :integer, description: "The account cached token transfer count.")
+
+    field(:contract_code, :string, description: "The contract's bytecode.")
+    field(:type, :account_type, description: "Account type.")
+    field(:bit_alias, :string, description: ".bit alias.")
 
     field :udt, :udt do
       description(
@@ -334,7 +333,7 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
     end
 
     @desc "The mapping smart_contract of account."
-    field :smart_contract, :smart_contract, resolve: dataloader(:graphql)
+    field(:smart_contract, :smart_contract, resolve: dataloader(:graphql))
   end
 
   enum :account_type do
@@ -357,8 +356,8 @@ defmodule GodwokenExplorer.Graphql.Types.Account do
     example: "0x08c9937e412e135928fd6dec7255965ddd7df4d5a163564b60895100bb3b2f9e"
     ```
     """
-    field :address, :hash_address
-    field :script_hash, :hash_full
+    field(:address, :hash_address)
+    field(:script_hash, :hash_full)
   end
 
   input_object :account_child_udts_input do
