@@ -46,7 +46,7 @@ jobs:
         continue-on-error: true
       - name: Build and push
         id: docker_build
-        uses: mr-smithers-excellent/docker-build-push@v6
+        uses: mr-smithers-excellent/docker-build-push@v5
         with:
           image: gwscan-api
           registry: ghcr.io
