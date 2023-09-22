@@ -36,7 +36,8 @@ jobs:
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
     outputs:
-      image: '${{ steps.docker_build.outputs.imageFullName }}:${{ steps.docker_build.outputs.tags }}'
+      image-name: '${{ steps.docker_build.outputs.imageFullName }}'
+      image-tag: '${{ steps.docker_build.outputs.tags }}'
     steps:
       - uses: actions/checkout@v4
 
