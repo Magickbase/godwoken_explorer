@@ -25,15 +25,19 @@ on:
       GRAFANA_FOLDER_NAME:
         required: true
     outputs:
-      image:
-        description: URL for docker image with tag
-        value: ${{ jobs.build.outputs.image }}
+      image-name:
+        description: URL for docker image
+        value: ${{ jobs.build.outputs.image-name }}
+      image-tag:
+        description: image tag(version)
+        value: ${{ jobs.build.outputs.image-tag }}
 jobs:        
   build:
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
     outputs:
-      image: '${{ steps.docker_build.outputs.imageFullName }}:${{ steps.docker_build.outputs.tags }}'
+      image-name: '${{ steps.docker_build.outputs.imageFullName }}'
+      image-tag: '${{ steps.docker_build.outputs.tags }}'
     steps:
       - uses: actions/checkout@v4
 
@@ -42,7 +46,7 @@ jobs:
         continue-on-error: true
       - name: Build and push
         id: docker_build
-        uses: mr-smithers-excellent/docker-build-push@v6
+        uses: mr-smithers-excellent/docker-build-push@v5
         with:
           image: gwscan-api
           registry: ghcr.io
