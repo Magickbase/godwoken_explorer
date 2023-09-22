@@ -103,7 +103,7 @@ defmodule GodwokenExplorer.MixProject do
       {:sentry, "~> 8.0"},
 
       # static code analysis tool
-      {:credo, "~> 1.6.4", only: [:dev, :test], runtime: false},
+      {:credo, "~> 1.7.0", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.0", only: [:dev], runtime: false},
       {:sobelow, "~> 0.8", only: :dev},
 
