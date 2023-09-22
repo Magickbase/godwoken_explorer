@@ -85,9 +85,6 @@ defmodule GodwokenExplorer.Graphql.Types.Block do
     end
   end
 
-  object :block_mutations do
-  end
-
   object :block do
     field :hash, :hash_full, description: "The current block hash."
     field :number, :integer, description: "The block number, start with 0."
