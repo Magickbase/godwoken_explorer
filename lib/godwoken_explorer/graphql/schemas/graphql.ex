@@ -70,7 +70,6 @@ defmodule GodwokenExplorer.Graphql.Schemas.Graphql do
 
   mutation do
     import_fields(:sourcify_mutations)
-    import_fields(:token_exchange_rate_mutations)
   end
 
   # subscription do

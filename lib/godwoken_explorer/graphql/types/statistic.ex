@@ -8,9 +8,6 @@ defmodule GodwokenExplorer.Graphql.Types.Statistic do
     end
   end
 
-  object :statistic_mutations do
-  end
-
   object :daily_statistic do
     field :avg_block_size, :integer
     field :avg_block_time, :float

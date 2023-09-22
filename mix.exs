@@ -74,7 +74,7 @@ defmodule GodwokenExplorer.MixProject do
       {:esbuild, "~> 0.7", runtime: Mix.env() == :dev},
       {:telemetry_metrics, "~> 0.6.1"},
       {:telemetry_poller, "~> 1.0.0"},
-      {:gettext, "~> 0.22"},
+      {:gettext, "~> 0.23"},
       {:plug_cowboy, "~> 2.0"},
       {:httpoison, "~> 2.0"},
       {:rustler, "~> 0.29.0"},
@@ -99,11 +99,10 @@ defmodule GodwokenExplorer.MixProject do
       {:cors_plug, "~> 3.0"},
 
       # monitor
-      {:observer_cli, "~> 1.6"},
       {:sentry, "~> 8.0"},
 
       # static code analysis tool
-      {:credo, "~> 1.6.4", only: [:dev, :test], runtime: false},
+      {:credo, "~> 1.7.0", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.0", only: [:dev], runtime: false},
       {:sobelow, "~> 0.8", only: :dev},
 
@@ -122,7 +121,7 @@ defmodule GodwokenExplorer.MixProject do
       {:briefly, "~> 0.4"},
       {:nimble_csv, "~> 1.1"},
       #      {:prom_ex, "~> 1.7.1"},
-      {:dotenv, "~> 3.0.0", only: [:dev, :test]},
+      {:dotenv, "~> 3.1.0", only: [:dev, :test]},
       {:ex_doc, "~> 0.27", only: :dev, runtime: false},
 
       # cron job
@@ -131,7 +130,7 @@ defmodule GodwokenExplorer.MixProject do
       # test
       {:ex_machina, "~> 2.7.0", only: [:test]},
       {:excoveralls, "~> 0.14.4", only: [:test]},
-      {:mock, "~> 0.3.7", only: [:test], runtime: false},
+      {:mock, "~> 0.3.8", only: [:test], runtime: false},
       {:hammox, "~> 0.7", only: :test},
       {:ex_json_schema, "~> 0.6.2"},
       {:bypass, "~> 2.1", only: :test},
@@ -143,7 +142,7 @@ defmodule GodwokenExplorer.MixProject do
       {:dataloader, "~> 1.0"},
       {:money, "~> 1.9"},
       {:plug_heartbeat, "~> 1.0"},
-      {:paginator, "~> 1.1.0"},
+      {:paginator, "~> 1.2.0"},
       {:quarto, "~> 1.0"},
       {:constants, "~> 0.1.0"},
       {:graphql_builder, "~> 0.3.4"},

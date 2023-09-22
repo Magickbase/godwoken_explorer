@@ -12,7 +12,7 @@ jobs:
       ENV_FILE_PATH: ${{secrets.ENV_FILE_PATH}}
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Docker Compose build
         run: docker-compose -f ./docker_compose/gwscan_compose.yml --env-file ${{secrets.ENV_FILE_PATH}} build gwscan
