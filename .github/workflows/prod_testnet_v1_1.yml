@@ -17,6 +17,7 @@ jobs:
     with:
       k8s-namespace: testnet
       k8s-workload: gwscan-api
-      image: ${{ needs.build.outputs.image }}
+      image-name: ${{ needs.build.outputs.image-name }}
+      image-tag: ${{ needs.build.outputs.image-tag }}
       environment: prod_testnet_v1_1
     secrets: inherit  
