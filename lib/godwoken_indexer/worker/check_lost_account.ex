@@ -4,7 +4,7 @@ defmodule GodwokenIndexer.Worker.CheckLostAccount do
 
   We can get layer2 account's total count and these ids were sequence.So we can get less account id.
   """
-  use Oban.Worker, queue: :default
+  use Oban.Worker, queue: :default, unique: [period: :infinity]
 
   import Ecto.Query, only: [from: 2]
 
