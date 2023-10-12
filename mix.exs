@@ -139,7 +139,7 @@ defmodule GodwokenExplorer.MixProject do
       {:absinthe, "~> 1.7"},
       {:absinthe_plug, "~> 1.5"},
       {:absinthe_phoenix, "~> 2.0"},
-      {:dataloader, "~> 1.0"},
+      {:dataloader, "~> 2.0"},
       {:money, "~> 1.9"},
       {:plug_heartbeat, "~> 1.0"},
       {:paginator, "~> 1.2.0"},
