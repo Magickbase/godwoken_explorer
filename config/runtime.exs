@@ -181,24 +181,10 @@ config :godwoken_explorer,
   pending_transaction_worker_interval: gwscan_interval_pending_transaction_worker
 
 gwscan_sentry_dsn = System.get_env("GWSCAN_SENTRY_DSN", "")
-gwscan_sentry_environment_name = System.get_env("GWSCAN_SENTRY_ENVIRONMENT_NAME", "")
-
-gwscan_sentry_enable_source_code_context =
-  System.get_env("GWSCAN_SENTRY_ENABLE_SOURCE_CODE_CONTEXT", "false") |> String.to_atom()
-
-gwscan_sentry_tags_environment = System.get_env("GWSCAN_SENTRY_TAGS_ENVIRONMENT", "")
-gwscan_sentry_included_environment = System.get_env("GWSCAN_SENTRY_INCLUDED_ENVIRONMENT", "")
 
 config :sentry,
   filter: GodwokenExplorerWeb.SentryFilter,
-  dsn: gwscan_sentry_dsn,
-  environment_name: gwscan_sentry_environment_name,
-  enable_source_code_context: gwscan_sentry_enable_source_code_context,
-  root_source_code_path: File.cwd!(),
-  tags: %{
-    env: gwscan_sentry_tags_environment
-  },
-  included_environments: [gwscan_sentry_included_environment]
+  dsn: gwscan_sentry_dsn
 
 gwscan_multiple_block_once =
   System.get_env("GWSCAN_MULTIPLE_BLOCK_ONCE", "false") |> String.to_atom()
