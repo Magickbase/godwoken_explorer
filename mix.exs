@@ -77,7 +77,7 @@ defmodule GodwokenExplorer.MixProject do
       {:gettext, "~> 0.23"},
       {:plug_cowboy, "~> 2.0"},
       {:httpoison, "~> 2.0"},
-      {:rustler, "~> 0.29.0"},
+      {:rustler, "~> 0.30.0"},
       {:con_cache, "~> 1.0"},
       {:scrivener_ecto, "~> 2.0"},
       {:decimal, "~> 2.0"},
@@ -86,7 +86,7 @@ defmodule GodwokenExplorer.MixProject do
       {:fastglobal, "~> 1.0"},
 
       # live dashboard ecto stats
-      {:ecto_psql_extras, "~> 0.6"},
+      {:ecto_psql_extras, "~> 0.7"},
 
       # encoder
       {:jason, "~> 1.0"},
@@ -136,10 +136,10 @@ defmodule GodwokenExplorer.MixProject do
       {:bypass, "~> 2.1", only: :test},
 
       # graphql
-      {:absinthe, "~> 1.7"},
+      {:absinthe, "~> 1.7.0"},
       {:absinthe_plug, "~> 1.5"},
       {:absinthe_phoenix, "~> 2.0"},
-      {:dataloader, "~> 1.0"},
+      {:dataloader, "~> 2.0"},
       {:money, "~> 1.9"},
       {:plug_heartbeat, "~> 1.0"},
       {:paginator, "~> 1.2.0"},
@@ -148,9 +148,7 @@ defmodule GodwokenExplorer.MixProject do
       {:graphql_builder, "~> 0.3.4"},
 
       # http client
-      {:tesla, "~> 1.4"},
-      {:castore, "~> 0.1.0"},
-      {:mint, "~> 1.0"}
+      {:tesla, "~> 1.4"}
     ]
   end
 
