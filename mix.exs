@@ -149,7 +149,7 @@ defmodule GodwokenExplorer.MixProject do
 
       # http client
       {:tesla, "~> 1.4"},
-      {:castore, "~> 0.1.0"},
+      {:castore, "~> 1.0.0"},
       {:mint, "~> 1.0"}
     ]
   end
