@@ -104,7 +104,7 @@ defmodule GodwokenExplorer.MixProject do
       # static code analysis tool
       {:credo, "~> 1.7.0", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.0", only: [:dev], runtime: false},
-      {:sobelow, "~> 0.8", only: :dev},
+      {:sobelow, "~> 0.13", only: :dev},
 
       # web3 tool
       {:ex_abi, "~> 0.6.0"},
