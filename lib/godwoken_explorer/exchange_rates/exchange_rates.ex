@@ -38,7 +38,7 @@ defmodule GodwokenExplorer.ExchangeRates do
   # Callback for errored fetch
   @impl GenServer
   def handle_info({_ref, {:error, reason}}, state) do
-    Logger.warn(fn -> "Failed to get exchange rates with reason '#{reason}'." end)
+    Logger.warning(fn -> "Failed to get exchange rates with reason '#{reason}'." end)
 
     schedule_next_consolidation()
 
