@@ -86,7 +86,7 @@ defmodule GodwokenExplorer.MixProject do
       {:fastglobal, "~> 1.0"},
 
       # live dashboard ecto stats
-      {:ecto_psql_extras, "~> 0.6"},
+      {:ecto_psql_extras, "~> 0.7"},
 
       # encoder
       {:jason, "~> 1.0"},
