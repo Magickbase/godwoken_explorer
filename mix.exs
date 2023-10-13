@@ -148,7 +148,8 @@ defmodule GodwokenExplorer.MixProject do
       {:graphql_builder, "~> 0.3.4"},
 
       # http client
-      {:tesla, "~> 1.4"}
+      {:tesla, "~> 1.4"},
+      {:mint, "~> 1.0"}
     ]
   end
 
