@@ -77,7 +77,7 @@ defmodule GodwokenExplorer.MixProject do
       {:gettext, "~> 0.23"},
       {:plug_cowboy, "~> 2.0"},
       {:httpoison, "~> 2.0"},
-      {:rustler, "~> 0.29.0"},
+      {:rustler, "~> 0.30.0"},
       {:con_cache, "~> 1.0"},
       {:scrivener_ecto, "~> 2.0"},
       {:decimal, "~> 2.0"},
@@ -86,7 +86,7 @@ defmodule GodwokenExplorer.MixProject do
       {:fastglobal, "~> 1.0"},
 
       # live dashboard ecto stats
-      {:ecto_psql_extras, "~> 0.6"},
+      {:ecto_psql_extras, "~> 0.7"},
 
       # encoder
       {:jason, "~> 1.0"},
@@ -99,12 +99,12 @@ defmodule GodwokenExplorer.MixProject do
       {:cors_plug, "~> 3.0"},
 
       # monitor
-      {:sentry, "~> 8.0"},
+      {:sentry, "~> 9.0"},
 
       # static code analysis tool
       {:credo, "~> 1.7.0", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.0", only: [:dev], runtime: false},
-      {:sobelow, "~> 0.8", only: :dev},
+      {:sobelow, "~> 0.13", only: :dev},
 
       # web3 tool
       {:ex_abi, "~> 0.6.0"},
@@ -117,29 +117,29 @@ defmodule GodwokenExplorer.MixProject do
 
       # tool
       {:timex, "~> 3.0"},
-      {:retry, "~> 0.15"},
+      {:retry, "~> 0.18"},
       {:briefly, "~> 0.4"},
       {:nimble_csv, "~> 1.1"},
       #      {:prom_ex, "~> 1.7.1"},
       {:dotenv, "~> 3.1.0", only: [:dev, :test]},
-      {:ex_doc, "~> 0.27", only: :dev, runtime: false},
+      {:ex_doc, "~> 0.30", only: :dev, runtime: false},
 
       # cron job
       {:oban, "~> 2.12"},
 
       # test
       {:ex_machina, "~> 2.7.0", only: [:test]},
-      {:excoveralls, "~> 0.14.4", only: [:test]},
+      {:excoveralls, "~> 0.16.1", only: [:test]},
       {:mock, "~> 0.3.8", only: [:test], runtime: false},
       {:hammox, "~> 0.7", only: :test},
-      {:ex_json_schema, "~> 0.6.2"},
+      {:ex_json_schema, "~> 0.10.0"},
       {:bypass, "~> 2.1", only: :test},
 
       # graphql
-      {:absinthe, "~> 1.7"},
+      {:absinthe, "~> 1.7.0"},
       {:absinthe_plug, "~> 1.5"},
       {:absinthe_phoenix, "~> 2.0"},
-      {:dataloader, "~> 1.0"},
+      {:dataloader, "~> 2.0"},
       {:money, "~> 1.9"},
       {:plug_heartbeat, "~> 1.0"},
       {:paginator, "~> 1.2.0"},
@@ -149,7 +149,6 @@ defmodule GodwokenExplorer.MixProject do
 
       # http client
       {:tesla, "~> 1.4"},
-      {:castore, "~> 0.1.0"},
       {:mint, "~> 1.0"}
     ]
   end

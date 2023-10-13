@@ -29,6 +29,12 @@ config :logger,
     rotate: %{max_bytes: 52_428_800, keep: 19}
   ]
 
+config :sentry,
+  environment_name: Mix.env(),
+  included_environments: [:prod],
+  enable_source_code_context: true,
+  root_source_code_paths: [File.cwd!()]
+
 # config :godwoken_explorer, GodwokenExplorer.PromEx,
 #   disabled: false,
 #   manual_metrics_start_delay: :no_delay,
