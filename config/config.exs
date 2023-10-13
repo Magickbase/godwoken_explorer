@@ -36,7 +36,7 @@ config :logger,
   backends: [
     {LoggerFileBackend, :debug},
     {LoggerFileBackend, :info},
-    {LoggerFileBackend, :warn},
+    {LoggerFileBackend, :warning},
     {LoggerFileBackend, :error}
   ]
 

@@ -248,7 +248,7 @@ defmodule GodwokenExplorer.Polyjuice do
     {:ok, mapping}
   rescue
     _ ->
-      Logger.warn(fn -> ["Could not decode input data for transaction: ", hash] end)
+      Logger.warning(fn -> ["Could not decode input data for transaction: ", hash] end)
       {:error, :could_not_decode}
   end
 

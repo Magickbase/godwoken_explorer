@@ -16,7 +16,7 @@ config :godwoken_explorer, GodwokenExplorerWeb.Endpoint,
 config :godwoken_explorer, Oban, testing: :manual
 
 # Print only warnings and errors during test
-config :logger, level: :warn
+config :logger, level: :warning
 
 # config :godwoken_explorer, GodwokenExplorer.PromEx,
 #   disabled: true,
