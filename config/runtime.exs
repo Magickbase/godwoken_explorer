@@ -174,11 +174,12 @@ config :godwoken_explorer,
   pending_transaction_worker_interval: gwscan_interval_pending_transaction_worker
 
 gwscan_sentry_dsn = System.get_env("GWSCAN_SENTRY_DSN", "")
+gwscan_sentry_environment_name = System.get_env("GWSCAN_SENTRY_ENVIRONMENT_NAME", "")
 
 config :sentry,
   filter: GodwokenExplorerWeb.SentryFilter,
   dsn: gwscan_sentry_dsn,
-  environment_name: Mix.env()
+  environment_name: gwscan_sentry_environment_name
 
 gwscan_multiple_block_once = System.get_env("GWSCAN_MULTIPLE_BLOCK_ONCE", "false") |> String.to_atom()
 
