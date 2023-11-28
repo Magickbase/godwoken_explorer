@@ -99,7 +99,7 @@ defmodule GodwokenExplorer.MixProject do
       {:cors_plug, "~> 3.0"},
 
       # monitor
-      {:sentry, "~> 9.0"},
+      {:sentry, "~> 10.0"},
 
       # static code analysis tool
       {:credo, "~> 1.7.0", only: [:dev, :test], runtime: false},
