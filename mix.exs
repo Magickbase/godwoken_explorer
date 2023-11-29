@@ -100,6 +100,7 @@ defmodule GodwokenExplorer.MixProject do
 
       # monitor
       {:sentry, "~> 10.0"},
+      {:nimble_options, "~> 1.0"},
 
       # static code analysis tool
       {:credo, "~> 1.7.0", only: [:dev, :test], runtime: false},
