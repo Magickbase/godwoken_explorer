@@ -143,7 +143,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
         }
       )
       |> paginate_query(input, %{
-        cursor_fields: [block_number: :desc, token_contract_address_hash: :asc, token_id: :asc],
+        cursor_fields: [token_contract_address_hash: :asc, token_id: :asc],
         total_count_primary_key_field: [:id]
       })
 
