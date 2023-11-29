@@ -8,9 +8,11 @@ gwscan_endpoint_host = System.get_env("GWSCAN_ENDPOINT_HOST", "localhost")
 gwscan_endpoint_port = System.get_env("GWSCAN_ENDPOINT_PORT", "4001") |> String.to_integer()
 gwscan_endpoint_scheme = System.get_env("GWSCAN_ENDPOINT_SCHEME", "http")
 
-default_gwscan_endpoint_secret_key = "RyKusGni7iTLOYLtHal3FRI4uKsV4mD/v25fyKBfVsxdrYChqL0IVTd07VvZoLx9"
+default_gwscan_endpoint_secret_key =
+  "RyKusGni7iTLOYLtHal3FRI4uKsV4mD/v25fyKBfVsxdrYChqL0IVTd07VvZoLx9"
 
-gwscan_endpoint_secret_key = System.get_env("GODWOKEN_SCAN_ENDPOINT_SECRET_KEY", default_gwscan_endpoint_secret_key)
+gwscan_endpoint_secret_key =
+  System.get_env("GODWOKEN_SCAN_ENDPOINT_SECRET_KEY", default_gwscan_endpoint_secret_key)
 
 default_gwscan_endpoint_live_view_signing_salt = "Bd1hG/MH"
 
@@ -76,7 +78,8 @@ config :godwoken_explorer, GodwokenExplorer.Repo,
   connect_timeout: pg_connect_timeout,
   socket_options: maybe_ipv6
 
-gwscan_block_sync_woker_on_off = System.get_env("GWSCAN_BLOCK_SYNC_WORKER_ON_OFF", "false") |> String.to_atom()
+gwscan_block_sync_woker_on_off =
+  System.get_env("GWSCAN_BLOCK_SYNC_WORKER_ON_OFF", "false") |> String.to_atom()
 
 gwscan_block_global_state_worker_on_off =
   System.get_env("GWSCAN_BLOCK_GLOBAL_STATE_WORKER_ON_OFF", "false") |> String.to_atom()
@@ -90,7 +93,8 @@ gwscan_block_sync_l1_block_woker_on_off =
 gwscan_block_pending_transaction_woker_on_off =
   System.get_env("GWSCAN_BLOCK_PENDING_TRANSACTION_WORKER_ON_OFF", "false") |> String.to_atom()
 
-gwscan_udt_fetcher_on_off = System.get_env("GWSCAN_UDT_FETCHER_ON_OFF", "false") |> String.to_atom()
+gwscan_udt_fetcher_on_off =
+  System.get_env("GWSCAN_UDT_FETCHER_ON_OFF", "false") |> String.to_atom()
 
 config :godwoken_explorer, :on_off,
   sync_worker: gwscan_block_sync_woker_on_off,
@@ -154,11 +158,14 @@ config :godwoken_explorer,
     ]
   ]
 
-gwscan_interval_sync_worker = System.get_env("GWSCAN_INTERVAL_SYNC_WORKER", "10") |> String.to_integer()
+gwscan_interval_sync_worker =
+  System.get_env("GWSCAN_INTERVAL_SYNC_WORKER", "10") |> String.to_integer()
 
-gwscan_interval_global_state_worker = System.get_env("GWSCAN_INTERVAL_GLOBAL_STATE_WORKER", "30") |> String.to_integer()
+gwscan_interval_global_state_worker =
+  System.get_env("GWSCAN_INTERVAL_GLOBAL_STATE_WORKER", "30") |> String.to_integer()
 
-gwscan_interval_bind_l1_woker = System.get_env("GWSCAN_INTERVAL_BIND_L1_WORKER", "10") |> String.to_integer()
+gwscan_interval_bind_l1_woker =
+  System.get_env("GWSCAN_INTERVAL_BIND_L1_WORKER", "10") |> String.to_integer()
 
 gwscan_interval_sync_deposition_worker =
   System.get_env("GWSCAN_INTERVAL_SYNC_DEPOSITION_WORKER", "2") |> String.to_integer()
@@ -173,7 +180,7 @@ config :godwoken_explorer,
   sync_deposition_worker_interval: gwscan_interval_sync_deposition_worker,
   pending_transaction_worker_interval: gwscan_interval_pending_transaction_worker
 
-gwscan_sentry_dsn = System.get_env("GWSCAN_SENTRY_DSN", "")
+gwscan_sentry_dsn = System.get_env("GWSCAN_SENTRY_DSN", nil)
 gwscan_sentry_environment_name = System.get_env("GWSCAN_SENTRY_ENVIRONMENT_NAME", "")
 
 config :sentry,
@@ -181,13 +188,16 @@ config :sentry,
   dsn: gwscan_sentry_dsn,
   environment_name: gwscan_sentry_environment_name
 
-gwscan_multiple_block_once = System.get_env("GWSCAN_MULTIPLE_BLOCK_ONCE", "false") |> String.to_atom()
+gwscan_multiple_block_once =
+  System.get_env("GWSCAN_MULTIPLE_BLOCK_ONCE", "false") |> String.to_atom()
 
 gwscan_block_batch_size = System.get_env("GWSCAN_BLOCK_BATCH_SIZE", "1") |> String.to_integer()
 
-gwscan_multiple_l1_block_once = System.get_env("GWSCAN_MULTIPLE_L1_BLOCK_ONCE", "false") |> String.to_atom()
+gwscan_multiple_l1_block_once =
+  System.get_env("GWSCAN_MULTIPLE_L1_BLOCK_ONCE", "false") |> String.to_atom()
 
-gwscan_l1_block_batch_size = System.get_env("GWSCAN_L1_BLOCK_BATCH_SIZE", "1") |> String.to_integer()
+gwscan_l1_block_batch_size =
+  System.get_env("GWSCAN_L1_BLOCK_BATCH_SIZE", "1") |> String.to_integer()
 
 config :godwoken_explorer,
   multiple_block_once: gwscan_multiple_block_once,
@@ -225,4 +235,5 @@ config :godwoken_explorer, Indexer, enabled: System.get_env("DISABLE_INDEXER") !
 config :godwoken_explorer, Web, enabled: System.get_env("DISABLE_WEB") != "true"
 config :godwoken_explorer, Oban.Crontab, enabled: System.get_env("DISABLE_OBAN_CRONTAB") != "true"
 
-config :godwoken_explorer, :bit, indexer_url: System.get_env("BIT_INDEXER_URL") || "https://indexer-v1.did.id"
+config :godwoken_explorer, :bit,
+  indexer_url: System.get_env("BIT_INDEXER_URL") || "https://indexer-v1.did.id"
