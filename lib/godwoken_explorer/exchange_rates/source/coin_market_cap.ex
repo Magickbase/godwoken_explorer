@@ -138,7 +138,7 @@ defmodule GodwokenExplorer.ExchangeRates.Source.CoinMarketCap do
          token_properties["quote"]["USD"]["price"] do
       to_decimal(token_properties["quote"]["USD"]["price"])
     else
-      1
+      0
     end
   end
 
