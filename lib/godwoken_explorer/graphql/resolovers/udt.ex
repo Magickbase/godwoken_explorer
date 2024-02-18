@@ -86,7 +86,7 @@ defmodule GodwokenExplorer.Graphql.Resolvers.UDT do
         if exchange_rate == 0 do
           Decimal.new(0)
         else
-          Decimal.new(exchange_rate)
+          exchange_rate
         end
 
       {:ok, %{symbol: symbol, exchange_rate: exchange_rate, timestamp: timestamp}}
