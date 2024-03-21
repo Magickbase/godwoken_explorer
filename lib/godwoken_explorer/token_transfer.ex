@@ -395,6 +395,21 @@ defmodule GodwokenExplorer.TokenTransfer do
     end
   end
 
+  def snapshot_erc721_token(token_contract_address_hash, start_block_number, end_block_number) do
+    from(tt in TokenTransfer,
+      where:
+        tt.token_contract_address_hash == ^token_contract_address_hash and
+          tt.block_number >= ^start_block_number and tt.block_number <= ^end_block_number,
+      select: %{
+        address_hash: fragment("'0x' || encode(?, 'hex')", tt.to_address_hash),
+        token_id: tt.token_id
+      },
+      distinct: tt.token_id,
+      order_by: [desc: tt.block_number]
+    )
+    |> Repo.all()
+  end
+
   defp parse_json_result(paginate_result, init_query) do
     if paginate_result.total_entries != 0 do
       query =
