@@ -121,13 +121,6 @@ godwoken_mempool_rpc_url =
     raise "GODWOKEN_MEMPOOL_RPC_URL is not set"
   end
 
-ckb_indexer_url =
-  if System.get_env("CKB_INDEXER_URL") do
-    System.get_env("CKB_INDEXER_URL")
-  else
-    raise "CKB_INDEXER_URL is not set"
-  end
-
 ckb_rpc_url =
   if System.get_env("CKB_RPC_URL") do
     System.get_env("CKB_RPC_URL")
@@ -147,14 +140,6 @@ config :godwoken_explorer,
   mempool_rpc_named_arguments: [
     http: GodwokenRPC.HTTP.HTTPoison,
     url: godwoken_mempool_rpc_url,
-    http_options: [
-      recv_timeout: :timer.minutes(10),
-      timeout: :timer.minutes(10)
-    ]
-  ],
-  ckb_indexer_named_arguments: [
-    http: GodwokenRPC.HTTP.HTTPoison,
-    url: ckb_indexer_url,
     http_options: [
       recv_timeout: :timer.minutes(10),
       timeout: :timer.minutes(10)
