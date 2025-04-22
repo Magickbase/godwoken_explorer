@@ -1,29 +1,15 @@
 ARG ELIXIR_VERSION=1.13.4
 ARG OTP_VERSION=25.3.2.20
-ARG ALPINE_VERSION=3.20.6
+ARG ALPINE_VERSION=3.18.9
 ARG BUILDER_IMAGE="hexpm/elixir:${ELIXIR_VERSION}-erlang-${OTP_VERSION}-alpine-${ALPINE_VERSION}"
 ARG RUNNER_IMAGE="alpine:${ALPINE_VERSION}"
 
 FROM ${BUILDER_IMAGE} as builder
 
-RUN apk --no-cache --update add alpine-sdk gmp-dev automake libtool inotify-tools autoconf python3 file qemu-x86_64
-
-ENV GLIBC_REPO=https://github.com/sgerrand/alpine-pkg-glibc
-ENV GLIBC_VERSION=2.30-r0
-
-RUN set -ex && \
-    apk --update add libstdc++ curl ca-certificates && \
-    for pkg in glibc-${GLIBC_VERSION} glibc-bin-${GLIBC_VERSION}; \
-        do curl -sSL ${GLIBC_REPO}/releases/download/${GLIBC_VERSION}/${pkg}.apk -o /tmp/${pkg}.apk; done && \
-    apk add --allow-untrusted /tmp/*.apk && \
-    rm -v /tmp/*.apk && \
-    /usr/glibc-compat/sbin/ldconfig /lib /usr/glibc-compat/lib
+RUN apk --no-cache --update add alpine-sdk gmp-dev automake libtool inotify-tools autoconf python3 file qemu-x86_64 rust cargo
 
 # Get Rust
-RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-
-ENV PATH="$HOME/.cargo/bin:${PATH}"
-ENV RUSTFLAGS="-C target-feature=-crt-static"
+RUN echo $PATH && which cargo
 
 # prepare build dir
 WORKDIR /app
@@ -76,7 +62,7 @@ COPY config/runtime.exs config/
 COPY rel rel
 RUN mix release
 
-FROM ${RUNNER_IMAGE}
+FROM ${RUNNER_IMAGE} as deploy
 
 WORKDIR "/app"
 ENV MIX_ENV="prod"
