@@ -1,12 +1,12 @@
-FROM bitwalker/alpine-elixir-phoenix:1.15.0 as builder
+ARG ELIXIR_VERSION=1.15.8
+ARG OTP_VERSION=26.2.5.11
+ARG ALPINE_VERSION=3.21.3
+ARG BUILDER_IMAGE="hexpm/elixir:${ELIXIR_VERSION}-erlang-${OTP_VERSION}-alpine-${ALPINE_VERSION}"
+ARG RUNNER_IMAGE="alpine:${ALPINE_VERSION}"
 
-RUN apk --no-cache --update add alpine-sdk gmp-dev automake libtool inotify-tools autoconf python3 file qemu-x86_64
+FROM ${BUILDER_IMAGE} as builder
 
-# Get Rust
-RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-
-ENV PATH="$HOME/.cargo/bin:${PATH}"
-ENV RUSTFLAGS="-C target-feature=-crt-static"
+RUN apk --no-cache --update add alpine-sdk gmp-dev automake libtool inotify-tools autoconf python3 file qemu-x86_64 rust cargo nodejs npm
 
 # prepare build dir
 WORKDIR /app
@@ -68,10 +68,17 @@ COPY config/runtime.exs config/
 COPY rel rel
 RUN mix release
 
-FROM bitwalker/alpine-elixir-phoenix:1.15.0 as deploy
+FROM ${RUNNER_IMAGE} as deploy
 
 WORKDIR "/app"
 ENV MIX_ENV="prod"
+
+RUN apk --no-cache add \
+    ncurses-libs \
+    libstdc++ \
+    libgcc \
+    musl \
+    gcompat
 
 # Only copy the final release from the build stage
 COPY --from=builder --chown=nobody:root /app/_build/${MIX_ENV}/rel/godwoken_explorer ./
