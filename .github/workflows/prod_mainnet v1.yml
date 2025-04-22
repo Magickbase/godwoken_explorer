@@ -3,22 +3,23 @@ on:
   push:
     branches:
       - "godwoken-v1-mainnet-prod"
+  workflow_dispatch:
 
 jobs:
   build:
-    uses: ./.github/workflows/build.yml 
+    uses: ./.github/workflows/build.yml
     secrets: inherit
     with:
-      environment: prod_mainnet_v1   
+      environment: prod_mainnet_v1
       chain: mainnet_v1
-      graphiql: false 
+      graphiql: false
   deploy-update:
     needs: build
-    uses: ./.github/workflows/deploy.yml 
+    uses: ./.github/workflows/deploy.yml
     with:
       k8s-namespace: mainnet
       k8s-workload: gwscan-api
       image-name: ${{ needs.build.outputs.image-name }}
       image-tag: ${{ needs.build.outputs.image-tag }}
-      environment: prod_mainnet_v1    
+      environment: prod_mainnet_v1
     secrets: inherit
