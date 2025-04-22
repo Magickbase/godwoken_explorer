@@ -11,7 +11,10 @@ RUN apk --no-cache --update add alpine-sdk gmp-dev automake libtool inotify-tool
     libstdc++ \
     libgcc \
     musl \
-    gcompat
+    gcompat \
+    gcc \
+    g++ \
+    libc6-compat
 
 # Get Rust
 RUN echo $PATH && which cargo
