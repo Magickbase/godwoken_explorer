@@ -6,18 +6,7 @@ ARG RUNNER_IMAGE="alpine:${ALPINE_VERSION}"
 
 FROM ${BUILDER_IMAGE} as builder
 
-RUN apk --no-cache --update add alpine-sdk gmp-dev automake libtool inotify-tools autoconf python3 file qemu-x86_64 rust cargo \
-    ncurses-libs \
-    libstdc++ \
-    libgcc \
-    musl \
-    gcompat \
-    gcc \
-    g++ \
-    libc6-compat
-
-# Get Rust
-RUN echo $PATH && which cargo
+RUN apk --no-cache --update add alpine-sdk gmp-dev automake libtool inotify-tools autoconf python3 file qemu-x86_64 rust cargo
 
 # prepare build dir
 WORKDIR /app
@@ -74,6 +63,13 @@ FROM ${RUNNER_IMAGE} as deploy
 
 WORKDIR "/app"
 ENV MIX_ENV="prod"
+
+RUN apk --no-cache add \
+    ncurses-libs \
+    libstdc++ \
+    libgcc \
+    musl \
+    gcompat
 
 # Only copy the final release from the build stage
 COPY --from=builder --chown=nobody:root /app/_build/${MIX_ENV}/rel/godwoken_explorer ./
