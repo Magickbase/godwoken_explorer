@@ -1,5 +1,5 @@
 name: Update K8S workload image
-on: 
+on:
   workflow_call:
     inputs:
       image-name:
@@ -17,7 +17,7 @@ on:
       environment:
         required: false
         type: string
-        default: staging        
+        default: staging
     secrets:
       KUBOARD_USERNAME:
         required: true
@@ -34,15 +34,13 @@ jobs:
         uses: fjogeleit/http-request-action@v1
         with:
           url: ${{ secrets.KUBOARD_API_URL }}/resource/updateImageTag
-          method: 'PUT'
+          method: "PUT"
           customHeaders: '{"Content-Type": "application/json", "Cookie": "KuboardUsername=${{ secrets.KUBOARD_USERNAME }}; KuboardAccessKey=${{ secrets.KUBOARD_ACCESS_KEY }}"}'
-          data: '{"kind":"deployments","namespace":"${{ inputs.k8s-namespace }}","name":"${{ inputs.k8s-workload }}","images":{"${{ inputs.image-name }}":"${{ inputs.image-name }}:${{ inputs.image-tag }}"}}'
+          data: '{"kind":"deployments","namespace":"${{ inputs.k8s-namespace }}","name":"${{ inputs.k8s-workload }}","images":{"ghcr.io/magickbase/gwscan-api":"ghcr.io/magickbase/gwscan-api:${{ inputs.image-tag }}"}}'
       - name: Restart container
         uses: fjogeleit/http-request-action@v1
         with:
           url: ${{ secrets.KUBOARD_API_URL }}/resource/restartWorkload
-          method: 'PUT'
+          method: "PUT"
           customHeaders: '{"Content-Type": "application/json", "Cookie": "KuboardUsername=${{ secrets.KUBOARD_USERNAME }}; KuboardAccessKey=${{ secrets.KUBOARD_ACCESS_KEY }}"}'
           data: '{"kind":"deployments","namespace":"${{ inputs.k8s-namespace }}","name":"${{ inputs.k8s-workload }}"}'
-
-
